@@ -977,7 +977,7 @@ while running:
     # Regenerate health for testing purposes
     for a_player in all_players:
         if timer % 5 == 0 and a_player.hp < a_player.max_hp and is_middleMouse_held == True:
-            a_player.hp += 1
+            a_player.hp += 2
         else:
             pass 
 
