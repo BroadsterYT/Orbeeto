@@ -979,7 +979,7 @@ while running:
         if timer % 5 == 0 and a_player.hp < a_player.max_hp and is_middleMouse_held == True:
             a_player.hp += 1
         else:
-            pass
+            pass 
 
     # Autofire timer
     for a_player in all_players:
