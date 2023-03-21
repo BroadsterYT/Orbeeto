@@ -318,19 +318,15 @@ class EnemyBase(pygame.sprite.Sprite):
         self.healthBar = HealthBar(self)
 
     def changeRoomRight(self):
-        self.healthBar.kill()
         self.kill()
 
     def changeRoomLeft(self):
-        del self.healthBar
         self.kill()
 
     def changeRoomUp(self):
-        del self.healthBar
         self.kill()
 
     def changeRoomDown(self):
-        del self.healthBar
         self.kill()
 
 class StandardGrunt(EnemyBase):
