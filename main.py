@@ -46,7 +46,7 @@ def get_angle_to_mouse(entity):
         entity (pygame.sprite.Sprite): The entity to measure from the cursor
 
     Returns:
-        float: the angle between the entity and the mouse cursor
+        float: The angle between the entity and the mouse cursor
     """
 
     mouseX, mouseY = pygame.mouse.get_pos()
@@ -75,11 +75,11 @@ def get_angle_to_entity(selfEntity, targetEntity):
     """Returns the angle between two different entities
 
     Args:
-        selfEntity (pygame.sprite.Sprite): the entity to reference the angle from
-        targetEntity (pygame.sprite.Sprite): the entity to measure from the reference
+        selfEntity (pygame.sprite.Sprite): The entity to reference the angle from
+        targetEntity (pygame.sprite.Sprite): The entity to measure from the reference
 
     Returns:
-        float: the angle between the two given entities
+        float: The angle between the two given entities
     """
 
     length_to_x = (targetEntity.pos.x - (0.5 * targetEntity.image.get_width())) - (selfEntity.pos.x - (0.5 * selfEntity.image.get_width()))
@@ -107,11 +107,11 @@ def get_dist_to_entity(selfEntity, targetEntity):
     """Returns the distance between two entities
 
     Args:
-        selfEntity (pygame.sprite.Sprite): the entity to start the measurement from
-        targetEntity (pygame.sprite.Sprite): the second entity to measure to from the first
+        selfEntity (pygame.sprite.Sprite): The entity to start the measurement from
+        targetEntity (pygame.sprite.Sprite): The second entity to measure to from the first
 
     Returns:
-        float: distance between selfEntity and targetEntity
+        float: Distance between selfEntity and targetEntity
     """
 
     length_to_x = (targetEntity.pos.x - (0.5 * targetEntity.image.get_width())) - (selfEntity.pos.x - (0.5 * selfEntity.image.get_width()))
@@ -123,11 +123,11 @@ def get_angle_vel(velX, velY):
     """Returns the angle of a resultant vector
 
     Args:
-        velX (float): the x-axis component of the vector
-        velY (float): the y-axis component of the vector
+        velX (float): The x-axis component of the vector
+        velY (float): The y-axis component of the vector
 
     Returns:
-        float: returns the angle of the resultant vector (in degrees)
+        float: The angle of the resultant vector (in degrees)
     """
     
     if velX and velY != 0:
@@ -154,8 +154,8 @@ def collideCheck(entity, contact_list):
     If the entities do collide, the entities will perform a hitbox collision.
 
     Args:
-        object (_type_): _description_
-        contact_list (_type_): _description_
+        entity (_type_): The instigator of the collision
+        contact_list (_type_): The group to check for collisions with the instigator
     """
     
     global timer
@@ -180,10 +180,10 @@ def getClosestPlayer(selfEntity):
     """Returns the closest player entity from another given entity
 
     Args:
-        selfEntity (pygame.sprite.Sprite): the entity to locate the closest player from
+        selfEntity (pygame.sprite.Sprite): The entity to locate the closest player from
 
     Returns:
-        pygame.sprite.Sprite: the closest player entity to selfEntity
+        pygame.sprite.Sprite: The closest player entity to selfEntity
     """
 
     playerCoords = {}
@@ -199,12 +199,12 @@ def calculateDamage(sender, receiver, projectile):
     """Calculates the damage an entity receives after being hit
 
     Args:
-        sender (pygame.sprite.Sprite): the entity that shot the projectile
-        receiver (pygame.sprite.Sprite): the entity that got shot
-        projectile (pygame.sprite.Sprite): the projectile the receiver got hit by
+        sender (pygame.sprite.Sprite): The entity that shot the projectile
+        receiver (pygame.sprite.Sprite): The entity that got shot
+        projectile (pygame.sprite.Sprite): The projectile the receiver got hit by
 
     Returns:
-        int: infliction damage upon receiver
+        int: Infliction damage upon receiver
     """
 
     return math.ceil(((sender.attack / receiver.defense) * projectile.damage))
@@ -213,7 +213,7 @@ def awardXp(enemy):
     """Give all players an enemy's xp worth after it is killed
 
     Args:
-        enemy (pygame.sprite.Sprite): the enemy that has been killed
+        enemy (pygame.sprite.Sprite): The enemy that has been killed
     """
     
     for a_player in all_players:
@@ -224,8 +224,8 @@ def getTopleftX(sprite, desired_x):
     """Returns the topleft x-value of a sprite that is centered at its middle
 
     Args:
-        sprite (pygame.sprite.Sprite): the sprite to get the topleft x-value location for
-        desired_x (int): the x-value of the desired location of the sprite's topleft corner
+        sprite (pygame.sprite.Sprite): The sprite to get the topleft x-value location for
+        desired_x (int): The x-value of the desired location of the sprite's topleft corner
 
     Returns:
         int: x-value of the sprite's location from its center, where its topleft corner will be along its desired x-axis location
@@ -239,8 +239,8 @@ def getTopleftY(sprite, desired_y):
     """Returns the topleft y-value of a sprite that is centered at its middle
 
     Args:
-        sprite (pygame.sprite.Sprite): the sprite to get the topleft y-value location for
-        desired_x (int): the y-value of the desired location of the sprite's topleft corner
+        sprite (pygame.sprite.Sprite): The sprite to get the topleft y-value location for
+        desired_x (int): The y-value of the desired location of the sprite's topleft corner
 
     Returns:
         int: y-value of the sprite's location from its center, where its topleft corner will be along its desired y-axis location
@@ -866,10 +866,16 @@ class Wall(pygame.sprite.Sprite):
 
 #------------------------------ Room class ------------------------------#
 class Room(pygame.sprite.AbstractGroup):
-    def __init__(self, roomIndex, roomCoordsX, roomCoordsY):
+    """The room where all the current action (a lot) is taking place
+
+    Args:
+        roomCoordsX (_type_): The room's x-axis location in the grid of the room layout
+        roomCoordsY (_type_): The room's y-axis location in the grid of the room layout
+    """
+        
+    def __init__(self, roomCoordsX, roomCoordsY):
         super().__init__()
         all_rooms.append(self)
-        self.roomIndex = roomIndex
         self.roomCoords = vec((roomCoordsX, roomCoordsY))
 
         self.sprites = spriteGroup()
@@ -910,10 +916,10 @@ def projectileCollide(entityGroup, projectile, projGroup, canHurt = False):
     """Destroys a given projectile upon a collision and renders an explosion
 
     Args:
-        entityGroup (pygame.sprite.Group): the group of the entity the projectile is colliding with
-        projectile (pygame.sprite.Sprite): the projectile involved in the collision
-        projGroup (pygame.sprite.Group): the group of the projectile from which it was shot from (ex. players_projectiles)
-        canHurt (bool): should the projectile calculate damage upon impact? Defaults to False.
+        entityGroup (pygame.sprite.Group): The group of the entity the projectile is colliding with
+        projectile (pygame.sprite.Sprite): The projectile involved in the collision
+        projGroup (pygame.sprite.Group): The group of the projectile from which it was shot from (ex. players_projectiles)
+        canHurt (bool): Should the projectile calculate damage upon impact? Defaults to False.
     """
 
     for entity in entityGroup:
@@ -935,9 +941,9 @@ def bindProjectile(projectile, projGroup, projTargetGroup):
     """Binds a projectile to its shooter and confines it to the window borders
 
     Args:
-        projectile (pygame.sprite.Sprite): _description_
-        projGroup (pygame.sprite.Group): _description_
-        projTargetGroup (pygame.sprite.Group): _description_
+        projectile (pygame.sprite.Sprite): The projectile to bind
+        projGroup (pygame.sprite.Group): The group of the projectile from which it was shot from (ex. players_projectiles)
+        projTargetGroup (pygame.sprite.Group): The group of the entities that should take damage from the given projectile
     """
 
     displaySurface.blit(projectile.image, projectile.rect)
@@ -956,6 +962,7 @@ def bindProjectile(projectile, projGroup, projTargetGroup):
     projectileCollide(all_walls, projectile, projGroup)
     
 def redrawGameWindow():
+    """Draws all entities every frame"""
     global timer
     # Drawing all player characters every frame
     for a_player in all_players:
@@ -1008,7 +1015,7 @@ def redrawGameWindow():
 player = Player(-32, -32)
 
 # Load rooms
-room = Room(0, 0, 0)
+room = Room(0, 0)
 room.layoutUpdate()
 
 timer = 0
