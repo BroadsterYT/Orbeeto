@@ -8,8 +8,13 @@ import constants as cst
 import calculateStats as stats
 
 pygame.init()
+
+# Aliases
 vec = pygame.math.Vector2
 spriteGroup = pygame.sprite.Group
+sin = math.sin
+cos = math.cos
+rad = math.radians
 
 FPS = 60
 
@@ -34,8 +39,16 @@ all_walls = spriteGroup()
 
 all_rooms = []
 
-# Get the angle between an entity and the cursor position
 def get_angle_to_mouse(entity):
+    """Returns the angle between an entity and the mouse cursor
+
+    Args:
+        entity (pygame.sprite.Sprite): The entity to measure from the cursor
+
+    Returns:
+        float: the angle between the entity and the mouse cursor
+    """
+
     mouseX, mouseY = pygame.mouse.get_pos()
     length_to_x = mouseX - entity.rect.x - 32
     length_to_y = mouseY - entity.rect.y - 32
@@ -59,6 +72,16 @@ def get_angle_to_mouse(entity):
                 return angle_to_mouse
             
 def get_angle_to_entity(selfEntity, targetEntity):
+    """Returns the angle between two different entities
+
+    Args:
+        selfEntity (pygame.sprite.Sprite): the entity to reference the angle from
+        targetEntity (pygame.sprite.Sprite): the entity to measure from the reference
+
+    Returns:
+        float: the angle between the two given entities
+    """
+
     length_to_x = (targetEntity.pos.x - (0.5 * targetEntity.image.get_width())) - (selfEntity.pos.x - (0.5 * selfEntity.image.get_width()))
     length_to_y = (targetEntity.pos.y - (0.5 * targetEntity.image.get_height())) - (selfEntity.pos.y - (0.5 * selfEntity.image.get_height()))
     if length_to_x and length_to_y != 0:
@@ -81,12 +104,32 @@ def get_angle_to_entity(selfEntity, targetEntity):
                 return angle_to_mouse
             
 def get_dist_to_entity(selfEntity, targetEntity):
+    """Returns the distance between two entities
+
+    Args:
+        selfEntity (pygame.sprite.Sprite): the entity to start the measurement from
+        targetEntity (pygame.sprite.Sprite): the second entity to measure to from the first
+
+    Returns:
+        float: distance between selfEntity and targetEntity
+    """
+
     length_to_x = (targetEntity.pos.x - (0.5 * targetEntity.image.get_width())) - (selfEntity.pos.x - (0.5 * selfEntity.image.get_width()))
     length_to_y = (targetEntity.pos.y - (0.5 * targetEntity.image.get_height())) - (selfEntity.pos.y - (0.5 * selfEntity.image.get_height()))
     
     return math.sqrt((length_to_x**2) + (length_to_y**2))
 
 def get_angle_vel(velX, velY):
+    """Returns the angle of a resultant vector
+
+    Args:
+        velX (float): the x-axis component of the vector
+        velY (float): the y-axis component of the vector
+
+    Returns:
+        float: returns the angle of the resultant vector (in degrees)
+    """
+    
     if velX and velY != 0:
         vel_angle = -math.degrees(math.atan2(velY, velX)) - 90
         return vel_angle
@@ -106,27 +149,43 @@ def get_angle_vel(velX, velY):
                 vel_angle = 0
                 return vel_angle
 
-def collideCheck(object, contact_list):
+def collideCheck(entity, contact_list):
+    """Check if an entity comes into contact with an entity from a specific group.
+    If the entities do collide, the entities will perform a hitbox collision.
+
+    Args:
+        object (_type_): _description_
+        contact_list (_type_): _description_
+    """
+    
     global timer
-    # When in a collision with an entity
     for entity in contact_list:
-        if object.hitbox.colliderect(entity.hitbox):
-            if object.pos.y < (entity.pos.y + (0.5 * entity.hitbox.height) + 1) and object.pos.y > (entity.pos.y - (0.5 * entity.hitbox.height) - 1):
-                if object.pos.x > entity.pos.x:
-                    object.vel.x = 0
-                    object.pos.x += 1
+        if entity.hitbox.colliderect(entity.hitbox):
+            if entity.pos.y < (entity.pos.y + (0.5 * entity.hitbox.height) + 1) and entity.pos.y > (entity.pos.y - (0.5 * entity.hitbox.height) - 1):
+                if entity.pos.x > entity.pos.x:
+                    entity.vel.x = 0
+                    entity.pos.x += 1
                 else:
-                    object.vel.x = 0
-                    object.pos.x -= 1
-            if object.pos.x > (entity.pos.x - (0.5 * entity.hitbox.width) - 1) and object.pos.x < (entity.pos.x + (0.5 * entity.hitbox.width) + 1):
-                if object.pos.y < entity.pos.y:
-                    object.vel.y = 0
-                    object.pos.y -= 1
+                    entity.vel.x = 0
+                    entity.pos.x -= 1
+            if entity.pos.x > (entity.pos.x - (0.5 * entity.hitbox.width) - 1) and entity.pos.x < (entity.pos.x + (0.5 * entity.hitbox.width) + 1):
+                if entity.pos.y < entity.pos.y:
+                    entity.vel.y = 0
+                    entity.pos.y -= 1
                 else:
-                    object.vel.y = 0
-                    object.pos.y += 1
+                    entity.vel.y = 0
+                    entity.pos.y += 1
 
 def getClosestPlayer(selfEntity):
+    """Returns the closest player entity from another given entity
+
+    Args:
+        selfEntity (pygame.sprite.Sprite): the entity to locate the closest player from
+
+    Returns:
+        pygame.sprite.Sprite: the closest player entity to selfEntity
+    """
+
     playerCoords = {}
     for a_player in all_players:
         playerCoords[a_player] = get_dist_to_entity(selfEntity, a_player)
@@ -137,20 +196,56 @@ def getClosestPlayer(selfEntity):
     return result[0]
 
 def calculateDamage(sender, receiver, projectile):
+    """Calculates the damage an entity receives after being hit
+
+    Args:
+        sender (pygame.sprite.Sprite): the entity that shot the projectile
+        receiver (pygame.sprite.Sprite): the entity that got shot
+        projectile (pygame.sprite.Sprite): the projectile the receiver got hit by
+
+    Returns:
+        int: infliction damage upon receiver
+    """
+
     return math.ceil(((sender.attack / receiver.defense) * projectile.damage))
 
 def awardXp(enemy):
+    """Give all players an enemy's xp worth after it is killed
+
+    Args:
+        enemy (pygame.sprite.Sprite): the enemy that has been killed
+    """
+    
     for a_player in all_players:
         a_player.xp += enemy.xp_worth
 
 ## Sprite functions
-# Gets the topleft x val of a sprite that is centered at its middle
 def getTopleftX(sprite, desired_x):
+    """Returns the topleft x-value of a sprite that is centered at its middle
+
+    Args:
+        sprite (pygame.sprite.Sprite): the sprite to get the topleft x-value location for
+        desired_x (int): the x-value of the desired location of the sprite's topleft corner
+
+    Returns:
+        int: x-value of the sprite's location from its center, where its topleft corner will be along its desired x-axis location
+    """
+
     width = sprite.image.get_width()
     return (width / 2) + desired_x
 
 # Gets the topleft y val of a sprite that is centered at its middle
 def getTopleftY(sprite, desired_y):
+    """Returns the topleft y-value of a sprite that is centered at its middle
+
+    Args:
+        sprite (pygame.sprite.Sprite): the sprite to get the topleft y-value location for
+        desired_x (int): the y-value of the desired location of the sprite's topleft corner
+
+    Returns:
+        int: y-value of the sprite's location from its center, where its topleft corner will be along its desired y-axis location
+    """
+
     height = sprite.image.get_height()
     return (height / 2) + desired_y
 
@@ -268,15 +363,15 @@ class Player(PlayerBase):
     def shoot(self, vel, cannonSide, bulletType=cst.PROJ_BULLET):
         angle_to_mouse = get_angle_to_mouse(self)
 
-        vel_x = vel * -math.sin(math.radians(angle_to_mouse))
-        vel_y = vel * -math.cos(math.radians(angle_to_mouse))
+        vel_x = vel * -sin(rad(angle_to_mouse))
+        vel_y = vel * -cos(rad(angle_to_mouse))
 
         if cannonSide == cst.SHOOT_LEFT:
-            players_projectiles.add(Projectile(self, self.pos.x - (21 * math.cos(math.radians(angle_to_mouse))) - (30 * math.sin(math.radians(angle_to_mouse))), self.pos.y + (21 * math.sin(math.radians(angle_to_mouse))) - (30 * math.cos(math.radians(angle_to_mouse))), self.roomCoords.x, self.roomCoords.y, vel_x, vel_y, cst.DMG_BULLET, bulletType))
+            players_projectiles.add(Projectile(self, self.pos.x - (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y + (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, cst.DMG_BULLET, bulletType))
         elif cannonSide == cst.SHOOT_RIGHT:
-            players_projectiles.add(Projectile(self, self.pos.x + (21 * math.cos(math.radians(angle_to_mouse))) - (30 * math.sin(math.radians(angle_to_mouse))), self.pos.y - (21 * math.sin(math.radians(angle_to_mouse))) - (30 * math.cos(math.radians(angle_to_mouse))), self.roomCoords.x, self.roomCoords.y, vel_x, vel_y, cst.DMG_BULLET, bulletType))
+            players_projectiles.add(Projectile(self, self.pos.x + (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y - (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, cst.DMG_BULLET, bulletType))
         elif cannonSide == cst.SHOOT_MIDDLE:
-            players_projectiles.add(Projectile(self, self.pos.x, self.pos.y, self.roomCoords.x, self.roomCoords.y, vel_x, vel_y, self.attack, bulletType))
+            players_projectiles.add(Projectile(self, self.pos.x, self.pos.y, vel_x, vel_y, self.attack, bulletType))
 
     def update(self):
         global timer
@@ -366,7 +461,7 @@ class StandardGrunt(EnemyBase):
         self.defense = self.max_defense
         self.xp_worth = xp_worth
 
-    def rand_movement(self, canShoot, bulletType):
+    def rand_movement(self, canShoot):
         if (
             self.hp > 0 and 
             self.pos.x > 0 and
@@ -400,7 +495,7 @@ class StandardGrunt(EnemyBase):
                     self.accel.y = 0
             
             if canShoot == True:
-                self.shoot(getClosestPlayer(self), 5, rand.randint(20, 30), bulletType)
+                self.shoot(getClosestPlayer(self), 5, rand.randint(20, 30), cst.PROJ_BULLET)
             else:
                 pass
 
@@ -410,10 +505,10 @@ class StandardGrunt(EnemyBase):
             self.is_shooting = True
             angle_to_mouse = get_angle_to_entity(self, target)
 
-            vel_x = vel * -math.sin(math.radians(angle_to_mouse))
-            vel_y = vel * -math.cos(math.radians(angle_to_mouse))
+            vel_x = vel * -sin(rad(angle_to_mouse))
+            vel_y = vel * -cos(rad(angle_to_mouse))
 
-            enemy_projectiles.add(Projectile(self, self.pos.x - (21 * math.cos(math.radians(angle_to_mouse))) - (30 * math.sin(math.radians(angle_to_mouse))), self.pos.y + (21 * math.sin(math.radians(angle_to_mouse))) - (30 * math.cos(math.radians(angle_to_mouse))), self.roomCoords.x, self.roomCoords.y, vel_x, vel_y, cst.DMG_BULLET, bulletType))
+            enemy_projectiles.add(Projectile(self, self.pos.x - (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y + (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, cst.DMG_BULLET, bulletType))
 
     def update(self):
         global timer
@@ -478,7 +573,7 @@ class OctoGrunt(EnemyBase):
         self.defense = self.max_defense
         self.xp_worth = xp_worth
 
-    def rand_movement(self, canShoot, bulletType):
+    def rand_movement(self, canShoot):
         if (
             self.hp > 0 and 
             self.pos.x > 0 and
@@ -512,7 +607,7 @@ class OctoGrunt(EnemyBase):
                     self.accel.y = 0
             
             if canShoot == True:
-                self.shoot(getClosestPlayer(enemy), 5, 80, bulletType)
+                self.shoot(getClosestPlayer(enemy), 5, 80, cst.PROJ_BULLET)
             else:
                 pass
 
@@ -520,22 +615,26 @@ class OctoGrunt(EnemyBase):
         global timer
         if timer % shoot_time == 0 and self.hp > 0:
             self.is_shooting = True
-            angle_to_mouse = get_angle_to_entity(self, target)
+            angle_to_target = get_angle_to_entity(self, target)
 
-            vel_x = vel * -math.sin(math.radians(angle_to_mouse))
-            vel_y = vel * -math.cos(math.radians(angle_to_mouse))
+            vel_x = vel * -sin(rad(angle_to_target))
+            vel_y = vel * -cos(rad(angle_to_target))
 
-            enemy_projectiles.add(Projectile(self, self.pos.x, self.pos.y, self.roomCoords.x, self.roomCoords.y, vel_x, vel_y, cst.DMG_BULLET, bulletType))
-            enemy_projectiles.add(Projectile(self, self.pos.x, self.pos.y, self.roomCoords.x, self.roomCoords.y, -vel_x, -vel_y, cst.DMG_BULLET, bulletType))
+            OFFSET = 21
 
-            enemy_projectiles.add(Projectile(self, self.pos.x, self.pos.y, self.roomCoords.x, self.roomCoords.y, vel * -math.sin(math.radians(angle_to_mouse + 90)), vel * -math.cos(math.radians(angle_to_mouse + 90)), cst.DMG_BULLET, bulletType))
-            enemy_projectiles.add(Projectile(self, self.pos.x, self.pos.y, self.roomCoords.x, self.roomCoords.y, -vel * -math.sin(math.radians(angle_to_mouse + 90)), -vel * -math.cos(math.radians(angle_to_mouse + 90)), cst.DMG_BULLET, bulletType))
-    
-            enemy_projectiles.add(Projectile(self, self.pos.x, self.pos.y, self.roomCoords.x, self.roomCoords.y, vel * -math.sin(math.radians(angle_to_mouse + 45)), vel * -math.cos(math.radians(angle_to_mouse + 45)), cst.DMG_BULLET, bulletType))
-            enemy_projectiles.add(Projectile(self, self.pos.x, self.pos.y, self.roomCoords.x, self.roomCoords.y, -vel * -math.sin(math.radians(angle_to_mouse + 45)), -vel * -math.cos(math.radians(angle_to_mouse + 45)), cst.DMG_BULLET, bulletType))
+            enemy_projectiles.add(
+                Projectile(self, self.pos.x - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))), vel_x, vel_y, cst.DMG_BULLET, bulletType),
+                Projectile(self, self.pos.x + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))), -vel_x, -vel_y, cst.DMG_BULLET, bulletType),
 
-            enemy_projectiles.add(Projectile(self, self.pos.x, self.pos.y, self.roomCoords.x, self.roomCoords.y, vel * -math.sin(math.radians(angle_to_mouse - 45)), vel * -math.cos(math.radians(angle_to_mouse - 45)), cst.DMG_BULLET, bulletType))
-            enemy_projectiles.add(Projectile(self, self.pos.x, self.pos.y, self.roomCoords.x, self.roomCoords.y, -vel * -math.sin(math.radians(angle_to_mouse - 45)), -vel * -math.cos(math.radians(angle_to_mouse - 45)), cst.DMG_BULLET, bulletType))
+                Projectile(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))), self.pos.y + (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target + 90)), vel * -cos(rad(angle_to_target + 90)), cst.DMG_BULLET, bulletType),
+                Projectile(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))), self.pos.y - (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target + 90)), -vel * -cos(rad(angle_to_target + 90)), cst.DMG_BULLET, bulletType),
+
+                Projectile(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target + 45)), vel * -cos(rad(angle_to_target + 45)), cst.DMG_BULLET, bulletType),
+                Projectile(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target + 45)), -vel * -cos(rad(angle_to_target + 45)), cst.DMG_BULLET, bulletType),
+
+                Projectile(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))), vel * -sin(rad(angle_to_target - 45)), vel * -cos(rad(angle_to_target - 45)), cst.DMG_BULLET, bulletType),
+                # Projectile(self, self.pos.x, self.pos.y, -vel * -sin(rad(angle_to_target - 45)), -vel * -cos(rad(angle_to_target - 45)), cst.DMG_BULLET, bulletType)
+            )
 
     def update(self):
         global timer
@@ -633,11 +732,11 @@ class DodgeBar(pygame.sprite.Sprite):
 
 #------------------------------ Projectile class ------------------------------#
 class Projectile(pygame.sprite.Sprite):
-    def __init__(self, shotFrom, x, y, roomCoordsX, roomCoordsY, velX, velY, bulletDamage, bulletType):
+    def __init__(self, shotFrom, x, y, velX, velY, bulletDamage, bulletType):
         super().__init__()
         all_sprites.add(self)
 
-        self.roomCoords = vec((roomCoordsX, roomCoordsY))
+        self.roomCoords = vec((0, 0))
 
         self.pos = vec((x, y))
         self.vel = vec(velX, velY)
@@ -807,8 +906,8 @@ class Room(pygame.sprite.AbstractGroup):
         self.sprites.draw(displaySurface)
 
 #------------------------------ Redraw game window ------------------------------#
-# Destroy projectile upon collision and add explosion
 def projectileCollide(entityGroup, projectile, projGroup, canHurt = False):
+    """Destroy the given projectile upon collision and render an explosion"""
     for entity in entityGroup:
         if entity.hitbox.colliderect(projectile.hitbox):
             if canHurt == True:
@@ -824,8 +923,8 @@ def projectileCollide(entityGroup, projectile, projGroup, canHurt = False):
             except:
                 pass
 
-# Binds projectiles to their shooter and confines them to window borders
 def bindProjectile(projectile, projGroup, projTargetGroup):
+    """Binds a projectile to its shooter and confines it to the window borders"""
     displaySurface.blit(projectile.image, projectile.rect)
     if (
         projectile.pos.x < cst.WINDOW_WIDTH and 
@@ -911,7 +1010,6 @@ print(pygame.display.get_desktop_sizes())
 running = True
 while running:
     timer += 1
-    print(all_sprites.get_layer_of_sprite(player))
 
     for event in pygame.event.get():
         keyPressed = pygame.key.get_pressed()
@@ -968,7 +1066,7 @@ while running:
 
     # Random enemy movement for testing purposes
     for enemy in all_enemies:
-        enemy.rand_movement(True, cst.PROJ_BULLET)
+        enemy.rand_movement(True)
 
     # Regenerate health for testing purposes
     for a_player in all_players:
