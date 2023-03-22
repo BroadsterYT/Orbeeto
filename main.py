@@ -154,8 +154,8 @@ def collideCheck(entity, contact_list):
     If the entities do collide, the entities will perform a hitbox collision.
 
     Args:
-        entity (_type_): The instigator of the collision
-        contact_list (_type_): The group to check for collisions with the instigator
+        entity (pygame.sprite.Sprite): The instigator of the collision
+        contact_list (pygame.sprite.Group): The group to check for collisions with the instigator
     """
     
     global timer
