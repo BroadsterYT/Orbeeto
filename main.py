@@ -869,8 +869,8 @@ class Room(pygame.sprite.AbstractGroup):
     """The room where all the current action (a lot) is taking place
 
     Args:
-        roomCoordsX (_type_): The room's x-axis location in the grid of the room layout
-        roomCoordsY (_type_): The room's y-axis location in the grid of the room layout
+        roomCoordsX (int): The room's x-axis location in the grid of the room layout
+        roomCoordsY (int): The room's y-axis location in the grid of the room layout
     """
         
     def __init__(self, roomCoordsX, roomCoordsY):
