@@ -907,7 +907,15 @@ class Room(pygame.sprite.AbstractGroup):
 
 #------------------------------ Redraw game window ------------------------------#
 def projectileCollide(entityGroup, projectile, projGroup, canHurt = False):
-    """Destroy the given projectile upon collision and render an explosion"""
+    """Destroys a given projectile upon a collision and renders an explosion
+
+    Args:
+        entityGroup (pygame.sprite.Group): the group of the entity the projectile is colliding with
+        projectile (pygame.sprite.Sprite): the projectile involved in the collision
+        projGroup (pygame.sprite.Group): the group of the projectile from which it was shot from (ex. players_projectiles)
+        canHurt (bool): should the projectile calculate damage upon impact? Defaults to False.
+    """
+
     for entity in entityGroup:
         if entity.hitbox.colliderect(projectile.hitbox):
             if canHurt == True:
@@ -924,7 +932,14 @@ def projectileCollide(entityGroup, projectile, projGroup, canHurt = False):
                 pass
 
 def bindProjectile(projectile, projGroup, projTargetGroup):
-    """Binds a projectile to its shooter and confines it to the window borders"""
+    """Binds a projectile to its shooter and confines it to the window borders
+
+    Args:
+        projectile (pygame.sprite.Sprite): _description_
+        projGroup (pygame.sprite.Group): _description_
+        projTargetGroup (pygame.sprite.Group): _description_
+    """
+
     displaySurface.blit(projectile.image, projectile.rect)
     if (
         projectile.pos.x < cst.WINDOW_WIDTH and 
