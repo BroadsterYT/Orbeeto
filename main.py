@@ -149,7 +149,7 @@ def get_angle_vel(velX, velY):
                 vel_angle = 0
                 return vel_angle
 
-def collideCheck(entity, contact_list):
+def collideCheck(object, contact_list):
     """Check if an entity comes into contact with an entity from a specific group.
     If the entities do collide, the entities will perform a hitbox collision.
 
@@ -160,21 +160,21 @@ def collideCheck(entity, contact_list):
     
     global timer
     for entity in contact_list:
-        if entity.hitbox.colliderect(entity.hitbox):
-            if entity.pos.y < (entity.pos.y + (0.5 * entity.hitbox.height) + 1) and entity.pos.y > (entity.pos.y - (0.5 * entity.hitbox.height) - 1):
-                if entity.pos.x > entity.pos.x:
-                    entity.vel.x = 0
-                    entity.pos.x += 1
+        if object.hitbox.colliderect(entity.hitbox):
+            if object.pos.y < (entity.pos.y + (0.5 * entity.hitbox.height) + 1) and object.pos.y > (entity.pos.y - (0.5 * entity.hitbox.height) - 1):
+                if object.pos.x > entity.pos.x:
+                    object.vel.x = 0
+                    object.pos.x += 1
                 else:
-                    entity.vel.x = 0
-                    entity.pos.x -= 1
-            if entity.pos.x > (entity.pos.x - (0.5 * entity.hitbox.width) - 1) and entity.pos.x < (entity.pos.x + (0.5 * entity.hitbox.width) + 1):
-                if entity.pos.y < entity.pos.y:
-                    entity.vel.y = 0
-                    entity.pos.y -= 1
+                    object.vel.x = 0
+                    object.pos.x -= 1
+            if object.pos.x > (entity.pos.x - (0.5 * entity.hitbox.width) - 1) and object.pos.x < (entity.pos.x + (0.5 * entity.hitbox.width) + 1):
+                if object.pos.y < entity.pos.y:
+                    object.vel.y = 0
+                    object.pos.y -= 1
                 else:
-                    entity.vel.y = 0
-                    entity.pos.y += 1
+                    object.vel.y = 0
+                    object.pos.y += 1
 
 def getClosestPlayer(selfEntity):
     """Returns the closest player entity from another given entity
@@ -234,7 +234,6 @@ def getTopleftX(sprite, desired_x):
     width = sprite.image.get_width()
     return (width / 2) + desired_x
 
-# Gets the topleft y val of a sprite that is centered at its middle
 def getTopleftY(sprite, desired_y):
     """Returns the topleft y-value of a sprite that is centered at its middle
 
@@ -623,14 +622,14 @@ class OctoGrunt(EnemyBase):
             OFFSET = 21
 
             enemy_projectiles.add(
-                Projectile(self, self.pos.x - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))), vel_x, vel_y, cst.DMG_BULLET, bulletType),
-                Projectile(self, self.pos.x + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))), -vel_x, -vel_y, cst.DMG_BULLET, bulletType),
+                # Projectile(self, self.pos.x - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))), vel_x, vel_y, cst.DMG_BULLET, bulletType),
+                # Projectile(self, self.pos.x + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))), -vel_x, -vel_y, cst.DMG_BULLET, bulletType),
 
-                Projectile(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))), self.pos.y + (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target + 90)), vel * -cos(rad(angle_to_target + 90)), cst.DMG_BULLET, bulletType),
-                Projectile(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))), self.pos.y - (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target + 90)), -vel * -cos(rad(angle_to_target + 90)), cst.DMG_BULLET, bulletType),
+                # Projectile(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))), self.pos.y + (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target + 90)), vel * -cos(rad(angle_to_target + 90)), cst.DMG_BULLET, bulletType),
+                # Projectile(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))), self.pos.y - (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target + 90)), -vel * -cos(rad(angle_to_target + 90)), cst.DMG_BULLET, bulletType),
 
-                Projectile(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target + 45)), vel * -cos(rad(angle_to_target + 45)), cst.DMG_BULLET, bulletType),
-                Projectile(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target + 45)), -vel * -cos(rad(angle_to_target + 45)), cst.DMG_BULLET, bulletType),
+                # Projectile(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target + 45)), vel * -cos(rad(angle_to_target + 45)), cst.DMG_BULLET, bulletType),
+                # Projectile(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target + 45)), -vel * -cos(rad(angle_to_target + 45)), cst.DMG_BULLET, bulletType),
 
                 Projectile(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))), vel * -sin(rad(angle_to_target - 45)), vel * -cos(rad(angle_to_target - 45)), cst.DMG_BULLET, bulletType),
                 # Projectile(self, self.pos.x, self.pos.y, -vel * -sin(rad(angle_to_target - 45)), -vel * -cos(rad(angle_to_target - 45)), cst.DMG_BULLET, bulletType)
