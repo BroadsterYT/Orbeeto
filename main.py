@@ -21,7 +21,7 @@ FPS = 60
 framePerSec = pygame.time.Clock()
 
 screenSize = (cst.WINDOW_WIDTH, cst.WINDOW_HEIGHT)
-displaySurface = pygame.display.set_mode(screenSize, pygame.SCALED)
+screen = pygame.display.set_mode(screenSize, pygame.SCALED)
 pygame.display.set_caption('Orbeeto')
 
 all_sprites = pygame.sprite.LayeredUpdates()
@@ -34,6 +34,8 @@ all_projectiles = []
 players_projectiles = spriteGroup()
 enemy_projectiles = spriteGroup()
 all_explosions = spriteGroup()
+
+all_portals = spriteGroup()
 
 all_walls = spriteGroup()
 
@@ -215,7 +217,6 @@ def awardXp(enemy):
     Args:
         enemy (pygame.sprite.Sprite): The enemy that has been killed
     """
-    
     for a_player in all_players:
         a_player.xp += enemy.xp_worth
 
@@ -328,6 +329,9 @@ class Player(PlayerBase):
         self.rect = pygame.Rect(200, 400, 64, 64)
         self.hitbox = self.rect.inflate(hitbox_adjustX, hitbox_adjustY)
 
+        self.last_tp_time = 0
+        self.portal_dir_toggle = False
+
     def movement(self):
         self.accel = vec(0, 0)
         keyPressed = pygame.key.get_pressed()
@@ -359,18 +363,35 @@ class Player(PlayerBase):
         if self.pos.y <= 0:
             self.pos.y = 0
 
-    def shoot(self, vel, cannonSide, bulletType=cst.PROJ_BULLET):
+    def teleport(self):
+        currentTime = pygame.time.get_ticks()
+        if len(all_portals) >= 2 and currentTime - self.last_tp_time >= 1000:
+            portalTemp = all_portals.sprites()
+            if self.hitbox.colliderect(portalTemp[0].hitbox):
+                self.pos = portalTemp[1].pos
+                self.last_tp_time = currentTime
+
+            elif self.hitbox.colliderect(portalTemp[1].hitbox):
+                self.pos = portalTemp[0].pos
+                self.last_tp_time = currentTime
+
+            del portalTemp
+
+    def shoot(self, vel, cannonSide, bulletType=cst.PROJ_P_STD):
         angle_to_mouse = get_angle_to_mouse(self)
 
         vel_x = vel * -sin(rad(angle_to_mouse))
         vel_y = vel * -cos(rad(angle_to_mouse))
 
-        if cannonSide == cst.SHOOT_LEFT:
-            players_projectiles.add(Projectile(self, self.pos.x - (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y + (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, cst.DMG_BULLET, bulletType))
-        elif cannonSide == cst.SHOOT_RIGHT:
-            players_projectiles.add(Projectile(self, self.pos.x + (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y - (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, cst.DMG_BULLET, bulletType))
+        if is_leftMouse_held == True:
+            if timer % a_player.gun_cooldown == 0:
+                players_projectiles.add(
+                    Projectile(self, self.pos.x - (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y + (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, bulletType),
+                    Projectile(self, self.pos.x + (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y - (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, bulletType)
+                )
+
         elif cannonSide == cst.SHOOT_MIDDLE:
-            players_projectiles.add(Projectile(self, self.pos.x, self.pos.y, vel_x, vel_y, self.attack, bulletType))
+            players_projectiles.add(Projectile(self, self.pos.x, self.pos.y, vel_x, vel_y, bulletType))
 
     def update(self):
         global timer
@@ -394,11 +415,14 @@ class Player(PlayerBase):
         # Rotate sprite to mouse and draw hitbox
         self.image = pygame.transform.rotate(self.original_image, int(get_angle_to_mouse(self)))
         self.rect = self.image.get_rect(center = self.rect.center)
+        pygame.draw.rect(screen, (0, 255, 0), self.hitbox, 1)
 
         # Gameplay
         stats.updateLevel(self)
         if self.hp <= 0:
             self.kill()
+
+        # print("pos: " + str(self.pos) + "\nvel: " + str(self.vel) + "\naccel: " + str(self.accel))
 
 #------------------------------ Enemy classes ------------------------------#
 class EnemyBase(pygame.sprite.Sprite):
@@ -494,7 +518,7 @@ class StandardGrunt(EnemyBase):
                     self.accel.y = 0
             
             if canShoot == True:
-                self.shoot(getClosestPlayer(self), 5, rand.randint(20, 30), cst.PROJ_BULLET)
+                self.shoot(getClosestPlayer(self), 5, rand.randint(20, 30), cst.PROJ_P_STD)
             else:
                 pass
 
@@ -507,7 +531,7 @@ class StandardGrunt(EnemyBase):
             vel_x = vel * -sin(rad(angle_to_mouse))
             vel_y = vel * -cos(rad(angle_to_mouse))
 
-            enemy_projectiles.add(Projectile(self, self.pos.x - (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y + (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, cst.DMG_BULLET, bulletType))
+            enemy_projectiles.add(Projectile(self, self.pos.x - (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y + (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, bulletType))
 
     def update(self):
         global timer
@@ -606,7 +630,7 @@ class OctoGrunt(EnemyBase):
                     self.accel.y = 0
             
             if canShoot == True:
-                self.shoot(getClosestPlayer(enemy), 5, 80, cst.PROJ_BULLET)
+                self.shoot(getClosestPlayer(enemy), 5, 80, cst.PROJ_P_STD)
             else:
                 pass
 
@@ -622,17 +646,17 @@ class OctoGrunt(EnemyBase):
             OFFSET = 21
 
             enemy_projectiles.add(
-                Projectile(self, self.pos.x - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))), vel_x, vel_y, cst.DMG_BULLET, bulletType),
-                Projectile(self, self.pos.x + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))), -vel_x, -vel_y, cst.DMG_BULLET, bulletType),
+                Projectile(self, self.pos.x - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))), vel_x, vel_y, bulletType),
+                Projectile(self, self.pos.x + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))), -vel_x, -vel_y, bulletType),
 
-                Projectile(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))), self.pos.y + (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target + 90)), vel * -cos(rad(angle_to_target + 90)), cst.DMG_BULLET, bulletType),
-                Projectile(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))), self.pos.y - (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target + 90)), -vel * -cos(rad(angle_to_target + 90)), cst.DMG_BULLET, bulletType),
+                Projectile(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))), self.pos.y + (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target + 90)), vel * -cos(rad(angle_to_target + 90)), bulletType),
+                Projectile(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))), self.pos.y - (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target + 90)), -vel * -cos(rad(angle_to_target + 90)), bulletType),
 
-                Projectile(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target + 45)), vel * -cos(rad(angle_to_target + 45)), cst.DMG_BULLET, bulletType),
-                Projectile(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target + 45)), -vel * -cos(rad(angle_to_target + 45)), cst.DMG_BULLET, bulletType),
+                Projectile(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target + 45)), vel * -cos(rad(angle_to_target + 45)), bulletType),
+                Projectile(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target + 45)), -vel * -cos(rad(angle_to_target + 45)), bulletType),
 
-                Projectile(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target - 45)), vel * -cos(rad(angle_to_target - 45)), cst.DMG_BULLET, bulletType),
-                Projectile(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target - 45)), -vel * -cos(rad(angle_to_target - 45)), cst.DMG_BULLET, bulletType),
+                Projectile(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target - 45)), vel * -cos(rad(angle_to_target - 45)), bulletType),
+                Projectile(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target - 45)), -vel * -cos(rad(angle_to_target - 45)), bulletType),
             )
 
     def update(self):
@@ -731,24 +755,38 @@ class DodgeBar(pygame.sprite.Sprite):
 
 #------------------------------ Projectile class ------------------------------#
 class Projectile(pygame.sprite.Sprite):
-    def __init__(self, shotFrom, x, y, velX, velY, bulletDamage, bulletType):
+    def __init__(self, shotFrom, posX, posY, velX, velY, bulletType, ricochet = False):
+        """An object that travels at a specific velocity
+
+        Args:
+            shotFrom (pygame.sprite.Sprite): The entity the bullet was shot from
+            posX (int): The x-position where the projectile will spawn
+            posY (int): The y-position where the projectile will spawn
+            velX (int): The x-axis component of the projectile's velocity
+            velY (int): The y-axis component of the projectile's velocity
+            bulletType (str): The type of projectile to fire
+            ricochet (bool): Can the projectile ricochet off walls? Defaults to False.
+        """
         super().__init__()
         all_sprites.add(self)
 
-        self.roomCoords = vec((0, 0))
-
-        self.pos = vec((x, y))
+        self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
 
         self.type = bulletType
         self.hitbox_adjust = vec(0, 0)
 
-        if self.type == cst.PROJ_BULLET:
+        if self.type == cst.PROJ_P_STD:
             self.hitbox_adjust = vec(-2, -2)
-        elif self.type == cst.PROJ_PORTAL:
+            self.damage = cst.PROJ_DICT[cst.PROJ_P_STD]
+
+        elif self.type == cst.PROJ_P_PORTAL:
             self.hitbox_adjust = vec(0, 0)
+            self.damage = cst.PROJ_DICT[cst.PROJ_P_PORTAL]
+
         else:
             self.hitbox_adjust = vec(0, 0)
+            self.damage = 0
 
         self.spritesheet = ss.SpriteSheet("sprites/bullets/bullets.png")
         self.images = self.spritesheet.getImages(0, 0, 32, 32, 4)
@@ -770,7 +808,6 @@ class Projectile(pygame.sprite.Sprite):
 
         # Game stats
         self.shotFrom = shotFrom
-        self.damage = bulletDamage
     
     def movement(self):
         self.pos.x += self.vel.x
@@ -780,13 +817,13 @@ class Projectile(pygame.sprite.Sprite):
         self.hitbox.center = self.pos
 
     def update(self):
-        if self.type == cst.PROJ_BULLET:
+        if self.type == cst.PROJ_P_STD:
             self.spritesheet = ss.SpriteSheet("sprites/bullets/bullets.png")
             self.images = self.spritesheet.getImages(0, 0, 32, 32, 4)
             self.original_images = self.spritesheet.getImages(0, 0, 32, 32, 4)
             self.hitbox_adjust = vec(-8, -8)
 
-        if self.type == cst.PROJ_PORTAL:
+        if self.type == cst.PROJ_P_PORTAL:
             self.images = self.spritesheet.getImages(0, 0, 32, 32, 5, 4)
             self.original_images = self.spritesheet.getImages(0, 0, 32, 32, 5, 4)
             self.hitbox_adjust = vec(0, 0)
@@ -799,9 +836,74 @@ class Projectile(pygame.sprite.Sprite):
         
             self.image = self.images[self.index]
             self.original_image = self.original_images[self.index]
+
             # Rotate sprite to trajectory
             self.image = pygame.transform.rotate(self.original_image, int(get_angle_vel(self.vel.x, self.vel.y)))
             self.rect = self.image.get_rect(center = self.rect.center)
+
+#------------------------------ Portal class ------------------------------#
+class Portal(pygame.sprite.Sprite):
+    def __init__(self, posX, posY, facing=cst.BOTTOM):
+        """An intering means of transportation...
+
+        Args:
+            posX (int): Spawn location along x-axis
+            posY (int): Spawn location along y-axis
+            facing (str): Dir. of velocity after being expelled
+        """        
+        super().__init__()
+        
+        self.pos = vec((posX, posY))
+        self.facing = facing
+
+        self.spritesheet = ss.SpriteSheet("sprites/bullets/bullets.png")
+        self.images = self.spritesheet.getImages(0, 0, 32, 32, 1, 4)
+        self.index = 0
+        
+        self.image = self.images[self.index]
+        self.rect = pygame.Rect(self.pos.x, self.pos.y, 64, 64)
+        
+        self.rect = self.image.get_rect(center = self.rect.center)
+        self.rect.center = self.pos
+
+        self.hitbox = self.rect.inflate(-10, -10)
+    
+    def update(self):
+        pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 1)
+
+def portalCountCheck():
+    """If there are more than two portals present during gameplay, the oldest one will be deleted to make room for another one
+    """    
+    if len(all_portals) > 2:
+        portalTemp = all_portals.sprites()
+        del portalTemp[0]
+        all_portals.empty()
+        all_portals.add(portalTemp)
+
+def portalSideCheck(wall, portal):
+    """Checks for which side of a wall a portal hit and assigns it that value
+
+    Args:
+        wall (pygame.sprite.Sprite): The wall being hit
+        proj (pygame.sprite.Sprite): The projectile that is hitting the wall
+    """    
+
+    if wall.pos.x - 0.5 * wall.image.get_width() <= portal.pos.x <= wall.pos.x + 0.5 * wall.image.get_width() and portal.pos.y > wall.pos.y:
+        print("down")
+        return cst.DOWN
+    
+    elif wall.pos.x - 0.5 * wall.image.get_width() <= portal.pos.x <= wall.pos.x + 0.5 * wall.image.get_width() and portal.pos.y < wall.pos.y:
+        return cst.UP
+
+    elif wall.pos.y - 0.5 * wall.image.get_height() <= portal.pos.y <= wall.pos.y + 0.5 * wall.image.get_height() and portal.pos.x > wall.pos.x:
+        return cst.RIGHT
+    
+    elif wall.pos.y - 0.5 * wall.image.get_height() <= portal.pos.y <= wall.pos.y + 0.5 * wall.image.get_height() and portal.pos.x < wall.pos.x:
+        return cst.LEFT
+    
+    else:
+        print("ERROR")
+
 
 #------------------------------ Bullet explosion class ------------------------------#
 class BulletExplode(pygame.sprite.Sprite):
@@ -811,12 +913,12 @@ class BulletExplode(pygame.sprite.Sprite):
         all_sprites.change_layer(self, 1)
 
         self.bullet = bullet
-        self.type = bullet.type
+        self.type = self.bullet.type
         
         self.spritesheet = ss.SpriteSheet("sprites/bullets/bullets.png")
         self.index = 1
 
-        if self.type == cst.PROJ_BULLET:
+        if self.type == cst.PROJ_P_STD:
             self.images = self.spritesheet.getImages(0, 0, 32, 32, 4)
             self.original_images = self.spritesheet.getImages(0, 0, 32, 32, 4)
 
@@ -865,14 +967,14 @@ class Wall(pygame.sprite.Sprite):
 
 #------------------------------ Room class ------------------------------#
 class Room(pygame.sprite.AbstractGroup):
-    """The room where all the current action (a lot) is taking place
-
-    Args:
-        roomCoordsX (int): The room's x-axis location in the grid of the room layout
-        roomCoordsY (int): The room's y-axis location in the grid of the room layout
-    """
-        
     def __init__(self, roomCoordsX, roomCoordsY):
+        """The room where all the current action (a lot) is taking place
+
+        Args:
+            roomCoordsX (int): The room's x-axis location in the grid of the room layout
+            roomCoordsY (int): The room's y-axis location in the grid of the room layout
+        """
+
         super().__init__()
         all_rooms.append(self)
         self.roomCoords = vec((roomCoordsX, roomCoordsY))
@@ -908,7 +1010,7 @@ class Room(pygame.sprite.AbstractGroup):
                 Wall(28, 4, 4, 4)
             )
 
-        self.sprites.draw(displaySurface)
+        self.sprites.draw(screen)
 
 #------------------------------ Redraw game window ------------------------------#
 def projectileCollide(entityGroup, projectile, projGroup, canHurt = False):
@@ -920,16 +1022,20 @@ def projectileCollide(entityGroup, projectile, projGroup, canHurt = False):
         projGroup (pygame.sprite.Group): The group of the projectile from which it was shot from (ex. players_projectiles)
         canHurt (bool): Should the projectile calculate damage upon impact? Defaults to False.
     """
-
     for entity in entityGroup:
         if entity.hitbox.colliderect(projectile.hitbox):
             if canHurt == True:
                 entity.hp -= calculateDamage(projectile.shotFrom, entity, projectile)
-            # Try to add bullet explosion for projectile
-            try:
+
+            if projectile.type != cst.PROJ_P_PORTAL:
                 all_explosions.add(BulletExplode(projectile))
-            except:
-                print("Error: explosion error")
+
+            if projectile.type == cst.PROJ_P_PORTAL and entityGroup == all_walls:
+                side = portalSideCheck(entity, projectile)
+                print(side)
+                all_portals.add(Portal(projectile.pos.x, projectile.pos.y, side))
+                portalCountCheck()
+
             # Try to remove projectile
             try:
                 projGroup.remove(projectile)
@@ -945,7 +1051,7 @@ def bindProjectile(projectile, projGroup, projTargetGroup):
         projTargetGroup (pygame.sprite.Group): The group of the entities that should take damage from the given projectile
     """
 
-    displaySurface.blit(projectile.image, projectile.rect)
+    screen.blit(projectile.image, projectile.rect)
     if (
         projectile.pos.x < cst.WINDOW_WIDTH and 
         projectile.pos.x > 0 and
@@ -965,17 +1071,19 @@ def redrawGameWindow():
     global timer
     # Drawing all player characters every frame
     for a_player in all_players:
-        displaySurface.blit(a_player.image, a_player.rect)
+        screen.blit(a_player.image, a_player.rect)
         collideCheck(a_player, all_enemies)
         collideCheck(a_player, enemy_projectiles)
         collideCheck(a_player, all_walls)
 
         a_player.movement()
+        a_player.teleport()
+        a_player.shoot(12, None)
         a_player.update()
 
     # Drawing all enemies every frame
     for enemy in all_enemies:
-        displaySurface.blit(enemy.image, enemy.rect)
+        screen.blit(enemy.image, enemy.rect)
         collideCheck(enemy, all_players)
         collideCheck(enemy, players_projectiles)
         collideCheck(enemy, all_walls)
@@ -992,21 +1100,26 @@ def redrawGameWindow():
 
     # Drawing all explosions every frame
     for bullet in all_explosions:
-        displaySurface.blit(bullet.image, bullet.rect)
+        screen.blit(bullet.image, bullet.rect)
         bullet.update()
 
     # Drawing all stat bars every frame
     for statBar in all_stat_bars:
         all_sprites.move_to_front(statBar)
-        displaySurface.blit(statBar.image, statBar.rect)
+        screen.blit(statBar.image, statBar.rect)
         statBar.movement()
         statBar.update()
 
     # Drawing all walls every frame
     for wall in all_walls:
-        displaySurface.blit(wall.image, wall.rect)
+        screen.blit(wall.image, wall.rect)
         all_sprites.move_to_back(wall)
         wall.update()
+
+    # Drawing all portals every frame
+    for portal in all_portals:
+        screen.blit(portal.image, portal.rect)
+        portal.update()
 
     pygame.display.update()
 
@@ -1023,9 +1136,12 @@ is_leftMouse_held = False
 is_rightMouse_held = False
 is_middleMouse_held = False
 
-stats.loadXpRequirements()
+is_a_held = False
+is_w_held = False
+is_s_held = False
+is_d_held = False
 
-print(pygame.display.get_desktop_sizes())
+stats.loadXpRequirements()
 
 #------------------------------ Main loop ------------------------------#
 running = True
@@ -1043,24 +1159,42 @@ while running:
         
         if event.type == MOUSEBUTTONDOWN and event.button == 1:
             is_leftMouse_held = True
-
         if event.type == MOUSEBUTTONUP and event.button == 1:
             is_leftMouse_held = False
 
         if event.type == MOUSEBUTTONDOWN and event.button == 2:
             is_middleMouse_held = True
-
         if event.type == MOUSEBUTTONUP and event.button == 2:
             is_middleMouse_held = False
 
         if event.type == MOUSEBUTTONDOWN and event.button == 3:
             is_rightMouse_held = True
-            player.shoot(player.gun_cooldown / 2, cst.SHOOT_MIDDLE, cst.PROJ_PORTAL)
-
+            player.shoot(player.gun_cooldown / 2, cst.SHOOT_MIDDLE, cst.PROJ_P_PORTAL)
         if event.type == MOUSEBUTTONUP and event.button == 3:
             is_rightMouse_held = False
 
-    displaySurface.fill((255, 255, 255))
+        if event.type == KEYDOWN and event.key == K_a:
+            is_a_held = True
+        if event.type == KEYUP and event.key == K_a:
+            is_a_held = False
+
+        if event.type == KEYDOWN and event.key == K_w:
+            is_w_held = True
+        if event.type == KEYUP and event.key == K_w:
+            is_w_held = False
+
+        if event.type == KEYDOWN and event.key == K_s:
+            is_s_held = True
+        if event.type == KEYUP and event.key == K_s:
+            is_s_held = False
+
+        if event.type == KEYDOWN and event.key == K_d:
+            is_d_held = True
+        if event.type == KEYUP and event.key == K_d:
+            is_d_held = False
+
+
+    screen.fill((255, 255, 255))
 
     #------------------------------ Game operation ------------------------------#
     ## Changing rooms
@@ -1087,7 +1221,7 @@ while running:
 
     # Random enemy movement for testing purposes
     for enemy in all_enemies:
-        enemy.rand_movement(True)
+        enemy.rand_movement(False)
 
     # Regenerate health for testing purposes
     for a_player in all_players:
@@ -1095,13 +1229,6 @@ while running:
             a_player.hp += 2
         else:
             pass 
-
-    # Autofire timer
-    for a_player in all_players:
-        if timer % a_player.gun_cooldown == 0:
-            if is_leftMouse_held == True:
-                a_player.shoot(a_player.gun_speed, cst.SHOOT_LEFT, cst.PROJ_BULLET)
-                a_player.shoot(a_player.gun_speed, cst.SHOOT_RIGHT, cst.PROJ_BULLET)
 
     #------------------------------ Redraw window ------------------------------#
     redrawGameWindow()
