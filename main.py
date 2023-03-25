@@ -159,7 +159,6 @@ def collideCheck(object, contact_list):
         entity (pygame.sprite.Sprite): The instigator of the collision
         contact_list (pygame.sprite.Group): The group to check for collisions with the instigator
     """
-    
     global timer
     for entity in contact_list:
         if object.hitbox.colliderect(entity.hitbox):
@@ -219,6 +218,27 @@ def awardXp(enemy):
     """
     for a_player in all_players:
         a_player.xp += enemy.xp_worth
+
+def teleportLocation(a_player, portal_in):
+    for portal in all_portals:
+        if portal != portal_in:
+            other_portal = portal
+    if other_portal.facing == cst.DOWN:
+        a_player.pos.x = other_portal.pos.x
+        a_player.pos.y = other_portal.pos.y + 0.5 * (a_player.image.get_height())
+
+    elif other_portal.facing == cst.RIGHT:
+        a_player.pos.x = other_portal.pos.x + 0.5 * (a_player.image.get_width())
+        a_player.pos.y = other_portal.pos.y
+
+    elif other_portal.facing == cst.UP:
+        a_player.pos.x = other_portal.pos.x
+        a_player.pos.y = other_portal.pos.y - 0.5 * (a_player.image.get_height())
+
+    elif other_portal.facing == cst.LEFT:
+        a_player.pos.x = other_portal.pos.x - 0.5 * (a_player.image.get_width())
+        a_player.pos.y = other_portal.pos.y
+
 
 ## Sprite functions
 def getTopleftX(sprite, desired_x):
@@ -363,19 +383,8 @@ class Player(PlayerBase):
         if self.pos.y <= 0:
             self.pos.y = 0
 
-    def teleport(self):
-        currentTime = pygame.time.get_ticks()
-        if len(all_portals) >= 2 and currentTime - self.last_tp_time >= 1000:
-            portalTemp = all_portals.sprites()
-            if self.hitbox.colliderect(portalTemp[0].hitbox):
-                self.pos = portalTemp[1].pos
-                self.last_tp_time = currentTime
-
-            elif self.hitbox.colliderect(portalTemp[1].hitbox):
-                self.pos = portalTemp[0].pos
-                self.last_tp_time = currentTime
-
-            del portalTemp
+    def teleport(self, portal_in):
+        teleportLocation(self, portal_in)
 
     def shoot(self, vel, cannonSide, bulletType=cst.PROJ_P_STD):
         angle_to_mouse = get_angle_to_mouse(self)
@@ -867,7 +876,7 @@ class Portal(pygame.sprite.Sprite):
         self.rect.center = self.pos
 
         self.hitbox = self.rect.inflate(-10, -10)
-    
+
     def update(self):
         pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 1)
 
@@ -1050,7 +1059,6 @@ def bindProjectile(projectile, projGroup, projTargetGroup):
         projGroup (pygame.sprite.Group): The group of the projectile from which it was shot from (ex. players_projectiles)
         projTargetGroup (pygame.sprite.Group): The group of the entities that should take damage from the given projectile
     """
-
     screen.blit(projectile.image, projectile.rect)
     if (
         projectile.pos.x < cst.WINDOW_WIDTH and 
@@ -1077,9 +1085,12 @@ def redrawGameWindow():
         collideCheck(a_player, all_walls)
 
         a_player.movement()
-        a_player.teleport()
         a_player.shoot(12, None)
         a_player.update()
+
+        for portal in all_portals:
+            if a_player.hitbox.colliderect(portal.rect) and len(all_portals) == 2:
+                a_player.teleport(portal)
 
     # Drawing all enemies every frame
     for enemy in all_enemies:
