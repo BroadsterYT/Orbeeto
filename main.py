@@ -72,7 +72,7 @@ def get_angle_to_mouse(entity):
             else:
                 angle_to_mouse = 0
                 return angle_to_mouse
-            
+
 def get_angle_to_entity(selfEntity, targetEntity):
     """Returns the angle between two different entities
 
@@ -220,25 +220,52 @@ def awardXp(enemy):
         a_player.xp += enemy.xp_worth
 
 def teleportLocation(a_player, portal_in):
+    """Teleports a player between portals given the portal the player is entering
+
+    Args:
+        a_player (pygame.sprite.Sprite): The player entering the portal
+        portal_in (pygame.sprite.Sprite): The portal the player is entering
+    """    
     for portal in all_portals:
         if portal != portal_in:
             other_portal = portal
+    
+    a_player.portal_accel = True
+            
     if other_portal.facing == cst.DOWN:
         a_player.pos.x = other_portal.pos.x
-        a_player.pos.y = other_portal.pos.y + 0.5 * (a_player.image.get_height())
+        a_player.pos.y = other_portal.pos.y + other_portal.image.get_height()
+        a_player.accel = vec(0, 0)
+        a_player.vel = vec(0, 0)
 
     elif other_portal.facing == cst.RIGHT:
-        a_player.pos.x = other_portal.pos.x + 0.5 * (a_player.image.get_width())
+        a_player.pos.x = other_portal.pos.x + other_portal.image.get_width()
         a_player.pos.y = other_portal.pos.y
+        a_player.accel = vec(0, 0)
+        a_player.vel = vec(0, 0)
 
     elif other_portal.facing == cst.UP:
         a_player.pos.x = other_portal.pos.x
-        a_player.pos.y = other_portal.pos.y - 0.5 * (a_player.image.get_height())
+        a_player.pos.y = other_portal.pos.y - other_portal.image.get_height()
+        a_player.accel = vec(0, 0)
+        a_player.vel = vec(0, 0)
 
     elif other_portal.facing == cst.LEFT:
-        a_player.pos.x = other_portal.pos.x - 0.5 * (a_player.image.get_width())
+        a_player.pos.x = other_portal.pos.x - other_portal.image.get_width()
         a_player.pos.y = other_portal.pos.y
+        a_player.accel = vec(0, 0)
+        a_player.vel = vec(0, 0)
 
+def objectAccel(object):
+    """Defines accelearion for any object's movement
+
+    Args:
+        object (pygame.sprite.Sprite): Any sprite object
+    """    
+    object.accel.x += object.vel.x * cst.FRIC
+    object.accel.y += object.vel.y * cst.FRIC
+    object.vel += object.accel
+    object.pos += object.vel + object.accel_const * object.accel
 
 ## Sprite functions
 def getTopleftX(sprite, desired_x):
@@ -251,7 +278,6 @@ def getTopleftX(sprite, desired_x):
     Returns:
         int: x-value of the sprite's location from its center, where its topleft corner will be along its desired x-axis location
     """
-
     width = sprite.image.get_width()
     return (width / 2) + desired_x
 
@@ -265,7 +291,6 @@ def getTopleftY(sprite, desired_y):
     Returns:
         int: y-value of the sprite's location from its center, where its topleft corner will be along its desired y-axis location
     """
-
     height = sprite.image.get_height()
     return (height / 2) + desired_y
 
@@ -349,25 +374,20 @@ class Player(PlayerBase):
         self.rect = pygame.Rect(200, 400, 64, 64)
         self.hitbox = self.rect.inflate(hitbox_adjustX, hitbox_adjustY)
 
-        self.last_tp_time = 0
-        self.portal_dir_toggle = False
+        self.portal_accel = False
 
     def movement(self):
         self.accel = vec(0, 0)
-        keyPressed = pygame.key.get_pressed()
-        if keyPressed[K_a]:
+        if is_a_held == True:
             self.accel.x = -self.accel_const
-        if keyPressed[K_d]:
+        if is_d_held == True:
             self.accel.x = self.accel_const
-        if keyPressed[K_s]:
+        if is_s_held == True:
             self.accel.y = self.accel_const
-        if keyPressed[K_w]:
+        if is_w_held == True:
             self.accel.y = -self.accel_const
 
-        self.accel.x += self.vel.x * cst.FRIC
-        self.accel.y += self.vel.y * cst.FRIC
-        self.vel += self.accel
-        self.pos += self.vel + self.accel_const * self.accel
+        objectAccel(self)
 
         self.rect.center = self.pos
         self.hitbox.center = self.pos
@@ -501,10 +521,7 @@ class StandardGrunt(EnemyBase):
             self.pos.y > 0 and
             self.pos.y < cst.WINDOW_HEIGHT
         ):
-            self.accel.x += self.vel.x * cst.FRIC
-            self.accel.y += self.vel.y * cst.FRIC
-            self.vel += self.accel
-            self.pos += self.vel + self.accel_const * self.accel
+            objectAccel(self)
 
             global timer
             if timer % rand.randint(150, 200) == 0:
@@ -613,10 +630,7 @@ class OctoGrunt(EnemyBase):
             self.pos.y > 0 and
             self.pos.y < cst.WINDOW_HEIGHT
         ):
-            self.accel.x += self.vel.x * cst.FRIC
-            self.accel.y += self.vel.y * cst.FRIC
-            self.vel += self.accel
-            self.pos += self.vel + self.accel_const * self.accel
+            objectAccel(self)
 
             global timer
             if timer % rand.randint(250, 300) == 0:
@@ -913,7 +927,6 @@ def portalSideCheck(wall, portal):
     else:
         print("ERROR")
 
-
 #------------------------------ Bullet explosion class ------------------------------#
 class BulletExplode(pygame.sprite.Sprite):
     def __init__(self, bullet):
@@ -1152,6 +1165,8 @@ is_w_held = False
 is_s_held = False
 is_d_held = False
 
+is_x_held = False
+
 stats.loadXpRequirements()
 
 #------------------------------ Main loop ------------------------------#
@@ -1204,6 +1219,10 @@ while running:
         if event.type == KEYUP and event.key == K_d:
             is_d_held = False
 
+        if event.type == KEYDOWN and event.key == K_x:
+            is_x_held = True
+        if event.type == KEYUP and event.key == K_x:
+            is_x_held = False
 
     screen.fill((255, 255, 255))
 
@@ -1232,7 +1251,7 @@ while running:
 
     # Random enemy movement for testing purposes
     for enemy in all_enemies:
-        enemy.rand_movement(False)
+        enemy.rand_movement(True)
 
     # Regenerate health for testing purposes
     for a_player in all_players:
