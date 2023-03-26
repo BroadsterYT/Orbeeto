@@ -332,6 +332,9 @@ class PlayerBase(pygame.sprite.Sprite):
             enemy.healthBar.kill()
             enemy.kill()
 
+        for portal in all_portals:
+            portal.changeRoomRight()
+
     def changeRoomLeft(self):
         for i in range(cst.WINDOW_WIDTH + 1):
             self.pos.x += 1
@@ -339,6 +342,9 @@ class PlayerBase(pygame.sprite.Sprite):
         for enemy in all_enemies:
             enemy.healthBar.kill()
             enemy.kill()
+
+        for portal in all_portals:
+            portal.changeRoomLeft()
 
     def changeRoomUp(self):
         for i in range(cst.WINDOW_HEIGHT - 1):
@@ -348,6 +354,9 @@ class PlayerBase(pygame.sprite.Sprite):
             enemy.healthBar.kill()
             enemy.kill()
 
+        for portal in all_portals:
+            portal.changeRoomUp()
+
     def changeRoomDown(self):
         for i in range(cst.WINDOW_HEIGHT + 1):
             self.pos.y -= 1
@@ -355,6 +364,9 @@ class PlayerBase(pygame.sprite.Sprite):
         for enemy in all_enemies:
             enemy.healthBar.kill()
             enemy.kill()
+
+        for portal in all_portals:
+            portal.changeRoomDown()
 
 class Player(PlayerBase):
     def __init__(self, hitbox_adjustX, hitbox_adjustY):
@@ -891,7 +903,20 @@ class Portal(pygame.sprite.Sprite):
 
         self.hitbox = self.rect.inflate(-10, -10)
 
+    def changeRoomRight(self):
+        self.pos.x -= cst.WINDOW_WIDTH
+
+    def changeRoomLeft(self):
+        self.pos.x += cst.WINDOW_WIDTH
+
+    def changeRoomUp(self):
+        self.pos.y += cst.WINDOW_HEIGHT
+
+    def changeRoomDown(self):
+        self.pos.y -= cst.WINDOW_HEIGHT
+
     def update(self):
+        self.rect.center = self.pos
         pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 1)
 
 def portalCountCheck():
