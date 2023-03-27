@@ -3,24 +3,23 @@ from pygame.locals import *
 import sys, math
 import random as rand
 
+from math import sin, cos, tan, radians
+
 import spritesheet as ss
-import constants as cst
+from constants import *
 import calculateStats as stats
+from calculations import *
 
 pygame.init()
 
 # Aliases
 vec = pygame.math.Vector2
 spriteGroup = pygame.sprite.Group
-sin = math.sin
-cos = math.cos
-rad = math.radians
-
-FPS = 60
+rad = radians
 
 framePerSec = pygame.time.Clock()
 
-screenSize = (cst.WINDOW_WIDTH, cst.WINDOW_HEIGHT)
+screenSize = (WINDOW_WIDTH, WINDOW_HEIGHT)
 screen = pygame.display.set_mode(screenSize, pygame.SCALED)
 pygame.display.set_caption('Orbeeto')
 
@@ -34,122 +33,10 @@ all_projectiles = []
 players_projectiles = spriteGroup()
 enemy_projectiles = spriteGroup()
 all_explosions = spriteGroup()
-
 all_portals = spriteGroup()
 
 all_walls = spriteGroup()
-
 all_rooms = []
-
-def get_angle_to_mouse(entity):
-    """Returns the angle between an entity and the mouse cursor
-
-    Args:
-        entity (pygame.sprite.Sprite): The entity to measure from the cursor
-
-    Returns:
-        float: The angle between the entity and the mouse cursor
-    """
-
-    mouseX, mouseY = pygame.mouse.get_pos()
-    length_to_x = mouseX - entity.rect.x - 32
-    length_to_y = mouseY - entity.rect.y - 32
-    if length_to_x and length_to_y != 0:
-        angle_to_mouse = -math.degrees(math.atan2(length_to_y, length_to_x)) - 90
-        return angle_to_mouse
-    else:
-        if length_to_y == 0:
-            if length_to_x > 0:
-                angle_to_mouse = -90
-                return angle_to_mouse
-            else:
-                angle_to_mouse = 90
-                return angle_to_mouse
-        else:
-            if length_to_y > 0:
-                angle_to_mouse = -180
-                return angle_to_mouse
-            else:
-                angle_to_mouse = 0
-                return angle_to_mouse
-
-def get_angle_to_entity(selfEntity, targetEntity):
-    """Returns the angle between two different entities
-
-    Args:
-        selfEntity (pygame.sprite.Sprite): The entity to reference the angle from
-        targetEntity (pygame.sprite.Sprite): The entity to measure from the reference
-
-    Returns:
-        float: The angle between the two given entities
-    """
-
-    length_to_x = (targetEntity.pos.x - (0.5 * targetEntity.image.get_width())) - (selfEntity.pos.x - (0.5 * selfEntity.image.get_width()))
-    length_to_y = (targetEntity.pos.y - (0.5 * targetEntity.image.get_height())) - (selfEntity.pos.y - (0.5 * selfEntity.image.get_height()))
-    if length_to_x and length_to_y != 0:
-        angle_to_mouse = -math.degrees(math.atan2(length_to_y, length_to_x)) - 90
-        return angle_to_mouse
-    else:
-        if length_to_y == 0:
-            if length_to_x > 0:
-                angle_to_mouse = -90
-                return angle_to_mouse
-            else:
-                angle_to_mouse = 90
-                return angle_to_mouse
-        else:
-            if length_to_y > 0:
-                angle_to_mouse = -180
-                return angle_to_mouse
-            else:
-                angle_to_mouse = 0
-                return angle_to_mouse
-            
-def get_dist_to_entity(selfEntity, targetEntity):
-    """Returns the distance between two entities
-
-    Args:
-        selfEntity (pygame.sprite.Sprite): The entity to start the measurement from
-        targetEntity (pygame.sprite.Sprite): The second entity to measure to from the first
-
-    Returns:
-        float: Distance between selfEntity and targetEntity
-    """
-
-    length_to_x = (targetEntity.pos.x - (0.5 * targetEntity.image.get_width())) - (selfEntity.pos.x - (0.5 * selfEntity.image.get_width()))
-    length_to_y = (targetEntity.pos.y - (0.5 * targetEntity.image.get_height())) - (selfEntity.pos.y - (0.5 * selfEntity.image.get_height()))
-    
-    return math.sqrt((length_to_x**2) + (length_to_y**2))
-
-def get_angle_vel(velX, velY):
-    """Returns the angle of a resultant vector
-
-    Args:
-        velX (float): The x-axis component of the vector
-        velY (float): The y-axis component of the vector
-
-    Returns:
-        float: The angle of the resultant vector (in degrees)
-    """
-    
-    if velX and velY != 0:
-        vel_angle = -math.degrees(math.atan2(velY, velX)) - 90
-        return vel_angle
-    else:
-        if velY == 0:
-            if velX > 0:
-                vel_angle = -90
-                return vel_angle
-            else:
-                vel_angle = 90
-                return vel_angle
-        else:
-            if velY > 0:
-                vel_angle = -180
-                return vel_angle
-            else:
-                vel_angle = 0
-                return vel_angle
 
 def collideCheck(object, contact_list):
     """Check if an entity comes into contact with an entity from a specific group.
@@ -186,7 +73,6 @@ def getClosestPlayer(selfEntity):
     Returns:
         pygame.sprite.Sprite: The closest player entity to selfEntity
     """
-
     playerCoords = {}
     for a_player in all_players:
         playerCoords[a_player] = get_dist_to_entity(selfEntity, a_player)
@@ -195,20 +81,6 @@ def getClosestPlayer(selfEntity):
     result = [key for key in playerCoords if playerCoords[key] == temp]
     
     return result[0]
-
-def calculateDamage(sender, receiver, projectile):
-    """Calculates the damage an entity receives after being hit
-
-    Args:
-        sender (pygame.sprite.Sprite): The entity that shot the projectile
-        receiver (pygame.sprite.Sprite): The entity that got shot
-        projectile (pygame.sprite.Sprite): The projectile the receiver got hit by
-
-    Returns:
-        int: Infliction damage upon receiver
-    """
-
-    return math.ceil(((sender.attack / receiver.defense) * projectile.damage))
 
 def awardXp(enemy):
     """Give all players an enemy's xp worth after it is killed
@@ -232,40 +104,29 @@ def teleportLocation(a_player, portal_in):
     
     a_player.portal_accel = True
             
-    if other_portal.facing == cst.DOWN:
+    if other_portal.facing == DOWN:
         a_player.pos.x = other_portal.pos.x
-        a_player.pos.y = other_portal.pos.y + other_portal.image.get_height()
+        a_player.pos.y = other_portal.pos.y + other_portal.hitbox.height + a_player.hitbox.height * 0.5
         a_player.accel = vec(0, 0)
         a_player.vel = vec(0, 0)
 
-    elif other_portal.facing == cst.RIGHT:
-        a_player.pos.x = other_portal.pos.x + other_portal.image.get_width()
+    elif other_portal.facing == RIGHT:
+        a_player.pos.x = other_portal.pos.x + other_portal.hitbox.width + a_player.hitbox.width * 0.5
         a_player.pos.y = other_portal.pos.y
         a_player.accel = vec(0, 0)
         a_player.vel = vec(0, 0)
 
-    elif other_portal.facing == cst.UP:
+    elif other_portal.facing == UP:
         a_player.pos.x = other_portal.pos.x
-        a_player.pos.y = other_portal.pos.y - other_portal.image.get_height()
+        a_player.pos.y = other_portal.pos.y - other_portal.hitbox.height - a_player.hitbox.height * 0.5
         a_player.accel = vec(0, 0)
         a_player.vel = vec(0, 0)
 
-    elif other_portal.facing == cst.LEFT:
-        a_player.pos.x = other_portal.pos.x - other_portal.image.get_width()
+    elif other_portal.facing == LEFT:
+        a_player.pos.x = other_portal.pos.x - other_portal.hitbox.width - a_player.hitbox.width * 0.5
         a_player.pos.y = other_portal.pos.y
         a_player.accel = vec(0, 0)
         a_player.vel = vec(0, 0)
-
-def objectAccel(object):
-    """Defines accelearion for any object's movement
-
-    Args:
-        object (pygame.sprite.Sprite): Any sprite object
-    """    
-    object.accel.x += object.vel.x * cst.FRIC
-    object.accel.y += object.vel.y * cst.FRIC
-    object.vel += object.accel
-    object.pos += object.vel + object.accel_const * object.accel
 
 ## Sprite functions
 def getTopleftX(sprite, desired_x):
@@ -300,7 +161,7 @@ class PlayerBase(pygame.sprite.Sprite):
         super().__init__()
 
         self.accel_const = 0.52
-        self.pos = vec((cst.WINDOW_WIDTH / 2, cst.WINDOW_HEIGHT / 2))
+        self.pos = vec((WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2))
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
 
@@ -325,7 +186,7 @@ class PlayerBase(pygame.sprite.Sprite):
         self.dodgeBar = DodgeBar(self)
 
     def changeRoomRight(self):
-        for i in range(cst.WINDOW_WIDTH - 1):
+        for i in range(WINDOW_WIDTH - 1):
             self.pos.x -= 1
         
         for enemy in all_enemies:
@@ -336,7 +197,7 @@ class PlayerBase(pygame.sprite.Sprite):
             portal.changeRoomRight()
 
     def changeRoomLeft(self):
-        for i in range(cst.WINDOW_WIDTH + 1):
+        for i in range(WINDOW_WIDTH + 1):
             self.pos.x += 1
 
         for enemy in all_enemies:
@@ -347,7 +208,7 @@ class PlayerBase(pygame.sprite.Sprite):
             portal.changeRoomLeft()
 
     def changeRoomUp(self):
-        for i in range(cst.WINDOW_HEIGHT - 1):
+        for i in range(WINDOW_HEIGHT - 1):
             self.pos.y += 1
 
         for enemy in all_enemies:
@@ -358,7 +219,7 @@ class PlayerBase(pygame.sprite.Sprite):
             portal.changeRoomUp()
 
     def changeRoomDown(self):
-        for i in range(cst.WINDOW_HEIGHT + 1):
+        for i in range(WINDOW_HEIGHT + 1):
             self.pos.y -= 1
 
         for enemy in all_enemies:
@@ -405,20 +266,20 @@ class Player(PlayerBase):
         self.hitbox.center = self.pos
 
         # When beyond window borders
-        if self.pos.x >= cst.WINDOW_WIDTH:
-            self.pos.x = cst.WINDOW_WIDTH
+        if self.pos.x >= WINDOW_WIDTH:
+            self.pos.x = WINDOW_WIDTH
         if self.pos.x <= 0:
             self.pos.x = 0
 
-        if self.pos.y >= cst.WINDOW_HEIGHT:
-            self.pos.y = cst.WINDOW_HEIGHT
+        if self.pos.y >= WINDOW_HEIGHT:
+            self.pos.y = WINDOW_HEIGHT
         if self.pos.y <= 0:
             self.pos.y = 0
 
     def teleport(self, portal_in):
         teleportLocation(self, portal_in)
 
-    def shoot(self, vel, cannonSide, bulletType=cst.PROJ_P_STD):
+    def shoot(self, vel, cannonSide, bulletType=PROJ_P_STD):
         angle_to_mouse = get_angle_to_mouse(self)
 
         vel_x = vel * -sin(rad(angle_to_mouse))
@@ -431,7 +292,7 @@ class Player(PlayerBase):
                     Projectile(self, self.pos.x + (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y - (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, bulletType)
                 )
 
-        elif cannonSide == cst.SHOOT_MIDDLE:
+        elif cannonSide == SHOOT_MIDDLE:
             players_projectiles.add(Projectile(self, self.pos.x, self.pos.y, vel_x, vel_y, bulletType))
 
     def update(self):
@@ -453,7 +314,6 @@ class Player(PlayerBase):
         self.image = self.images[self.index]
         self.original_image = self.original_images[self.index]
 
-        # Rotate sprite to mouse and draw hitbox
         self.image = pygame.transform.rotate(self.original_image, int(get_angle_to_mouse(self)))
         self.rect = self.image.get_rect(center = self.rect.center)
         pygame.draw.rect(screen, (0, 255, 0), self.hitbox, 1)
@@ -462,8 +322,6 @@ class Player(PlayerBase):
         stats.updateLevel(self)
         if self.hp <= 0:
             self.kill()
-
-        # print("pos: " + str(self.pos) + "\nvel: " + str(self.vel) + "\naccel: " + str(self.accel))
 
 #------------------------------ Enemy classes ------------------------------#
 class EnemyBase(pygame.sprite.Sprite):
@@ -510,11 +368,11 @@ class StandardGrunt(EnemyBase):
 
         self.roomCoords = vec((0, 0))
 
-        self.pos = vec((posX + (self.roomCoords.x * cst.WINDOW_WIDTH), posY + (self.roomCoords.y * cst.WINDOW_HEIGHT)))
+        self.pos = vec((posX + (self.roomCoords.x * WINDOW_WIDTH), posY + (self.roomCoords.y * WINDOW_HEIGHT)))
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
 
-        self.rand_pos = vec(rand.randint(0, cst.WINDOW_WIDTH), rand.randint(0, cst.WINDOW_HEIGHT))
+        self.rand_pos = vec(rand.randint(0, WINDOW_WIDTH), rand.randint(0, WINDOW_HEIGHT))
 
         # Game stats
         self.max_hp = hp
@@ -529,16 +387,16 @@ class StandardGrunt(EnemyBase):
         if (
             self.hp > 0 and 
             self.pos.x > 0 and
-            self.pos.x < cst.WINDOW_WIDTH and
+            self.pos.x < WINDOW_WIDTH and
             self.pos.y > 0 and
-            self.pos.y < cst.WINDOW_HEIGHT
+            self.pos.y < WINDOW_HEIGHT
         ):
             objectAccel(self)
 
             global timer
             if timer % rand.randint(150, 200) == 0:
-                self.rand_pos.x = rand.randint(self.image.get_width() + 64, cst.WINDOW_WIDTH - self.image.get_width() - 64)
-                self.rand_pos.y = rand.randint(self.image.get_height() + 64, cst.WINDOW_HEIGHT - self.image.get_height() - 64)
+                self.rand_pos.x = rand.randint(self.image.get_width() + 64, WINDOW_WIDTH - self.image.get_width() - 64)
+                self.rand_pos.y = rand.randint(self.image.get_height() + 64, WINDOW_HEIGHT - self.image.get_height() - 64)
 
             if self.pos.x != (self.rand_pos.x) or self.pos.y != (self.rand_pos.y):
                 if self.pos.x < self.rand_pos.x - 32:
@@ -556,7 +414,7 @@ class StandardGrunt(EnemyBase):
                     self.accel.y = 0
             
             if canShoot == True:
-                self.shoot(getClosestPlayer(self), 5, rand.randint(20, 30), cst.PROJ_P_STD)
+                self.shoot(getClosestPlayer(self), 5, rand.randint(20, 30), PROJ_P_STD)
             else:
                 pass
 
@@ -619,11 +477,11 @@ class OctoGrunt(EnemyBase):
 
         self.roomCoords = vec((0, 0))
 
-        self.pos = vec((posX + (self.roomCoords.x * cst.WINDOW_WIDTH), posY + (self.roomCoords.y * cst.WINDOW_HEIGHT)))
+        self.pos = vec((posX + (self.roomCoords.x * WINDOW_WIDTH), posY + (self.roomCoords.y * WINDOW_HEIGHT)))
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
 
-        self.rand_pos = vec(rand.randint(0, cst.WINDOW_WIDTH), rand.randint(0, cst.WINDOW_HEIGHT))
+        self.rand_pos = vec(rand.randint(0, WINDOW_WIDTH), rand.randint(0, WINDOW_HEIGHT))
 
         # Game stats
         self.max_hp = hp
@@ -638,16 +496,16 @@ class OctoGrunt(EnemyBase):
         if (
             self.hp > 0 and 
             self.pos.x > 0 and
-            self.pos.x < cst.WINDOW_WIDTH and
+            self.pos.x < WINDOW_WIDTH and
             self.pos.y > 0 and
-            self.pos.y < cst.WINDOW_HEIGHT
+            self.pos.y < WINDOW_HEIGHT
         ):
             objectAccel(self)
 
             global timer
             if timer % rand.randint(250, 300) == 0:
-                self.rand_pos.x = rand.randint(0, cst.WINDOW_WIDTH)
-                self.rand_pos.y = rand.randint(0, cst.WINDOW_HEIGHT)
+                self.rand_pos.x = rand.randint(0, WINDOW_WIDTH)
+                self.rand_pos.y = rand.randint(0, WINDOW_HEIGHT)
 
             if self.pos.x != (self.rand_pos.x) or self.pos.y != (self.rand_pos.y):
                 if self.pos.x < self.rand_pos.x - 32:
@@ -665,7 +523,7 @@ class OctoGrunt(EnemyBase):
                     self.accel.y = 0
             
             if canShoot == True:
-                self.shoot(getClosestPlayer(enemy), 5, 80, cst.PROJ_P_STD)
+                self.shoot(getClosestPlayer(enemy), 5, 80, PROJ_P_STD)
             else:
                 pass
 
@@ -811,13 +669,13 @@ class Projectile(pygame.sprite.Sprite):
         self.type = bulletType
         self.hitbox_adjust = vec(0, 0)
 
-        if self.type == cst.PROJ_P_STD:
+        if self.type == PROJ_P_STD:
             self.hitbox_adjust = vec(-2, -2)
-            self.damage = cst.PROJ_DICT[cst.PROJ_P_STD]
+            self.damage = PROJ_DICT[PROJ_P_STD]
 
-        elif self.type == cst.PROJ_P_PORTAL:
+        elif self.type == PROJ_P_PORTAL:
             self.hitbox_adjust = vec(0, 0)
-            self.damage = cst.PROJ_DICT[cst.PROJ_P_PORTAL]
+            self.damage = PROJ_DICT[PROJ_P_PORTAL]
 
         else:
             self.hitbox_adjust = vec(0, 0)
@@ -838,7 +696,7 @@ class Projectile(pygame.sprite.Sprite):
         self.original_image = self.original_images[self.index]
 
         # Rotate sprite to trajectory
-        self.image = pygame.transform.rotate(self.original_image, int(get_angle_vel(self.vel.x, self.vel.y)))
+        self.image = pygame.transform.rotate(self.original_image, int(get_vec_angle(self.vel.x, self.vel.y)))
         self.rect = self.image.get_rect(center = self.rect.center)
 
         # Game stats
@@ -852,13 +710,13 @@ class Projectile(pygame.sprite.Sprite):
         self.hitbox.center = self.pos
 
     def update(self):
-        if self.type == cst.PROJ_P_STD:
+        if self.type == PROJ_P_STD:
             self.spritesheet = ss.SpriteSheet("sprites/bullets/bullets.png")
             self.images = self.spritesheet.getImages(0, 0, 32, 32, 4)
             self.original_images = self.spritesheet.getImages(0, 0, 32, 32, 4)
             self.hitbox_adjust = vec(-8, -8)
 
-        if self.type == cst.PROJ_P_PORTAL:
+        if self.type == PROJ_P_PORTAL:
             self.images = self.spritesheet.getImages(0, 0, 32, 32, 5, 4)
             self.original_images = self.spritesheet.getImages(0, 0, 32, 32, 5, 4)
             self.hitbox_adjust = vec(0, 0)
@@ -873,12 +731,12 @@ class Projectile(pygame.sprite.Sprite):
             self.original_image = self.original_images[self.index]
 
             # Rotate sprite to trajectory
-            self.image = pygame.transform.rotate(self.original_image, int(get_angle_vel(self.vel.x, self.vel.y)))
+            self.image = pygame.transform.rotate(self.original_image, int(get_vec_angle(self.vel.x, self.vel.y)))
             self.rect = self.image.get_rect(center = self.rect.center)
 
 #------------------------------ Portal class ------------------------------#
 class Portal(pygame.sprite.Sprite):
-    def __init__(self, posX, posY, facing=cst.BOTTOM):
+    def __init__(self, posX, posY, facing=DOWN):
         """An intering means of transportation...
 
         Args:
@@ -891,31 +749,48 @@ class Portal(pygame.sprite.Sprite):
         self.pos = vec((posX, posY))
         self.facing = facing
 
-        self.spritesheet = ss.SpriteSheet("sprites/bullets/bullets.png")
-        self.images = self.spritesheet.getImages(0, 0, 32, 32, 1, 4)
+        self.spritesheet = ss.SpriteSheet("sprites/portals/portals.png")
+        self.images = self.spritesheet.getImages(0, 0, 64, 64, 1)
         self.index = 0
         
         self.image = self.images[self.index]
-        self.rect = pygame.Rect(self.pos.x, self.pos.y, 64, 64)
+        self.rect = pygame.Rect(self.pos.x, self.pos.y, 32, 32)
         
         self.rect = self.image.get_rect(center = self.rect.center)
         self.rect.center = self.pos
 
         self.hitbox = self.rect.inflate(-10, -10)
 
+        if self.facing == DOWN:
+            self.hitbox = self.rect.inflate(0, -56)
+        if self.facing == RIGHT:
+            self.image = pygame.transform.rotate(self.image, 90)
+            self.hitbox = self.rect.inflate(-56, 0)
+        if self.facing == UP:
+            self.image = pygame.transform.rotate(self.image, 180)
+            self.hitbox = self.rect.inflate(0, -56)
+        if self.facing == LEFT:
+            self.image = pygame.transform.rotate(self.image, 270)
+            self.hitbox = self.rect.inflate(-56, 0)
+        if self.facing == None:
+            self.kill()
+
     def changeRoomRight(self):
-        self.pos.x -= cst.WINDOW_WIDTH
+        self.pos.x -= WINDOW_WIDTH
 
     def changeRoomLeft(self):
-        self.pos.x += cst.WINDOW_WIDTH
+        self.pos.x += WINDOW_WIDTH
 
     def changeRoomUp(self):
-        self.pos.y += cst.WINDOW_HEIGHT
+        self.pos.y += WINDOW_HEIGHT
 
     def changeRoomDown(self):
-        self.pos.y -= cst.WINDOW_HEIGHT
+        self.pos.y -= WINDOW_HEIGHT
 
     def update(self):
+        if self.facing == None:
+            self.kill()
+
         self.rect.center = self.pos
         pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 1)
 
@@ -933,24 +808,22 @@ def portalSideCheck(wall, portal):
 
     Args:
         wall (pygame.sprite.Sprite): The wall being hit
-        proj (pygame.sprite.Sprite): The projectile that is hitting the wall
+        portal (pygame.sprite.Sprite): The projectile that is hitting the wall
     """    
-
     if wall.pos.x - 0.5 * wall.image.get_width() <= portal.pos.x <= wall.pos.x + 0.5 * wall.image.get_width() and portal.pos.y > wall.pos.y:
-        print("down")
-        return cst.DOWN
+        return DOWN
     
     elif wall.pos.x - 0.5 * wall.image.get_width() <= portal.pos.x <= wall.pos.x + 0.5 * wall.image.get_width() and portal.pos.y < wall.pos.y:
-        return cst.UP
+        return UP
 
     elif wall.pos.y - 0.5 * wall.image.get_height() <= portal.pos.y <= wall.pos.y + 0.5 * wall.image.get_height() and portal.pos.x > wall.pos.x:
-        return cst.RIGHT
+        return RIGHT
     
     elif wall.pos.y - 0.5 * wall.image.get_height() <= portal.pos.y <= wall.pos.y + 0.5 * wall.image.get_height() and portal.pos.x < wall.pos.x:
-        return cst.LEFT
+        return LEFT
     
     else:
-        print("ERROR")
+        return None
 
 #------------------------------ Bullet explosion class ------------------------------#
 class BulletExplode(pygame.sprite.Sprite):
@@ -965,7 +838,7 @@ class BulletExplode(pygame.sprite.Sprite):
         self.spritesheet = ss.SpriteSheet("sprites/bullets/bullets.png")
         self.index = 1
 
-        if self.type == cst.PROJ_P_STD:
+        if self.type == PROJ_P_STD:
             self.images = self.spritesheet.getImages(0, 0, 32, 32, 4)
             self.original_images = self.spritesheet.getImages(0, 0, 32, 32, 4)
 
@@ -1021,7 +894,6 @@ class Room(pygame.sprite.AbstractGroup):
             roomCoordsX (int): The room's x-axis location in the grid of the room layout
             roomCoordsY (int): The room's y-axis location in the grid of the room layout
         """
-
         super().__init__()
         all_rooms.append(self)
         self.roomCoords = vec((roomCoordsX, roomCoordsY))
@@ -1038,15 +910,15 @@ class Room(pygame.sprite.AbstractGroup):
                 Wall(36, 0, 4, 4),
                 Wall(0, 18.5, 4, 4),
                 Wall(36, 18.5, 4, 4),
-                OctoGrunt(cst.WINDOW_WIDTH / 2, cst.WINDOW_HEIGHT / 2, 25, 10, 10, 25, 0.3)
+                OctoGrunt(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 25, 10, 10, 25, 0.3)
             )
 
         elif self.roomCoords == vec(1, 0):
             self.sprites.add(
                 Wall(0, 0, 40, 4),
                 Wall(0, 18.5, 40, 4),
-                StandardGrunt(cst.WINDOW_WIDTH / 2, cst.WINDOW_HEIGHT / 2, 25, 10, 10, 25, 0.35),
-                StandardGrunt(cst.WINDOW_WIDTH / 2, cst.WINDOW_HEIGHT / 2, 25, 10, 10, 50, 0.35)
+                StandardGrunt(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 25, 10, 10, 25, 0.35),
+                StandardGrunt(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 25, 10, 10, 50, 0.35)
             )
 
         elif self.roomCoords == vec(0, 1):
@@ -1070,14 +942,14 @@ def projectileCollide(entityGroup, projectile, projGroup, canHurt = False):
         canHurt (bool): Should the projectile calculate damage upon impact? Defaults to False.
     """
     for entity in entityGroup:
-        if entity.hitbox.colliderect(projectile.hitbox):
+        if projectile.hitbox.colliderect(entity.hitbox):
             if canHurt == True:
                 entity.hp -= calculateDamage(projectile.shotFrom, entity, projectile)
 
-            if projectile.type != cst.PROJ_P_PORTAL:
+            if projectile.type != PROJ_P_PORTAL:
                 all_explosions.add(BulletExplode(projectile))
 
-            if projectile.type == cst.PROJ_P_PORTAL and entityGroup == all_walls:
+            if projectile.type == PROJ_P_PORTAL and entityGroup == all_walls:
                 side = portalSideCheck(entity, projectile)
                 print(side)
                 all_portals.add(Portal(projectile.pos.x, projectile.pos.y, side))
@@ -1099,9 +971,9 @@ def bindProjectile(projectile, projGroup, projTargetGroup):
     """
     screen.blit(projectile.image, projectile.rect)
     if (
-        projectile.pos.x < cst.WINDOW_WIDTH and 
+        projectile.pos.x < WINDOW_WIDTH and 
         projectile.pos.x > 0 and
-        projectile.pos.y < cst.WINDOW_HEIGHT and 
+        projectile.pos.y < WINDOW_HEIGHT and 
         projectile.pos.y > 0
     ):
         projectile.movement()
@@ -1127,7 +999,7 @@ def redrawGameWindow():
         a_player.update()
 
         for portal in all_portals:
-            if a_player.hitbox.colliderect(portal.rect) and len(all_portals) == 2:
+            if a_player.hitbox.colliderect(portal.hitbox) and len(all_portals) == 2:
                 a_player.teleport(portal)
 
     # Drawing all enemies every frame
@@ -1220,7 +1092,7 @@ while running:
 
         if event.type == MOUSEBUTTONDOWN and event.button == 3:
             is_rightMouse_held = True
-            player.shoot(player.gun_cooldown / 2, cst.SHOOT_MIDDLE, cst.PROJ_P_PORTAL)
+            player.shoot(player.gun_cooldown * 0.75, SHOOT_MIDDLE, PROJ_P_PORTAL)
         if event.type == MOUSEBUTTONUP and event.button == 3:
             is_rightMouse_held = False
 
@@ -1259,7 +1131,7 @@ while running:
             room.roomCoords.x -= 1
             room.layoutUpdate()
 
-        if a_player.pos.x == cst.WINDOW_WIDTH:
+        if a_player.pos.x == WINDOW_WIDTH:
             a_player.changeRoomRight()
             room.roomCoords.x += 1
             room.layoutUpdate()
@@ -1269,7 +1141,7 @@ while running:
             room.roomCoords.y += 1
             room.layoutUpdate()
 
-        if a_player.pos.y == cst.WINDOW_HEIGHT:
+        if a_player.pos.y == WINDOW_HEIGHT:
             a_player.changeRoomDown()
             room.roomCoords.y -= 1
             room.layoutUpdate()

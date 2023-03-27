@@ -1,6 +1,7 @@
 ## Orbeeto
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
+FPS = 60
 
 PROJ_P_STD = 'playerBullet'
 PROJ_P_BOUNCE = 'playerBouncy'
