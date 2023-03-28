@@ -1,7 +1,5 @@
 ## Spritesheet function module
-
 import pygame
-import constants as cst
 
 class SpriteSheet(object):
     def __init__(self, fileName, isHorizontal=True):

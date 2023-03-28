@@ -5,9 +5,9 @@ import random as rand
 
 from math import sin, cos, tan, radians
 
-import spritesheet as ss
+from spritesheet import *
 from constants import *
-import calculateStats as stats
+from calculateStats import *
 from calculations import *
 
 pygame.init()
@@ -37,32 +37,6 @@ all_portals = spriteGroup()
 
 all_walls = spriteGroup()
 all_rooms = []
-
-def collideCheck(object, contact_list):
-    """Check if an entity comes into contact with an entity from a specific group.
-    If the entities do collide, the entities will perform a hitbox collision.
-
-    Args:
-        entity (pygame.sprite.Sprite): The instigator of the collision
-        contact_list (pygame.sprite.Group): The group to check for collisions with the instigator
-    """
-    global timer
-    for entity in contact_list:
-        if object.hitbox.colliderect(entity.hitbox):
-            if object.pos.y < (entity.pos.y + (0.5 * entity.hitbox.height) + 1) and object.pos.y > (entity.pos.y - (0.5 * entity.hitbox.height) - 1):
-                if object.pos.x > entity.pos.x:
-                    object.vel.x = 0
-                    object.pos.x += 1
-                else:
-                    object.vel.x = 0
-                    object.pos.x -= 1
-            if object.pos.x > (entity.pos.x - (0.5 * entity.hitbox.width) - 1) and object.pos.x < (entity.pos.x + (0.5 * entity.hitbox.width) + 1):
-                if object.pos.y < entity.pos.y:
-                    object.vel.y = 0
-                    object.pos.y -= 1
-                else:
-                    object.vel.y = 0
-                    object.pos.y += 1
 
 def getClosestPlayer(selfEntity):
     """Returns the closest player entity from another given entity
@@ -236,7 +210,7 @@ class Player(PlayerBase):
         all_sprites.change_layer(self, 0)
         all_players.add(self)
 
-        self.spritesheet = ss.SpriteSheet("sprites/orbeeto/orbeeto.png")
+        self.spritesheet = SpriteSheet("sprites/orbeeto/orbeeto.png")
         self.images = self.spritesheet.getImages(0, 0, 64, 64, 5)
         self.original_images = self.spritesheet.getImages(0, 0, 64, 64, 5)
         self.index = 0
@@ -319,7 +293,7 @@ class Player(PlayerBase):
         pygame.draw.rect(screen, (0, 255, 0), self.hitbox, 1)
 
         # Gameplay
-        stats.updateLevel(self)
+        updateLevel(self)
         if self.hp <= 0:
             self.kill()
 
@@ -353,7 +327,7 @@ class StandardGrunt(EnemyBase):
         all_sprites.change_layer(self, 0)
         all_enemies.add(self)
 
-        self.spritesheet = ss.SpriteSheet("sprites/enemies/standard_grunt.png")
+        self.spritesheet = SpriteSheet("sprites/enemies/standard_grunt.png")
         self.images = self.spritesheet.getImages(0, 0, 64, 64, 5)
         self.original_images = self.spritesheet.getImages(0, 0, 64, 64, 5)
         self.index = 0
@@ -462,7 +436,7 @@ class OctoGrunt(EnemyBase):
         all_sprites.change_layer(self, 0)
         all_enemies.add(self)
 
-        self.spritesheet = ss.SpriteSheet("sprites/enemies/standard_grunt.png")
+        self.spritesheet = SpriteSheet("sprites/enemies/standard_grunt.png")
         self.images = self.spritesheet.getImages(0, 0, 64, 64, 5)
         self.original_images = self.spritesheet.getImages(0, 0, 64, 64, 5)
         self.index = 0
@@ -586,7 +560,7 @@ class HealthBar(pygame.sprite.Sprite):
         all_sprites.change_layer(self, 1000)
         all_stat_bars.add(self)
         
-        self.spritesheet = ss.SpriteSheet("sprites/stat_bars/health_bar.png", False)
+        self.spritesheet = SpriteSheet("sprites/stat_bars/health_bar.png", False)
         self.images = self.spritesheet.getImages(0, 0, 128, 16, 18)
         self.original_images = self.spritesheet.getImages(0, 0, 128, 16, 18)
         self.index = 17
@@ -619,7 +593,7 @@ class DodgeBar(pygame.sprite.Sprite):
         all_sprites.change_layer(self, 1000)
         all_stat_bars.add(self)
 
-        self.spritesheet = ss.SpriteSheet("sprites/stat_bars/dodge_bar.png", False)
+        self.spritesheet = SpriteSheet("sprites/stat_bars/dodge_bar.png", False)
         self.images = self.spritesheet.getImages(0, 0, 128, 16, 18)
         self.original_images = self.spritesheet.getImages(0, 0, 128, 16, 18)
         self.index = 17
@@ -681,7 +655,7 @@ class Projectile(pygame.sprite.Sprite):
             self.hitbox_adjust = vec(0, 0)
             self.damage = 0
 
-        self.spritesheet = ss.SpriteSheet("sprites/bullets/bullets.png")
+        self.spritesheet = SpriteSheet("sprites/bullets/bullets.png")
         self.images = self.spritesheet.getImages(0, 0, 32, 32, 4)
         self.original_images = self.spritesheet.getImages(0, 0, 32, 32, 4)
         self.index = 0
@@ -711,7 +685,7 @@ class Projectile(pygame.sprite.Sprite):
 
     def update(self):
         if self.type == PROJ_P_STD:
-            self.spritesheet = ss.SpriteSheet("sprites/bullets/bullets.png")
+            self.spritesheet = SpriteSheet("sprites/bullets/bullets.png")
             self.images = self.spritesheet.getImages(0, 0, 32, 32, 4)
             self.original_images = self.spritesheet.getImages(0, 0, 32, 32, 4)
             self.hitbox_adjust = vec(-8, -8)
@@ -749,7 +723,7 @@ class Portal(pygame.sprite.Sprite):
         self.pos = vec((posX, posY))
         self.facing = facing
 
-        self.spritesheet = ss.SpriteSheet("sprites/portals/portals.png")
+        self.spritesheet = SpriteSheet("sprites/portals/portals.png")
         self.images = self.spritesheet.getImages(0, 0, 64, 64, 1)
         self.index = 0
         
@@ -792,7 +766,6 @@ class Portal(pygame.sprite.Sprite):
             self.kill()
 
         self.rect.center = self.pos
-        pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 1)
 
 def portalCountCheck():
     """If there are more than two portals present during gameplay, the oldest one will be deleted to make room for another one
@@ -835,7 +808,7 @@ class BulletExplode(pygame.sprite.Sprite):
         self.bullet = bullet
         self.type = self.bullet.type
         
-        self.spritesheet = ss.SpriteSheet("sprites/bullets/bullets.png")
+        self.spritesheet = SpriteSheet("sprites/bullets/bullets.png")
         self.index = 1
 
         if self.type == PROJ_P_STD:
@@ -845,7 +818,7 @@ class BulletExplode(pygame.sprite.Sprite):
         self.image = self.images[self.index]
         self.original_image = self.original_images[self.index]
         self.rect = self.bullet.rect
-        self.randRotation = rand.randint(0, 360)
+        self.randRotation = rand.randint(1, 360)
 
         self.pos = self.bullet.pos
 
@@ -951,9 +924,14 @@ def projectileCollide(entityGroup, projectile, projGroup, canHurt = False):
 
             if projectile.type == PROJ_P_PORTAL and entityGroup == all_walls:
                 side = portalSideCheck(entity, projectile)
-                print(side)
-                all_portals.add(Portal(projectile.pos.x, projectile.pos.y, side))
-                portalCountCheck()
+                if side == DOWN or side == UP:
+                    if projectile.pos.x - 32 > entity.pos.x - 0.5 * entity.image.get_width() and projectile.pos.x + 32 < entity.pos.x + 0.5 * entity.image.get_width():
+                        all_portals.add(Portal(projectile.pos.x, projectile.pos.y, side))
+                        portalCountCheck()
+                if side == RIGHT or side == LEFT:
+                    if projectile.pos.y - 32 > entity.pos.y - 0.5 * entity.image.get_height() and projectile.pos.y + 32 < entity.pos.y + 0.5 * entity.image.get_height():
+                        all_portals.add(Portal(projectile.pos.x, projectile.pos.y, side))
+                        portalCountCheck()
 
             # Try to remove projectile
             try:
@@ -1064,7 +1042,7 @@ is_d_held = False
 
 is_x_held = False
 
-stats.loadXpRequirements()
+loadXpRequirements()
 
 #------------------------------ Main loop ------------------------------#
 running = True
@@ -1092,7 +1070,7 @@ while running:
 
         if event.type == MOUSEBUTTONDOWN and event.button == 3:
             is_rightMouse_held = True
-            player.shoot(player.gun_cooldown * 0.75, SHOOT_MIDDLE, PROJ_P_PORTAL)
+            player.shoot(player.gun_cooldown, SHOOT_MIDDLE, PROJ_P_PORTAL)
         if event.type == MOUSEBUTTONUP and event.button == 3:
             is_rightMouse_held = False
 

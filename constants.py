@@ -22,8 +22,6 @@ SHOOT_BOTH = 'leftright'
 
 FRIC = -0.07
 
-HITFRAME = 10
-
 LEFT = 'loc_left'
 RIGHT = 'loc_right'
 UP = 'loc_up'

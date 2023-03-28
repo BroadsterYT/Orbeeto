@@ -134,6 +134,32 @@ def objectAccel(object):
     object.vel += object.accel
     object.pos += object.vel + object.accel_const * object.accel
 
+def collideCheck(object, contact_list):
+    """Check if an entity comes into contact with an entity from a specific group.
+    If the entities do collide, the entities will perform a hitbox collision.
+
+    Args:
+        object (pygame.sprite.Sprite): The instigator of the collision
+        contact_list (pygame.sprite.Group): The group to check for collisions with the instigator
+    """
+    global timer
+    for entity in contact_list:
+        if object.hitbox.colliderect(entity.hitbox):
+            if object.pos.y < (entity.pos.y + (0.5 * entity.hitbox.height) + 1) and object.pos.y > (entity.pos.y - (0.5 * entity.hitbox.height) - 1):
+                if object.pos.x > entity.pos.x:
+                    object.vel.x = 0
+                    object.pos.x += 1
+                else:
+                    object.vel.x = 0
+                    object.pos.x -= 1
+            if object.pos.x > (entity.pos.x - (0.5 * entity.hitbox.width) - 1) and object.pos.x < (entity.pos.x + (0.5 * entity.hitbox.width) + 1):
+                if object.pos.y < entity.pos.y:
+                    object.vel.y = 0
+                    object.pos.y -= 1
+                else:
+                    object.vel.y = 0
+                    object.pos.y += 1
+
 #------------------------------ Classes ------------------------------#
 class CustomError(Exception):
     """Returns a custom error
