@@ -29,7 +29,7 @@ all_enemies = spriteGroup()
 
 all_stat_bars = spriteGroup()
 
-all_projectiles = []
+all_projectiles = spriteGroup()
 players_projectiles = spriteGroup()
 enemy_projectiles = spriteGroup()
 all_explosions = spriteGroup()
@@ -106,22 +106,52 @@ def distFromCenterPortal(proj, portal_in):
     if portal_in.facing == RIGHT or portal_in.facing == LEFT:
         return proj.pos.y - portal_in.pos.y
 
-def teleportProjectile(projectile, portal_in):
+def teleportProjectile(proj, portalIn):
     for portal in all_portals:
-        if portal != portal_in:
-            other_portal = portal
+        if portal != portalIn:
+            portalOut = portal
 
     projGroup = players_projectiles
 
-    if portal_in.facing == DOWN:
-        if other_portal.facing == DOWN:
-            projGroup.add(Projectile(projectile.shotFrom, other_portal.pos.x + distFromCenterPortal(projectile, portal_in), other_portal.pos.y + 8, projectile.vel.x, -projectile.vel.y, projectile.type))
-        if other_portal.facing == RIGHT:
-            projGroup.add(Projectile(projectile.shotFrom, other_portal.pos.x, other_portal.pos.y + distFromCenterPortal(projectile, portal_in), -projectile.vel.y, projectile.vel.x, projectile.type))
-        if other_portal.facing == UP:
-            projGroup.add(Projectile(projectile.shotFrom, other_portal.pos.x + distFromCenterPortal(projectile, portal_in), other_portal.pos.y - 8, projectile.vel.x, projectile.vel.y, projectile.type))
-        if other_portal.facing == LEFT:
-            projGroup.add(Projectile(projectile.shotFrom, other_portal.pos.x, other_portal.pos.y + distFromCenterPortal(projectile, portal_in), projectile.vel.y, projectile.vel.x, projectile.type))
+    if portalIn.facing == DOWN:
+        if portalOut.facing == DOWN:
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + distFromCenterPortal(proj, portalIn), portalOut.pos.y + 8, proj.vel.x, -proj.vel.y, proj.type))
+        if portalOut.facing == RIGHT:
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x, portalOut.pos.y + distFromCenterPortal(proj, portalIn), -proj.vel.y, proj.vel.x, proj.type))
+        if portalOut.facing == UP:
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + distFromCenterPortal(proj, portalIn), portalOut.pos.y - 8, proj.vel.x, proj.vel.y, proj.type))
+        if portalOut.facing == LEFT:
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x, portalOut.pos.y + distFromCenterPortal(proj, portalIn), proj.vel.y, proj.vel.x, proj.type))
+
+    if portalIn.facing == RIGHT:
+        if portalOut.facing == DOWN:
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + distFromCenterPortal(proj, portalIn), portalOut.pos.y + 8, proj.vel.y, -proj.vel.x, proj.type))
+        if portalOut.facing == RIGHT:
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + 8, portalOut.pos.y + distFromCenterPortal(proj, portalIn), -proj.vel.x, -proj.vel.y, proj.type))
+        if portalOut.facing == UP:
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + distFromCenterPortal(proj, portalIn), portalOut.pos.y - 8, -proj.vel.y, proj.vel.x, proj.type))
+        if portalOut.facing == LEFT:
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x, portalOut.pos.y + distFromCenterPortal(proj, portalIn), proj.vel.x, proj.vel.y, proj.type))
+
+    if portalIn.facing == UP:
+        if portalOut.facing == DOWN:
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + distFromCenterPortal(proj, portalIn), portalOut.pos.y + 8, proj.vel.x, proj.vel.y, proj.type))
+        if portalOut.facing == RIGHT:
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + 8, portalOut.pos.y + distFromCenterPortal(proj, portalIn), proj.vel.y, proj.vel.x, proj.type))
+        if portalOut.facing == UP:
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + distFromCenterPortal(proj, portalIn), portalOut.pos.y - 8, -proj.vel.x, -proj.vel.y, proj.type))
+        if portalOut.facing == LEFT:
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x, portalOut.pos.y + distFromCenterPortal(proj, portalIn), -proj.vel.y, proj.vel.x, proj.type))
+
+    if portalIn.facing == LEFT:
+        if portalOut.facing == DOWN:
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + distFromCenterPortal(proj, portalIn), portalOut.pos.y + 8, proj.vel.y, proj.vel.x, proj.type))
+        if portalOut.facing == RIGHT:
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + 8, portalOut.pos.y + distFromCenterPortal(proj, portalIn), proj.vel.x, proj.vel.y, proj.type))
+        if portalOut.facing == UP:
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + distFromCenterPortal(proj, portalIn), portalOut.pos.y - 8, proj.vel.y, -proj.vel.x, proj.type))
+        if portalOut.facing == LEFT:
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x, portalOut.pos.y + distFromCenterPortal(proj, portalIn), proj.vel.x, proj.vel.y, proj.type))
 
 #------------------------------ Player class ------------------------------#
 class PlayerBase(pygame.sprite.Sprite):
@@ -164,6 +194,12 @@ class PlayerBase(pygame.sprite.Sprite):
         for portal in all_portals:
             portal.changeRoomRight()
 
+        for proj in all_projectiles:
+            proj.kill()
+
+        for boom in all_explosions:
+            boom.kill()
+
     def changeRoomLeft(self):
         for i in range(WINDOW_WIDTH + 1):
             self.pos.x += 1
@@ -174,6 +210,12 @@ class PlayerBase(pygame.sprite.Sprite):
 
         for portal in all_portals:
             portal.changeRoomLeft()
+
+        for proj in all_projectiles:
+            proj.kill()
+
+        for boom in all_explosions:
+            boom.kill()
 
     def changeRoomUp(self):
         for i in range(WINDOW_HEIGHT - 1):
@@ -186,6 +228,12 @@ class PlayerBase(pygame.sprite.Sprite):
         for portal in all_portals:
             portal.changeRoomUp()
 
+        for proj in all_projectiles:
+            proj.kill()
+
+        for boom in all_explosions:
+            boom.kill()
+
     def changeRoomDown(self):
         for i in range(WINDOW_HEIGHT + 1):
             self.pos.y -= 1
@@ -196,6 +244,12 @@ class PlayerBase(pygame.sprite.Sprite):
 
         for portal in all_portals:
             portal.changeRoomDown()
+
+        for proj in all_projectiles:
+            proj.kill()
+
+        for boom in all_explosions:
+            boom.kill()
 
 class Player(PlayerBase):
     def __init__(self, hitbox_adjustX, hitbox_adjustY):
@@ -628,6 +682,7 @@ class Projectile(pygame.sprite.Sprite):
         """
         super().__init__()
         all_sprites.add(self)
+        all_projectiles.add(self)
 
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
@@ -677,7 +732,6 @@ class Projectile(pygame.sprite.Sprite):
 
     def teleport(self, portal_in):
         teleportProjectile(self, portal_in)
-        print("TELEPORT")
 
     def update(self):
         if self.type == PROJ_P_STD:
@@ -750,16 +804,16 @@ class Portal(PortalBase):
         self.hitbox = self.rect.inflate(-10, -10)
 
         if self.facing == DOWN:
-            self.hitbox = self.rect.inflate(0, -56)
+            self.hitbox = self.rect.inflate(0, -50)
         if self.facing == RIGHT:
             self.image = pygame.transform.rotate(self.image, 90)
-            self.hitbox = self.rect.inflate(-56, 0)
+            self.hitbox = self.rect.inflate(-50, 0)
         if self.facing == UP:
             self.image = pygame.transform.rotate(self.image, 180)
-            self.hitbox = self.rect.inflate(0, -56)
+            self.hitbox = self.rect.inflate(0, -50)
         if self.facing == LEFT:
             self.image = pygame.transform.rotate(self.image, 270)
-            self.hitbox = self.rect.inflate(-56, 0)
+            self.hitbox = self.rect.inflate(-50, 0)
         if self.facing == None:
             self.kill()
 
@@ -768,7 +822,7 @@ class Portal(PortalBase):
             self.kill()
         
         self.rect.center = self.pos
-        pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 1)
+        # pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 1)
 
 def portalCountCheck():
     """If there are more than two portals present during gameplay, the oldest one will be deleted to make room for another one
@@ -923,12 +977,12 @@ def projectileCollide(entityGroup, projectile, projGroup, canHurt = False):
                 entity.hp -= calculateDamage(projectile.shotFrom, entity, projectile)
 
             if projectile.type != PROJ_P_PORTAL:
-                if entityGroup != all_portals:
-                    all_explosions.add(BulletExplode(projectile))
                 if entityGroup == all_portals and len(all_portals) == 2:
                     for portal in all_portals:
                         if projectile.hitbox.colliderect(portal.hitbox):
                             projectile.teleport(portal)
+                else:
+                    all_explosions.add(BulletExplode(projectile))
 
             if projectile.type == PROJ_P_PORTAL and entityGroup == all_walls:
                 side = portalSideCheck(entity, projectile)
@@ -941,11 +995,7 @@ def projectileCollide(entityGroup, projectile, projGroup, canHurt = False):
                         all_portals.add(Portal(projectile.pos.x, projectile.pos.y, side))
                         portalCountCheck()
 
-            # Try to remove projectile
-            try:
-                projGroup.remove(projectile)
-            except:
-                pass
+            projectile.kill()
 
 def bindProjectile(projectile, projGroup, projTargetGroup):
     """Binds a projectile to its shooter and confines it to the window borders
