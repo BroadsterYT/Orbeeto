@@ -75,8 +75,6 @@ def teleportLocation(a_player, portal_in):
     for portal in all_portals:
         if portal != portal_in:
             other_portal = portal
-    
-    a_player.portal_accel = True
             
     if other_portal.facing == DOWN:
         a_player.pos.x = other_portal.pos.x
@@ -102,32 +100,28 @@ def teleportLocation(a_player, portal_in):
         a_player.accel = vec(0, 0)
         a_player.vel = vec(0, 0)
 
-## Sprite functions
-def getTopleftX(sprite, desired_x):
-    """Returns the topleft x-value of a sprite that is centered at its middle
+def distFromCenterPortal(proj, portal_in):
+    if portal_in.facing == DOWN or portal_in.facing == UP:
+        return proj.pos.x - portal_in.pos.x
+    if portal_in.facing == RIGHT or portal_in.facing == LEFT:
+        return proj.pos.y - portal_in.pos.y
 
-    Args:
-        sprite (pygame.sprite.Sprite): The sprite to get the topleft x-value location for
-        desired_x (int): The x-value of the desired location of the sprite's topleft corner
+def teleportProjectile(projectile, portal_in):
+    for portal in all_portals:
+        if portal != portal_in:
+            other_portal = portal
 
-    Returns:
-        int: x-value of the sprite's location from its center, where its topleft corner will be along its desired x-axis location
-    """
-    width = sprite.image.get_width()
-    return (width / 2) + desired_x
+    projGroup = players_projectiles
 
-def getTopleftY(sprite, desired_y):
-    """Returns the topleft y-value of a sprite that is centered at its middle
-
-    Args:
-        sprite (pygame.sprite.Sprite): The sprite to get the topleft y-value location for
-        desired_x (int): The y-value of the desired location of the sprite's topleft corner
-
-    Returns:
-        int: y-value of the sprite's location from its center, where its topleft corner will be along its desired y-axis location
-    """
-    height = sprite.image.get_height()
-    return (height / 2) + desired_y
+    if portal_in.facing == DOWN:
+        if other_portal.facing == DOWN:
+            projGroup.add(Projectile(projectile.shotFrom, other_portal.pos.x + distFromCenterPortal(projectile, portal_in), other_portal.pos.y + 8, projectile.vel.x, -projectile.vel.y, projectile.type))
+        if other_portal.facing == RIGHT:
+            projGroup.add(Projectile(projectile.shotFrom, other_portal.pos.x, other_portal.pos.y + distFromCenterPortal(projectile, portal_in), -projectile.vel.y, projectile.vel.x, projectile.type))
+        if other_portal.facing == UP:
+            projGroup.add(Projectile(projectile.shotFrom, other_portal.pos.x + distFromCenterPortal(projectile, portal_in), other_portal.pos.y - 8, projectile.vel.x, projectile.vel.y, projectile.type))
+        if other_portal.facing == LEFT:
+            projGroup.add(Projectile(projectile.shotFrom, other_portal.pos.x, other_portal.pos.y + distFromCenterPortal(projectile, portal_in), projectile.vel.y, projectile.vel.x, projectile.type))
 
 #------------------------------ Player class ------------------------------#
 class PlayerBase(pygame.sprite.Sprite):
@@ -207,7 +201,7 @@ class Player(PlayerBase):
     def __init__(self, hitbox_adjustX, hitbox_adjustY):
         super().__init__()
         all_sprites.add(self)
-        all_sprites.change_layer(self, 0)
+        all_sprites.change_layer(self, 1)
         all_players.add(self)
 
         self.spritesheet = SpriteSheet("sprites/orbeeto/orbeeto.png")
@@ -220,8 +214,6 @@ class Player(PlayerBase):
         
         self.rect = pygame.Rect(200, 400, 64, 64)
         self.hitbox = self.rect.inflate(hitbox_adjustX, hitbox_adjustY)
-
-        self.portal_accel = False
 
     def movement(self):
         self.accel = vec(0, 0)
@@ -683,6 +675,10 @@ class Projectile(pygame.sprite.Sprite):
         self.rect.center = self.pos
         self.hitbox.center = self.pos
 
+    def teleport(self, portal_in):
+        teleportProjectile(self, portal_in)
+        print("TELEPORT")
+
     def update(self):
         if self.type == PROJ_P_STD:
             self.spritesheet = SpriteSheet("sprites/bullets/bullets.png")
@@ -709,7 +705,23 @@ class Projectile(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(center = self.rect.center)
 
 #------------------------------ Portal class ------------------------------#
-class Portal(pygame.sprite.Sprite):
+class PortalBase(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+    
+    def changeRoomRight(self):
+        self.pos.x -= WINDOW_WIDTH
+
+    def changeRoomLeft(self):
+        self.pos.x += WINDOW_WIDTH
+
+    def changeRoomUp(self):
+        self.pos.y += WINDOW_HEIGHT
+
+    def changeRoomDown(self):
+        self.pos.y -= WINDOW_HEIGHT
+
+class Portal(PortalBase):
     def __init__(self, posX, posY, facing=DOWN):
         """An intering means of transportation...
 
@@ -719,6 +731,8 @@ class Portal(pygame.sprite.Sprite):
             facing (str): Dir. of velocity after being expelled
         """        
         super().__init__()
+        all_sprites.add(self)
+        all_sprites.change_layer(self, 0)
         
         self.pos = vec((posX, posY))
         self.facing = facing
@@ -749,23 +763,12 @@ class Portal(pygame.sprite.Sprite):
         if self.facing == None:
             self.kill()
 
-    def changeRoomRight(self):
-        self.pos.x -= WINDOW_WIDTH
-
-    def changeRoomLeft(self):
-        self.pos.x += WINDOW_WIDTH
-
-    def changeRoomUp(self):
-        self.pos.y += WINDOW_HEIGHT
-
-    def changeRoomDown(self):
-        self.pos.y -= WINDOW_HEIGHT
-
     def update(self):
         if self.facing == None:
             self.kill()
-
+        
         self.rect.center = self.pos
+        pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 1)
 
 def portalCountCheck():
     """If there are more than two portals present during gameplay, the oldest one will be deleted to make room for another one
@@ -847,7 +850,7 @@ class Wall(pygame.sprite.Sprite):
         self.image = pygame.Surface((32 * widthMult, 32 * heightMult))
         self.rect = self.image.get_rect()
 
-        self.pos = vec((getTopleftX(self, topleftX_mult * 32), getTopleftY(self, topleftY_mult * 32)))
+        self.pos = getTopLeft(self, topleftX_mult * 32, topleftY_mult * 32)
         self.rect.center = self.pos
 
         self.hitbox = self.rect
@@ -920,7 +923,12 @@ def projectileCollide(entityGroup, projectile, projGroup, canHurt = False):
                 entity.hp -= calculateDamage(projectile.shotFrom, entity, projectile)
 
             if projectile.type != PROJ_P_PORTAL:
-                all_explosions.add(BulletExplode(projectile))
+                if entityGroup != all_portals:
+                    all_explosions.add(BulletExplode(projectile))
+                if entityGroup == all_portals and len(all_portals) == 2:
+                    for portal in all_portals:
+                        if projectile.hitbox.colliderect(portal.hitbox):
+                            projectile.teleport(portal)
 
             if projectile.type == PROJ_P_PORTAL and entityGroup == all_walls:
                 side = portalSideCheck(entity, projectile)
@@ -961,6 +969,7 @@ def bindProjectile(projectile, projGroup, projTargetGroup):
 
     projectileCollide(projTargetGroup, projectile, projGroup, True)
     projectileCollide(all_walls, projectile, projGroup)
+    projectileCollide(all_portals, projectile, projGroup)
     
 def redrawGameWindow():
     """Draws all entities every frame"""

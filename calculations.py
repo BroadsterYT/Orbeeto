@@ -1,6 +1,8 @@
 import pygame, math
 from constants import *
 
+vec = pygame.math.Vector2
+
 #------------------------------ Returns float ------------------------------#
 def get_angle_to_mouse(entity):
     """Returns the angle between an entity and the mouse cursor
@@ -121,6 +123,22 @@ def calculateDamage(sender, receiver, projectile):
         int: Infliction damage upon receiver
     """
     return math.ceil(((sender.attack / receiver.defense) * projectile.damage))
+
+#------------------------------ Returns pygame.math.Vector2 ------------------------------#
+def getTopLeft(sprite, desired_x, desired_y):
+    """Returns the coordinates of the topleft corner of a sprite that is centered at its middle
+
+    Args:
+        sprite (pygame.sprite.Sprite): The sprite to get the topleft coordinates of
+        desired_x (int): The x-value of the desired location of the sprite's topleft corner
+        desired_y (int): The y-value of the desired location of the sprite's topleft corner
+
+    Returns:
+        pygame.math.Vector2: The coordinates of the sprite's center, with its topleft corner in the desired x and y locations
+    """    
+    width = sprite.image.get_width()
+    height = sprite.image.get_height()
+    return vec(desired_x + width / 2, desired_y + height / 2)
 
 #------------------------------ Returns None ------------------------------#
 def objectAccel(object):
