@@ -13,7 +13,7 @@ class SpriteSheet(object):
             x (int): The x-location of the topleft corner of the sprite
             y (int): The x-location of the topleft corner of the sprite
             width (int): The width of each frame of the sprites in the spritesheet
-            height (int): The width of each frame of the sprites in the spritesheet
+            height (int): The height of each frame of the sprites in the spritesheet
             imageCount (_type_): _description_
             imageOffset (int, optional): _description_. Defaults to 0.
 
@@ -38,3 +38,21 @@ class SpriteSheet(object):
                 offset += height
         
         return imageList
+    
+def textureWall(sprite, texture):
+    """Repeats a texture across the surface of a wall sprite.
+
+    Args:
+        sprite (pygame.sprite.Sprite): The sprite to repeat the texture over
+        texture (pygame.Surface): The texture to repeat across the sprite
+    """    
+    image_width, image_height = sprite.image.get_size()
+    tile_width, tile_height = texture.get_size()
+
+    for x in range(0, image_width, tile_width):
+        for y in range(0, image_height, tile_height):
+            tile_rect = pygame.Rect(x, y, tile_width, tile_height)
+            sprite.image.blit(texture, tile_rect)
+
+    sprite.rect = sprite.image.get_rect()
+    sprite.hitbox = sprite.rect
