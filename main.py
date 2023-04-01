@@ -79,25 +79,25 @@ def teleportLocation(a_player, portal_in):
     if other_portal.facing == DOWN:
         a_player.pos.x = other_portal.pos.x
         a_player.pos.y = other_portal.pos.y + other_portal.hitbox.height + a_player.hitbox.height * 0.5
-        a_player.accel = vec(0, 0)
+        # a_player.accel = vec(0, 0)
         a_player.vel = vec(0, 0)
 
     elif other_portal.facing == RIGHT:
         a_player.pos.x = other_portal.pos.x + other_portal.hitbox.width + a_player.hitbox.width * 0.5
         a_player.pos.y = other_portal.pos.y
-        a_player.accel = vec(0, 0)
+        # a_player.accel = vec(0, 0)
         a_player.vel = vec(0, 0)
 
     elif other_portal.facing == UP:
         a_player.pos.x = other_portal.pos.x
         a_player.pos.y = other_portal.pos.y - other_portal.hitbox.height - a_player.hitbox.height * 0.5
-        a_player.accel = vec(0, 0)
+        # a_player.accel = vec(0, 0)
         a_player.vel = vec(0, 0)
 
     elif other_portal.facing == LEFT:
         a_player.pos.x = other_portal.pos.x - other_portal.hitbox.width - a_player.hitbox.width * 0.5
         a_player.pos.y = other_portal.pos.y
-        a_player.accel = vec(0, 0)
+        # a_player.accel = vec(0, 0)
         a_player.vel = vec(0, 0)
 
 def distFromCenterPortal(proj, portal_in):
@@ -153,12 +153,22 @@ def teleportProjectile(proj, portalIn):
         if portalOut.facing == LEFT:
             projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x, portalOut.pos.y + distFromCenterPortal(proj, portalIn), proj.vel.x, proj.vel.y, proj.type))
 
+def objectAccel(object):
+    """Defines accelearion for any object's movement
+
+    Args:
+        object (pygame.sprite.Sprite): Any sprite object
+    """    
+    object.accel.x += object.vel.x * FRIC * dt
+    object.accel.y += object.vel.y * FRIC * dt
+    object.vel += object.accel * dt
+    object.pos += (object.vel + object.accel_const * object.accel) * dt
+
 #------------------------------ Player class ------------------------------#
 class PlayerBase(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
 
-        self.accel_const = 0.52
         self.pos = vec((WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2))
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
@@ -253,6 +263,8 @@ class Player(PlayerBase):
         all_sprites.add(self, layer = 1)
         all_players.add(self)
 
+        self.accel_const = 0.52
+
         self.spritesheet = SpriteSheet("sprites/orbeeto/orbeeto.png")
         self.images = self.spritesheet.getImages(0, 0, 64, 64, 5)
         self.original_images = self.spritesheet.getImages(0, 0, 64, 64, 5)
@@ -267,13 +279,18 @@ class Player(PlayerBase):
     def movement(self):
         self.accel = vec(0, 0)
         if is_a_held == True:
-            self.accel.x = -self.accel_const
+            self.accel.x = -self.accel_const * dt
         if is_d_held == True:
-            self.accel.x = self.accel_const
+            self.accel.x = self.accel_const * dt
         if is_s_held == True:
-            self.accel.y = self.accel_const
+            self.accel.y = self.accel_const * dt
         if is_w_held == True:
-            self.accel.y = -self.accel_const
+            self.accel.y = -self.accel_const * dt
+        
+        if is_x_held == True:
+            self.accel_const = 1.04
+        if is_x_held == False:
+            self.accel_const = 0.52
 
         objectAccel(self)
 
@@ -320,8 +337,6 @@ class Player(PlayerBase):
                 self.index += 1
             else: # Idle animation
                 self.index = 0
-        else:
-            pass
         
         if self.hitTime < self.hitTime_charge:
             self.hitTime += 1
@@ -713,8 +728,8 @@ class Projectile(pygame.sprite.Sprite):
         self.shotFrom = shotFrom
     
     def movement(self):
-        self.pos.x += self.vel.x
-        self.pos.y += self.vel.y
+        self.pos.x += self.vel.x * dt
+        self.pos.y += self.vel.y * dt
 
         self.rect.center = self.pos
         self.hitbox.center = self.pos
@@ -774,7 +789,7 @@ class Portal(PortalBase):
             facing (str): Dir. of velocity after being expelled
         """        
         super().__init__()
-        all_sprites.add(self, layer = 2)
+        all_sprites.add(self, layer = 11)
         
         self.pos = vec((posX, posY))
         self.facing = facing
@@ -887,7 +902,7 @@ class BulletExplode(pygame.sprite.Sprite):
 class Wall(pygame.sprite.Sprite):
     def __init__(self, topleftX_mult, topleftY_mult, widthMult, heightMult):
         super().__init__()
-        all_sprites.add(self, layer = 0)
+        all_sprites.add(self, layer = 10)
         all_walls.add(self)
 
         self.image = pygame.Surface((32 * widthMult, 32 * heightMult))
@@ -960,6 +975,10 @@ def projectileCollide(entityGroup, projectile, doesShatter, canHurt):
         if projectile.hitbox.colliderect(entity.hitbox):
             if canHurt == True:
                 entity.hp -= calculateDamage(projectile.shotFrom, entity, projectile)
+                try:
+                    entity.hitTime = 0
+                except:
+                    pass
 
             if (
                 projectile.type != PROJ_P_PORTAL and
@@ -1089,62 +1108,33 @@ loadXpRequirements()
 running = True
 while running:
     
-    dt = time.time() - last_time
-    dt *= 60
+    dt = (time.time() - last_time) * 68
     last_time = time.time()
 
     timer += 1
     print(dt)
 
     for event in pygame.event.get():
-        keyPressed = pygame.key.get_pressed()
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
-        
+
+        keyPressed = pygame.key.get_pressed()
         if keyPressed[K_ESCAPE]:
             running = False
         
-        if event.type == MOUSEBUTTONDOWN and event.button == 1:
-            is_leftMouse_held = True
-        if event.type == MOUSEBUTTONUP and event.button == 1:
-            is_leftMouse_held = False
-
-        if event.type == MOUSEBUTTONDOWN and event.button == 2:
-            is_middleMouse_held = True
-        if event.type == MOUSEBUTTONUP and event.button == 2:
-            is_middleMouse_held = False
+        is_leftMouse_held = pygame.mouse.get_pressed()[0]
+        is_middleMouse_held = pygame.mouse.get_pressed()[1]
+        is_rightMouse_held = pygame.mouse.get_pressed()[2]
 
         if event.type == MOUSEBUTTONDOWN and event.button == 3:
-            is_rightMouse_held = True
             player.shoot(player.gun_cooldown, SHOOT_MIDDLE, PROJ_P_PORTAL)
-        if event.type == MOUSEBUTTONUP and event.button == 3:
-            is_rightMouse_held = False
 
-        if event.type == KEYDOWN and event.key == K_a:
-            is_a_held = True
-        if event.type == KEYUP and event.key == K_a:
-            is_a_held = False
-
-        if event.type == KEYDOWN and event.key == K_w:
-            is_w_held = True
-        if event.type == KEYUP and event.key == K_w:
-            is_w_held = False
-
-        if event.type == KEYDOWN and event.key == K_s:
-            is_s_held = True
-        if event.type == KEYUP and event.key == K_s:
-            is_s_held = False
-
-        if event.type == KEYDOWN and event.key == K_d:
-            is_d_held = True
-        if event.type == KEYUP and event.key == K_d:
-            is_d_held = False
-
-        if event.type == KEYDOWN and event.key == K_x:
-            is_x_held = True
-        if event.type == KEYUP and event.key == K_x:
-            is_x_held = False
+        is_a_held = keyPressed[K_a]
+        is_w_held = keyPressed[K_w]
+        is_s_held = keyPressed[K_s]
+        is_d_held = keyPressed[K_d]
+        is_x_held = keyPressed[K_x]
 
     screen.fill((255, 255, 255))
 
@@ -1184,4 +1174,4 @@ while running:
 
     #------------------------------ Redraw window ------------------------------#
     redrawGameWindow()
-    clock.tick(FPS)
+    clock.tick_busy_loop(FPS)

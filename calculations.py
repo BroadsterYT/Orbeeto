@@ -141,17 +141,6 @@ def getTopLeft(sprite, desired_x, desired_y):
     return vec(desired_x + width / 2, desired_y + height / 2)
 
 #------------------------------ Returns None ------------------------------#
-def objectAccel(object):
-    """Defines accelearion for any object's movement
-
-    Args:
-        object (pygame.sprite.Sprite): Any sprite object
-    """    
-    object.accel.x += object.vel.x * FRIC
-    object.accel.y += object.vel.y * FRIC
-    object.vel += object.accel
-    object.pos += object.vel + object.accel_const * object.accel
-
 def collideCheck(object, contact_list):
     """Check if an entity comes into contact with an entity from a specific group.
     If the entities do collide, the entities will perform a hitbox collision.
