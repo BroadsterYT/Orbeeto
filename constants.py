@@ -26,5 +26,6 @@ LEFT = 'loc_left'
 RIGHT = 'loc_right'
 UP = 'loc_up'
 DOWN = 'loc_down'
+
 TOP = 'loc_top'
 BOTTOM = 'loc_bottom'

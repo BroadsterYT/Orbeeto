@@ -29,14 +29,16 @@ all_enemies = spriteGroup()
 
 all_stat_bars = spriteGroup()
 
-all_projectiles = spriteGroup()
-players_projectiles = spriteGroup()
-enemy_projectiles = spriteGroup()
+all_projs = spriteGroup()
+players_projs = spriteGroup()
+enemy_projs = spriteGroup()
 all_explosions = spriteGroup()
 all_portals = spriteGroup()
 
 all_walls = spriteGroup()
 all_rooms = []
+
+all_font_chars = spriteGroup()
 
 def getClosestPlayer(selfEntity):
     """Returns the closest player entity from another given entity
@@ -51,9 +53,12 @@ def getClosestPlayer(selfEntity):
     for a_player in all_players:
         playerCoords[a_player] = get_dist_to_entity(selfEntity, a_player)
 
-    temp = min(playerCoords.values())
+    try:
+        temp = min(playerCoords.values())
+    except:
+        pass
+
     result = [key for key in playerCoords if playerCoords[key] == temp]
-    
     return result[0]
 
 def awardXp(enemy):
@@ -65,7 +70,7 @@ def awardXp(enemy):
     for a_player in all_players:
         a_player.xp += enemy.xp_worth
 
-def teleportLocation(a_player, portal_in):
+def tpLocation(a_player, portal_in):
     """Teleports a player between portals given the portal the player is entering
 
     Args:
@@ -106,12 +111,12 @@ def distFromCenterPortal(proj, portal_in):
     if portal_in.facing == RIGHT or portal_in.facing == LEFT:
         return proj.pos.y - portal_in.pos.y
 
-def teleportProjectile(proj, portalIn):
+def teleportProj(proj, portalIn):
     for portal in all_portals:
         if portal != portalIn:
             portalOut = portal
 
-    projGroup = players_projectiles
+    projGroup = players_projs
 
     if portalIn.facing == DOWN:
         if portalOut.facing == DOWN:
@@ -164,6 +169,29 @@ def objectAccel(object):
     object.vel += object.accel * dt
     object.pos += (object.vel + object.accel_const * object.accel) * dt
 
+def groupChangeRooms(spriteGroup, direction):
+    """Change the room location of all sprites in a sprite group given a direction.
+
+    Args:
+        spriteGroup (pygame.sprite.Group): The sprite group changing rooms
+        direction (str): The room switching direction
+    """    
+    if direction == DOWN:
+        for sprite in spriteGroup:
+            sprite.changeRoomDown()
+
+    if direction == RIGHT:
+        for sprite in spriteGroup:
+            sprite.changeRoomRight()
+
+    if direction == UP:
+        for sprite in spriteGroup:
+            sprite.changeRoomUp()
+
+    if direction == LEFT:
+        for sprite in spriteGroup:
+            sprite.changeRoomLeft()
+
 #------------------------------ Player class ------------------------------#
 class PlayerBase(pygame.sprite.Sprite):
     def __init__(self):
@@ -179,8 +207,8 @@ class PlayerBase(pygame.sprite.Sprite):
         # Game stats
         self.xp = 0
         self.level = 0
-        self.max_hp = 75
-        self.hp = 75
+        self.max_hp = 50
+        self.hp = 50
         self.max_attack = 10
         self.attack = 10
         self.max_defense = 15
@@ -200,10 +228,7 @@ class PlayerBase(pygame.sprite.Sprite):
             enemy.healthBar.kill()
             enemy.kill()
 
-        for portal in all_portals:
-            portal.changeRoomRight()
-
-        for proj in all_projectiles:
+        for proj in all_projs:
             proj.kill()
 
         for boom in all_explosions:
@@ -214,16 +239,10 @@ class PlayerBase(pygame.sprite.Sprite):
 
         for enemy in all_enemies:
             enemy.healthBar.kill()
-            enemy.kill()
 
-        for portal in all_portals:
-            portal.changeRoomLeft()
-
-        for proj in all_projectiles:
-            proj.kill()
-
-        for boom in all_explosions:
-            boom.kill()
+        killGroup(all_enemies)
+        killGroup(all_projs)
+        killGroup(all_explosions)
 
     def changeRoomUp(self):
         self.pos.y += WINDOW_HEIGHT + 1
@@ -232,14 +251,8 @@ class PlayerBase(pygame.sprite.Sprite):
             enemy.healthBar.kill()
             enemy.kill()
 
-        for portal in all_portals:
-            portal.changeRoomUp()
-
-        for proj in all_projectiles:
-            proj.kill()
-
-        for boom in all_explosions:
-            boom.kill()
+        killGroup(all_projs)
+        killGroup(all_explosions)
 
     def changeRoomDown(self):
         self.pos.y -= WINDOW_HEIGHT - 1
@@ -248,14 +261,8 @@ class PlayerBase(pygame.sprite.Sprite):
             enemy.healthBar.kill()
             enemy.kill()
 
-        for portal in all_portals:
-            portal.changeRoomDown()
-
-        for proj in all_projectiles:
-            proj.kill()
-
-        for boom in all_explosions:
-            boom.kill()
+        killGroup(all_projs)
+        killGroup(all_explosions)
 
 class Player(PlayerBase):
     def __init__(self, hitbox_adjustX, hitbox_adjustY):
@@ -309,7 +316,7 @@ class Player(PlayerBase):
             self.pos.y = 0
 
     def teleport(self, portal_in):
-        teleportLocation(self, portal_in)
+        tpLocation(self, portal_in)
 
     def shoot(self, vel, cannonSide, bulletType=PROJ_P_STD):
         angle_to_mouse = get_angle_to_mouse(self)
@@ -319,13 +326,13 @@ class Player(PlayerBase):
 
         if is_leftMouse_held == True:
             if timer % a_player.gun_cooldown == 0:
-                players_projectiles.add(
+                players_projs.add(
                     Projectile(self, self.pos.x - (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y + (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, bulletType),
                     Projectile(self, self.pos.x + (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y - (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, bulletType)
                 )
 
         elif cannonSide == SHOOT_MIDDLE:
-            players_projectiles.add(Projectile(self, self.pos.x, self.pos.y, vel_x, vel_y, bulletType))
+            players_projs.add(Projectile(self, self.pos.x, self.pos.y, vel_x, vel_y, bulletType))
 
     def update(self):
         global timer
@@ -460,7 +467,7 @@ class StandardGrunt(EnemyBase):
             vel_x = vel * -sin(rad(angle_to_mouse))
             vel_y = vel * -cos(rad(angle_to_mouse))
 
-            enemy_projectiles.add(Projectile(self, self.pos.x - (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y + (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, bulletType))
+            enemy_projs.add(Projectile(self, self.pos.x - (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y + (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, bulletType))
 
     def update(self):
         global timer
@@ -564,7 +571,7 @@ class OctoGrunt(EnemyBase):
 
             OFFSET = 21
 
-            enemy_projectiles.add(
+            enemy_projs.add(
                 Projectile(self, self.pos.x - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))), vel_x, vel_y, bulletType),
                 Projectile(self, self.pos.x + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))), -vel_x, -vel_y, bulletType),
 
@@ -686,7 +693,7 @@ class Projectile(pygame.sprite.Sprite):
         """
         super().__init__()
         all_sprites.add(self, layer = 1)
-        all_projectiles.add(self)
+        all_projs.add(self)
 
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
@@ -735,7 +742,7 @@ class Projectile(pygame.sprite.Sprite):
         self.hitbox.center = self.pos
 
     def teleport(self, portal_in):
-        teleportProjectile(self, portal_in)
+        teleportProj(self, portal_in)
 
     def update(self):
         if self.type == PROJ_P_STD:
@@ -769,15 +776,19 @@ class PortalBase(pygame.sprite.Sprite):
     
     def changeRoomRight(self):
         self.pos.x -= WINDOW_WIDTH
+        print(self.pos)
 
     def changeRoomLeft(self):
         self.pos.x += WINDOW_WIDTH
+        print(self.pos)
 
     def changeRoomUp(self):
         self.pos.y += WINDOW_HEIGHT
+        print(self.pos)
 
     def changeRoomDown(self):
         self.pos.y -= WINDOW_HEIGHT
+        print(self.pos)
 
 class Portal(PortalBase):
     def __init__(self, posX, posY, facing=DOWN):
@@ -825,7 +836,9 @@ class Portal(PortalBase):
             self.kill()
         
         self.rect.center = self.pos
-        # pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 1)
+        self.hitbox.center = self.pos
+
+        pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 1)
 
 def portalCountCheck():
     """If there are more than two portals present during gameplay, the oldest one will be deleted to make room for another one
@@ -961,6 +974,55 @@ class Room(pygame.sprite.AbstractGroup):
 
         self.sprites.draw(screen)
 
+#------------------------------ Font class ------------------------------#
+class DamageChar(pygame.sprite.Sprite):
+    def __init__(self, posX, posY, damage):
+        super().__init__()
+        global timer
+        all_sprites.add(self, layer = 51)
+        all_font_chars.add(self)
+        
+        self.spritesheet = SpriteSheet("sprites/ui/font.png")
+        self.images = self.spritesheet.getImages(0, 0, 9, 14, 36)
+
+        self.pos = vec((posX, posY))
+        self.vel = vec(0, -2)
+
+        self.timeStart = timer
+
+        width = 9
+        height = 14
+        
+        dmg_charList = []
+        for char in str(damage):
+            dmg_charList.append(self.images[int(char) + 26])
+            print(int(char)+26)
+        
+        new_surface = pygame.Surface([width * len(dmg_charList), height]).convert()
+
+        count = 0
+        for surface in dmg_charList:
+            new_surface.blit(surface, (width * count, 0), (0, 0, 9, 14))
+            count += 1
+        
+        self.rect = pygame.Rect(0, 0, 9, 14)
+
+        self.image = new_surface
+        self.image.set_colorkey((255, 255, 255))
+        self.rect = self.image.get_rect(center = self.rect.center)
+        self.rect.center = self.pos
+
+    def movement(self):
+        self.pos.x += self.vel.x * dt
+        self.pos.y += self.vel.y * dt
+
+        self.rect.center = self.pos
+
+    def update(self):
+        global timer
+        if timer == self.timeStart + 40:
+            self.kill()
+
 #------------------------------ Redraw game window ------------------------------#
 def projectileCollide(entityGroup, projectile, doesShatter, canHurt):
     """Destroys a given projectile upon a collision and renders an explosion
@@ -975,6 +1037,8 @@ def projectileCollide(entityGroup, projectile, doesShatter, canHurt):
         if projectile.hitbox.colliderect(entity.hitbox):
             if canHurt == True:
                 entity.hp -= calculateDamage(projectile.shotFrom, entity, projectile)
+                all_font_chars.add(DamageChar(entity.pos.x, entity.pos.y, calculateDamage(projectile.shotFrom, entity, projectile)))
+
                 try:
                     entity.hitTime = 0
                 except:
@@ -1034,7 +1098,7 @@ def redrawGameWindow():
     # Drawing all player characters every frame
     for a_player in all_players:
         collideCheck(a_player, all_enemies)
-        collideCheck(a_player, enemy_projectiles)
+        collideCheck(a_player, enemy_projs)
         collideCheck(a_player, all_walls)
 
         a_player.movement()
@@ -1048,18 +1112,18 @@ def redrawGameWindow():
     # Drawing all enemies every frame
     for enemy in all_enemies:
         collideCheck(enemy, all_players)
-        collideCheck(enemy, players_projectiles)
+        collideCheck(enemy, players_projs)
         collideCheck(enemy, all_walls)
 
         enemy.update()
 
     # Drawing all players' projectiles every frame
-    for projectile in players_projectiles:
-        bindProjectile(projectile, players_projectiles, all_enemies)
+    for projectile in players_projs:
+        bindProjectile(projectile, players_projs, all_enemies)
 
     # Drawing all enemy projectiles every frame
-    for projectile in enemy_projectiles:
-        bindProjectile(projectile, enemy_projectiles, all_players)
+    for projectile in enemy_projs:
+        bindProjectile(projectile, enemy_projs, all_players)
 
     # Drawing all explosions every frame
     for bullet in all_explosions:
@@ -1077,6 +1141,11 @@ def redrawGameWindow():
     # Drawing all portals every frame
     for portal in all_portals:
         portal.update()
+
+    # Drawing fonts
+    for char in all_font_chars:
+        char.update()
+        char.movement()
 
     all_sprites.draw(screen)
     pygame.display.update()
@@ -1108,11 +1177,10 @@ loadXpRequirements()
 running = True
 while running:
     
-    dt = (time.time() - last_time) * 68
+    dt = (time.time() - last_time) * 60
     last_time = time.time()
 
     timer += 1
-    print(dt)
 
     for event in pygame.event.get():
         if event.type == QUIT:

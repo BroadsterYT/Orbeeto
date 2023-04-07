@@ -1,4 +1,5 @@
 import pygame, math
+import random as rand
 from constants import *
 
 vec = pygame.math.Vector2
@@ -122,7 +123,15 @@ def calculateDamage(sender, receiver, projectile):
     Returns:
         int: Infliction damage upon receiver
     """
-    return math.ceil(((sender.attack / receiver.defense) * projectile.damage))
+    if rand.randint(1, 20) == 1:
+        damage = (sender.attack - receiver.defense + projectile.damage) * 5
+    else:
+        damage = sender.attack - receiver.defense + projectile.damage
+
+    if damage < 0:
+        damage = 1
+
+    return damage
 
 #------------------------------ Returns pygame.math.Vector2 ------------------------------#
 def getTopLeft(sprite, desired_x, desired_y):
@@ -166,6 +175,15 @@ def collideCheck(object, contact_list):
                 else:
                     object.vel.y = 0
                     object.pos.y += 1
+
+def killGroup(spriteGroup):
+    """Run sprite.kill() for all entities in a group.
+
+    Args:
+        spriteGroup (pygame.sprite.Group): The group to kill all sprites within
+    """    
+    for entity in spriteGroup:
+        entity.kill()
 
 #------------------------------ Classes ------------------------------#
 class CustomError(Exception):
