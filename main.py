@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 import sys, math, time
+
 import random as rand
 
 from math import sin, cos, tan, radians
@@ -24,6 +25,7 @@ screen = pygame.display.set_mode(screenSize, pygame.SCALED)
 pygame.display.set_caption('Orbeeto')
 
 all_sprites = pygame.sprite.LayeredUpdates()
+
 all_players = spriteGroup()
 all_enemies = spriteGroup()
 
@@ -55,11 +57,10 @@ def getClosestPlayer(selfEntity):
 
     try:
         temp = min(playerCoords.values())
+        result = [key for key in playerCoords if playerCoords[key] == temp]
+        return result[0]
     except:
         pass
-
-    result = [key for key in playerCoords if playerCoords[key] == temp]
-    return result[0]
 
 def awardXp(enemy):
     """Give all players an enemy's xp worth after it is killed
@@ -223,19 +224,20 @@ class PlayerBase(pygame.sprite.Sprite):
 
     def changeRoomRight(self):
         self.pos.x -= WINDOW_WIDTH + 1
+
+        groupChangeRooms(all_portals, RIGHT)
         
         for enemy in all_enemies:
             enemy.healthBar.kill()
-            enemy.kill()
-
-        for proj in all_projs:
-            proj.kill()
-
-        for boom in all_explosions:
-            boom.kill()
+        
+        killGroup(all_enemies)
+        killGroup(all_projs)
+        killGroup(all_explosions)
 
     def changeRoomLeft(self):
         self.pos.x += WINDOW_WIDTH + 1
+
+        groupChangeRooms(all_portals, LEFT)
 
         for enemy in all_enemies:
             enemy.healthBar.kill()
@@ -247,20 +249,24 @@ class PlayerBase(pygame.sprite.Sprite):
     def changeRoomUp(self):
         self.pos.y += WINDOW_HEIGHT + 1
 
+        groupChangeRooms(all_portals, UP)
+
         for enemy in all_enemies:
             enemy.healthBar.kill()
-            enemy.kill()
 
+        killGroup(all_enemies)
         killGroup(all_projs)
         killGroup(all_explosions)
 
     def changeRoomDown(self):
         self.pos.y -= WINDOW_HEIGHT - 1
 
+        groupChangeRooms(all_portals, DOWN)
+
         for enemy in all_enemies:
             enemy.healthBar.kill()
-            enemy.kill()
 
+        killGroup(all_enemies)
         killGroup(all_projs)
         killGroup(all_explosions)
 
@@ -1024,7 +1030,7 @@ class DamageChar(pygame.sprite.Sprite):
             self.kill()
 
 #------------------------------ Redraw game window ------------------------------#
-def projectileCollide(entityGroup, projectile, doesShatter, canHurt):
+def projectileCollide(entityGroup, proj, doesShatter, canHurt):
     """Destroys a given projectile upon a collision and renders an explosion
 
     Args:
@@ -1034,10 +1040,18 @@ def projectileCollide(entityGroup, projectile, doesShatter, canHurt):
         canHurt (bool): Should the projectile calculate damage upon impact? Defaults to False.
     """
     for entity in entityGroup:
-        if projectile.hitbox.colliderect(entity.hitbox):
-            if canHurt == True:
-                entity.hp -= calculateDamage(projectile.shotFrom, entity, projectile)
-                all_font_chars.add(DamageChar(entity.pos.x, entity.pos.y, calculateDamage(projectile.shotFrom, entity, projectile)))
+        if proj.hitbox.colliderect(entity.hitbox):
+            if canHurt == True and entityGroup == all_enemies:
+                if rand.randint(1, 20) == 1:
+                    entity.hp -= (calculateDamage(proj.shotFrom, entity, proj)) * 3
+                    all_font_chars.add(DamageChar(entity.pos.x, entity.pos.y, 3 * calculateDamage(proj.shotFrom, entity, proj)))
+                else:
+                    entity.hp -= calculateDamage(proj.shotFrom, entity, proj)
+                    all_font_chars.add(DamageChar(entity.pos.x, entity.pos.y, calculateDamage(proj.shotFrom, entity, proj)))
+
+            if canHurt == True and entityGroup != all_enemies:
+                entity.hp -= calculateDamage(proj.shotFrom, entity, proj)
+                all_font_chars.add(DamageChar(entity.pos.x, entity.pos.y, calculateDamage(proj.shotFrom, entity, proj)))
 
                 try:
                     entity.hitTime = 0
@@ -1045,29 +1059,29 @@ def projectileCollide(entityGroup, projectile, doesShatter, canHurt):
                     pass
 
             if (
-                projectile.type != PROJ_P_PORTAL and
+                proj.type != PROJ_P_PORTAL and
                 entityGroup == all_portals and
                 len(all_portals) == 2
             ):
                 for portal in all_portals:
-                    if projectile.hitbox.colliderect(portal.hitbox):
-                        projectile.teleport(portal)
+                    if proj.hitbox.colliderect(portal.hitbox):
+                        proj.teleport(portal)
 
-            if projectile.type == PROJ_P_PORTAL and entityGroup == all_walls:
-                side = portalSideCheck(entity, projectile)
+            if proj.type == PROJ_P_PORTAL and entityGroup == all_walls:
+                side = portalSideCheck(entity, proj)
                 if side == DOWN or side == UP:
-                    if projectile.pos.x - 32 > entity.pos.x - 0.5 * entity.image.get_width() and projectile.pos.x + 32 < entity.pos.x + 0.5 * entity.image.get_width():
-                        all_portals.add(Portal(projectile.pos.x, projectile.pos.y, side))
+                    if proj.pos.x - 32 > entity.pos.x - 0.5 * entity.image.get_width() and proj.pos.x + 32 < entity.pos.x + 0.5 * entity.image.get_width():
+                        all_portals.add(Portal(proj.pos.x, proj.pos.y, side))
                         portalCountCheck()
                 if side == RIGHT or side == LEFT:
-                    if projectile.pos.y - 32 > entity.pos.y - 0.5 * entity.image.get_height() and projectile.pos.y + 32 < entity.pos.y + 0.5 * entity.image.get_height():
-                        all_portals.add(Portal(projectile.pos.x, projectile.pos.y, side))
+                    if proj.pos.y - 32 > entity.pos.y - 0.5 * entity.image.get_height() and proj.pos.y + 32 < entity.pos.y + 0.5 * entity.image.get_height():
+                        all_portals.add(Portal(proj.pos.x, proj.pos.y, side))
                         portalCountCheck()
 
-            if doesShatter == True and projectile.type != PROJ_P_PORTAL:
-                all_explosions.add(BulletExplode(projectile))
+            if doesShatter == True and proj.type != PROJ_P_PORTAL:
+                all_explosions.add(BulletExplode(proj))
 
-            projectile.kill()
+            proj.kill()
 
 def bindProjectile(projectile, projGroup, projTargetGroup):
     """Binds a projectile to its shooter and confines it to the window borders
@@ -1181,6 +1195,11 @@ while running:
     last_time = time.time()
 
     timer += 1
+
+    if player.hp <= 0:
+        killGroup(all_sprites)
+        pygame.quit()
+        sys.exit()
 
     for event in pygame.event.get():
         if event.type == QUIT:

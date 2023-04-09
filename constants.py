@@ -6,6 +6,7 @@ FPS = 60
 PROJ_P_STD = 'playerBullet'
 PROJ_P_BOUNCE = 'playerBouncy'
 PROJ_P_PORTAL = 'playerPortal'
+
 PROJ_E_STD = 'enemyBullet'
 
 PROJ_DICT = {

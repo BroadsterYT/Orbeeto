@@ -112,7 +112,7 @@ def get_vec_angle(vecX, vecY):
                 return vec_angle
 
 #------------------------------ Returns int ------------------------------#
-def calculateDamage(sender, receiver, projectile):
+def calculateDamage(sender, receiver, proj):
     """Calculates the damage an entity receives after being hit
 
     Args:
@@ -123,10 +123,7 @@ def calculateDamage(sender, receiver, projectile):
     Returns:
         int: Infliction damage upon receiver
     """
-    if rand.randint(1, 20) == 1:
-        damage = (sender.attack - receiver.defense + projectile.damage) * 5
-    else:
-        damage = sender.attack - receiver.defense + projectile.damage
+    damage = sender.attack - receiver.defense + proj.damage
 
     if damage < 0:
         damage = 1
