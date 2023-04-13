@@ -4,8 +4,9 @@ import sys, math, time
 
 import random as rand
 
-from math import sin, cos, tan, radians
+from math import sin, cos, radians
 
+from groups import *
 from spritesheet import *
 from constants import *
 from calculateStats import *
@@ -23,24 +24,6 @@ clock = pygame.time.Clock()
 screenSize = (WINDOW_WIDTH, WINDOW_HEIGHT)
 screen = pygame.display.set_mode(screenSize, pygame.SCALED)
 pygame.display.set_caption('Orbeeto')
-
-all_sprites = pygame.sprite.LayeredUpdates()
-
-all_players = spriteGroup()
-all_enemies = spriteGroup()
-
-all_stat_bars = spriteGroup()
-
-all_projs = spriteGroup()
-players_projs = spriteGroup()
-enemy_projs = spriteGroup()
-all_explosions = spriteGroup()
-all_portals = spriteGroup()
-
-all_walls = spriteGroup()
-all_rooms = []
-
-all_font_chars = spriteGroup()
 
 def getClosestPlayer(selfEntity):
     """Returns the closest player entity from another given entity
@@ -160,7 +143,7 @@ def teleportProj(proj, portalIn):
             projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x, portalOut.pos.y + distFromCenterPortal(proj, portalIn), proj.vel.x, proj.vel.y, proj.type))
 
 def objectAccel(object):
-    """Defines accelearion for any object's movement
+    """Defines acceleration for any object's movement
 
     Args:
         object (pygame.sprite.Sprite): Any sprite object
@@ -203,7 +186,6 @@ class PlayerBase(pygame.sprite.Sprite):
         self.accel = vec(0, 0)
 
         self.roomCoords = vec((0, 0))
-        self.isChangingRooms = False
 
         # Game stats
         self.xp = 0
@@ -309,17 +291,6 @@ class Player(PlayerBase):
 
         self.rect.center = self.pos
         self.hitbox.center = self.pos
-
-        # When beyond window borders
-        if self.pos.x >= WINDOW_WIDTH:
-            self.pos.x = WINDOW_WIDTH
-        if self.pos.x <= 0:
-            self.pos.x = 0
-
-        if self.pos.y >= WINDOW_HEIGHT:
-            self.pos.y = WINDOW_HEIGHT
-        if self.pos.y <= 0:
-            self.pos.y = 0
 
     def teleport(self, portal_in):
         tpLocation(self, portal_in)
@@ -616,6 +587,48 @@ class OctoGrunt(EnemyBase):
         if self.hp <= 0:
             awardXp(self)
             self.kill()
+
+#------------------------------ Box class ------------------------------#
+class Push(pygame.sprite.Sprite):
+    def __init__(self, posX, posY):
+        super().__init__()
+        all_sprites.add(self, layer = 1)
+        all_movable.add(self)
+
+        self.spritesheet = SpriteSheet("sprites/orbeeto/orbeeto.png")
+        self.images = self.spritesheet.getImages(0, 0, 64, 64, 1)
+        self.index = 0
+
+        self.pos = vec((posX, posY))
+        self.vel = vec(0, 0)
+        self.accel = vec(0, 0)
+        self.accel_const = 0.4
+
+        self.image = self.images[self.index]
+        self.rect = pygame.Rect(0, 0, 64, 64)
+        self.hitbox = self.rect
+
+        self.rect.center = self.pos
+
+    def movement(self):
+        self.accel = vec(0, 0)
+        if self.hitbox.colliderect(player1.rect):
+            if collideSideCheck(self, player1) == DOWN:
+                self.accel.y = -self.accel_const * dt
+            if collideSideCheck(self, player1) == RIGHT:
+                self.accel.x = -self.accel_const * dt
+            if collideSideCheck(self, player1) == UP:
+                self.accel.y = self.accel_const * dt
+            if collideSideCheck(self, player1) == LEFT:
+                self.accel.x = self.accel_const * dt
+
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
+
+        objectAccel(self)
+
+    def update(self):
+        pass
 
 #------------------------------ Stat bar classes ------------------------------#
 class HealthBar(pygame.sprite.Sprite):
@@ -946,20 +959,26 @@ class Room(pygame.sprite.AbstractGroup):
         super().__init__()
         all_rooms.append(self)
         self.roomCoords = vec((roomCoordsX, roomCoordsY))
-
         self.sprites = spriteGroup()
 
+        self.refDict = {}
+
     def layoutUpdate(self):
+        """Updates the layout of the room.
+        """        
         for sprite in self.sprites:
             sprite.kill()
-            
+        
+        #---------- Room Layouts ----------#
         if self.roomCoords == vec(0, 0):
             self.sprites.add(
                 Wall(0, 0, 4, 4),
                 Wall(36, 0, 4, 4),
                 Wall(0, 18.5, 4, 4),
                 Wall(36, 18.5, 4, 4),
-                OctoGrunt(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 25, 10, 10, 25, 0.3)
+                OctoGrunt(500, WINDOW_HEIGHT / 2, 25, 10, 10, 25, 0.3),
+                OctoGrunt(300, WINDOW_HEIGHT / 2, 25, 10, 10, 25, 0.3),
+                Push(800, WINDOW_HEIGHT / 2)
             )
 
         elif self.roomCoords == vec(1, 0):
@@ -978,7 +997,8 @@ class Room(pygame.sprite.AbstractGroup):
                 Wall(28, 4, 4, 4)
             )
 
-        self.sprites.draw(screen)
+    def update(self):
+        pass
 
 #------------------------------ Font class ------------------------------#
 class DamageChar(pygame.sprite.Sprite):
@@ -1083,7 +1103,7 @@ def projectileCollide(entityGroup, proj, doesShatter, canHurt):
 
             proj.kill()
 
-def bindProjectile(projectile, projGroup, projTargetGroup):
+def bindProjectile(projectile, projTargetGroup):
     """Binds a projectile to its shooter and confines it to the window borders
 
     Args:
@@ -1114,6 +1134,7 @@ def redrawGameWindow():
         collideCheck(a_player, all_enemies)
         collideCheck(a_player, enemy_projs)
         collideCheck(a_player, all_walls)
+        collideCheck(a_player, all_movable)
 
         a_player.movement()
         a_player.shoot(12, None)
@@ -1131,13 +1152,17 @@ def redrawGameWindow():
 
         enemy.update()
 
+    for object in all_movable:
+        object.movement()
+        object.update()
+
     # Drawing all players' projectiles every frame
     for projectile in players_projs:
-        bindProjectile(projectile, players_projs, all_enemies)
+        bindProjectile(projectile, all_enemies)
 
     # Drawing all enemy projectiles every frame
     for projectile in enemy_projs:
-        bindProjectile(projectile, enemy_projs, all_players)
+        bindProjectile(projectile, all_players)
 
     # Drawing all explosions every frame
     for bullet in all_explosions:
@@ -1161,11 +1186,15 @@ def redrawGameWindow():
         char.update()
         char.movement()
 
+    # Updating rooms
+    for room in all_rooms:
+        room.update()
+
     all_sprites.draw(screen)
     pygame.display.update()
 
 #------------------------------ Initialing parameters ------------------------------#
-player = Player(-32, -32)
+player1 = Player(-32, -32)
 
 # Load rooms
 room = Room(0, 0)
@@ -1196,7 +1225,7 @@ while running:
 
     timer += 1
 
-    if player.hp <= 0:
+    if player1.hp <= 0:
         killGroup(all_sprites)
         pygame.quit()
         sys.exit()
@@ -1215,7 +1244,7 @@ while running:
         is_rightMouse_held = pygame.mouse.get_pressed()[2]
 
         if event.type == MOUSEBUTTONDOWN and event.button == 3:
-            player.shoot(player.gun_cooldown, SHOOT_MIDDLE, PROJ_P_PORTAL)
+            player1.shoot(player1.gun_cooldown, SHOOT_MIDDLE, PROJ_P_PORTAL)
 
         is_a_held = keyPressed[K_a]
         is_w_held = keyPressed[K_w]
@@ -1228,22 +1257,22 @@ while running:
     #------------------------------ Game operation ------------------------------#
     ## Changing rooms
     for a_player in all_players:
-        if a_player.pos.x == 0:
+        if a_player.pos.x <= 0:
             a_player.changeRoomLeft()
             room.roomCoords.x -= 1
             room.layoutUpdate()
 
-        if a_player.pos.x == WINDOW_WIDTH:
+        if a_player.pos.x >= WINDOW_WIDTH:
             a_player.changeRoomRight()
             room.roomCoords.x += 1
             room.layoutUpdate()
 
-        if a_player.pos.y == 0:
+        if a_player.pos.y <= 0:
             a_player.changeRoomUp()
             room.roomCoords.y += 1
             room.layoutUpdate()
 
-        if a_player.pos.y == WINDOW_HEIGHT:
+        if a_player.pos.y >= WINDOW_HEIGHT:
             a_player.changeRoomDown()
             room.roomCoords.y -= 1
             room.layoutUpdate()

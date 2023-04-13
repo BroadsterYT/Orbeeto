@@ -2,6 +2,8 @@ import pygame, math
 import random as rand
 from constants import *
 
+from groups import *
+
 vec = pygame.math.Vector2
 
 #------------------------------ Returns float ------------------------------#
@@ -129,6 +131,23 @@ def calculateDamage(sender, receiver, proj):
         damage = 1
 
     return damage
+
+#------------------------------ Returns string ------------------------------#
+def collideSideCheck(object, instig):
+    if object.pos.x - 0.5 * object.hitbox.width <= instig.pos.x <= object.pos.x + 0.5 * object.hitbox.width and instig.pos.y > object.pos.y:
+        return DOWN
+    
+    elif object.pos.x - 0.5 * object.hitbox.width <= instig.pos.x <= object.pos.x + 0.5 * object.hitbox.width and instig.pos.y < object.pos.y:
+        return UP
+
+    elif object.pos.y - 0.5 * object.hitbox.height <= instig.pos.y <= object.pos.y + 0.5 * object.hitbox.height and instig.pos.x > object.pos.x:
+        return RIGHT
+    
+    elif object.pos.y - 0.5 * object.hitbox.height <= instig.pos.y <= object.pos.y + 0.5 * object.hitbox.height and instig.pos.x < object.pos.x:
+        return LEFT
+    
+    else:
+        return None
 
 #------------------------------ Returns pygame.math.Vector2 ------------------------------#
 def getTopLeft(sprite, desired_x, desired_y):
