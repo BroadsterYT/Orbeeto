@@ -1,5 +1,4 @@
 import pygame, math
-import random as rand
 from constants import *
 
 from groups import *
@@ -192,14 +191,15 @@ def collideCheck(object, contact_list):
                     object.vel.y = 0
                     object.pos.y += 1
 
-def killGroup(spriteGroup):
-    """Run sprite.kill() for all entities in a group.
+def killGroup(*groups):
+    """Runs sprite.kill() for all entities in one or more group.
 
     Args:
-        spriteGroup (pygame.sprite.Group): The group to kill all sprites within
+        groups (pygame.sprite.Group): The group(s) to kill all sprites within
     """    
-    for entity in spriteGroup:
-        entity.kill()
+    for group in groups:
+        for entity in group:
+            entity.kill()
 
 #------------------------------ Classes ------------------------------#
 class CustomError(Exception):

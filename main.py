@@ -27,10 +27,8 @@ pygame.display.set_caption('Orbeeto')
 
 def getClosestPlayer(selfEntity):
     """Returns the closest player entity from another given entity
-
     Args:
         selfEntity (pygame.sprite.Sprite): The entity to locate the closest player from
-
     Returns:
         pygame.sprite.Sprite: The closest player entity to selfEntity
     """
@@ -47,18 +45,16 @@ def getClosestPlayer(selfEntity):
 
 def awardXp(enemy):
     """Give all players an enemy's xp worth after it is killed
-
     Args:
         enemy (pygame.sprite.Sprite): The enemy that has been killed
     """
     for a_player in all_players:
         a_player.xp += enemy.xp_worth
 
-def tpLocation(a_player, portal_in):
-    """Teleports a player between portals given the portal the player is entering
-
+def tpLocation(entity, portal_in):
+    """Teleports an entity between portals given the portal the entity is entering
     Args:
-        a_player (pygame.sprite.Sprite): The player entering the portal
+        entity (pygame.sprite.Sprite): The player entering the portal
         portal_in (pygame.sprite.Sprite): The portal the player is entering
     """    
     for portal in all_portals:
@@ -66,28 +62,24 @@ def tpLocation(a_player, portal_in):
             other_portal = portal
             
     if other_portal.facing == DOWN:
-        a_player.pos.x = other_portal.pos.x
-        a_player.pos.y = other_portal.pos.y + other_portal.hitbox.height + a_player.hitbox.height * 0.5
-        # a_player.accel = vec(0, 0)
-        a_player.vel = vec(0, 0)
+        entity.pos.x = other_portal.pos.x
+        entity.pos.y = other_portal.pos.y + other_portal.hitbox.height + entity.hitbox.height * 0.5
+        entity.vel = vec(0, 0)
 
     elif other_portal.facing == RIGHT:
-        a_player.pos.x = other_portal.pos.x + other_portal.hitbox.width + a_player.hitbox.width * 0.5
-        a_player.pos.y = other_portal.pos.y
-        # a_player.accel = vec(0, 0)
-        a_player.vel = vec(0, 0)
+        entity.pos.x = other_portal.pos.x + other_portal.hitbox.width + entity.hitbox.width * 0.5
+        entity.pos.y = other_portal.pos.y
+        entity.vel = vec(0, 0)
 
     elif other_portal.facing == UP:
-        a_player.pos.x = other_portal.pos.x
-        a_player.pos.y = other_portal.pos.y - other_portal.hitbox.height - a_player.hitbox.height * 0.5
-        # a_player.accel = vec(0, 0)
-        a_player.vel = vec(0, 0)
+        entity.pos.x = other_portal.pos.x
+        entity.pos.y = other_portal.pos.y - other_portal.hitbox.height - entity.hitbox.height * 0.5
+        entity.vel = vec(0, 0)
 
     elif other_portal.facing == LEFT:
-        a_player.pos.x = other_portal.pos.x - other_portal.hitbox.width - a_player.hitbox.width * 0.5
-        a_player.pos.y = other_portal.pos.y
-        # a_player.accel = vec(0, 0)
-        a_player.vel = vec(0, 0)
+        entity.pos.x = other_portal.pos.x - other_portal.hitbox.width - entity.hitbox.width * 0.5
+        entity.pos.y = other_portal.pos.y
+        entity.vel = vec(0, 0)
 
 def distFromCenterPortal(proj, portal_in):
     if portal_in.facing == DOWN or portal_in.facing == UP:
@@ -143,19 +135,17 @@ def teleportProj(proj, portalIn):
             projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x, portalOut.pos.y + distFromCenterPortal(proj, portalIn), proj.vel.x, proj.vel.y, proj.type))
 
 def objectAccel(object):
-    """Defines acceleration for any object's movement
-
+    """Defines acceleration for any entity's movement
     Args:
         object (pygame.sprite.Sprite): Any sprite object
     """    
-    object.accel.x += object.vel.x * FRIC * dt
-    object.accel.y += object.vel.y * FRIC * dt
+    object.accel.x += object.vel.x * FRIC
+    object.accel.y += object.vel.y * FRIC
     object.vel += object.accel * dt
-    object.pos += (object.vel + object.accel_const * object.accel) * dt
+    object.pos += object.vel + object.accel_const * object.accel
 
 def groupChangeRooms(spriteGroup, direction):
     """Change the room location of all sprites in a sprite group given a direction.
-
     Args:
         spriteGroup (pygame.sprite.Group): The sprite group changing rooms
         direction (str): The room switching direction
@@ -180,14 +170,15 @@ def groupChangeRooms(spriteGroup, direction):
 class PlayerBase(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
+        self.room = vec((0, 0))
 
         self.pos = vec((WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2))
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
 
-        self.roomCoords = vec((0, 0))
+        self.room = vec((0, 0))
 
-        # Game stats
+        #---------- Game stats ----------#
         self.xp = 0
         self.level = 0
         self.max_hp = 50
@@ -205,52 +196,40 @@ class PlayerBase(pygame.sprite.Sprite):
         self.dodgeBar = DodgeBar(self)
 
     def changeRoomRight(self):
-        self.pos.x -= WINDOW_WIDTH + 1
-
+        room.room.x += 1
+        room.layoutUpdate()
+        
+        self.pos.x -= WINDOW_WIDTH
         groupChangeRooms(all_portals, RIGHT)
         
-        for enemy in all_enemies:
-            enemy.healthBar.kill()
-        
-        killGroup(all_enemies)
-        killGroup(all_projs)
-        killGroup(all_explosions)
+        killGroup(all_projs, all_explosions)
 
     def changeRoomLeft(self):
-        self.pos.x += WINDOW_WIDTH + 1
+        room.room.x -= 1
+        room.layoutUpdate()
 
+        self.pos.x += WINDOW_WIDTH
         groupChangeRooms(all_portals, LEFT)
 
-        for enemy in all_enemies:
-            enemy.healthBar.kill()
-
-        killGroup(all_enemies)
-        killGroup(all_projs)
-        killGroup(all_explosions)
+        killGroup(all_projs, all_explosions)
 
     def changeRoomUp(self):
-        self.pos.y += WINDOW_HEIGHT + 1
+        room.room.y += 1
+        room.layoutUpdate()
 
+        self.pos.y += WINDOW_HEIGHT
         groupChangeRooms(all_portals, UP)
 
-        for enemy in all_enemies:
-            enemy.healthBar.kill()
-
-        killGroup(all_enemies)
-        killGroup(all_projs)
-        killGroup(all_explosions)
+        killGroup(all_projs, all_explosions)
 
     def changeRoomDown(self):
-        self.pos.y -= WINDOW_HEIGHT - 1
+        room.room.y -= 1
+        room.layoutUpdate()
 
+        self.pos.y -= WINDOW_HEIGHT
         groupChangeRooms(all_portals, DOWN)
 
-        for enemy in all_enemies:
-            enemy.healthBar.kill()
-
-        killGroup(all_enemies)
-        killGroup(all_projs)
-        killGroup(all_explosions)
+        killGroup(all_projs, all_explosions)
 
 class Player(PlayerBase):
     def __init__(self, hitbox_adjustX, hitbox_adjustY):
@@ -302,7 +281,7 @@ class Player(PlayerBase):
         vel_y = vel * -cos(rad(angle_to_mouse))
 
         if is_leftMouse_held == True:
-            if timer % a_player.gun_cooldown == 0:
+            if timer % self.gun_cooldown == 0:
                 players_projs.add(
                     Projectile(self, self.pos.x - (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y + (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, bulletType),
                     Projectile(self, self.pos.x + (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y - (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, bulletType)
@@ -340,29 +319,31 @@ class Player(PlayerBase):
 class EnemyBase(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
+        self.visible = True
 
         self.pos = vec((0, 0))
-        
         self.is_shooting = False
-
         self.healthBar = HealthBar(self)
 
-    def changeRoomRight(self):
-        self.kill()
+    def hide(self):
+        self.visible = False
 
-    def changeRoomLeft(self):
-        self.kill()
+    def show(self):
+        self.visible = True
 
-    def changeRoomUp(self):
-        self.kill()
-
-    def changeRoomDown(self):
-        self.kill()
+def storeEnemies():
+    """Stores all of the sprites in a container into the enemy dictionary. This allows the game to remember objects that disappear from the screen.
+    """    
+    for container in all_containers:
+        if container.room == room.room:
+            new_cont = container.copy()
+            container_sprites.update([((container.room.x, container.room.y), new_cont)])
+            for sprite in container.sprites():
+                sprite.hide()
 
 class StandardGrunt(EnemyBase):
-    def __init__(self, posX, posY, hp, attack, defense, xp_worth, accel_const):
+    def __init__(self, posX, posY, roomX, roomY, hp, attack, defense, xp_worth, accel_const):
         """A simple enemy that moves to random locations and shoots at random intervals
-
         Args:
             posX (float): x-position to spawn at
             posY (float): y-position to spawn at
@@ -389,15 +370,15 @@ class StandardGrunt(EnemyBase):
 
         self.accel_const = accel_const
 
-        self.roomCoords = vec((0, 0))
+        self.room = vec((roomX, roomY))
 
-        self.pos = vec((posX + (self.roomCoords.x * WINDOW_WIDTH), posY + (self.roomCoords.y * WINDOW_HEIGHT)))
+        self.pos = vec((posX, posY))
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
 
         self.rand_pos = vec(rand.randint(0, WINDOW_WIDTH), rand.randint(0, WINDOW_HEIGHT))
 
-        # Game stats
+        #---------- Game stats ----------#
         self.max_hp = hp
         self.hp = self.max_hp
         self.max_attack = attack
@@ -473,7 +454,7 @@ class StandardGrunt(EnemyBase):
             self.kill()
 
 class OctoGrunt(EnemyBase):
-    def __init__(self, posX, posY, hp, attack, defense, xp_worth, accel_const):
+    def __init__(self, posX, posY, roomX, roomY, hp, attack, defense, xp_worth, accel_const):
         super().__init__()
         all_sprites.add(self, layer = 1)
         all_enemies.add(self)
@@ -491,9 +472,9 @@ class OctoGrunt(EnemyBase):
 
         self.accel_const = accel_const
 
-        self.roomCoords = vec((0, 0))
+        self.room = vec((roomX, roomY))
 
-        self.pos = vec((posX + (self.roomCoords.x * WINDOW_WIDTH), posY + (self.roomCoords.y * WINDOW_HEIGHT)))
+        self.pos = vec((posX, posY))
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
 
@@ -700,7 +681,6 @@ class DodgeBar(pygame.sprite.Sprite):
 class Projectile(pygame.sprite.Sprite):
     def __init__(self, shotFrom, posX, posY, velX, velY, bulletType, ricochet = False):
         """An object that travels at a specific velocity
-
         Args:
             shotFrom (pygame.sprite.Sprite): The entity the bullet was shot from
             posX (int): The x-position where the projectile will spawn
@@ -750,7 +730,6 @@ class Projectile(pygame.sprite.Sprite):
         self.image = pygame.transform.rotate(self.original_image, int(get_vec_angle(self.vel.x, self.vel.y)))
         self.rect = self.image.get_rect(center = self.rect.center)
 
-        # Game stats
         self.shotFrom = shotFrom
     
     def movement(self):
@@ -778,8 +757,6 @@ class Projectile(pygame.sprite.Sprite):
                 self.index += 1
                 if self.index > 4:
                     self.index = 0
-                else:
-                    pass
         
             self.image = self.images[self.index]
             self.original_image = self.original_images[self.index]
@@ -795,24 +772,19 @@ class PortalBase(pygame.sprite.Sprite):
     
     def changeRoomRight(self):
         self.pos.x -= WINDOW_WIDTH
-        print(self.pos)
 
     def changeRoomLeft(self):
         self.pos.x += WINDOW_WIDTH
-        print(self.pos)
 
     def changeRoomUp(self):
         self.pos.y += WINDOW_HEIGHT
-        print(self.pos)
 
     def changeRoomDown(self):
         self.pos.y -= WINDOW_HEIGHT
-        print(self.pos)
 
 class Portal(PortalBase):
     def __init__(self, posX, posY, facing=DOWN):
         """An intering means of transportation...
-
         Args:
             posX (int): Spawn location along x-axis
             posY (int): Spawn location along y-axis
@@ -873,7 +845,6 @@ def portalCountCheck():
 
 def portalSideCheck(wall, portal):
     """Checks for which side of a wall a portal hit and assigns it that value
-
     Args:
         wall (pygame.sprite.Sprite): The wall being hit
         portal (pygame.sprite.Sprite): The projectile that is hitting the wall
@@ -948,49 +919,81 @@ class Wall(pygame.sprite.Sprite):
         self.rect.center = self.pos
 
 #------------------------------ Room class ------------------------------#
-class Room(pygame.sprite.AbstractGroup):
-    def __init__(self, roomCoordsX, roomCoordsY):
-        """The room where all the current action (a lot) is taking place
+class AbstractBase(pygame.sprite.AbstractGroup):
+    def __init__(self):
+        """The base class for all standard abstract groups. Contains methods to help manipulate the abstract group.
+        """        
+        super().__init__()
+    
+    def add(self, *sprites):
+        """Add one or more sprites to the abstract group.
 
         Args:
-            roomCoordsX (int): The room's x-axis location in the grid of the room layout
-            roomCoordsY (int): The room's y-axis location in the grid of the room layout
+            sprites (pygame.sprite.Sprite): The sprite(s) to add to the group
+        """        
+        for sprite in sprites:
+            super().add(sprite)
+
+    def kill_all(self):
+        killGroup(self.sprites())
+
+class Room(AbstractBase):
+    def __init__(self, roomX, roomY):
+        """The room where all the current action (a lot) is taking place
+        Args:
+            roomX (int): The room's x-axis location in the grid of the room layout
+            roomY (int): The room's y-axis location in the grid of the room layout
         """
         super().__init__()
         all_rooms.append(self)
-        self.roomCoords = vec((roomCoordsX, roomCoordsY))
-        self.sprites = spriteGroup()
-
-        self.refDict = {}
+        self.room = vec((roomX, roomY))
 
     def layoutUpdate(self):
         """Updates the layout of the room.
         """        
-        for sprite in self.sprites:
+        for sprite in self.sprites():
             sprite.kill()
         
         #---------- Room Layouts ----------#
-        if self.roomCoords == vec(0, 0):
-            self.sprites.add(
+        if self.room == vec(0, 0):
+            self.add(
                 Wall(0, 0, 4, 4),
                 Wall(36, 0, 4, 4),
                 Wall(0, 18.5, 4, 4),
                 Wall(36, 18.5, 4, 4),
-                OctoGrunt(500, WINDOW_HEIGHT / 2, 25, 10, 10, 25, 0.3),
-                OctoGrunt(300, WINDOW_HEIGHT / 2, 25, 10, 10, 25, 0.3),
                 Push(800, WINDOW_HEIGHT / 2)
             )
 
-        elif self.roomCoords == vec(1, 0):
-            self.sprites.add(
+            found_match = False
+            for cont in all_containers:
+                if cont.room == self.room:
+                    found_match = True
+                    searchIndex = all_containers.index(cont)
+                    searchKey = (cont.room.x, cont.room.y)
+                    break
+
+            if found_match:
+                print(all_containers[searchIndex])
+                # print(f"Added sprites!")
+
+            else:
+                print("Created new!")
+                all_containers.append(
+                    EnemyContainer(
+                        self.room.x, self.room.y,
+                        StandardGrunt(WINDOW_WIDTH/2, WINDOW_HEIGHT/2, 0, 0, 25, 10, 10, 25, 0.3),
+                        StandardGrunt(WINDOW_WIDTH/2, WINDOW_HEIGHT/2, 0, 0, 25, 10, 10, 25, 0.3)
+                    )
+                )
+
+        elif self.room == vec(1, 0):
+            self.add(
                 Wall(0, 0, 40, 4),
                 Wall(0, 18.5, 40, 4),
-                StandardGrunt(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 25, 10, 10, 25, 0.35),
-                StandardGrunt(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 25, 10, 10, 50, 0.35)
             )
 
-        elif self.roomCoords == vec(0, 1):
-            self.sprites.add(
+        elif self.room == vec(0, 1):
+            self.add(
                 Wall(0, 0, 4, 22.5),
                 Wall(36, 0, 4, 22.5),
                 Wall(8, 4, 4, 4),
@@ -999,6 +1002,27 @@ class Room(pygame.sprite.AbstractGroup):
 
     def update(self):
         pass
+
+class EnemyContainer(AbstractBase):
+    def __init__(self, roomX, roomY, *sprites):
+        """A container for enemies. Contains data about all enemies in a room.
+
+        Args:
+            roomX (int): The room's x-axis location in the grid of the room layout
+            roomY (int): The room's y-axis location in the grid of the room layout
+            sprites (pygame.sprite.Sprite): The sprite(s) to add to the container
+        """        
+        super().__init__()
+        self.room = vec((roomX, roomY))
+
+        for sprite in sprites:
+            self.add(sprite)
+
+    def copy(self):
+        new_sprites = []
+        for sprite in self.sprites():
+            new_sprites.append(sprite)
+        return EnemyContainer(self.room.x, self.room.y, new_sprites)
 
 #------------------------------ Font class ------------------------------#
 class DamageChar(pygame.sprite.Sprite):
@@ -1022,7 +1046,6 @@ class DamageChar(pygame.sprite.Sprite):
         dmg_charList = []
         for char in str(damage):
             dmg_charList.append(self.images[int(char) + 26])
-            print(int(char)+26)
         
         new_surface = pygame.Surface([width * len(dmg_charList), height]).convert()
 
@@ -1052,16 +1075,15 @@ class DamageChar(pygame.sprite.Sprite):
 #------------------------------ Redraw game window ------------------------------#
 def projectileCollide(entityGroup, proj, doesShatter, canHurt):
     """Destroys a given projectile upon a collision and renders an explosion
-
     Args:
         entityGroup (pygame.sprite.Group): The group of the entity the projectile is colliding with
-        projectile (pygame.sprite.Sprite): The projectile involved in the collision
+        proj (pygame.sprite.Sprite): The projectile involved in the collision
         projGroup (pygame.sprite.Group): The group of the projectile from which it was shot from (ex. players_projectiles)
         canHurt (bool): Should the projectile calculate damage upon impact? Defaults to False.
     """
     for entity in entityGroup:
         if proj.hitbox.colliderect(entity.hitbox):
-            if canHurt == True and entityGroup == all_enemies:
+            if canHurt == True and entityGroup == all_enemies: # If a player's bullet hits an enemy, there's a chance to crit.
                 if rand.randint(1, 20) == 1:
                     entity.hp -= (calculateDamage(proj.shotFrom, entity, proj)) * 3
                     all_font_chars.add(DamageChar(entity.pos.x, entity.pos.y, 3 * calculateDamage(proj.shotFrom, entity, proj)))
@@ -1074,7 +1096,7 @@ def projectileCollide(entityGroup, proj, doesShatter, canHurt):
                 all_font_chars.add(DamageChar(entity.pos.x, entity.pos.y, calculateDamage(proj.shotFrom, entity, proj)))
 
                 try:
-                    entity.hitTime = 0
+                    entity.hitTime = 0 # Will work if entity is a player (which will be most likely)
                 except:
                     pass
 
@@ -1082,7 +1104,7 @@ def projectileCollide(entityGroup, proj, doesShatter, canHurt):
                 proj.type != PROJ_P_PORTAL and
                 entityGroup == all_portals and
                 len(all_portals) == 2
-            ):
+            ): # If proj is not a portal and there are 2 portals already existing
                 for portal in all_portals:
                     if proj.hitbox.colliderect(portal.hitbox):
                         proj.teleport(portal)
@@ -1105,10 +1127,9 @@ def projectileCollide(entityGroup, proj, doesShatter, canHurt):
 
 def bindProjectile(projectile, projTargetGroup):
     """Binds a projectile to its shooter and confines it to the window borders
-
     Args:
         projectile (pygame.sprite.Sprite): The projectile to bind
-        projGroup (pygame.sprite.Group): The group of the projectile from which it was shot from (ex. players_projectiles)
+        projGroup (pygame.sprite.Group): The group of the projectile from which it was shot from (ex. players_proj)
         projTargetGroup (pygame.sprite.Group): The group of the entities that should take damage from the given projectile
     """
     if (
@@ -1129,7 +1150,7 @@ def bindProjectile(projectile, projTargetGroup):
 def redrawGameWindow():
     """Draws all entities every frame"""
     global timer
-    # Drawing all player characters every frame
+    # Updating players
     for a_player in all_players:
         collideCheck(a_player, all_enemies)
         collideCheck(a_player, enemy_projs)
@@ -1144,52 +1165,49 @@ def redrawGameWindow():
             if a_player.hitbox.colliderect(portal.hitbox) and len(all_portals) == 2:
                 a_player.teleport(portal)
 
-    # Drawing all enemies every frame
+    # Updating enemies
     for enemy in all_enemies:
         collideCheck(enemy, all_players)
         collideCheck(enemy, players_projs)
         collideCheck(enemy, all_walls)
 
-        enemy.update()
-
+    # Updating movable objects
     for object in all_movable:
         object.movement()
-        object.update()
 
-    # Drawing all players' projectiles every frame
+    # Updating player projectiles
     for projectile in players_projs:
         bindProjectile(projectile, all_enemies)
 
-    # Drawing all enemy projectiles every frame
+    # Updating enemy projectiles
     for projectile in enemy_projs:
         bindProjectile(projectile, all_players)
 
-    # Drawing all explosions every frame
+    # Updating explosions
     for bullet in all_explosions:
-        bullet.update()
+        pass
 
-    # Drawing all stat bars every frame
+    # Updating UI
     for statBar in all_stat_bars:
         statBar.movement()
-        statBar.update()
 
-    # Drawing all walls every frame
+    # Updating walls
     for wall in all_walls:
-        wall.update()
+        pass
 
-    # Drawing all portals every frame
+    # Updating portals
     for portal in all_portals:
-        portal.update()
+        pass
 
-    # Drawing fonts
+    # Updating all font characters
     for char in all_font_chars:
-        char.update()
         char.movement()
 
     # Updating rooms
     for room in all_rooms:
-        room.update()
+        pass
 
+    all_sprites.update()
     all_sprites.draw(screen)
     pygame.display.update()
 
@@ -1200,6 +1218,7 @@ player1 = Player(-32, -32)
 room = Room(0, 0)
 room.layoutUpdate()
 
+# Time control
 timer = 0
 last_time = time.time()
 
@@ -1219,7 +1238,6 @@ loadXpRequirements()
 #------------------------------ Main loop ------------------------------#
 running = True
 while running:
-    
     dt = (time.time() - last_time) * 60
     last_time = time.time()
 
@@ -1256,26 +1274,21 @@ while running:
 
     #------------------------------ Game operation ------------------------------#
     ## Changing rooms
-    for a_player in all_players:
-        if a_player.pos.x <= 0:
-            a_player.changeRoomLeft()
-            room.roomCoords.x -= 1
-            room.layoutUpdate()
+    if player1.pos.x <= 0:
+        storeEnemies()
+        player1.changeRoomLeft()
 
-        if a_player.pos.x >= WINDOW_WIDTH:
-            a_player.changeRoomRight()
-            room.roomCoords.x += 1
-            room.layoutUpdate()
+    if player1.pos.x >= WINDOW_WIDTH:
+        storeEnemies()
+        player1.changeRoomRight()
 
-        if a_player.pos.y <= 0:
-            a_player.changeRoomUp()
-            room.roomCoords.y += 1
-            room.layoutUpdate()
+    if player1.pos.y <= 0:
+        storeEnemies()
+        player1.changeRoomUp()
 
-        if a_player.pos.y >= WINDOW_HEIGHT:
-            a_player.changeRoomDown()
-            room.roomCoords.y -= 1
-            room.layoutUpdate()
+    if player1.pos.y >= WINDOW_HEIGHT:
+        storeEnemies()
+        player1.changeRoomDown()
 
     # Random enemy movement for testing purposes
     for enemy in all_enemies:
