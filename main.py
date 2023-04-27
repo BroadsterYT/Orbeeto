@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
-import sys, math, time
 
+import sys, math, time
 import random as rand
 
 from math import sin, cos, radians
@@ -27,7 +27,7 @@ pygame.display.set_caption('Orbeeto')
 
 def getClosestPlayer(selfEntity):
     """Returns the closest player entity from another given entity
-    Args:
+    Parameters:
         selfEntity (pygame.sprite.Sprite): The entity to locate the closest player from
     Returns:
         pygame.sprite.Sprite: The closest player entity to selfEntity
@@ -41,11 +41,11 @@ def getClosestPlayer(selfEntity):
         result = [key for key in playerCoords if playerCoords[key] == temp]
         return result[0]
     except:
-        pass
+        return selfEntity
 
 def awardXp(enemy):
     """Give all players an enemy's xp worth after it is killed
-    Args:
+    Parameters:
         enemy (pygame.sprite.Sprite): The enemy that has been killed
     """
     for a_player in all_players:
@@ -53,7 +53,7 @@ def awardXp(enemy):
 
 def tpLocation(entity, portal_in):
     """Teleports an entity between portals given the portal the entity is entering
-    Args:
+    Parameters:
         entity (pygame.sprite.Sprite): The player entering the portal
         portal_in (pygame.sprite.Sprite): The portal the player is entering
     """    
@@ -136,7 +136,7 @@ def teleportProj(proj, portalIn):
 
 def objectAccel(object):
     """Defines acceleration for any entity's movement
-    Args:
+    Parameters:
         object (pygame.sprite.Sprite): Any sprite object
     """    
     object.accel.x += object.vel.x * FRIC
@@ -146,7 +146,7 @@ def objectAccel(object):
 
 def groupChangeRooms(spriteGroup, direction):
     """Change the room location of all sprites in a sprite group given a direction.
-    Args:
+    Parameters:
         spriteGroup (pygame.sprite.Group): The sprite group changing rooms
         direction (str): The room switching direction
     """    
@@ -169,8 +169,11 @@ def groupChangeRooms(spriteGroup, direction):
 #------------------------------ Player class ------------------------------#
 class PlayerBase(pygame.sprite.Sprite):
     def __init__(self):
+        """The base class for all player objects. It contains parameters and methods to gain better control over player objects.
+        """        
         super().__init__()
         self.room = vec((0, 0))
+        self.visible = True
 
         self.pos = vec((WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2))
         self.vel = vec(0, 0)
@@ -194,6 +197,17 @@ class PlayerBase(pygame.sprite.Sprite):
 
         self.healthBar = HealthBar(self)
         self.dodgeBar = DodgeBar(self)
+
+    def hide(self):
+        """Hide the player from the screen.\nNOTE: This does not delete the player object.
+        """        
+        self.visible = False
+        all_sprites.remove(self)
+
+    def show(self):
+        """Shows the 
+        """        
+        self.visible = True
 
     def changeRoomRight(self):
         room.room.x += 1
@@ -232,9 +246,11 @@ class PlayerBase(pygame.sprite.Sprite):
         killGroup(all_projs, all_explosions)
 
 class Player(PlayerBase):
-    def __init__(self, hitbox_adjustX, hitbox_adjustY):
+    def __init__(self):
+        """A player that can move and shoot.
+        """        
         super().__init__()
-        all_sprites.add(self, layer = 1)
+        all_sprites.add(self, layer = LAYERS['player_layer'])
         all_players.add(self)
 
         self.accel_const = 0.52
@@ -248,7 +264,7 @@ class Player(PlayerBase):
         self.original_image = self.original_images[self.index]
         
         self.rect = pygame.Rect(200, 400, 64, 64)
-        self.hitbox = self.rect.inflate(hitbox_adjustX, hitbox_adjustY)
+        self.hitbox = self.rect.inflate(-32, -32)
 
     def movement(self):
         self.accel = vec(0, 0)
@@ -275,6 +291,16 @@ class Player(PlayerBase):
         tpLocation(self, portal_in)
 
     def shoot(self, vel, cannonSide, bulletType=PROJ_P_STD):
+        """Shoot a projectile
+
+        Parameters:
+        ----------
+            vel (float): The speed the bullet should be fired at
+
+            cannonSide (str): What side should the projectile be shot from?
+
+            bulletType (str, optional): _description_. Defaults to PROJ_P_STD.
+        """        
         angle_to_mouse = get_angle_to_mouse(self)
 
         vel_x = vel * -sin(rad(angle_to_mouse))
@@ -327,34 +353,53 @@ class EnemyBase(pygame.sprite.Sprite):
 
     def hide(self):
         self.visible = False
+        all_sprites.remove(self)
+        all_sprites.remove(self.healthBar)
 
     def show(self):
         self.visible = True
+        all_sprites.add(self, layer = 1)
+        all_sprites.add(self.healthBar, layer = 100)
 
-def storeEnemies():
-    """Stores all of the sprites in a container into the enemy dictionary. This allows the game to remember objects that disappear from the screen.
+def hideEnemies():
+    """Hides all of the enemy sprites in the current room
     """    
     for container in all_containers:
         if container.room == room.room:
-            new_cont = container.copy()
-            container_sprites.update([((container.room.x, container.room.y), new_cont)])
             for sprite in container.sprites():
                 sprite.hide()
+
+def showEnemies(container):
+    for sprite in container.sprites():
+        sprite.show()
 
 class StandardGrunt(EnemyBase):
     def __init__(self, posX, posY, roomX, roomY, hp, attack, defense, xp_worth, accel_const):
         """A simple enemy that moves to random locations and shoots at random intervals
-        Args:
-            posX (float): x-position to spawn at
-            posY (float): y-position to spawn at
-            hp (int): Maximum health points
-            attack (int): Attack value
-            defense (int): Defense value
-            xp_worth (int): XP to gain by defeating this enemy
-            accel_const (float): Acceleration constant
+
+        Parameters
+        ----------
+        posX : float
+            The x-position to spawn at
+        posY : float
+            The y-position to spawn at
+        roomX : int
+            The room's x-axis location in the grid of the room layout
+        roomY : int
+            The room's y-axis location in the grid of the room layout
+        hp : int
+            The maximum starting hp
+        attack : int
+            Attack value
+        defense : int
+            Defense value
+        xp_worth : int
+            The amount of XP a player will gain after defeating this enemy
+        accel_const : float
+            The acceleration constant
         """        
         super().__init__()
-        all_sprites.add(self, layer = 1)
+        all_sprites.add(self, layer = LAYERS['enemy_layer'])
         all_enemies.add(self)
 
         self.spritesheet = SpriteSheet("sprites/enemies/standard_grunt.png")
@@ -388,7 +433,7 @@ class StandardGrunt(EnemyBase):
         self.xp_worth = xp_worth
 
     def rand_movement(self, canShoot):
-        if self.hp > 0:
+        if self.hp > 0 and self.visible == True:
             objectAccel(self)
 
             global timer
@@ -420,7 +465,10 @@ class StandardGrunt(EnemyBase):
         global timer
         if timer % shoot_time == 0 and self.hp > 0:
             self.is_shooting = True
-            angle_to_mouse = get_angle_to_entity(self, target)
+            try:
+                angle_to_mouse = get_angle_to_entity(self, target)
+            except:
+                angle_to_mouse = 0
 
             vel_x = vel * -sin(rad(angle_to_mouse))
             vel_y = vel * -cos(rad(angle_to_mouse))
@@ -435,10 +483,6 @@ class StandardGrunt(EnemyBase):
                 if self.index > 4:
                     self.index = 0
                     self.is_shooting = False
-                else:
-                    pass
-            else:
-                pass
 
         self.image = self.images[self.index]
         self.original_image = self.original_images[self.index]
@@ -456,7 +500,7 @@ class StandardGrunt(EnemyBase):
 class OctoGrunt(EnemyBase):
     def __init__(self, posX, posY, roomX, roomY, hp, attack, defense, xp_worth, accel_const):
         super().__init__()
-        all_sprites.add(self, layer = 1)
+        all_sprites.add(self, layer = LAYERS['enemy_layer'])
         all_enemies.add(self)
 
         self.spritesheet = SpriteSheet("sprites/enemies/standard_grunt.png")
@@ -533,7 +577,7 @@ class OctoGrunt(EnemyBase):
                 Projectile(self, self.pos.x - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))), vel_x, vel_y, bulletType),
                 Projectile(self, self.pos.x + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))), -vel_x, -vel_y, bulletType),
 
-                Projectile(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))), self.pos.y + (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target + 90)), vel * -cos(rad(angle_to_target + 90)), bulletType),
+                Projectile(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))), self.pos.y + (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target + 90)), vel * -cos(rad(angle_to_target + 90)), bulletType, ),
                 Projectile(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))), self.pos.y - (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target + 90)), -vel * -cos(rad(angle_to_target + 90)), bulletType),
 
                 Projectile(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target + 45)), vel * -cos(rad(angle_to_target + 45)), bulletType),
@@ -573,7 +617,7 @@ class OctoGrunt(EnemyBase):
 class Push(pygame.sprite.Sprite):
     def __init__(self, posX, posY):
         super().__init__()
-        all_sprites.add(self, layer = 1)
+        all_sprites.add(self, layer = LAYERS['movable_layer'])
         all_movable.add(self)
 
         self.spritesheet = SpriteSheet("sprites/orbeeto/orbeeto.png")
@@ -615,7 +659,7 @@ class Push(pygame.sprite.Sprite):
 class HealthBar(pygame.sprite.Sprite):
     def __init__(self, entity):
         super().__init__()
-        all_sprites.add(self, layer = 100)
+        all_sprites.add(self, layer = LAYERS['statBar_layer'])
         all_stat_bars.add(self)
         
         self.spritesheet = SpriteSheet("sprites/stat_bars/health_bar.png", False)
@@ -647,7 +691,7 @@ class HealthBar(pygame.sprite.Sprite):
 class DodgeBar(pygame.sprite.Sprite):
     def __init__(self, entity):
         super().__init__()
-        all_sprites.add(self, layer = 100)
+        all_sprites.add(self, layer = LAYERS['statBar_layer'])
         all_stat_bars.add(self)
 
         self.spritesheet = SpriteSheet("sprites/stat_bars/dodge_bar.png", False)
@@ -680,18 +724,28 @@ class DodgeBar(pygame.sprite.Sprite):
 #------------------------------ Projectile class ------------------------------#
 class Projectile(pygame.sprite.Sprite):
     def __init__(self, shotFrom, posX, posY, velX, velY, bulletType, ricochet = False):
-        """An object that travels at a specific velocity
-        Args:
-            shotFrom (pygame.sprite.Sprite): The entity the bullet was shot from
-            posX (int): The x-position where the projectile will spawn
-            posY (int): The y-position where the projectile will spawn
-            velX (int): The x-axis component of the projectile's velocity
-            velY (int): The y-axis component of the projectile's velocity
-            bulletType (str): The type of projectile to fire
-            ricochet (bool): Can the projectile ricochet off walls? Defaults to False.
-        """
+        """A projectile object that moves at a constant velocity
+
+        Parameters:
+        ----------
+            shotFrom (pygame.sprite.Sprite): The entity the projectile is being shot from
+
+            posX (float): The x-position that the projectile should be spawned at
+
+            posY (float): The y-position that the projectile should be spawned at
+
+            velX (float): The x-axis component of the projectile's velocity
+
+            velY (float): The y-axis component of the projectile's velocity
+
+            bulletType (str): The type of projectile that should be spawned
+
+            doesBreak (bool): Should the bullet terminate upon impact?
+
+            ricochet (bool, optional): Should the bullet bounce off of walls? Defaults to False.
+        """           
         super().__init__()
-        all_sprites.add(self, layer = 1)
+        all_sprites.add(self, layer = LAYERS['proj_layer'])
         all_projs.add(self)
 
         self.pos = vec((posX, posY))
@@ -742,6 +796,10 @@ class Projectile(pygame.sprite.Sprite):
     def teleport(self, portal_in):
         teleportProj(self, portal_in)
 
+    def land(self):
+        all_explosions.add(ProjExplode(self))
+        self.kill()
+
     def update(self):
         if self.type == PROJ_P_STD:
             self.spritesheet = SpriteSheet("sprites/bullets/bullets.png")
@@ -784,14 +842,18 @@ class PortalBase(pygame.sprite.Sprite):
 
 class Portal(PortalBase):
     def __init__(self, posX, posY, facing=DOWN):
-        """An intering means of transportation...
-        Args:
-            posX (int): Spawn location along x-axis
-            posY (int): Spawn location along y-axis
-            facing (str): Dir. of velocity after being expelled
+        """A portal object that can teleport players, enemies, and projectiles
+
+        Parameters:
+        ----------
+            posX (float): The x-position where the portal will spawn
+
+            posY (float): The y-position where the portal will spawn
+
+            facing (str, optional): The direction of an entity's velocity after being expelled. Defaults to DOWN.
         """        
         super().__init__()
-        all_sprites.add(self, layer = 11)
+        all_sprites.add(self, layer = LAYERS['portal_layer'])
         
         self.pos = vec((posX, posY))
         self.facing = facing
@@ -845,8 +907,11 @@ def portalCountCheck():
 
 def portalSideCheck(wall, portal):
     """Checks for which side of a wall a portal hit and assigns it that value
-    Args:
+
+    Parameters:
+    ----------
         wall (pygame.sprite.Sprite): The wall being hit
+
         portal (pygame.sprite.Sprite): The projectile that is hitting the wall
     """    
     if wall.pos.x - 0.5 * wall.image.get_width() <= portal.pos.x <= wall.pos.x + 0.5 * wall.image.get_width() and portal.pos.y > wall.pos.y:
@@ -865,13 +930,19 @@ def portalSideCheck(wall, portal):
         return None
 
 #------------------------------ Bullet explosion class ------------------------------#
-class BulletExplode(pygame.sprite.Sprite):
-    def __init__(self, bullet):
-        super().__init__()
-        all_sprites.add(self, layer = 1)
+class ProjExplode(pygame.sprite.Sprite):
+    def __init__(self, proj):
+        """An explosion/shattering that is displayed on-screen when a projectile hits something
 
-        self.bullet = bullet
-        self.type = self.bullet.type
+        Parameters:
+        --------
+            proj (pygame.sprite.Sprite): The projectile that is exploding
+        """
+        super().__init__()
+        all_sprites.add(self, layer = LAYERS['explosion_layer'])
+
+        self.proj = proj
+        self.type = self.proj.type
         
         self.spritesheet = SpriteSheet("sprites/bullets/bullets.png")
         self.index = 1
@@ -880,22 +951,36 @@ class BulletExplode(pygame.sprite.Sprite):
             self.images = self.spritesheet.getImages(0, 0, 32, 32, 4)
             self.original_images = self.spritesheet.getImages(0, 0, 32, 32, 4)
 
+        elif self.type == PROJ_P_PORTAL:
+            self.images = self.spritesheet.getImages(0, 0, 32, 32, 4)
+            self.original_images = self.spritesheet.getImages(0, 0, 32, 32, 4)
+
         self.image = self.images[self.index]
         self.original_image = self.original_images[self.index]
-        self.rect = self.bullet.rect
+        self.rect = self.proj.rect
         self.randRotation = rand.randint(1, 360)
 
-        self.pos = self.bullet.pos
+        self.pos = self.proj.pos
 
     def update(self):
         global timer
-        if timer % 5 == 0:
-            if self.index > 3:
-                self.kill()
-            else:
-                self.image = self.images[self.index]
-                self.original_image = self.original_images[self.index]
-                self.index += 1
+        if self.type == PROJ_P_STD or self.type == PROJ_E_STD:
+            if timer % 5 == 0:
+                if self.index > 3:
+                    self.kill()
+                else:
+                    self.image = self.images[self.index]
+                    self.original_image = self.original_images[self.index]
+                    self.index += 1
+
+        elif self.type == PROJ_P_PORTAL:
+            if timer % 5 == 0:
+                if self.index > 3:
+                    self.kill()
+                else:
+                    self.image = self.images[self.index]
+                    self.original_image = self.original_images[self.index]
+                    self.index += 1
         
         # Give explosion its random rotation
         self.image = pygame.transform.rotate(self.original_image, self.randRotation)
@@ -905,7 +990,7 @@ class BulletExplode(pygame.sprite.Sprite):
 class Wall(pygame.sprite.Sprite):
     def __init__(self, topleftX_mult, topleftY_mult, widthMult, heightMult):
         super().__init__()
-        all_sprites.add(self, layer = 10)
+        all_sprites.add(self, layer = LAYERS['wall_layer'])
         all_walls.add(self)
 
         self.image = pygame.Surface((32 * widthMult, 32 * heightMult))
@@ -928,19 +1013,21 @@ class AbstractBase(pygame.sprite.AbstractGroup):
     def add(self, *sprites):
         """Add one or more sprites to the abstract group.
 
-        Args:
+        Parameters:
+        ----
             sprites (pygame.sprite.Sprite): The sprite(s) to add to the group
         """        
         for sprite in sprites:
             super().add(sprite)
 
-    def kill_all(self):
+    def killAll(self):
         killGroup(self.sprites())
 
 class Room(AbstractBase):
     def __init__(self, roomX, roomY):
-        """The room where all the current action (a lot) is taking place
-        Args:
+        """The room where all the current action is taking place
+
+        Parameters:
             roomX (int): The room's x-axis location in the grid of the room layout
             roomY (int): The room's y-axis location in the grid of the room layout
         """
@@ -964,25 +1051,25 @@ class Room(AbstractBase):
                 Push(800, WINDOW_HEIGHT / 2)
             )
 
+            # Search for an enemy container for this room
             found_match = False
-            for cont in all_containers:
-                if cont.room == self.room:
+            for container in all_containers:
+                if container.room == self.room:
                     found_match = True
-                    searchIndex = all_containers.index(cont)
-                    searchKey = (cont.room.x, cont.room.y)
+                    searchIndex = all_containers.index(container)
                     break
 
+            # If a match is found, show the sprites:
             if found_match:
-                print(all_containers[searchIndex])
-                # print(f"Added sprites!")
+                showEnemies(all_containers[searchIndex])
 
+            # If a match is not found, make a new enemy container:
             else:
-                print("Created new!")
                 all_containers.append(
                     EnemyContainer(
                         self.room.x, self.room.y,
                         StandardGrunt(WINDOW_WIDTH/2, WINDOW_HEIGHT/2, 0, 0, 25, 10, 10, 25, 0.3),
-                        StandardGrunt(WINDOW_WIDTH/2, WINDOW_HEIGHT/2, 0, 0, 25, 10, 10, 25, 0.3)
+                        StandardGrunt(WINDOW_WIDTH/2, WINDOW_HEIGHT/2, 0, 0, 25, 10, 10, 25, 0.3),
                     )
                 )
 
@@ -1007,9 +1094,12 @@ class EnemyContainer(AbstractBase):
     def __init__(self, roomX, roomY, *sprites):
         """A container for enemies. Contains data about all enemies in a room.
 
-        Args:
+        Parameters:
+        -------
             roomX (int): The room's x-axis location in the grid of the room layout
+
             roomY (int): The room's y-axis location in the grid of the room layout
+
             sprites (pygame.sprite.Sprite): The sprite(s) to add to the container
         """        
         super().__init__()
@@ -1018,18 +1108,12 @@ class EnemyContainer(AbstractBase):
         for sprite in sprites:
             self.add(sprite)
 
-    def copy(self):
-        new_sprites = []
-        for sprite in self.sprites():
-            new_sprites.append(sprite)
-        return EnemyContainer(self.room.x, self.room.y, new_sprites)
-
 #------------------------------ Font class ------------------------------#
 class DamageChar(pygame.sprite.Sprite):
     def __init__(self, posX, posY, damage):
         super().__init__()
         global timer
-        all_sprites.add(self, layer = 51)
+        all_sprites.add(self, layer = LAYERS['text_layer'])
         all_font_chars.add(self)
         
         self.spritesheet = SpriteSheet("sprites/ui/font.png")
@@ -1071,45 +1155,64 @@ class DamageChar(pygame.sprite.Sprite):
         global timer
         if timer == self.timeStart + 40:
             self.kill()
-
+66
 #------------------------------ Redraw game window ------------------------------#
-def projectileCollide(entityGroup, proj, doesShatter, canHurt):
+def projectileCollide(entityGroup, proj, canHurt):
     """Destroys a given projectile upon a collision and renders an explosion
-    Args:
+    
+    Parameters:
+    ------
         entityGroup (pygame.sprite.Group): The group of the entity the projectile is colliding with
+
         proj (pygame.sprite.Sprite): The projectile involved in the collision
-        projGroup (pygame.sprite.Group): The group of the projectile from which it was shot from (ex. players_projectiles)
+
         canHurt (bool): Should the projectile calculate damage upon impact? Defaults to False.
     """
     for entity in entityGroup:
         if proj.hitbox.colliderect(entity.hitbox):
-            if canHurt == True and entityGroup == all_enemies: # If a player's bullet hits an enemy, there's a chance to crit.
-                if rand.randint(1, 20) == 1:
-                    entity.hp -= (calculateDamage(proj.shotFrom, entity, proj)) * 3
-                    all_font_chars.add(DamageChar(entity.pos.x, entity.pos.y, 3 * calculateDamage(proj.shotFrom, entity, proj)))
-                else:
-                    entity.hp -= calculateDamage(proj.shotFrom, entity, proj)
-                    all_font_chars.add(DamageChar(entity.pos.x, entity.pos.y, calculateDamage(proj.shotFrom, entity, proj)))
+            # If the projectile is hitting an enemy
+            if canHurt == True and entityGroup == all_enemies:
+                if entity.visible:
+                    # If a player's bullet hits an enemy, there's a chance to crit.
+                    if rand.randint(1, 20) == 1:
+                        entity.hp -= (calculateDamage(proj.shotFrom, entity, proj)) * 3
+                        all_font_chars.add(DamageChar(entity.pos.x, entity.pos.y, 3 * calculateDamage(proj.shotFrom, entity, proj)))
+                    else:
+                        entity.hp -= calculateDamage(proj.shotFrom, entity, proj)
+                        all_font_chars.add(DamageChar(entity.pos.x, entity.pos.y, calculateDamage(proj.shotFrom, entity, proj)))
+                    proj.land()
 
-            if canHurt == True and entityGroup != all_enemies:
+            # If the projectile is hitting a player
+            elif canHurt == True and entityGroup != all_enemies:
                 entity.hp -= calculateDamage(proj.shotFrom, entity, proj)
                 all_font_chars.add(DamageChar(entity.pos.x, entity.pos.y, calculateDamage(proj.shotFrom, entity, proj)))
-
                 try:
                     entity.hitTime = 0 # Will work if entity is a player (which will be most likely)
                 except:
                     pass
+                proj.land()
 
-            if (
+            # If the projectile (not a portal projectile) hits a portal
+            elif entityGroup == all_portals:
+                proj.kill()
+
+            # If the projectile is not a portal and there are two existing portals
+            elif (
                 proj.type != PROJ_P_PORTAL and
                 entityGroup == all_portals and
                 len(all_portals) == 2
-            ): # If proj is not a portal and there are 2 portals already existing
+            ):
                 for portal in all_portals:
                     if proj.hitbox.colliderect(portal.hitbox):
                         proj.teleport(portal)
+                proj.kill()
+            
+            # If the projectile isn't a portal and there are less than two portals
+            elif proj.type != PROJ_P_PORTAL and len(all_portals) < 2:
+                proj.kill()
 
-            if proj.type == PROJ_P_PORTAL and entityGroup == all_walls:
+            # If the projectile is a portal and it's hitting a wall:
+            elif proj.type == PROJ_P_PORTAL and entityGroup == all_walls:
                 side = portalSideCheck(entity, proj)
                 if side == DOWN or side == UP:
                     if proj.pos.x - 32 > entity.pos.x - 0.5 * entity.image.get_width() and proj.pos.x + 32 < entity.pos.x + 0.5 * entity.image.get_width():
@@ -1119,15 +1222,12 @@ def projectileCollide(entityGroup, proj, doesShatter, canHurt):
                     if proj.pos.y - 32 > entity.pos.y - 0.5 * entity.image.get_height() and proj.pos.y + 32 < entity.pos.y + 0.5 * entity.image.get_height():
                         all_portals.add(Portal(proj.pos.x, proj.pos.y, side))
                         portalCountCheck()
-
-            if doesShatter == True and proj.type != PROJ_P_PORTAL:
-                all_explosions.add(BulletExplode(proj))
-
-            proj.kill()
+                proj.land()
 
 def bindProjectile(projectile, projTargetGroup):
     """Binds a projectile to its shooter and confines it to the window borders
-    Args:
+
+    Parameters:
         projectile (pygame.sprite.Sprite): The projectile to bind
         projGroup (pygame.sprite.Group): The group of the projectile from which it was shot from (ex. players_proj)
         projTargetGroup (pygame.sprite.Group): The group of the entities that should take damage from the given projectile
@@ -1139,37 +1239,37 @@ def bindProjectile(projectile, projTargetGroup):
         projectile.pos.y > 0
     ):
         projectile.movement()
-        projectile.update()
     else:
         projectile.kill()
 
-    projectileCollide(projTargetGroup, projectile, True, True)
-    projectileCollide(all_walls, projectile, True, False)
-    projectileCollide(all_portals, projectile, False, False)
+    projectileCollide(projTargetGroup, projectile, True)
+    projectileCollide(all_walls, projectile, False)
+    projectileCollide(all_portals, projectile, False)
     
 def redrawGameWindow():
     """Draws all entities every frame"""
     global timer
     # Updating players
     for a_player in all_players:
-        collideCheck(a_player, all_enemies)
         collideCheck(a_player, enemy_projs)
         collideCheck(a_player, all_walls)
         collideCheck(a_player, all_movable)
 
         a_player.movement()
         a_player.shoot(12, None)
-        a_player.update()
 
+        # Teleport the player if they come into contact with a portal
         for portal in all_portals:
             if a_player.hitbox.colliderect(portal.hitbox) and len(all_portals) == 2:
                 a_player.teleport(portal)
 
     # Updating enemies
     for enemy in all_enemies:
-        collideCheck(enemy, all_players)
-        collideCheck(enemy, players_projs)
-        collideCheck(enemy, all_walls)
+        print(enemy.visible)
+        if enemy.visible == True:
+            collideCheck(enemy, all_players,)
+            collideCheck(enemy, players_projs)
+            collideCheck(enemy, all_walls)
 
     # Updating movable objects
     for object in all_movable:
@@ -1212,7 +1312,7 @@ def redrawGameWindow():
     pygame.display.update()
 
 #------------------------------ Initialing parameters ------------------------------#
-player1 = Player(-32, -32)
+player1 = Player()
 
 # Load rooms
 room = Room(0, 0)
@@ -1244,7 +1344,6 @@ while running:
     timer += 1
 
     if player1.hp <= 0:
-        killGroup(all_sprites)
         pygame.quit()
         sys.exit()
 
@@ -1275,19 +1374,19 @@ while running:
     #------------------------------ Game operation ------------------------------#
     ## Changing rooms
     if player1.pos.x <= 0:
-        storeEnemies()
+        hideEnemies()
         player1.changeRoomLeft()
 
     if player1.pos.x >= WINDOW_WIDTH:
-        storeEnemies()
+        hideEnemies()
         player1.changeRoomRight()
 
     if player1.pos.y <= 0:
-        storeEnemies()
+        hideEnemies()
         player1.changeRoomUp()
 
     if player1.pos.y >= WINDOW_HEIGHT:
-        storeEnemies()
+        hideEnemies()
         player1.changeRoomDown()
 
     # Random enemy movement for testing purposes
