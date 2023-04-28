@@ -40,7 +40,7 @@ PROJ_E_STD = 'enemyBullet'
 PROJ_DICT = {
     PROJ_P_STD: 1,
     PROJ_P_BOUNCE: 1,
-    PROJ_P_PORTAL: 0,
+    PROJ_P_PORTAL: 15,
     PROJ_E_STD: 1,
 }
 

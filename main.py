@@ -617,6 +617,9 @@ class OctoGrunt(EnemyBase):
 class Push(pygame.sprite.Sprite):
     def __init__(self, posX, posY):
         super().__init__()
+
+        self.visible = True
+
         all_sprites.add(self, layer = LAYERS['movable_layer'])
         all_movable.add(self)
 
@@ -745,6 +748,9 @@ class Projectile(pygame.sprite.Sprite):
             ricochet (bool, optional): Should the bullet bounce off of walls? Defaults to False.
         """           
         super().__init__()
+
+        self.visible = True
+
         all_sprites.add(self, layer = LAYERS['proj_layer'])
         all_projs.add(self)
 
@@ -827,6 +833,8 @@ class Projectile(pygame.sprite.Sprite):
 class PortalBase(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
+        
+        self.visible = True
     
     def changeRoomRight(self):
         self.pos.x -= WINDOW_WIDTH
@@ -993,6 +1001,8 @@ class Wall(pygame.sprite.Sprite):
         all_sprites.add(self, layer = LAYERS['wall_layer'])
         all_walls.add(self)
 
+        self.visible = True
+
         self.image = pygame.Surface((32 * widthMult, 32 * heightMult))
         self.texture = pygame.image.load("sprites/textures/wall.png")
         textureWall(self, self.texture)
@@ -1155,7 +1165,7 @@ class DamageChar(pygame.sprite.Sprite):
         global timer
         if timer == self.timeStart + 40:
             self.kill()
-66
+
 #------------------------------ Redraw game window ------------------------------#
 def projectileCollide(entityGroup, proj, canHurt):
     """Destroys a given projectile upon a collision and renders an explosion
@@ -1168,61 +1178,65 @@ def projectileCollide(entityGroup, proj, canHurt):
 
         canHurt (bool): Should the projectile calculate damage upon impact? Defaults to False.
     """
-    for entity in entityGroup:
-        if proj.hitbox.colliderect(entity.hitbox):
-            # If the projectile is hitting an enemy
-            if canHurt == True and entityGroup == all_enemies:
-                if entity.visible:
-                    # If a player's bullet hits an enemy, there's a chance to crit.
-                    if rand.randint(1, 20) == 1:
-                        entity.hp -= (calculateDamage(proj.shotFrom, entity, proj)) * 3
-                        all_font_chars.add(DamageChar(entity.pos.x, entity.pos.y, 3 * calculateDamage(proj.shotFrom, entity, proj)))
-                    else:
-                        entity.hp -= calculateDamage(proj.shotFrom, entity, proj)
-                        all_font_chars.add(DamageChar(entity.pos.x, entity.pos.y, calculateDamage(proj.shotFrom, entity, proj)))
+    for colliding_entity in entityGroup:
+        if not proj.hitbox.colliderect(colliding_entity.hitbox):
+            continue
+        
+        if not colliding_entity.visible:
+            continue
+
+        if canHurt:
+            if entityGroup == all_enemies:
+                if rand.randint(1, 20) == 1:
+                    colliding_entity.hp -= (calculateDamage(proj.shotFrom, colliding_entity, proj)) * 3
+                    all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, 3 * calculateDamage(proj.shotFrom, colliding_entity, proj)))
+                else:
+                    colliding_entity.hp -= calculateDamage(proj.shotFrom, colliding_entity, proj)
+                    all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, calculateDamage(proj.shotFrom, colliding_entity, proj)))
+                proj.land()
+
+            # If the entity is not an enemy 
+            elif entityGroup != all_enemies:
+                colliding_entity.hp -= calculateDamage(proj.shotFrom, colliding_entity, proj)
+                all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, calculateDamage(proj.shotFrom, colliding_entity, proj)))
+                if hasattr(colliding_entity, 'hitTime'):
+                    colliding_entity.hitTime = 0
+                proj.land()
+
+        elif not canHurt:
+            if proj.type != PROJ_P_PORTAL:
+                # If the projectile hits a portal
+                if entityGroup == all_portals:
+                    if len(all_portals) == 2:
+                        for portal in all_portals:
+                            if proj.hitbox.colliderect(portal.hitbox):
+                                proj.teleport(portal)
+                        proj.kill()
+                        return
+                    
+                    elif len(all_portals) < 2:
+                        proj.kill()
+                        return
+                    
+                # If the projectile isn't a portal and hits anything but a portal
+                elif entityGroup != all_portals:
                     proj.land()
 
-            # If the projectile is hitting a player
-            elif canHurt == True and entityGroup != all_enemies:
-                entity.hp -= calculateDamage(proj.shotFrom, entity, proj)
-                all_font_chars.add(DamageChar(entity.pos.x, entity.pos.y, calculateDamage(proj.shotFrom, entity, proj)))
-                try:
-                    entity.hitTime = 0 # Will work if entity is a player (which will be most likely)
-                except:
-                    pass
-                proj.land()
-
-            # If the projectile (not a portal projectile) hits a portal
-            elif entityGroup == all_portals:
-                proj.kill()
-
-            # If the projectile is not a portal and there are two existing portals
-            elif (
-                proj.type != PROJ_P_PORTAL and
-                entityGroup == all_portals and
-                len(all_portals) == 2
-            ):
-                for portal in all_portals:
-                    if proj.hitbox.colliderect(portal.hitbox):
-                        proj.teleport(portal)
-                proj.kill()
-            
-            # If the projectile isn't a portal and there are less than two portals
-            elif proj.type != PROJ_P_PORTAL and len(all_portals) < 2:
-                proj.kill()
-
-            # If the projectile is a portal and it's hitting a wall:
-            elif proj.type == PROJ_P_PORTAL and entityGroup == all_walls:
-                side = portalSideCheck(entity, proj)
-                if side == DOWN or side == UP:
-                    if proj.pos.x - 32 > entity.pos.x - 0.5 * entity.image.get_width() and proj.pos.x + 32 < entity.pos.x + 0.5 * entity.image.get_width():
-                        all_portals.add(Portal(proj.pos.x, proj.pos.y, side))
-                        portalCountCheck()
-                if side == RIGHT or side == LEFT:
-                    if proj.pos.y - 32 > entity.pos.y - 0.5 * entity.image.get_height() and proj.pos.y + 32 < entity.pos.y + 0.5 * entity.image.get_height():
-                        all_portals.add(Portal(proj.pos.x, proj.pos.y, side))
-                        portalCountCheck()
-                proj.land()
+            elif proj.type == PROJ_P_PORTAL:
+                if entityGroup == all_walls:
+                    side = portalSideCheck(colliding_entity, proj)
+                    if side == DOWN or side == UP:
+                        if proj.pos.x - 32 > colliding_entity.pos.x - 0.5 * colliding_entity.image.get_width() and proj.pos.x + 32 < colliding_entity.pos.x + 0.5 * colliding_entity.image.get_width():
+                            all_portals.add(Portal(proj.pos.x, proj.pos.y, side))
+                            portalCountCheck()
+                    elif side == RIGHT or side == LEFT:
+                        if proj.pos.y - 32 > colliding_entity.pos.y - 0.5 * colliding_entity.image.get_height() and proj.pos.y + 32 < colliding_entity.pos.y + 0.5 * colliding_entity.image.get_height():
+                            all_portals.add(Portal(proj.pos.x, proj.pos.y, side))
+                            portalCountCheck()
+                    proj.land()
+                # If a portal hits anything but a wall
+                else:
+                    proj.land()
 
 def bindProjectile(projectile, projTargetGroup):
     """Binds a projectile to its shooter and confines it to the window borders
