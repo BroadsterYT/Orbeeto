@@ -1,5 +1,4 @@
 import math
-import constants as cst
 
 xpToReach = []
 xpRequired = []

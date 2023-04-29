@@ -10,6 +10,7 @@ all_enemies = spriteGroup()
 
 #--------------------------------- Interactible groups ---------------------------------#
 all_movable = spriteGroup()
+all_drops = spriteGroup()
 
 #--------------------------------- Projectile groups ---------------------------------#
 all_projs = spriteGroup()

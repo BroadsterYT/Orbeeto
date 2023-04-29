@@ -134,16 +134,6 @@ def teleportProj(proj, portalIn):
         if portalOut.facing == LEFT:
             projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x, portalOut.pos.y + distFromCenterPortal(proj, portalIn), proj.vel.x, proj.vel.y, proj.type))
 
-def objectAccel(object):
-    """Defines acceleration for any entity's movement
-    Parameters:
-        object (pygame.sprite.Sprite): Any sprite object
-    """    
-    object.accel.x += object.vel.x * FRIC
-    object.accel.y += object.vel.y * FRIC
-    object.vel += object.accel * dt
-    object.pos += object.vel + object.accel_const * object.accel
-
 def groupChangeRooms(spriteGroup, direction):
     """Change the room location of all sprites in a sprite group given a direction.
     Parameters:
@@ -165,6 +155,16 @@ def groupChangeRooms(spriteGroup, direction):
     if direction == LEFT:
         for sprite in spriteGroup:
             sprite.changeRoomLeft()
+
+def objectAccel(object):
+    """Defines acceleration for any entity's movement
+    Parameters:
+        object (pygame.sprite.Sprite): Any sprite object
+    """    
+    object.accel.x += object.vel.x * FRIC
+    object.accel.y += object.vel.y * FRIC
+    object.vel += object.accel * dt
+    object.pos += object.vel + object.accel_const * object.accel
 
 #------------------------------ Player class ------------------------------#
 class PlayerBase(pygame.sprite.Sprite):
@@ -199,15 +199,12 @@ class PlayerBase(pygame.sprite.Sprite):
         self.dodgeBar = DodgeBar(self)
 
     def hide(self):
-        """Hide the player from the screen.\nNOTE: This does not delete the player object.
-        """        
         self.visible = False
         all_sprites.remove(self)
 
     def show(self):
-        """Shows the 
-        """        
         self.visible = True
+        all_sprites.add(self, layer = LAYERS['player_layer'])
 
     def changeRoomRight(self):
         room.room.x += 1
@@ -250,8 +247,8 @@ class Player(PlayerBase):
         """A player that can move and shoot.
         """        
         super().__init__()
-        all_sprites.add(self, layer = LAYERS['player_layer'])
         all_players.add(self)
+        self.show()
 
         self.accel_const = 0.52
 
@@ -268,24 +265,25 @@ class Player(PlayerBase):
 
     def movement(self):
         self.accel = vec(0, 0)
-        if is_a_held == True:
-            self.accel.x = -self.accel_const * dt
-        if is_d_held == True:
-            self.accel.x = self.accel_const * dt
-        if is_s_held == True:
-            self.accel.y = self.accel_const * dt
-        if is_w_held == True:
-            self.accel.y = -self.accel_const * dt
-        
-        if is_x_held == True:
-            self.accel_const = 1.04
-        if is_x_held == False:
-            self.accel_const = 0.52
+        if self.visible:
+            if is_a_held == True:
+                self.accel.x = -self.accel_const * dt
+            if is_d_held == True:
+                self.accel.x = self.accel_const * dt
+            if is_s_held == True:
+                self.accel.y = self.accel_const * dt
+            if is_w_held == True:
+                self.accel.y = -self.accel_const * dt
+            
+            if is_x_held == True:
+                self.accel_const = 1.04
+            if is_x_held == False:
+                self.accel_const = 0.52
 
-        objectAccel(self)
+            objectAccel(self)
 
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+            self.rect.center = self.pos
+            self.hitbox.center = self.pos
 
     def teleport(self, portal_in):
         tpLocation(self, portal_in)
@@ -613,14 +611,24 @@ class OctoGrunt(EnemyBase):
             awardXp(self)
             self.kill()
 
-#------------------------------ Box class ------------------------------#
-class Push(pygame.sprite.Sprite):
-    def __init__(self, posX, posY):
+#------------------------------ Interactible classes ------------------------------#
+class MovableBase(pygame.sprite.Sprite):
+    def __init__(self):
         super().__init__()
-
         self.visible = True
 
+    def hide(self):
+        self.visible = False
+        all_sprites.remove(self)
+
+    def show(self):
+        self.visible = True
         all_sprites.add(self, layer = LAYERS['movable_layer'])
+
+class Box(MovableBase):
+    def __init__(self, posX, posY):
+        super().__init__()
+        self.show()
         all_movable.add(self)
 
         self.spritesheet = SpriteSheet("sprites/orbeeto/orbeeto.png")
@@ -640,23 +648,66 @@ class Push(pygame.sprite.Sprite):
 
     def movement(self):
         self.accel = vec(0, 0)
-        if self.hitbox.colliderect(player1.rect):
-            if collideSideCheck(self, player1) == DOWN:
-                self.accel.y = -self.accel_const * dt
-            if collideSideCheck(self, player1) == RIGHT:
-                self.accel.x = -self.accel_const * dt
-            if collideSideCheck(self, player1) == UP:
-                self.accel.y = self.accel_const * dt
-            if collideSideCheck(self, player1) == LEFT:
-                self.accel.x = self.accel_const * dt
+        if self.visible:
+            if self.hitbox.colliderect(player1.rect):
+                if collideSideCheck(self, player1) == DOWN:
+                    self.accel.y = -self.accel_const * dt
+                if collideSideCheck(self, player1) == RIGHT:
+                    self.accel.x = -self.accel_const * dt
+                if collideSideCheck(self, player1) == UP:
+                    self.accel.y = self.accel_const * dt
+                if collideSideCheck(self, player1) == LEFT:
+                    self.accel.x = self.accel_const * dt
 
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+            self.rect.center = self.pos
+            self.hitbox.center = self.pos
 
-        objectAccel(self)
+            objectAccel(self)
 
     def update(self):
         pass
+
+class DropBase(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        
+        self.pos = vec((0, 0))
+        self.vel = vec(0, 0)
+        self.accel = vec(0, 0)
+    
+    def hide(self):
+        self.visible = False
+        all_sprites.remove(self)
+
+    def show(self):
+        self.visible = True
+        all_sprites.add(self, layer = LAYERS['drops_layer'])
+
+class ItemDrop(DropBase):
+    def __init__(self, droppedFrom):
+        """An item or material dropped by an enemey that is able to be collected
+
+        Parameters:
+        -------
+            droppedFrom (pygame.sprite.Sprite): The enemy that the item was dropped from
+        """        
+        super().__init__()
+        self.show()
+        self.droppedFrom = droppedFrom
+        self.start_time = time.time()
+        
+        self.spritesheet = SpriteSheet("sprites/bullets/bullets.png")
+        self.images = self.spritesheet.getImages(0, 0, 16, 16, 9)
+        self.index = 0
+
+        self.image = self.images[self.index]
+        self.rect = pygame.Rect(0, 0, 16, 16)
+        self.detect = pygame.Rect(0, 0, 32, 32)
+
+    def movement(self):
+        self.accel = vec(0, 0)
+        if self.visible:
+            pass
 
 #------------------------------ Stat bar classes ------------------------------#
 class HealthBar(pygame.sprite.Sprite):
@@ -1058,7 +1109,6 @@ class Room(AbstractBase):
                 Wall(36, 0, 4, 4),
                 Wall(0, 18.5, 4, 4),
                 Wall(36, 18.5, 4, 4),
-                Push(800, WINDOW_HEIGHT / 2)
             )
 
             # Search for an enemy container for this room
@@ -1076,10 +1126,9 @@ class Room(AbstractBase):
             # If a match is not found, make a new enemy container:
             else:
                 all_containers.append(
-                    EnemyContainer(
+                    EntityContainer(
                         self.room.x, self.room.y,
-                        StandardGrunt(WINDOW_WIDTH/2, WINDOW_HEIGHT/2, 0, 0, 25, 10, 10, 25, 0.3),
-                        StandardGrunt(WINDOW_WIDTH/2, WINDOW_HEIGHT/2, 0, 0, 25, 10, 10, 25, 0.3),
+                        Box(800, WINDOW_HEIGHT / 2)
                     )
                 )
 
@@ -1100,7 +1149,7 @@ class Room(AbstractBase):
     def update(self):
         pass
 
-class EnemyContainer(AbstractBase):
+class EntityContainer(AbstractBase):
     def __init__(self, roomX, roomY, *sprites):
         """A container for enemies. Contains data about all enemies in a room.
 
@@ -1259,7 +1308,7 @@ def bindProjectile(projectile, projTargetGroup):
     projectileCollide(projTargetGroup, projectile, True)
     projectileCollide(all_walls, projectile, False)
     projectileCollide(all_portals, projectile, False)
-    
+
 def redrawGameWindow():
     """Draws all entities every frame"""
     global timer

@@ -1,4 +1,4 @@
-import pygame, math
+import pygame, math, time
 from constants import *
 
 from groups import *
@@ -175,21 +175,29 @@ def collideCheck(object, contact_list):
     """
     global timer
     for entity in contact_list:
-        if object.hitbox.colliderect(entity.hitbox):
-            if object.pos.y < (entity.pos.y + (0.5 * entity.hitbox.height) + 1) and object.pos.y > (entity.pos.y - (0.5 * entity.hitbox.height) - 1):
-                if object.pos.x > entity.pos.x:
-                    object.vel.x = 0
-                    object.pos.x += 1
-                else:
-                    object.vel.x = 0
-                    object.pos.x -= 1
-            if object.pos.x > (entity.pos.x - (0.5 * entity.hitbox.width) - 1) and object.pos.x < (entity.pos.x + (0.5 * entity.hitbox.width) + 1):
-                if object.pos.y < entity.pos.y:
-                    object.vel.y = 0
-                    object.pos.y -= 1
-                else:
-                    object.vel.y = 0
-                    object.pos.y += 1
+        if hasattr(entity, 'visible') and entity.visible:
+            pushFromSide(object, entity)
+        elif hasattr(entity, 'visible') and not entity.visible:
+            pass
+        else:
+            pushFromSide(object, entity)
+
+def pushFromSide(object, entity):
+    if object.hitbox.colliderect(entity.hitbox):
+        if object.pos.y < (entity.pos.y + (0.5 * entity.hitbox.height) + 1) and object.pos.y > (entity.pos.y - (0.5 * entity.hitbox.height) - 1):
+            if object.pos.x > entity.pos.x:
+                object.vel.x = 0
+                object.pos.x += 1
+            else:
+                object.vel.x = 0
+                object.pos.x -= 1
+        if object.pos.x > (entity.pos.x - (0.5 * entity.hitbox.width) - 1) and object.pos.x < (entity.pos.x + (0.5 * entity.hitbox.width) + 1):
+            if object.pos.y < entity.pos.y:
+                object.vel.y = 0
+                object.pos.y -= 1
+            else:
+                object.vel.y = 0
+                object.pos.y += 1
 
 def killGroup(*groups):
     """Runs sprite.kill() for all entities in one or more group.

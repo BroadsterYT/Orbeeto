@@ -17,6 +17,7 @@ LAYERS = {
     'player_layer': 1,
     'enemy_layer': 1,
     'movable_layer': 1,
+    'drops_layer': 1,
     'proj_layer': 1,
     'explosion_layer': 1,
     'wall_layer': 10,
