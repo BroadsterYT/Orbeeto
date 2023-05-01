@@ -1,5 +1,6 @@
-import pygame, math, time
+import pygame, math
 from constants import *
+import random as rand
 
 from groups import *
 
@@ -163,6 +164,19 @@ def getTopLeft(sprite, desired_x, desired_y):
     width = sprite.image.get_width()
     height = sprite.image.get_height()
     return vec(desired_x + width / 2, desired_y + height / 2)
+
+def getRandComponents(maxValue):
+    """Given a maximum value, will output a vector containing two components that vectorially add to that value. The result can be positive or negative.
+
+    Parameters:
+    -------
+        maxValue (float): The value in which the components will vectorially add to. The result can add to +maxValue ot -maxValue.
+    """    
+    x = rand.uniform(-maxValue, maxValue)
+    y = math.sqrt(pow(maxValue, 2) - pow(x, 2))
+    if rand.choice((True, False)) == True:
+        y = -y
+    return vec(x, y)
 
 #------------------------------ Returns None ------------------------------#
 def collideCheck(object, contact_list):

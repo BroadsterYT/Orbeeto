@@ -674,6 +674,7 @@ class DropBase(pygame.sprite.Sprite):
         self.pos = vec((0, 0))
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
+        self.accel_const = 0.21
     
     def hide(self):
         self.visible = False
@@ -693,21 +694,36 @@ class ItemDrop(DropBase):
         """        
         super().__init__()
         self.show()
+        all_drops.add(self)
         self.droppedFrom = droppedFrom
+
         self.start_time = time.time()
+        self.pos = vec(self.droppedFrom.pos.x, self.droppedFrom.pos.y)
+        self.randAccel = getRandComponents(self.accel_const)
         
         self.spritesheet = SpriteSheet("sprites/bullets/bullets.png")
-        self.images = self.spritesheet.getImages(0, 0, 16, 16, 9)
+        self.images = self.spritesheet.getImages(0, 0, 32, 32, 9)
         self.index = 0
 
         self.image = self.images[self.index]
-        self.rect = pygame.Rect(0, 0, 16, 16)
-        self.detect = pygame.Rect(0, 0, 32, 32)
+        self.rect = pygame.Rect(0, 0, 32, 32)
+        self.detect = pygame.Rect(0, 0, 64, 64)
 
     def movement(self):
         self.accel = vec(0, 0)
+        now_time = time.time()
         if self.visible:
-            pass
+            if now_time - self.start_time <= 0.5:
+                self.accel.x = self.randAccel.x
+                self.accel.y = self.randAccel.y
+            
+            objectAccel(self)
+        
+        self.rect.center = self.pos
+        self.detect.center = self.pos
+
+    def update(self):
+        pass
 
 #------------------------------ Stat bar classes ------------------------------#
 class HealthBar(pygame.sprite.Sprite):
@@ -1338,6 +1354,10 @@ def redrawGameWindow():
     for object in all_movable:
         object.movement()
 
+    # Updating all item drops
+    for item in all_drops:
+        item.movement()
+
     # Updating player projectiles
     for projectile in players_projs:
         bindProjectile(projectile, all_enemies)
@@ -1394,6 +1414,8 @@ is_w_held = False
 is_s_held = False
 is_d_held = False
 
+is_e_held = False
+
 is_x_held = False
 
 loadXpRequirements()
@@ -1430,6 +1452,9 @@ while running:
         is_w_held = keyPressed[K_w]
         is_s_held = keyPressed[K_s]
         is_d_held = keyPressed[K_d]
+        
+        is_e_held = keyPressed[K_e]
+        
         is_x_held = keyPressed[K_x]
 
     screen.fill((255, 255, 255))
