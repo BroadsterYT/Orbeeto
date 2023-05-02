@@ -359,18 +359,6 @@ class EnemyBase(pygame.sprite.Sprite):
         all_sprites.add(self, layer = 1)
         all_sprites.add(self.healthBar, layer = 100)
 
-def hideEnemies():
-    """Hides all of the enemy sprites in the current room
-    """    
-    for container in all_containers:
-        if container.room == room.room:
-            for sprite in container.sprites():
-                sprite.hide()
-
-def showEnemies(container):
-    for sprite in container.sprites():
-        sprite.show()
-
 class StandardGrunt(EnemyBase):
     def __init__(self, posX, posY, roomX, roomY, hp, attack, defense, xp_worth, accel_const):
         """A simple enemy that moves to random locations and shoots at random intervals
@@ -1182,6 +1170,24 @@ class EntityContainer(AbstractBase):
 
         for sprite in sprites:
             self.add(sprite)
+
+def hideEnemies():
+    """Hides all of the enemy sprites in the current room
+    """    
+    for container in all_containers:
+        if container.room == room.room:
+            for sprite in container.sprites():
+                sprite.hide()
+
+def showEnemies(container):
+    """Shows all the enemies within an enemy container.
+
+    Parameters:
+    ------
+        container (pygame.sprite.AbstractGroup): The enemy container to unhide
+    """    
+    for sprite in container.sprites():
+        sprite.show()
 
 #------------------------------ Font class ------------------------------#
 class DamageChar(pygame.sprite.Sprite):
