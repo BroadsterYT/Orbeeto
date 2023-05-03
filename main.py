@@ -266,18 +266,18 @@ class Player(PlayerBase):
     def movement(self):
         self.accel = vec(0, 0)
         if self.visible:
-            if is_a_held == True:
+            if isKeyHeld[K_a] == True:
                 self.accel.x = -self.accel_const * dt
-            if is_d_held == True:
+            if isKeyHeld[K_d] == True:
                 self.accel.x = self.accel_const * dt
-            if is_s_held == True:
+            if isKeyHeld[K_s] == True:
                 self.accel.y = self.accel_const * dt
-            if is_w_held == True:
+            if isKeyHeld[K_w] == True:
                 self.accel.y = -self.accel_const * dt
             
-            if is_x_held == True:
+            if isKeyHeld[K_x] == True:
                 self.accel_const = 1.04
-            if is_x_held == False:
+            if isKeyHeld[K_x] == False:
                 self.accel_const = 0.52
 
             objectAccel(self)
@@ -1085,9 +1085,6 @@ class AbstractBase(pygame.sprite.AbstractGroup):
         for sprite in sprites:
             super().add(sprite)
 
-    def killAll(self):
-        killGroup(self.sprites())
-
 class Room(AbstractBase):
     def __init__(self, roomX, roomY):
         """The room where all the current action is taking place
@@ -1097,6 +1094,7 @@ class Room(AbstractBase):
             roomY (int): The room's y-axis location in the grid of the room layout
         """
         super().__init__()
+        
         all_rooms.append(self)
         self.room = vec((roomX, roomY))
 
@@ -1188,6 +1186,31 @@ def showEnemies(container):
     """    
     for sprite in container.sprites():
         sprite.show()
+
+#------------------------------ UI classes ------------------------------#
+class InventoryMenu(AbstractBase):
+    def __init__(self):
+        super().__init__()
+        self.last_time = time.time()
+
+    def hide(self):
+        """Makes all of the elements of the inventory menu invisible (closes the inventory menu)
+        """        
+        for sprite in self.sprites():
+            all_sprites.remove(sprite)
+
+    def show(self):
+        """Makes all of the elements of the inventory menu visible
+        """        
+        for sprite in self.sprites():
+            all_sprites.add(sprite, layer = LAYERS['ui_layer_1'])
+
+    def update(self):
+        if isKeyHeld[K_e] and not (keyReleased[K_e] % 2 == 0):
+            self.show()
+
+        elif isKeyHeld[K_e] and keyReleased[K_e] % 2 == 0:
+            self.hide()
 
 #------------------------------ Font class ------------------------------#
 class DamageChar(pygame.sprite.Sprite):
@@ -1350,7 +1373,6 @@ def redrawGameWindow():
 
     # Updating enemies
     for enemy in all_enemies:
-        print(enemy.visible)
         if enemy.visible == True:
             collideCheck(enemy, all_players,)
             collideCheck(enemy, players_projs)
@@ -1396,12 +1418,17 @@ def redrawGameWindow():
     for room in all_rooms:
         pass
 
+    # Updating inventory
+    if inventory not in all_sprites:
+        inventory.update()
+
     all_sprites.update()
     all_sprites.draw(screen)
     pygame.display.update()
 
 #------------------------------ Initialing parameters ------------------------------#
 player1 = Player()
+inventory = InventoryMenu()
 
 # Load rooms
 room = Room(0, 0)
@@ -1415,14 +1442,9 @@ is_leftMouse_held = False
 is_rightMouse_held = False
 is_middleMouse_held = False
 
-is_a_held = False
-is_w_held = False
-is_s_held = False
-is_d_held = False
-
-is_e_held = False
-
-is_x_held = False
+keyReleased = {
+    K_e: 1
+}
 
 loadXpRequirements()
 
@@ -1454,14 +1476,22 @@ while running:
         if event.type == MOUSEBUTTONDOWN and event.button == 3:
             player1.shoot(player1.gun_cooldown, SHOOT_MIDDLE, PROJ_P_PORTAL)
 
-        is_a_held = keyPressed[K_a]
-        is_w_held = keyPressed[K_w]
-        is_s_held = keyPressed[K_s]
-        is_d_held = keyPressed[K_d]
+        isKeyHeld = {
+            K_a: keyPressed[K_a],
+            K_w: keyPressed[K_w],
+            K_s: keyPressed[K_s],
+            K_d: keyPressed[K_d],
+
+            K_x: keyPressed[K_x],
+
+            K_e: keyPressed[K_e]
+        }
+
+        isKeyHeld[K_e] = keyPressed[K_e]
+        if event.type == pygame.KEYUP and event.key == K_e:
+            keyReleased[K_e] += 1
         
-        is_e_held = keyPressed[K_e]
-        
-        is_x_held = keyPressed[K_x]
+        isKeyHeld[K_x] = keyPressed[K_x]
 
     screen.fill((255, 255, 255))
 

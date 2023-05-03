@@ -23,7 +23,9 @@ LAYERS = {
     'wall_layer': 10,
     'portal_layer': 11,
     'text_layer': 51,
-    'statBar_layer': 100
+    'statBar_layer': 100,
+
+    'ui_layer_1': 200
 }
 
 #------------------------------ Object Movement ------------------------------#
