@@ -158,7 +158,9 @@ def groupChangeRooms(spriteGroup, direction):
 
 def objectAccel(object):
     """Defines acceleration for any entity's movement
+
     Parameters:
+    -----
         object (pygame.sprite.Sprite): Any sprite object
     """    
     object.accel.x += object.vel.x * FRIC
@@ -1114,19 +1116,11 @@ class Room(AbstractBase):
             )
 
             # Search for an enemy container for this room
-            found_match = False
-            for container in all_containers:
-                if container.room == self.room:
-                    found_match = True
-                    searchIndex = all_containers.index(container)
-                    break
+            try:
+                container = next(c for c in all_containers if c.room == self.room)
+                showEnemies(container)
 
-            # If a match is found, show the sprites:
-            if found_match:
-                showEnemies(all_containers[searchIndex])
-
-            # If a match is not found, make a new enemy container:
-            else:
+            except StopIteration:
                 all_containers.append(
                     EntityContainer(
                         self.room.x, self.room.y,
@@ -1140,6 +1134,18 @@ class Room(AbstractBase):
                 Wall(0, 18.5, 40, 4),
             )
 
+            # Search for an enemy container for this room
+            try:
+                container = next(c for c in all_containers if c.room == self.room)
+                showEnemies(container)
+
+            except StopIteration:
+                all_containers.append(
+                    EntityContainer(
+                        self.room.x, self.room.y,
+                    )
+                )
+
         elif self.room == vec(0, 1):
             self.add(
                 Wall(0, 0, 4, 22.5),
@@ -1147,6 +1153,18 @@ class Room(AbstractBase):
                 Wall(8, 4, 4, 4),
                 Wall(28, 4, 4, 4)
             )
+
+            # Search for an enemy container for this room
+            try:
+                container = next(c for c in all_containers if c.room == self.room)
+                showEnemies(container)
+
+            except StopIteration:
+                all_containers.append(
+                    EntityContainer(
+                        self.room.x, self.room.y,
+                    )
+                )
 
     def update(self):
         pass
@@ -1191,26 +1209,66 @@ def showEnemies(container):
 class InventoryMenu(AbstractBase):
     def __init__(self):
         super().__init__()
-        self.last_time = time.time()
+        self.last_show = time.time()
+        self.last_hide = time.time()
+        
+        self.add(
+            Arrow(WINDOW_WIDTH / 2, WINDOW_HEIGHT /2)
+        )
+
+        for sprite in self.sprites():
+            all_sprites.add(sprite, layer = LAYERS['ui_layer_1'])
 
     def hide(self):
         """Makes all of the elements of the inventory menu invisible (closes the inventory menu)
         """        
-        for sprite in self.sprites():
-            all_sprites.remove(sprite)
+        if time.time() - self.last_hide <= 1:
+            for sprite in self.sprites():
+                sprite.accel.y = sprite.accel_const
+
+        self.last_show = time.time()
+        self.objectAccel()
 
     def show(self):
         """Makes all of the elements of the inventory menu visible
         """        
+        if time.time() - self.last_show <= 1:
+            for sprite in self.sprites():
+                sprite.accel.y = -sprite.accel_const
+
+        self.last_hide = time.time()
+        self.objectAccel()
+
+    def objectAccel(self):
         for sprite in self.sprites():
-            all_sprites.add(sprite, layer = LAYERS['ui_layer_1'])
+            objectAccel(sprite)
+            sprite.rect.center = sprite.pos 
 
     def update(self):
-        if isKeyHeld[K_e] and not (keyReleased[K_e] % 2 == 0):
-            self.show()
+        for sprite in self.sprites():
+            sprite.accel = vec(0, 0)
+        
+        if keyReleased[K_e] > 0:
+            if keyReleased[K_e] % 2 != 0:
+                self.show()
 
-        elif isKeyHeld[K_e] and keyReleased[K_e] % 2 == 0:
-            self.hide()
+            elif keyReleased[K_e] % 2 == 0:
+                self.hide()
+
+class Arrow(pygame.sprite.Sprite):
+    def __init__(self, posX, posY):
+        super().__init__()
+        self.pos = vec((posX, posY))
+        self.vel = vec(0, 0)
+        self.accel = vec(0, 0)
+        self.accel_const = 0.5
+        
+        self.spritesheet = SpriteSheet("sprites/orbeeto/orbeeto.png")
+        self.images = self.spritesheet.getImages(0, 0, 64, 64, 5)
+        self.index = 0
+
+        self.image = self.images[self.index]
+        self.rect = self.image.get_rect()
 
 #------------------------------ Font class ------------------------------#
 class DamageChar(pygame.sprite.Sprite):
@@ -1419,8 +1477,7 @@ def redrawGameWindow():
         pass
 
     # Updating inventory
-    if inventory not in all_sprites:
-        inventory.update()
+    inventory.update()
 
     all_sprites.update()
     all_sprites.draw(screen)
@@ -1428,7 +1485,6 @@ def redrawGameWindow():
 
 #------------------------------ Initialing parameters ------------------------------#
 player1 = Player()
-inventory = InventoryMenu()
 
 # Load rooms
 room = Room(0, 0)
@@ -1443,8 +1499,10 @@ is_rightMouse_held = False
 is_middleMouse_held = False
 
 keyReleased = {
-    K_e: 1
+    K_e: 0
 }
+
+inventory = InventoryMenu()
 
 loadXpRequirements()
 
@@ -1490,6 +1548,7 @@ while running:
         isKeyHeld[K_e] = keyPressed[K_e]
         if event.type == pygame.KEYUP and event.key == K_e:
             keyReleased[K_e] += 1
+            print(keyReleased[K_e])
         
         isKeyHeld[K_x] = keyPressed[K_x]
 
