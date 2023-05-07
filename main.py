@@ -197,6 +197,7 @@ class PlayerBase(pygame.sprite.Sprite):
         self.hitTime_charge = 1200
         self.hitTime = 0
 
+        self.inventory = InventoryMenu(self)
         self.healthBar = HealthBar(self)
         self.dodgeBar = DodgeBar(self)
 
@@ -1207,63 +1208,57 @@ def showEnemies(container):
 
 #------------------------------ UI classes ------------------------------#
 class InventoryMenu(AbstractBase):
-    def __init__(self):
+    def __init__(self, owner):
+        """_summary_
+
+        Parameters:
+        ---
+            owner (pygame.sprite.Sprite): The player whom the inventory belongs to
+        """        
         super().__init__()
-        self.last_show = time.time()
-        self.last_hide = time.time()
+        self.last_time = time.time()
+
+        self.closed_point = vec(WINDOW_WIDTH / 2, WINDOW_HEIGHT)
+        self.open_point = vec(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
         
         self.add(
-            Arrow(WINDOW_WIDTH / 2, WINDOW_HEIGHT /2)
+            Arrow(1280 - 128, WINDOW_HEIGHT / 2),
+            Arrow(128, WINDOW_HEIGHT / 2)
         )
 
         for sprite in self.sprites():
-            all_sprites.add(sprite, layer = LAYERS['ui_layer_1'])
+            sprite.rect.center = sprite.pos
 
     def hide(self):
         """Makes all of the elements of the inventory menu invisible (closes the inventory menu)
         """        
-        if time.time() - self.last_hide <= 1:
-            for sprite in self.sprites():
-                sprite.accel.y = sprite.accel_const
-
-        self.last_show = time.time()
-        self.objectAccel()
+        for sprite in self.sprites():
+            all_sprites.remove(sprite)
 
     def show(self):
         """Makes all of the elements of the inventory menu visible
         """        
-        if time.time() - self.last_show <= 1:
-            for sprite in self.sprites():
-                sprite.accel.y = -sprite.accel_const
-
-        self.last_hide = time.time()
-        self.objectAccel()
-
-    def objectAccel(self):
         for sprite in self.sprites():
-            objectAccel(sprite)
-            sprite.rect.center = sprite.pos 
+            all_sprites.add(sprite, layer = LAYERS['ui_layer_1'])
 
     def update(self):
-        for sprite in self.sprites():
-            sprite.accel = vec(0, 0)
+        if keyReleased[K_e] % 2 != 0 and keyReleased[K_e] > 0:
+            self.showing = True
+            self.show()
+
+        elif keyReleased[K_e] % 2 == 0 and keyReleased[K_e] > 0:
+            self.hiding = True
+            self.hide()
         
-        if keyReleased[K_e] > 0:
-            if keyReleased[K_e] % 2 != 0:
-                self.show()
-
-            elif keyReleased[K_e] % 2 == 0:
-                self.hide()
-
 class Arrow(pygame.sprite.Sprite):
-    def __init__(self, posX, posY):
+    def __init__(self, posX, posY, isRight = True):
         super().__init__()
         self.pos = vec((posX, posY))
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
-        self.accel_const = 0.5
+        self.accel_const = 1
         
-        self.spritesheet = SpriteSheet("sprites/orbeeto/orbeeto.png")
+        self.spritesheet = SpriteSheet("sprites/ui/inventory_base.png")
         self.images = self.spritesheet.getImages(0, 0, 64, 64, 5)
         self.index = 0
 
@@ -1477,7 +1472,7 @@ def redrawGameWindow():
         pass
 
     # Updating inventory
-    inventory.update()
+    player1.inventory.update()
 
     all_sprites.update()
     all_sprites.draw(screen)
@@ -1501,8 +1496,6 @@ is_middleMouse_held = False
 keyReleased = {
     K_e: 0
 }
-
-inventory = InventoryMenu()
 
 loadXpRequirements()
 
@@ -1548,7 +1541,6 @@ while running:
         isKeyHeld[K_e] = keyPressed[K_e]
         if event.type == pygame.KEYUP and event.key == K_e:
             keyReleased[K_e] += 1
-            print(keyReleased[K_e])
         
         isKeyHeld[K_x] = keyPressed[K_x]
 
