@@ -25,11 +25,18 @@ screenSize = (WINDOW_WIDTH, WINDOW_HEIGHT)
 screen = pygame.display.set_mode(screenSize, pygame.SCALED)
 pygame.display.set_caption('Orbeeto')
 
+# Globals
+can_update = True
+
 def getClosestPlayer(selfEntity):
     """Returns the closest player entity from another given entity
+    
     Parameters:
+    ---
         selfEntity (pygame.sprite.Sprite): The entity to locate the closest player from
+    
     Returns:
+    ----
         pygame.sprite.Sprite: The closest player entity to selfEntity
     """
     playerCoords = {}
@@ -269,18 +276,18 @@ class Player(PlayerBase):
     def movement(self):
         self.accel = vec(0, 0)
         if self.visible:
-            if isKeyHeld[K_a] == True:
+            if isInputHeld[K_a] == True:
                 self.accel.x = -self.accel_const * dt
-            if isKeyHeld[K_d] == True:
+            if isInputHeld[K_d] == True:
                 self.accel.x = self.accel_const * dt
-            if isKeyHeld[K_s] == True:
+            if isInputHeld[K_s] == True:
                 self.accel.y = self.accel_const * dt
-            if isKeyHeld[K_w] == True:
+            if isInputHeld[K_w] == True:
                 self.accel.y = -self.accel_const * dt
             
-            if isKeyHeld[K_x] == True:
+            if isInputHeld[K_x] == True:
                 self.accel_const = 1.04
-            if isKeyHeld[K_x] == False:
+            if isInputHeld[K_x] == False:
                 self.accel_const = 0.52
 
             objectAccel(self)
@@ -307,7 +314,7 @@ class Player(PlayerBase):
         vel_x = vel * -sin(rad(angle_to_mouse))
         vel_y = vel * -cos(rad(angle_to_mouse))
 
-        if is_leftMouse_held == True:
+        if isInputHeld['LMB'] == True:
             if timer % self.gun_cooldown == 0:
                 players_projs.add(
                     Projectile(self, self.pos.x - (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y + (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, bulletType),
@@ -319,28 +326,29 @@ class Player(PlayerBase):
 
     def update(self):
         global timer
-        if timer % 5 == 0:
-            global is_leftMouse_held
-            if is_leftMouse_held == True:
-                if self.index == 4:
-                    self.index = -1
-                self.index += 1
-            else: # Idle animation
-                self.index = 0
-        
-        if self.hitTime < self.hitTime_charge:
-            self.hitTime += 1
+        if can_update:
+            if timer % 5 == 0:
+                global isInputHeld
+                if isInputHeld['LMB'] == True:
+                    if self.index == 4:
+                        self.index = -1
+                    self.index += 1
+                else: # Idle animation
+                    self.index = 0
+            
+            if self.hitTime < self.hitTime_charge and can_update:
+                self.hitTime += 1
 
-        self.image = self.images[self.index]
-        self.original_image = self.original_images[self.index]
+            self.image = self.images[self.index]
+            self.original_image = self.original_images[self.index]
 
-        self.image = pygame.transform.rotate(self.original_image, int(get_angle_to_mouse(self)))
-        self.rect = self.image.get_rect(center = self.rect.center)
+            self.image = pygame.transform.rotate(self.original_image, int(get_angle_to_mouse(self)))
+            self.rect = self.image.get_rect(center = self.rect.center)
 
-        # Gameplay
-        updateLevel(self)
-        if self.hp <= 0:
-            self.kill()
+            # Gameplay
+            updateLevel(self)
+            if self.hp <= 0:
+                self.kill()
 
 #------------------------------ Enemy classes ------------------------------#
 class EnemyBase(pygame.sprite.Sprite):
@@ -1209,7 +1217,7 @@ def showEnemies(container):
 #------------------------------ UI classes ------------------------------#
 class InventoryMenu(AbstractBase):
     def __init__(self, owner):
-        """_summary_
+        """A menu used to view collected items and utilize them for various purposes
 
         Parameters:
         ---
@@ -1217,17 +1225,11 @@ class InventoryMenu(AbstractBase):
         """        
         super().__init__()
         self.last_time = time.time()
-
-        self.closed_point = vec(WINDOW_WIDTH / 2, WINDOW_HEIGHT)
-        self.open_point = vec(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
         
         self.add(
-            Arrow(1280 - 128, WINDOW_HEIGHT / 2),
-            Arrow(128, WINDOW_HEIGHT / 2)
+            RightMenuArrow(1152, WINDOW_HEIGHT / 2),
+            RightMenuArrow(128, WINDOW_HEIGHT / 2),
         )
-
-        for sprite in self.sprites():
-            sprite.rect.center = sprite.pos
 
     def hide(self):
         """Makes all of the elements of the inventory menu invisible (closes the inventory menu)
@@ -1242,28 +1244,39 @@ class InventoryMenu(AbstractBase):
             all_sprites.add(sprite, layer = LAYERS['ui_layer_1'])
 
     def update(self):
+        global can_update
         if keyReleased[K_e] % 2 != 0 and keyReleased[K_e] > 0:
-            self.showing = True
             self.show()
+            can_update = False
 
         elif keyReleased[K_e] % 2 == 0 and keyReleased[K_e] > 0:
-            self.hiding = True
             self.hide()
+            can_update = True
         
-class Arrow(pygame.sprite.Sprite):
-    def __init__(self, posX, posY, isRight = True):
+class RightMenuArrow(pygame.sprite.Sprite):
+    def __init__(self, posX, posY):
         super().__init__()
         self.pos = vec((posX, posY))
-        self.vel = vec(0, 0)
-        self.accel = vec(0, 0)
-        self.accel_const = 1
+        self.return_pos = vec((posX, posY))
         
         self.spritesheet = SpriteSheet("sprites/ui/inventory_base.png")
         self.images = self.spritesheet.getImages(0, 0, 64, 64, 5)
         self.index = 0
 
         self.image = self.images[self.index]
-        self.rect = self.image.get_rect()
+        self.rect = pygame.Rect(posX - 32, posY - 32, 64, 64)
+        self.hitbox = self.rect
+
+    def hover(self):
+        if self.hitbox.collidepoint(pygame.mouse.get_pos()):
+            self.pos.x = 5 * sin(time.time() * 15) + self.return_pos.x
+        else:
+            self.pos.x = self.return_pos.x
+
+        self.rect.center = self.pos
+
+    def update(self):
+        self.hover()
 
 #------------------------------ Font class ------------------------------#
 class DamageChar(pygame.sprite.Sprite):
@@ -1409,67 +1422,67 @@ def bindProjectile(projectile, projTargetGroup):
 
 def redrawGameWindow():
     """Draws all entities every frame"""
-    global timer
-    # Updating players
-    for a_player in all_players:
-        collideCheck(a_player, enemy_projs)
-        collideCheck(a_player, all_walls)
-        collideCheck(a_player, all_movable)
+    if can_update:
+        # Updating players
+        for a_player in all_players:
+            collideCheck(a_player, enemy_projs)
+            collideCheck(a_player, all_walls)
+            collideCheck(a_player, all_movable)
 
-        a_player.movement()
-        a_player.shoot(12, None)
+            a_player.movement()
+            a_player.shoot(12, None)
 
-        # Teleport the player if they come into contact with a portal
+            # Teleport the player if they come into contact with a portal
+            for portal in all_portals:
+                if a_player.hitbox.colliderect(portal.hitbox) and len(all_portals) == 2:
+                    a_player.teleport(portal)
+
+        # Updating enemies
+        for enemy in all_enemies:
+            if enemy.visible == True:
+                collideCheck(enemy, all_players,)
+                collideCheck(enemy, players_projs)
+                collideCheck(enemy, all_walls)
+
+        # Updating movable objects
+        for object in all_movable:
+            object.movement()
+
+        # Updating all item drops
+        for item in all_drops:
+            item.movement()
+
+        # Updating player projectiles
+        for projectile in players_projs:
+            bindProjectile(projectile, all_enemies)
+
+        # Updating enemy projectiles
+        for projectile in enemy_projs:
+            bindProjectile(projectile, all_players)
+
+        # Updating explosions
+        for bullet in all_explosions:
+            pass
+
+        # Updating UI
+        for statBar in all_stat_bars:
+            statBar.movement()
+
+        # Updating walls
+        for wall in all_walls:
+            pass
+
+        # Updating portals
         for portal in all_portals:
-            if a_player.hitbox.colliderect(portal.hitbox) and len(all_portals) == 2:
-                a_player.teleport(portal)
+            pass
 
-    # Updating enemies
-    for enemy in all_enemies:
-        if enemy.visible == True:
-            collideCheck(enemy, all_players,)
-            collideCheck(enemy, players_projs)
-            collideCheck(enemy, all_walls)
+        # Updating all font characters
+        for char in all_font_chars:
+            char.movement()
 
-    # Updating movable objects
-    for object in all_movable:
-        object.movement()
-
-    # Updating all item drops
-    for item in all_drops:
-        item.movement()
-
-    # Updating player projectiles
-    for projectile in players_projs:
-        bindProjectile(projectile, all_enemies)
-
-    # Updating enemy projectiles
-    for projectile in enemy_projs:
-        bindProjectile(projectile, all_players)
-
-    # Updating explosions
-    for bullet in all_explosions:
-        pass
-
-    # Updating UI
-    for statBar in all_stat_bars:
-        statBar.movement()
-
-    # Updating walls
-    for wall in all_walls:
-        pass
-
-    # Updating portals
-    for portal in all_portals:
-        pass
-
-    # Updating all font characters
-    for char in all_font_chars:
-        char.movement()
-
-    # Updating rooms
-    for room in all_rooms:
-        pass
+        # Updating rooms
+        for room in all_rooms:
+            pass
 
     # Updating inventory
     player1.inventory.update()
@@ -1489,15 +1502,26 @@ room.layoutUpdate()
 timer = 0
 last_time = time.time()
 
-is_leftMouse_held = False
-is_rightMouse_held = False
-is_middleMouse_held = False
-
 keyReleased = {
+    K_a: 0,
+    K_w: 0,
+    K_s: 0,
+    K_d: 0,
     K_e: 0
 }
 
 loadXpRequirements()
+
+def checkKeyRelease(key):
+    """Checks if a key has been released. If it has, then its count in "keyReleased" will be updated to match.
+
+    Parameters:
+    -----
+        key (int): The key to check
+    """
+    if event.type == pygame.KEYUP and event.key == key:
+        if key in isInputHeld and key in keyReleased:
+            keyReleased[key] += 1
 
 #------------------------------ Main loop ------------------------------#
 running = True
@@ -1512,37 +1536,32 @@ while running:
         sys.exit()
 
     for event in pygame.event.get():
+        keyPressed = pygame.key.get_pressed()
+
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
 
-        keyPressed = pygame.key.get_pressed()
         if keyPressed[K_ESCAPE]:
             running = False
-        
-        is_leftMouse_held = pygame.mouse.get_pressed()[0]
-        is_middleMouse_held = pygame.mouse.get_pressed()[1]
-        is_rightMouse_held = pygame.mouse.get_pressed()[2]
-
+    
         if event.type == MOUSEBUTTONDOWN and event.button == 3:
             player1.shoot(player1.gun_cooldown, SHOOT_MIDDLE, PROJ_P_PORTAL)
 
-        isKeyHeld = {
+        isInputHeld = {
+            'LMB': pygame.mouse.get_pressed()[0],
+            'MMB': pygame.mouse.get_pressed()[1],
+            'RMB': pygame.mouse.get_pressed()[2],
+
             K_a: keyPressed[K_a],
             K_w: keyPressed[K_w],
             K_s: keyPressed[K_s],
             K_d: keyPressed[K_d],
-
             K_x: keyPressed[K_x],
-
             K_e: keyPressed[K_e]
         }
 
-        isKeyHeld[K_e] = keyPressed[K_e]
-        if event.type == pygame.KEYUP and event.key == K_e:
-            keyReleased[K_e] += 1
-        
-        isKeyHeld[K_x] = keyPressed[K_x]
+        checkKeyRelease(K_e)
 
     screen.fill((255, 255, 255))
 
@@ -1570,10 +1589,8 @@ while running:
 
     # Regenerate health for testing purposes
     for a_player in all_players:
-        if timer % 5 == 0 and a_player.hp < a_player.max_hp and is_middleMouse_held == True:
+        if timer % 5 == 0 and a_player.hp < a_player.max_hp and isInputHeld['MMB']:
             a_player.hp += 2
-        else:
-            pass 
 
     #------------------------------ Redraw window ------------------------------#
     redrawGameWindow()
