@@ -1228,7 +1228,7 @@ class InventoryMenu(AbstractBase):
         
         self.add(
             RightMenuArrow(1152, WINDOW_HEIGHT / 2),
-            RightMenuArrow(128, WINDOW_HEIGHT / 2),
+            LeftMenuArrow(128, WINDOW_HEIGHT / 2),
         )
 
     def hide(self):
@@ -1245,6 +1245,7 @@ class InventoryMenu(AbstractBase):
 
     def update(self):
         global can_update
+
         if keyReleased[K_e] % 2 != 0 and keyReleased[K_e] > 0:
             self.show()
             can_update = False
@@ -1260,12 +1261,16 @@ class RightMenuArrow(pygame.sprite.Sprite):
         self.return_pos = vec((posX, posY))
         
         self.spritesheet = SpriteSheet("sprites/ui/inventory_base.png")
-        self.images = self.spritesheet.getImages(0, 0, 64, 64, 5)
-        self.index = 0
+        self.images = self.spritesheet.getImages(0, 0, 64, 64, 61)
+        self.index = 1
 
         self.image = self.images[self.index]
-        self.rect = pygame.Rect(posX - 32, posY - 32, 64, 64)
-        self.hitbox = self.rect
+        self.image = pygame.transform.scale(self.image, (128, 128))
+        
+        self.rect = pygame.Rect(posX - 32, posY - 32, 128, 128)
+        self.hitbox = pygame.Rect(posX - 32, posY - 32, 128, 128)
+
+        self.hitbox.center = self.return_pos
 
     def hover(self):
         if self.hitbox.collidepoint(pygame.mouse.get_pos()):
@@ -1276,7 +1281,60 @@ class RightMenuArrow(pygame.sprite.Sprite):
         self.rect.center = self.pos
 
     def update(self):
+        global timer
+        if timer % 1 == 0:
+            if self.index >= 61:
+                self.index = 1
+            
+            self.image = self.images[self.index]
+            self.image = pygame.transform.scale(self.image, (128, 128))
+            self.index += 1
+
         self.hover()
+
+class LeftMenuArrow(pygame.sprite.Sprite):
+    def __init__(self, posX, posY):
+        super().__init__()
+        self.pos = vec((posX, posY))
+        self.return_pos = vec((posX, posY))
+        
+        self.spritesheet = SpriteSheet("sprites/ui/inventory_base.png")
+        self.images = self.spritesheet.getImages(0, 0, 64, 64, 61)
+        self.index = 1
+
+        self.image = self.images[self.index]
+        self.image = pygame.transform.scale(self.image, (128, 128))
+        self.image = pygame.transform.flip(self.image, True, False)
+        
+        self.rect = pygame.Rect(posX - 32, posY - 32, 128, 128)
+        self.hitbox = pygame.Rect(posX - 32, posY - 32, 128, 128)
+
+        self.hitbox.center = self.return_pos
+
+    def hover(self):
+        if self.hitbox.collidepoint(pygame.mouse.get_pos()):
+            self.pos.x = 5 * sin(time.time() * 15) + self.return_pos.x
+        else:
+            self.pos.x = self.return_pos.x
+
+        self.rect.center = self.pos
+
+    def update(self):
+        global timer
+        if timer % 1 == 0:
+            if self.index >= 61:
+                self.index = 1
+            
+            self.image = self.images[self.index]
+            self.image = pygame.transform.scale(self.image, (128, 128))
+            self.image = pygame.transform.flip(self.image, True, False)
+            self.index += 1
+
+        self.hover()
+
+class MenuSlot(pygame.sprite.Sprite):
+    def __init__(self, posX, posY):
+        super().__init__()
 
 #------------------------------ Font class ------------------------------#
 class DamageChar(pygame.sprite.Sprite):
