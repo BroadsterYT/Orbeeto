@@ -4,7 +4,7 @@
 
 ## Description
 
-Get ready to embark on an intergalactic journey as Orbeeto, the small but mighty-powerful robotic mercenary aboard the Cygnus Ascendant in this epic bullet-hell puzzle-solving game!
+Get ready to embark on an intergalactic journey as Orbeeto, the small but mighty-powerful robotic mercenary aboard the Cygnus Ascendant, in this epic bullet-hell puzzle-solving game!
 
 >As the nearest star sets upon its solar evening, chaos erupts on the Cygnus Ascendant. The ship is under attack, and it's up to you to take down the opposition and restore order. Maneuver through challenging obstacles, dodge enemy fire, and unleash a barrage of attacks on your foes. The fate of the ship rests in your hands.
 
