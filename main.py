@@ -1225,10 +1225,11 @@ class InventoryMenu(AbstractBase):
         """        
         super().__init__()
         self.last_time = time.time()
+        self.owner = owner
         
         self.add(
-            RightMenuArrow(1152, WINDOW_HEIGHT / 2),
-            LeftMenuArrow(128, WINDOW_HEIGHT / 2),
+            RightMenuArrow(1206, WINDOW_HEIGHT / 2),
+            LeftMenuArrow(64, WINDOW_HEIGHT / 2),
         )
 
     def hide(self):
@@ -1245,7 +1246,6 @@ class InventoryMenu(AbstractBase):
 
     def update(self):
         global can_update
-
         if keyReleased[K_e] % 2 != 0 and keyReleased[K_e] > 0:
             self.show()
             can_update = False
@@ -1256,16 +1256,22 @@ class InventoryMenu(AbstractBase):
         
 class RightMenuArrow(pygame.sprite.Sprite):
     def __init__(self, posX, posY):
+        """A UI element that allows players to cycle through menu screens to the right.
+
+        Parameters:
+        -----
+            posX (float): The x-position the element should be displayed at\n
+            posY (float): The y-position the element should be displayed at
+        """        
         super().__init__()
         self.pos = vec((posX, posY))
         self.return_pos = vec((posX, posY))
         
-        self.spritesheet = SpriteSheet("sprites/ui/inventory_base.png")
+        self.spritesheet = SpriteSheet("sprites/ui/menu_arrow.png")
         self.images = self.spritesheet.getImages(0, 0, 64, 64, 61)
         self.index = 1
 
-        self.image = self.images[self.index]
-        self.image = pygame.transform.scale(self.image, (128, 128))
+        self.image = pygame.transform.scale(self.images[self.index], (128, 128))
         
         self.rect = pygame.Rect(posX - 32, posY - 32, 128, 128)
         self.hitbox = pygame.Rect(posX - 32, posY - 32, 128, 128)
@@ -1286,24 +1292,30 @@ class RightMenuArrow(pygame.sprite.Sprite):
             if self.index >= 61:
                 self.index = 1
             
-            self.image = self.images[self.index]
-            self.image = pygame.transform.scale(self.image, (128, 128))
+            self.image = pygame.transform.scale(self.images[self.index], (128, 128))
             self.index += 1
 
         self.hover()
 
 class LeftMenuArrow(pygame.sprite.Sprite):
     def __init__(self, posX, posY):
+        """A UI element that allows players to cycle through menu screens to the left.
+
+        Parameters:
+        -----
+            posX (float): The x-position the element should be displayed at\n
+            posY (float): The y-position the element should be displayed at
+        """        
         super().__init__()
         self.pos = vec((posX, posY))
         self.return_pos = vec((posX, posY))
         
-        self.spritesheet = SpriteSheet("sprites/ui/inventory_base.png")
+        self.spritesheet = SpriteSheet("sprites/ui/menu_arrow.png")
         self.images = self.spritesheet.getImages(0, 0, 64, 64, 61)
         self.index = 1
 
         self.image = self.images[self.index]
-        self.image = pygame.transform.scale(self.image, (128, 128))
+        self.image = pygame.transform.scale(self.image, (64, 64))
         self.image = pygame.transform.flip(self.image, True, False)
         
         self.rect = pygame.Rect(posX - 32, posY - 32, 128, 128)
@@ -1320,14 +1332,13 @@ class LeftMenuArrow(pygame.sprite.Sprite):
         self.rect.center = self.pos
 
     def update(self):
+
         global timer
         if timer % 1 == 0:
             if self.index >= 61:
                 self.index = 1
             
-            self.image = self.images[self.index]
-            self.image = pygame.transform.scale(self.image, (128, 128))
-            self.image = pygame.transform.flip(self.image, True, False)
+            self.image = pygame.transform.flip(pygame.transform.scale(self.images[self.index], (64, 64)), True, False)
             self.index += 1
 
         self.hover()
@@ -1339,6 +1350,17 @@ class MenuSlot(pygame.sprite.Sprite):
 #------------------------------ Font class ------------------------------#
 class DamageChar(pygame.sprite.Sprite):
     def __init__(self, posX, posY, damage):
+        """A number that pops up after a player or enemy is hit that indicates how much damage that entity has taken
+        
+        Parameters
+        ----------
+            posX (_type_): _description_
+        
+            posY (_type_): _description_
+        
+            damage (_type_): _description_
+        
+        """        
         super().__init__()
         global timer
         all_sprites.add(self, layer = LAYERS['text_layer'])

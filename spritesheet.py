@@ -7,18 +7,26 @@ class SpriteSheet(object):
         self.isHorizontal = isHorizontal
 
     def getImages(self, x, y, width, height, imageCount, imageOffset=0):
-        """Snips specific sprites from a spritesheet
-
-        Args:
-            x (int): The x-location of the topleft corner of the sprite
-            y (int): The x-location of the topleft corner of the sprite
-            width (int): The width of each frame of the sprites in the spritesheet
-            height (int): The height of each frame of the sprites in the spritesheet
-            imageCount (_type_): _description_
-            imageOffset (int, optional): _description_. Defaults to 0.
-
-        Returns:
-            list: A list of the desired sprites/sprite animation
+        """Snips specific sprites from the spritesheet
+        
+        Parameters
+        ----------
+            x (int): The x-location of the topleft corner of the image
+        
+            y (int): The y-location of the topleft corner of the image
+        
+            width (int): The width of each frame in the spritesheet
+        
+            height (int): The height of each frame in the spritesheet
+        
+            imageCount (int): The number of sprites in the spritesheet image
+        
+            imageOffset (int, optional): The sprite image to start the sequence from. Defaults to 0 - the first image.
+        
+        Returns
+        -------
+            list: The sequence of desired frames
+        
         """        
         imageList = []
         offset = 0
