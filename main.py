@@ -1315,7 +1315,7 @@ class LeftMenuArrow(pygame.sprite.Sprite):
         self.index = 1
 
         self.image = self.images[self.index]
-        self.image = pygame.transform.scale(self.image, (64, 64))
+        self.image = pygame.transform.scale(self.image, (128, 128))
         self.image = pygame.transform.flip(self.image, True, False)
         
         self.rect = pygame.Rect(posX - 32, posY - 32, 128, 128)
@@ -1324,6 +1324,8 @@ class LeftMenuArrow(pygame.sprite.Sprite):
         self.hitbox.center = self.return_pos
 
     def hover(self):
+        """Causes the arrow to "hover" in place when the mouse cursor is above it
+        """        
         if self.hitbox.collidepoint(pygame.mouse.get_pos()):
             self.pos.x = 5 * sin(time.time() * 15) + self.return_pos.x
         else:
@@ -1332,13 +1334,12 @@ class LeftMenuArrow(pygame.sprite.Sprite):
         self.rect.center = self.pos
 
     def update(self):
-
         global timer
         if timer % 1 == 0:
             if self.index >= 61:
                 self.index = 1
             
-            self.image = pygame.transform.flip(pygame.transform.scale(self.images[self.index], (64, 64)), True, False)
+            self.image = pygame.transform.flip(pygame.transform.scale(self.images[self.index], (128, 128)), True, False)
             self.index += 1
 
         self.hover()
