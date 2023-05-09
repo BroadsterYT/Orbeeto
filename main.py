@@ -28,124 +28,140 @@ pygame.display.set_caption('Orbeeto')
 # Globals
 can_update = True
 
-def getClosestPlayer(selfEntity):
-    """Returns the closest player entity from another given entity
+def getClosestPlayer(check_sprite):
+    """Checks for the closest player to a given sprite.
     
-    Parameters:
-    ---
-        selfEntity (pygame.sprite.Sprite): The entity to locate the closest player from
+    ### Parameters
+        - ``check_sprite`` ``(pygame.sprite.Sprite)``: The entity checking for the closest player
     
-    Returns:
-    ----
-        pygame.sprite.Sprite: The closest player entity to selfEntity
-    """
+    ### Returns
+        - ``pygame.sprite.Sprite``: The player closest to ``check_sprite``
+    """    
     playerCoords = {}
     for a_player in all_players:
-        playerCoords[a_player] = get_dist_to_entity(selfEntity, a_player)
+        playerCoords[a_player] = get_dist_to_entity(check_sprite, a_player)
 
     try:
         temp = min(playerCoords.values())
         result = [key for key in playerCoords if playerCoords[key] == temp]
         return result[0]
     except:
-        return selfEntity
+        return check_sprite
 
-def awardXp(enemy):
-    """Give all players an enemy's xp worth after it is killed
-    Parameters:
-        enemy (pygame.sprite.Sprite): The enemy that has been killed
-    """
+def awardXp(killed_enemy):
+    """Rewards players with xp after killing an enemy.
+    
+    ### Parameters
+        - ``killed_enemy`` ``(pygame.sprite.Sprite)``: The enemy that has been killed
+    """    
     for a_player in all_players:
-        a_player.xp += enemy.xp_worth
+        a_player.xp += killed_enemy.xp_worth
 
-def tpLocation(entity, portal_in):
-    """Teleports an entity between portals given the portal the entity is entering
-    Parameters:
-        entity (pygame.sprite.Sprite): The player entering the portal
-        portal_in (pygame.sprite.Sprite): The portal the player is entering
+def tpLocation(tp_sprite, portal_in):
+    """Teleports a sprite between two portals.
+    
+    ### Parameters
+        - ``tp_sprite`` ``(pygame.sprite.Sprite)``: The sprite being teleported between portals
+        - ``portal_in`` ``(pygame.sprite.Sprite)``: The portal that ``tp_sprite`` is entering
     """    
     for portal in all_portals:
         if portal != portal_in:
             other_portal = portal
             
     if other_portal.facing == DOWN:
-        entity.pos.x = other_portal.pos.x
-        entity.pos.y = other_portal.pos.y + other_portal.hitbox.height + entity.hitbox.height * 0.5
-        entity.vel = vec(0, 0)
+        tp_sprite.pos.x = other_portal.pos.x
+        tp_sprite.pos.y = other_portal.pos.y + other_portal.hitbox.height + tp_sprite.hitbox.height * 0.5
+        tp_sprite.vel = vec(0, 0)
 
     elif other_portal.facing == RIGHT:
-        entity.pos.x = other_portal.pos.x + other_portal.hitbox.width + entity.hitbox.width * 0.5
-        entity.pos.y = other_portal.pos.y
-        entity.vel = vec(0, 0)
+        tp_sprite.pos.x = other_portal.pos.x + other_portal.hitbox.width + tp_sprite.hitbox.width * 0.5
+        tp_sprite.pos.y = other_portal.pos.y
+        tp_sprite.vel = vec(0, 0)
 
     elif other_portal.facing == UP:
-        entity.pos.x = other_portal.pos.x
-        entity.pos.y = other_portal.pos.y - other_portal.hitbox.height - entity.hitbox.height * 0.5
-        entity.vel = vec(0, 0)
+        tp_sprite.pos.x = other_portal.pos.x
+        tp_sprite.pos.y = other_portal.pos.y - other_portal.hitbox.height - tp_sprite.hitbox.height * 0.5
+        tp_sprite.vel = vec(0, 0)
 
     elif other_portal.facing == LEFT:
-        entity.pos.x = other_portal.pos.x - other_portal.hitbox.width - entity.hitbox.width * 0.5
-        entity.pos.y = other_portal.pos.y
-        entity.vel = vec(0, 0)
+        tp_sprite.pos.x = other_portal.pos.x - other_portal.hitbox.width - tp_sprite.hitbox.width * 0.5
+        tp_sprite.pos.y = other_portal.pos.y
+        tp_sprite.vel = vec(0, 0)
 
-def distFromCenterPortal(proj, portal_in):
+def projFromPortalCen(proj, portal_in):
+    """Calculates the distance a projectile is from a portal's center upon entering it. This allows the projectile to spawn at the correct position relative to the exit portal.
+    
+    ### Parameters
+        - ``proj`` ``(pygame.sprite.Sprite)``: The projectile entering the portal
+        - ``portal_in`` ``(pygame.sprite.Sprite)``: The portal the projectile is entering
+    
+    ### Returns
+        - ``float``: The distance (along the x or y-axis) that the projectile is from the center of ``portal_in``
+    """    
     if portal_in.facing == DOWN or portal_in.facing == UP:
         return proj.pos.x - portal_in.pos.x
     if portal_in.facing == RIGHT or portal_in.facing == LEFT:
         return proj.pos.y - portal_in.pos.y
 
-def teleportProj(proj, portalIn):
+def teleportProj(proj, portal_in):
+    """Teleports a projectile between two portals
+    
+    ### Parameters
+        - ``proj`` ``(pygame.sprite.Sprite)``: The projectile being teleported
+        - ``portal_in`` ``(pygame.sprite.Sprite)``: The portal the projectile is entering
+    """    
     for portal in all_portals:
-        if portal != portalIn:
+        if portal != portal_in:
             portalOut = portal
 
     projGroup = players_projs
 
-    if portalIn.facing == DOWN:
+    if portal_in.facing == DOWN:
         if portalOut.facing == DOWN:
-            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + distFromCenterPortal(proj, portalIn), portalOut.pos.y + 8, proj.vel.x, -proj.vel.y, proj.type))
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + projFromPortalCen(proj, portal_in), portalOut.pos.y + 8, proj.vel.x, -proj.vel.y, proj.type))
         if portalOut.facing == RIGHT:
-            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x, portalOut.pos.y + distFromCenterPortal(proj, portalIn), -proj.vel.y, proj.vel.x, proj.type))
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x, portalOut.pos.y + projFromPortalCen(proj, portal_in), -proj.vel.y, proj.vel.x, proj.type))
         if portalOut.facing == UP:
-            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + distFromCenterPortal(proj, portalIn), portalOut.pos.y - 8, proj.vel.x, proj.vel.y, proj.type))
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + projFromPortalCen(proj, portal_in), portalOut.pos.y - 8, proj.vel.x, proj.vel.y, proj.type))
         if portalOut.facing == LEFT:
-            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x, portalOut.pos.y + distFromCenterPortal(proj, portalIn), proj.vel.y, proj.vel.x, proj.type))
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x, portalOut.pos.y + projFromPortalCen(proj, portal_in), proj.vel.y, proj.vel.x, proj.type))
 
-    if portalIn.facing == RIGHT:
+    if portal_in.facing == RIGHT:
         if portalOut.facing == DOWN:
-            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + distFromCenterPortal(proj, portalIn), portalOut.pos.y + 8, proj.vel.y, -proj.vel.x, proj.type))
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + projFromPortalCen(proj, portal_in), portalOut.pos.y + 8, proj.vel.y, -proj.vel.x, proj.type))
         if portalOut.facing == RIGHT:
-            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + 8, portalOut.pos.y + distFromCenterPortal(proj, portalIn), -proj.vel.x, -proj.vel.y, proj.type))
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + 8, portalOut.pos.y + projFromPortalCen(proj, portal_in), -proj.vel.x, -proj.vel.y, proj.type))
         if portalOut.facing == UP:
-            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + distFromCenterPortal(proj, portalIn), portalOut.pos.y - 8, -proj.vel.y, proj.vel.x, proj.type))
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + projFromPortalCen(proj, portal_in), portalOut.pos.y - 8, -proj.vel.y, proj.vel.x, proj.type))
         if portalOut.facing == LEFT:
-            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x, portalOut.pos.y + distFromCenterPortal(proj, portalIn), proj.vel.x, proj.vel.y, proj.type))
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x, portalOut.pos.y + projFromPortalCen(proj, portal_in), proj.vel.x, proj.vel.y, proj.type))
 
-    if portalIn.facing == UP:
+    if portal_in.facing == UP:
         if portalOut.facing == DOWN:
-            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + distFromCenterPortal(proj, portalIn), portalOut.pos.y + 8, proj.vel.x, proj.vel.y, proj.type))
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + projFromPortalCen(proj, portal_in), portalOut.pos.y + 8, proj.vel.x, proj.vel.y, proj.type))
         if portalOut.facing == RIGHT:
-            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + 8, portalOut.pos.y + distFromCenterPortal(proj, portalIn), proj.vel.y, proj.vel.x, proj.type))
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + 8, portalOut.pos.y + projFromPortalCen(proj, portal_in), proj.vel.y, proj.vel.x, proj.type))
         if portalOut.facing == UP:
-            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + distFromCenterPortal(proj, portalIn), portalOut.pos.y - 8, -proj.vel.x, -proj.vel.y, proj.type))
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + projFromPortalCen(proj, portal_in), portalOut.pos.y - 8, -proj.vel.x, -proj.vel.y, proj.type))
         if portalOut.facing == LEFT:
-            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x, portalOut.pos.y + distFromCenterPortal(proj, portalIn), -proj.vel.y, proj.vel.x, proj.type))
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x, portalOut.pos.y + projFromPortalCen(proj, portal_in), -proj.vel.y, proj.vel.x, proj.type))
 
-    if portalIn.facing == LEFT:
+    if portal_in.facing == LEFT:
         if portalOut.facing == DOWN:
-            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + distFromCenterPortal(proj, portalIn), portalOut.pos.y + 8, proj.vel.y, proj.vel.x, proj.type))
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + projFromPortalCen(proj, portal_in), portalOut.pos.y + 8, proj.vel.y, proj.vel.x, proj.type))
         if portalOut.facing == RIGHT:
-            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + 8, portalOut.pos.y + distFromCenterPortal(proj, portalIn), proj.vel.x, proj.vel.y, proj.type))
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + 8, portalOut.pos.y + projFromPortalCen(proj, portal_in), proj.vel.x, proj.vel.y, proj.type))
         if portalOut.facing == UP:
-            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + distFromCenterPortal(proj, portalIn), portalOut.pos.y - 8, proj.vel.y, -proj.vel.x, proj.type))
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x + projFromPortalCen(proj, portal_in), portalOut.pos.y - 8, proj.vel.y, -proj.vel.x, proj.type))
         if portalOut.facing == LEFT:
-            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x, portalOut.pos.y + distFromCenterPortal(proj, portalIn), proj.vel.x, proj.vel.y, proj.type))
+            projGroup.add(Projectile(proj.shotFrom, portalOut.pos.x, portalOut.pos.y + projFromPortalCen(proj, portal_in), proj.vel.x, proj.vel.y, proj.type))
 
 def groupChangeRooms(spriteGroup, direction):
-    """Change the room location of all sprites in a sprite group given a direction.
-    Parameters:
-        spriteGroup (pygame.sprite.Group): The sprite group changing rooms
-        direction (str): The room switching direction
+    """Changes the room of all sprites within a group. This is achieved by adding or subtracting the window's width or height from the sprites x-position or y-position, respecively.
+    
+    ### Parameters
+        - ``spriteGroup`` ``(pygame.sprite.Group)``: The group to relocate
+        - ``direction`` ``(str)``: The direction of the room where ``spriteGroup`` should be relocated
     """    
     if direction == DOWN:
         for sprite in spriteGroup:
@@ -163,17 +179,16 @@ def groupChangeRooms(spriteGroup, direction):
         for sprite in spriteGroup:
             sprite.changeRoomLeft()
 
-def objectAccel(object):
-    """Defines acceleration for any entity's movement
-
-    Parameters:
-    -----
-        object (pygame.sprite.Sprite): Any sprite object
+def objectAccel(sprite):
+    """Defines the relationship between acceleration, velocity, and position (and time, when called once every frame)
+    
+    ### Parameters
+        - ``sprite`` ``(pygame.sprite.Sprite)``: The sprite that should follow the acceleration logic
     """    
-    object.accel.x += object.vel.x * FRIC
-    object.accel.y += object.vel.y * FRIC
-    object.vel += object.accel * dt
-    object.pos += object.vel + object.accel_const * object.accel
+    sprite.accel.x += sprite.vel.x * FRIC
+    sprite.accel.y += sprite.vel.y * FRIC
+    sprite.vel += sprite.accel * dt
+    sprite.pos += sprite.vel + sprite.accel_const * sprite.accel
 
 #------------------------------ Player class ------------------------------#
 class PlayerBase(pygame.sprite.Sprite):
@@ -209,14 +224,20 @@ class PlayerBase(pygame.sprite.Sprite):
         self.dodgeBar = DodgeBar(self)
 
     def hide(self):
+        """Makes the player sprite invisible. The player's ``update()``function will not be called.
+        """        
         self.visible = False
         all_sprites.remove(self)
 
     def show(self):
+        """Makes the player sprite visible. The player's ``update()`` function can be called
+        """        
         self.visible = True
         all_sprites.add(self, layer = LAYERS['player_layer'])
 
     def changeRoomRight(self):
+        """Relocates the player one room to the right. This ``kill()``s all projectiles and explosions in the current room.
+        """        
         room.room.x += 1
         room.layoutUpdate()
         
@@ -226,6 +247,8 @@ class PlayerBase(pygame.sprite.Sprite):
         killGroup(all_projs, all_explosions)
 
     def changeRoomLeft(self):
+        """Relocates the player one room to the left. This ``kill()``s all projectiles and explosions in the current room.
+        """   
         room.room.x -= 1
         room.layoutUpdate()
 
@@ -235,6 +258,8 @@ class PlayerBase(pygame.sprite.Sprite):
         killGroup(all_projs, all_explosions)
 
     def changeRoomUp(self):
+        """Relocates the player one room up. This ``kill()``s all projectiles and explosions in the current room.
+        """   
         room.room.y += 1
         room.layoutUpdate()
 
@@ -244,6 +269,8 @@ class PlayerBase(pygame.sprite.Sprite):
         killGroup(all_projs, all_explosions)
 
     def changeRoomDown(self):
+        """Relocates the player one room down. This ``kill()``s all projectiles and explosions in the current room.
+        """   
         room.room.y -= 1
         room.layoutUpdate()
 
@@ -254,7 +281,7 @@ class PlayerBase(pygame.sprite.Sprite):
 
 class Player(PlayerBase):
     def __init__(self):
-        """A player that can move and shoot.
+        """A player sprite that can move and shoot.
         """        
         super().__init__()
         all_players.add(self)
@@ -274,6 +301,8 @@ class Player(PlayerBase):
         self.hitbox = self.rect.inflate(-32, -32)
 
     def movement(self):
+        """When called once every frame, it allows the player to recive input from the user and move accordingly
+        """        
         self.accel = vec(0, 0)
         if self.visible:
             if isInputHeld[K_a] == True:
@@ -295,19 +324,13 @@ class Player(PlayerBase):
             self.rect.center = self.pos
             self.hitbox.center = self.pos
 
-    def teleport(self, portal_in):
-        tpLocation(self, portal_in)
-
     def shoot(self, vel, cannonSide, bulletType=PROJ_P_STD):
-        """Shoot a projectile
-
-        Parameters:
-        ----------
-            vel (float): The speed the bullet should be fired at
-
-            cannonSide (str): What side should the projectile be shot from?
-
-            bulletType (str, optional): _description_. Defaults to PROJ_P_STD.
+        """_summary_
+        
+        ### Parameters
+            - ``vel`` ``(_type_)``: _description_
+            - ``cannonSide`` ``(_type_)``: _description_
+            - ``bulletType`` ``(_type_, optional)``: _description_. Defaults to ``PROJ_P_STD``.
         """        
         angle_to_mouse = get_angle_to_mouse(self)
 
@@ -346,13 +369,15 @@ class Player(PlayerBase):
             self.rect = self.image.get_rect(center = self.rect.center)
 
             # Gameplay
-            updateLevel(self)
+            updatePlayerLevel(self)
             if self.hp <= 0:
                 self.kill()
 
 #------------------------------ Enemy classes ------------------------------#
 class EnemyBase(pygame.sprite.Sprite):
     def __init__(self):
+        """The base class for all enemy objects. It contains parameters and methods to gain better control over enemy objects.
+        """    
         super().__init__()
         self.visible = True
 
@@ -1516,7 +1541,7 @@ def redrawGameWindow():
             # Teleport the player if they come into contact with a portal
             for portal in all_portals:
                 if a_player.hitbox.colliderect(portal.hitbox) and len(all_portals) == 2:
-                    a_player.teleport(portal)
+                    tpLocation(a_player, portal)
 
         # Updating enemies
         for enemy in all_enemies:
@@ -1590,8 +1615,6 @@ keyReleased = {
     K_d: 0,
     K_e: 0
 }
-
-loadXpRequirements()
 
 def checkKeyRelease(key):
     """Checks if a key has been released. If it has, then its count in "keyReleased" will be updated to match.

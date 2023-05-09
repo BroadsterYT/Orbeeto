@@ -1,10 +1,15 @@
 import math
 
-xpToReach = []
-xpRequired = []
-
-def loadXpRequirements():
+def loadPlayerXpReq():
+    """Loads a list of the xp amounts needed for each player level.
+    
+    ### Returns
+        - ``list``: A list containing the xp amounts needed to reach each level
+    """    
     # Find difference between current level's xp and previous
+    xpToReach = []
+    xpRequired = []
+
     for a in range(250):
         if a < 125:
             value = math.floor(17.84 * a)
@@ -19,11 +24,19 @@ def loadXpRequirements():
             countup += 1
         xpRequired.append(total)
 
-def updateLevel(selfEntity):
+    return xpRequired
+
+def updatePlayerLevel(any_player):
+    """Updates the level of a player sprite.
+    
+    ### Parameters
+        - ``any_player`` ``(pygame.sprite.Sprite)``: The player whose level should be updated
+    """    
+    xpRequired = loadPlayerXpReq()
     for i in range(250):
-        if selfEntity.xp < xpRequired[i + 1]:
-            selfEntity.level = i
+        if any_player.xp < xpRequired[i + 1]:
+            any_player.level = i
             break
-        if selfEntity.xp > xpRequired[249]:
-            selfEntity.level = 249
+        if any_player.xp > xpRequired[249]:
+            any_player.level = 249
             break

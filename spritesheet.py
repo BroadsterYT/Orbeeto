@@ -3,31 +3,29 @@ import pygame
 
 class SpriteSheet(object):
     def __init__(self, fileName, isHorizontal=True):
+        """A ``pygame.Surface`` object that can be snipped from to create image sequences/animations.
+        
+        ### Parameters
+            - ``fileName`` ``(_type_)``: _description_
+            - ``isHorizontal`` ``(bool, optional)``: _description_. Defaults to True.
+        """        
         self.spritesheet = pygame.image.load(fileName).convert()
         self.isHorizontal = isHorizontal
 
     def getImages(self, x, y, width, height, imageCount, imageOffset=0):
-        """Snips specific sprites from the spritesheet
+        """Returns a list of sprite images to utilize in static sprites or animations.
         
-        Parameters
-        ----------
-            x (int): The x-location of the topleft corner of the image
+        ### Parameters
+            - ``x`` ``(int)``: The x-position of the image to snip relative to
+            - ``y`` ``(int)``: The y-position of the image to snip relative to
+            - ``width`` ``(int)``: The width of each individual frame
+            - ``height`` ``(int)``: The height of each individual frame
+            - ``imageCount`` ``(int)``: The total number of images to snip
+            - ``imageOffset`` ``(int, optional)``: The index of the frame to begin the snip from. Defaults to 0 (the first image).
         
-            y (int): The y-location of the topleft corner of the image
-        
-            width (int): The width of each frame in the spritesheet
-        
-            height (int): The height of each frame in the spritesheet
-        
-            imageCount (int): The number of sprites in the spritesheet image
-        
-            imageOffset (int, optional): The sprite image to start the sequence from. Defaults to 0 - the first image.
-        
-        Returns
-        -------
-            list: The sequence of desired frames
-        
-        """        
+        ### Returns
+            - ``list``: A list of the desired sprite images
+        """          
         imageList = []
         offset = 0
         if self.isHorizontal == True:
@@ -48,11 +46,11 @@ class SpriteSheet(object):
         return imageList
     
 def textureWall(sprite, texture):
-    """Repeats a texture across the surface of a wall sprite.
-
-    Args:
-        sprite (pygame.sprite.Sprite): The sprite to repeat the texture over
-        texture (pygame.Surface): The texture to repeat across the sprite
+    """Tiles a sprite with a given texture.
+    
+    ### Parameters
+        - ``sprite`` ``(pygame.sprite.Sprite)``: The sprite to tile with a texture
+        - ``texture`` ``(pygame.Surface)``: The texture to tile the sprite with
     """    
     image_width, image_height = sprite.image.get_size()
     tile_width, tile_height = texture.get_size()
