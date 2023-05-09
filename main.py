@@ -4,12 +4,11 @@ from pygame.locals import *
 import sys, math, time
 import random as rand
 
-from math import sin, cos, radians
+from math import sin, cos, radians, floor
 
 from groups import *
 from spritesheet import *
 from constants import *
-from calculateStats import *
 from calculations import *
 
 pygame.init()
@@ -208,16 +207,18 @@ class PlayerBase(pygame.sprite.Sprite):
         #---------- Game stats ----------#
         self.xp = 0
         self.level = 0
-        self.max_hp = 50
+        self.max_hp = 1
         self.hp = 50
-        self.max_attack = 10
+        self.max_attack = 0
         self.attack = 10
-        self.max_defense = 15
+        self.max_defense = 0
         self.defense = 15
         self.gun_speed = 12
         self.gun_cooldown = 6
         self.hitTime_charge = 1200
         self.hitTime = 0
+
+        self.updateMaxStats()
 
         self.inventory = InventoryMenu(self)
         self.healthBar = HealthBar(self)
@@ -278,6 +279,51 @@ class PlayerBase(pygame.sprite.Sprite):
         groupChangeRooms(all_portals, DOWN)
 
         killGroup(all_projs, all_explosions)
+
+    def loadXpReq(self):
+        """Returns a list containing the amount of xp needed to reach each level
+        
+        ### Returns
+            - ``list``: A list containing the amount of xp needed to reach each level
+        """        
+        xpToReach = []
+        xpRequired = []
+
+        for a in range(250):
+            if a < 125:
+                value = math.floor(17.84 * a)
+            else:
+                value = math.floor(pow(1.061726202, a))
+            xpToReach.append(value)
+        for b in range(250):
+            countup = 0
+            total = 0
+            while countup <= b:
+                total = total + xpToReach[countup]
+                countup += 1
+            xpRequired.append(total)
+
+        del xpToReach
+        return xpRequired
+
+    def updateLevel(self):
+        """Updates the current level of the player
+        """        
+        xpRequired = self.loadXpReq()
+        for i in range(250):
+            if self.xp < xpRequired[i + 1]:
+                self.level = i
+                break
+            if self.xp > xpRequired[249]:
+                self.level = 249
+                break
+
+    def updateMaxStats(self):
+        """Updates all of the player's max stats
+        """        
+        self.max_hp = floor(50 * pow(1.009290219, self.level))
+        self.max_attack = floor(10 * pow(1.019580042, self.level))
+        self.max_defense = floor(15 * pow(1.016098331, self.level))
 
 class Player(PlayerBase):
     def __init__(self):
@@ -368,10 +414,12 @@ class Player(PlayerBase):
             self.image = pygame.transform.rotate(self.original_image, int(get_angle_to_mouse(self)))
             self.rect = self.image.get_rect(center = self.rect.center)
 
-            # Gameplay
-            updatePlayerLevel(self)
-            if self.hp <= 0:
-                self.kill()
+        # Gameplay
+        self.updateLevel()
+        self.updateMaxStats()
+        
+        if self.hp <= 0:
+            self.kill()
 
 #------------------------------ Enemy classes ------------------------------#
 class EnemyBase(pygame.sprite.Sprite):
