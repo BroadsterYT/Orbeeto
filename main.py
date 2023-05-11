@@ -370,25 +370,36 @@ class Player(PlayerBase):
             self.rect.center = self.pos
             self.hitbox.center = self.pos
 
-    def shoot(self, vel, cannonSide, bulletType=PROJ_P_STD):
-        """_summary_
+    def shoot(self, vel, cannonSide, bulletType = PROJ_P_STD):
+        """Shoots a bullet with a specified type
         
         ### Parameters
-            - ``vel`` ``(_type_)``: _description_
-            - ``cannonSide`` ``(_type_)``: _description_
-            - ``bulletType`` ``(_type_, optional)``: _description_. Defaults to ``PROJ_P_STD``.
+            - ``vel`` ``(float)``: The velocity the bullet will travel with
+            - ``cannonSide`` ``(str)``: Where to shoot the bullet from?
+            - ``bulletType`` ``(str, optional)``: What bullet to shoot? Defaults to ``PROJ_P_STD``.
         """        
         angle_to_mouse = get_angle_to_mouse(self)
 
         vel_x = vel * -sin(rad(angle_to_mouse))
         vel_y = vel * -cos(rad(angle_to_mouse))
 
-        if isInputHeld['LMB'] == True:
-            if timer % self.gun_cooldown == 0:
-                players_projs.add(
-                    Projectile(self, self.pos.x - (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y + (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, bulletType),
-                    Projectile(self, self.pos.x + (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y - (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, bulletType)
+        if isInputHeld['LMB'] and timer % self.gun_cooldown == 0:
+            offset = vec((21, 30))
+            players_projs.add(
+                Projectile(
+                    self,
+                    self.pos.x - (offset.x * cos(rad(angle_to_mouse))) - (offset.y * sin(rad(angle_to_mouse))),
+                    self.pos.y + (offset.x * sin(rad(angle_to_mouse))) - (offset.y * cos(rad(angle_to_mouse))),
+                    vel_x, vel_y, bulletType
+                ),
+                
+                Projectile(
+                    self,
+                    self.pos.x + (offset.x * cos(rad(angle_to_mouse))) - (offset.y * sin(rad(angle_to_mouse))),
+                    self.pos.y - (offset.x * sin(rad(angle_to_mouse))) - (offset.y * cos(rad(angle_to_mouse))),
+                    vel_x, vel_y, bulletType
                 )
+            )
 
         elif cannonSide == SHOOT_MIDDLE:
             players_projs.add(Projectile(self, self.pos.x, self.pos.y, vel_x, vel_y, bulletType))
