@@ -4,7 +4,7 @@ from pygame.locals import *
 import sys, math, time
 import random as rand
 
-from math import sin, cos, radians, floor
+from math import sin, cos, radians, degrees, floor
 
 from groups import *
 from spritesheet import *
@@ -17,6 +17,7 @@ pygame.init()
 vec = pygame.math.Vector2
 spriteGroup = pygame.sprite.Group
 rad = radians
+deg = degrees
 
 clock = pygame.time.Clock()
 
@@ -975,7 +976,6 @@ class Projectile(pygame.sprite.Sprite):
             self.image = self.images[self.index]
             self.original_image = self.original_images[self.index]
 
-            # Rotate sprite to trajectory
             self.image = pygame.transform.rotate(self.original_image, int(get_vec_angle(self.vel.x, self.vel.y)))
             self.rect = self.image.get_rect(center = self.rect.center)
 
@@ -1310,10 +1310,22 @@ class InventoryMenu(AbstractBase):
         super().__init__()
         self.last_time = time.time()
         self.owner = owner
+
+        space = vec(0, 0)
+        space_scale = vec(1.5, 1.5)
+        menu_slots = []
+
+        for y in range(5):
+            for x in range(5):
+                menu_slots.append(MenuSlot(400 + space.x, 100 + space.y))
+                space.x += 64 * space_scale.x
+            space.y += 64 * space_scale.y
+            space.x = 0
         
         self.add(
             RightMenuArrow(1206, WINDOW_HEIGHT / 2),
             LeftMenuArrow(64, WINDOW_HEIGHT / 2),
+            menu_slots
         )
 
     def hide(self):
@@ -1431,6 +1443,32 @@ class LeftMenuArrow(pygame.sprite.Sprite):
 class MenuSlot(pygame.sprite.Sprite):
     def __init__(self, posX, posY):
         super().__init__()
+        self.pos = vec((posX, posY))
+
+        self.spritesheet = SpriteSheet("sprites/ui/menu_item_slot.png")
+        self.images = self.spritesheet.getImages(0, 0, 64, 64, 1)
+        self.index = 0
+
+        self.image = self.images[self.index]
+        self.rect = self.image.get_rect()
+        self.hitbox = pygame.Rect(0, 0, 64, 64)
+
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
+
+    def hover(self):
+        if self.hitbox.collidepoint(pygame.mouse.get_pos()):
+            s_time = time.time()
+            scale = abs(sin(s_time)) / 2
+            self.image = pygame.transform.smoothscale_by(self.images[self.index], 1 + scale)
+            self.rect = self.image.get_rect(center = self.rect.center)
+
+        else:
+            self.image = self.images[self.index]
+            self.rect = self.image.get_rect(center = self.rect.center)
+
+    def update(self):
+        self.hover()
 
 #------------------------------ Font class ------------------------------#
 class DamageChar(pygame.sprite.Sprite):
