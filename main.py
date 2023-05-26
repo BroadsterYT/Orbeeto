@@ -337,8 +337,8 @@ class Player(PlayerBase):
         self.accel_const = 0.52
 
         self.spritesheet = SpriteSheet("sprites/orbeeto/orbeeto.png")
-        self.images = self.spritesheet.getImages(0, 0, 64, 64, 5)
-        self.original_images = self.spritesheet.getImages(0, 0, 64, 64, 5)
+        self.images = self.spritesheet.get_images(0, 0, 64, 64, 5)
+        self.original_images = self.spritesheet.get_images(0, 0, 64, 64, 5)
         self.index = 0
 
         self.image = self.images[self.index]
@@ -381,34 +381,32 @@ class Player(PlayerBase):
         """        
         angle_to_mouse = get_angle_to_mouse(self)
 
-        vel_x = vel * -sin(rad(angle_to_mouse))
-        vel_y = vel * -cos(rad(angle_to_mouse))
+        velX = vel * -sin(rad(angle_to_mouse))
+        velY = vel * -cos(rad(angle_to_mouse))
 
-        if isInputHeld['LMB'] and timer % self.gun_cooldown == 0:
+        if isInputHeld['LMB'] and anim_timer % self.gun_cooldown == 0:
             offset = vec((21, 30))
             players_projs.add(
-                Projectile(
-                    self,
+                Projectile(self,
                     self.pos.x - (offset.x * cos(rad(angle_to_mouse))) - (offset.y * sin(rad(angle_to_mouse))),
                     self.pos.y + (offset.x * sin(rad(angle_to_mouse))) - (offset.y * cos(rad(angle_to_mouse))),
-                    vel_x, vel_y, bulletType
+                    velX, velY, bulletType
                 ),
                 
-                Projectile(
-                    self,
+                Projectile(self,
                     self.pos.x + (offset.x * cos(rad(angle_to_mouse))) - (offset.y * sin(rad(angle_to_mouse))),
                     self.pos.y - (offset.x * sin(rad(angle_to_mouse))) - (offset.y * cos(rad(angle_to_mouse))),
-                    vel_x, vel_y, bulletType
+                    velX, velY, bulletType
                 )
             )
 
         elif cannonSide == SHOOT_MIDDLE:
-            players_projs.add(Projectile(self, self.pos.x, self.pos.y, vel_x, vel_y, bulletType))
+            players_projs.add(Projectile(self, self.pos.x, self.pos.y, velX, velY, bulletType))
 
     def update(self):
-        global timer
+        global anim_timer
         if can_update:
-            if timer % 5 == 0:
+            if anim_timer % 5 == 0:
                 global isInputHeld
                 if isInputHeld['LMB'] == True:
                     if self.index == 4:
@@ -485,8 +483,8 @@ class StandardGrunt(EnemyBase):
         all_enemies.add(self)
 
         self.spritesheet = SpriteSheet("sprites/enemies/standard_grunt.png")
-        self.images = self.spritesheet.getImages(0, 0, 64, 64, 5)
-        self.original_images = self.spritesheet.getImages(0, 0, 64, 64, 5)
+        self.images = self.spritesheet.get_images(0, 0, 64, 64, 5)
+        self.original_images = self.spritesheet.get_images(0, 0, 64, 64, 5)
         self.index = 0
 
         self.image = self.images[self.index]
@@ -518,8 +516,8 @@ class StandardGrunt(EnemyBase):
         if self.hp > 0 and self.visible == True:
             objectAccel(self)
 
-            global timer
-            if timer % rand.randint(150, 200) == 0:
+            global anim_timer
+            if anim_timer % rand.randint(150, 200) == 0:
                 self.rand_pos.x = rand.randint(self.image.get_width() + 64, WINDOW_WIDTH - self.image.get_width() - 64)
                 self.rand_pos.y = rand.randint(self.image.get_height() + 64, WINDOW_HEIGHT - self.image.get_height() - 64)
 
@@ -544,8 +542,8 @@ class StandardGrunt(EnemyBase):
                 pass
 
     def shoot(self, target, vel, shoot_time, bulletType):
-        global timer
-        if timer % shoot_time == 0 and self.hp > 0:
+        global anim_timer
+        if anim_timer % shoot_time == 0 and self.hp > 0:
             self.is_shooting = True
             try:
                 angle_to_mouse = get_angle_to_entity(self, target)
@@ -558,8 +556,8 @@ class StandardGrunt(EnemyBase):
             enemy_projs.add(Projectile(self, self.pos.x - (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y + (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, bulletType))
 
     def update(self):
-        global timer
-        if timer % 5 == 0:
+        global anim_timer
+        if anim_timer % 5 == 0:
             if self.is_shooting == True:
                 self.index += 1
                 if self.index > 4:
@@ -576,6 +574,7 @@ class StandardGrunt(EnemyBase):
 
         # Kill enemy if their HP reaches 0
         if self.hp <= 0:
+            ItemDrop(self, 0)
             awardXp(self)
             self.kill()
 
@@ -586,8 +585,8 @@ class OctoGrunt(EnemyBase):
         all_enemies.add(self)
 
         self.spritesheet = SpriteSheet("sprites/enemies/standard_grunt.png")
-        self.images = self.spritesheet.getImages(0, 0, 64, 64, 5)
-        self.original_images = self.spritesheet.getImages(0, 0, 64, 64, 5)
+        self.images = self.spritesheet.get_images(0, 0, 64, 64, 5)
+        self.original_images = self.spritesheet.get_images(0, 0, 64, 64, 5)
         self.index = 0
 
         self.image = self.images[self.index]
@@ -619,8 +618,8 @@ class OctoGrunt(EnemyBase):
         if self.hp > 0:
             objectAccel(self)
 
-            global timer
-            if timer % rand.randint(250, 300) == 0:
+            global anim_timer
+            if anim_timer % rand.randint(250, 300) == 0:
                 self.rand_pos.x = rand.randint(0, WINDOW_WIDTH)
                 self.rand_pos.y = rand.randint(0, WINDOW_HEIGHT)
 
@@ -645,8 +644,8 @@ class OctoGrunt(EnemyBase):
                 pass
 
     def shoot(self, target, vel, shoot_time, bulletType):
-        global timer
-        if timer % shoot_time == 0 and self.hp > 0:
+        global anim_timer
+        if anim_timer % shoot_time == 0 and self.hp > 0:
             self.is_shooting = True
             angle_to_target = get_angle_to_entity(self, target)
 
@@ -670,8 +669,8 @@ class OctoGrunt(EnemyBase):
             )
 
     def update(self):
-        global timer
-        if timer % 5 == 0:
+        global anim_timer
+        if anim_timer % 5 == 0:
             if self.is_shooting == True:
                 self.index += 1
                 if self.index > 4:
@@ -716,7 +715,7 @@ class Box(MovableBase):
         all_movable.add(self)
 
         self.spritesheet = SpriteSheet("sprites/orbeeto/orbeeto.png")
-        self.images = self.spritesheet.getImages(0, 0, 64, 64, 1)
+        self.images = self.spritesheet.get_images(0, 0, 64, 64, 1)
         self.index = 0
 
         self.pos = vec((posX, posY))
@@ -769,29 +768,30 @@ class DropBase(pygame.sprite.Sprite):
         all_sprites.add(self, layer = LAYERS['drops_layer'])
 
 class ItemDrop(DropBase):
-    def __init__(self, droppedFrom):
+    def __init__(self, dropped_from, item_name):
         """An item or material dropped by an enemey that is able to be collected
-
-        Parameters:
-        -------
-            droppedFrom (pygame.sprite.Sprite): The enemy that the item was dropped from
+        
+        ### Parameters
+            - ``droppedFrom`` ``(pygame.sprite.Sprite)``: The enemy that the item was dropped from
+            - ``item_name`` ``(int)``: The item to drop
         """        
         super().__init__()
         self.show()
         all_drops.add(self)
-        self.droppedFrom = droppedFrom
+        self.droppedFrom = dropped_from
+        self.type = item_name
 
         self.start_time = time.time()
         self.pos = vec(self.droppedFrom.pos.x, self.droppedFrom.pos.y)
         self.randAccel = getRandComponents(self.accel_const)
         
         self.spritesheet = SpriteSheet("sprites/bullets/bullets.png")
-        self.images = self.spritesheet.getImages(0, 0, 32, 32, 9)
+        self.images = self.spritesheet.get_images(0, 0, 32, 32, 9)
         self.index = 0
 
         self.image = self.images[self.index]
         self.rect = pygame.Rect(0, 0, 32, 32)
-        self.detect = pygame.Rect(0, 0, 64, 64)
+        self.hitbox = pygame.Rect(0, 0, 64, 64)
 
     def movement(self):
         self.accel = vec(0, 0)
@@ -804,10 +804,12 @@ class ItemDrop(DropBase):
             objectAccel(self)
         
         self.rect.center = self.pos
-        self.detect.center = self.pos
+        self.hitbox.center = self.pos
 
     def update(self):
-        pass
+        if self.hitbox.colliderect(player1):
+            player1.inventory.storage[self.type] += 1
+            self.kill()
 
 #------------------------------ Stat bar classes ------------------------------#
 class HealthBar(pygame.sprite.Sprite):
@@ -817,8 +819,8 @@ class HealthBar(pygame.sprite.Sprite):
         all_stat_bars.add(self)
         
         self.spritesheet = SpriteSheet("sprites/stat_bars/health_bar.png", False)
-        self.images = self.spritesheet.getImages(0, 0, 128, 16, 18)
-        self.original_images = self.spritesheet.getImages(0, 0, 128, 16, 18)
+        self.images = self.spritesheet.get_images(0, 0, 128, 16, 18)
+        self.original_images = self.spritesheet.get_images(0, 0, 128, 16, 18)
         self.index = 17
 
         self.image = self.images[self.index]
@@ -849,8 +851,8 @@ class DodgeBar(pygame.sprite.Sprite):
         all_stat_bars.add(self)
 
         self.spritesheet = SpriteSheet("sprites/stat_bars/dodge_bar.png", False)
-        self.images = self.spritesheet.getImages(0, 0, 128, 16, 18)
-        self.original_images = self.spritesheet.getImages(0, 0, 128, 16, 18)
+        self.images = self.spritesheet.get_images(0, 0, 128, 16, 18)
+        self.original_images = self.spritesheet.get_images(0, 0, 128, 16, 18)
         self.index = 17
 
         self.image = self.images[self.index]
@@ -924,8 +926,8 @@ class Projectile(pygame.sprite.Sprite):
             self.damage = 0
 
         self.spritesheet = SpriteSheet("sprites/bullets/bullets.png")
-        self.images = self.spritesheet.getImages(0, 0, 32, 32, 4)
-        self.original_images = self.spritesheet.getImages(0, 0, 32, 32, 4)
+        self.images = self.spritesheet.get_images(0, 0, 32, 32, 4)
+        self.original_images = self.spritesheet.get_images(0, 0, 32, 32, 4)
         self.index = 0
 
         self.image = self.images[self.index]
@@ -960,15 +962,15 @@ class Projectile(pygame.sprite.Sprite):
     def update(self):
         if self.type == PROJ_P_STD:
             self.spritesheet = SpriteSheet("sprites/bullets/bullets.png")
-            self.images = self.spritesheet.getImages(0, 0, 32, 32, 4)
-            self.original_images = self.spritesheet.getImages(0, 0, 32, 32, 4)
+            self.images = self.spritesheet.get_images(0, 0, 32, 32, 4)
+            self.original_images = self.spritesheet.get_images(0, 0, 32, 32, 4)
             self.hitbox_adjust = vec(-8, -8)
 
         if self.type == PROJ_P_PORTAL:
-            self.images = self.spritesheet.getImages(0, 0, 32, 32, 5, 4)
-            self.original_images = self.spritesheet.getImages(0, 0, 32, 32, 5, 4)
+            self.images = self.spritesheet.get_images(0, 0, 32, 32, 5, 4)
+            self.original_images = self.spritesheet.get_images(0, 0, 32, 32, 5, 4)
             self.hitbox_adjust = vec(0, 0)
-            if timer % 5 == 0:
+            if anim_timer % 5 == 0:
                 self.index += 1
                 if self.index > 4:
                     self.index = 0
@@ -1017,7 +1019,7 @@ class Portal(PortalBase):
         self.facing = facing
 
         self.spritesheet = SpriteSheet("sprites/portals/portals.png")
-        self.images = self.spritesheet.getImages(0, 0, 64, 64, 1)
+        self.images = self.spritesheet.get_images(0, 0, 64, 64, 1)
         self.index = 0
         
         self.image = self.images[self.index]
@@ -1106,12 +1108,12 @@ class ProjExplode(pygame.sprite.Sprite):
         self.index = 1
 
         if self.type == PROJ_P_STD:
-            self.images = self.spritesheet.getImages(0, 0, 32, 32, 4)
-            self.original_images = self.spritesheet.getImages(0, 0, 32, 32, 4)
+            self.images = self.spritesheet.get_images(0, 0, 32, 32, 4)
+            self.original_images = self.spritesheet.get_images(0, 0, 32, 32, 4)
 
         elif self.type == PROJ_P_PORTAL:
-            self.images = self.spritesheet.getImages(0, 0, 32, 32, 4)
-            self.original_images = self.spritesheet.getImages(0, 0, 32, 32, 4)
+            self.images = self.spritesheet.get_images(0, 0, 32, 32, 4)
+            self.original_images = self.spritesheet.get_images(0, 0, 32, 32, 4)
 
         self.image = self.images[self.index]
         self.original_image = self.original_images[self.index]
@@ -1121,9 +1123,9 @@ class ProjExplode(pygame.sprite.Sprite):
         self.pos = self.proj.pos
 
     def update(self):
-        global timer
+        global anim_timer
         if self.type == PROJ_P_STD or self.type == PROJ_E_STD:
-            if timer % 5 == 0:
+            if anim_timer % 5 == 0:
                 if self.index > 3:
                     self.kill()
                 else:
@@ -1132,7 +1134,7 @@ class ProjExplode(pygame.sprite.Sprite):
                     self.index += 1
 
         elif self.type == PROJ_P_PORTAL:
-            if timer % 5 == 0:
+            if anim_timer % 5 == 0:
                 if self.index > 3:
                     self.kill()
                 else:
@@ -1236,6 +1238,7 @@ class Room(AbstractBase):
                 all_containers.append(
                     EntityContainer(
                         self.room.x, self.room.y,
+                        StandardGrunt(WINDOW_WIDTH/2, WINDOW_HEIGHT/2, self.room.x, self.room.y, 25, 10, 10, 25, 0.3)
                     )
                 )
 
@@ -1311,6 +1314,10 @@ class InventoryMenu(AbstractBase):
         self.last_time = time.time()
         self.owner = owner
 
+        self.storage = {
+            0: 0
+        }
+
         space = vec(0, 0)
         space_scale = vec(1.5, 1.5)
         menu_slots = []
@@ -1364,7 +1371,7 @@ class RightMenuArrow(pygame.sprite.Sprite):
         self.return_pos = vec((posX, posY))
         
         self.spritesheet = SpriteSheet("sprites/ui/menu_arrow.png")
-        self.images = self.spritesheet.getImages(0, 0, 64, 64, 61)
+        self.images = self.spritesheet.get_images(0, 0, 64, 64, 61)
         self.index = 1
 
         self.image = pygame.transform.scale(self.images[self.index], (128, 128))
@@ -1383,8 +1390,8 @@ class RightMenuArrow(pygame.sprite.Sprite):
         self.rect.center = self.pos
 
     def update(self):
-        global timer
-        if timer % 1 == 0:
+        global anim_timer
+        if anim_timer % 1 == 0:
             if self.index >= 61:
                 self.index = 1
             
@@ -1407,7 +1414,7 @@ class LeftMenuArrow(pygame.sprite.Sprite):
         self.return_pos = vec((posX, posY))
         
         self.spritesheet = SpriteSheet("sprites/ui/menu_arrow.png")
-        self.images = self.spritesheet.getImages(0, 0, 64, 64, 61)
+        self.images = self.spritesheet.get_images(0, 0, 64, 64, 61)
         self.index = 1
 
         self.image = self.images[self.index]
@@ -1430,8 +1437,8 @@ class LeftMenuArrow(pygame.sprite.Sprite):
         self.rect.center = self.pos
 
     def update(self):
-        global timer
-        if timer % 1 == 0:
+        global anim_timer
+        if anim_timer % 1 == 0:
             if self.index >= 61:
                 self.index = 1
             
@@ -1446,7 +1453,7 @@ class MenuSlot(pygame.sprite.Sprite):
         self.pos = vec((posX, posY))
 
         self.spritesheet = SpriteSheet("sprites/ui/menu_item_slot.png")
-        self.images = self.spritesheet.getImages(0, 0, 64, 64, 1)
+        self.images = self.spritesheet.get_images(0, 0, 64, 64, 1)
         self.index = 0
 
         self.image = self.images[self.index]
@@ -1485,17 +1492,17 @@ class DamageChar(pygame.sprite.Sprite):
         
         """        
         super().__init__()
-        global timer
+        global anim_timer
         all_sprites.add(self, layer = LAYERS['text_layer'])
         all_font_chars.add(self)
         
         self.spritesheet = SpriteSheet("sprites/ui/font.png")
-        self.images = self.spritesheet.getImages(0, 0, 9, 14, 36)
+        self.images = self.spritesheet.get_images(0, 0, 9, 14, 36)
 
         self.pos = vec((posX, posY))
         self.vel = vec(0, -2)
 
-        self.timeStart = timer
+        self.timeStart = anim_timer
 
         width = 9
         height = 14
@@ -1525,8 +1532,8 @@ class DamageChar(pygame.sprite.Sprite):
         self.rect.center = self.pos
 
     def update(self):
-        global timer
-        if timer == self.timeStart + 40:
+        global anim_timer
+        if anim_timer == self.timeStart + 40:
             self.kill()
 
 #------------------------------ Redraw game window ------------------------------#
@@ -1663,10 +1670,6 @@ def redrawGameWindow():
         for projectile in enemy_projs:
             bindProjectile(projectile, all_players)
 
-        # Updating explosions
-        for bullet in all_explosions:
-            pass
-
         # Updating UI
         for statBar in all_stat_bars:
             statBar.movement()
@@ -1683,10 +1686,6 @@ def redrawGameWindow():
         for char in all_font_chars:
             char.movement()
 
-        # Updating rooms
-        for room in all_rooms:
-            pass
-
     # Updating inventory
     player1.inventory.update()
 
@@ -1702,7 +1701,7 @@ room = Room(0, 0)
 room.layoutUpdate()
 
 # Time control
-timer = 0
+anim_timer = 0
 last_time = time.time()
 
 keyReleased = {
@@ -1714,12 +1713,11 @@ keyReleased = {
 }
 
 def checkKeyRelease(key):
-    """Checks if a key has been released. If it has, then its count in "keyReleased" will be updated to match.
-
-    Parameters:
-    -----
-        key (int): The key to check
-    """
+    """Checks if a key has been released. If it has, then its count in ''keyReleased'' will be updated to match.
+    
+    ### Parameters
+        - ``key`` ``(int)``: The key to check
+    """    
     if event.type == pygame.KEYUP and event.key == key:
         if key in isInputHeld and key in keyReleased:
             keyReleased[key] += 1
@@ -1730,7 +1728,7 @@ while running:
     dt = (time.time() - last_time) * 60
     last_time = time.time()
 
-    timer += 1
+    anim_timer += 1
 
     if player1.hp <= 0:
         pygame.quit()
@@ -1740,11 +1738,10 @@ while running:
         keyPressed = pygame.key.get_pressed()
 
         if event.type == QUIT:
-            pygame.quit()
             sys.exit()
 
         if keyPressed[K_ESCAPE]:
-            running = False
+            sys.exit()
     
         if event.type == MOUSEBUTTONDOWN and event.button == 3:
             player1.shoot(player1.gun_cooldown, SHOOT_MIDDLE, PROJ_P_PORTAL)
@@ -1790,7 +1787,7 @@ while running:
 
     # Regenerate health for testing purposes
     for a_player in all_players:
-        if timer % 5 == 0 and a_player.hp < a_player.max_hp and isInputHeld['MMB']:
+        if anim_timer % 5 == 0 and a_player.hp < a_player.max_hp and isInputHeld['MMB']:
             a_player.hp += 2
 
     #------------------------------ Redraw window ------------------------------#

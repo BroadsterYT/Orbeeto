@@ -12,7 +12,7 @@ class SpriteSheet(object):
         self.spritesheet = pygame.image.load(fileName).convert()
         self.isHorizontal = isHorizontal
 
-    def getImages(self, x, y, width, height, imageCount, imageOffset=0):
+    def get_images(self, x, y, width, height, imageCount, imageOffset=0):
         """Returns a list of sprite images to utilize in static sprites or animations.
         
         ### Parameters

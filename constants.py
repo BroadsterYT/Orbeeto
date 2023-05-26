@@ -28,6 +28,10 @@ LAYERS = {
     'ui_layer_1': 200
 }
 
+MATERIALS = {
+    0: 'itemdrop_steel'
+}
+
 #------------------------------ Object Movement ------------------------------#
 # The coefficient of friction for all objects with an acceleration parameter
 FRIC = -0.07

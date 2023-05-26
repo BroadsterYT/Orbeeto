@@ -86,14 +86,14 @@ def get_dist_to_entity(selfEntity, targetEntity):
 
 def get_vec_angle(vecX, vecY):
     """Returns the angle of a resultant vector
-
-    Args:
-        velX (float): The x-axis component of the vector
-        velY (float): The y-axis component of the vector
-
-    Returns:
-        float: The angle of the resultant vector (in degrees)
-    """
+    
+    ### Parameters
+        - ``vecX`` ``(float)``: The x-axis component of the vector
+        - ``vecY`` ``(float)``: The y-axis component of the vector
+    
+    ### Returns
+        - ``pygame.math.Vector2``: The angle of the resultant vector (in degrees)
+    """    
     if vecX and vecY != 0:
         vec_angle = -math.degrees(math.atan2(vecY, vecX)) - 90
         return vec_angle
@@ -116,15 +116,15 @@ def get_vec_angle(vecX, vecY):
 #------------------------------ Returns int ------------------------------#
 def calculateDamage(sender, receiver, proj):
     """Calculates the damage an entity receives after being hit
-
-    Args:
-        sender (pygame.sprite.Sprite): The entity that shot the projectile
-        receiver (pygame.sprite.Sprite): The entity that got shot
-        projectile (pygame.sprite.Sprite): The projectile the receiver got hit by
-
-    Returns:
-        int: Infliction damage upon receiver
-    """
+    
+    ### Parameters
+        - ``sender`` ``(pygame.sprite.Sprite)``: The entity that shot the projectile
+        - ``receiver`` ``(pygame.sprite.Sprite)``: The entity that got shot
+        - ``proj`` ``(pygame.sprite.Sprite)``: The projectile the receiver got hit by
+    
+    ### Returns
+        - ``int``: Infliction damage upon ``receiver``
+    """    
     damage = sender.attack - receiver.defense + proj.damage
 
     if damage < 0:
@@ -134,6 +134,15 @@ def calculateDamage(sender, receiver, proj):
 
 #------------------------------ Returns string ------------------------------#
 def collideSideCheck(object, instig):
+    """Determines the side of an object that an instigator has hit
+    
+    ### Parameters
+        - ``object`` ``(pygame.sprite.Sprite)``: The sprite that is being hit
+        - ``instig`` ``(pygame.sprite.Sprite)``: The instigating sprite of the collision
+    
+    ### Returns
+        - ``str``: The side the instigator has hit
+    """    
     if object.pos.x - 0.5 * object.hitbox.width <= instig.pos.x <= object.pos.x + 0.5 * object.hitbox.width and instig.pos.y > object.pos.y:
         return DOWN
     
@@ -152,14 +161,14 @@ def collideSideCheck(object, instig):
 #------------------------------ Returns pygame.math.Vector2 ------------------------------#
 def getTopLeft(sprite, desired_x, desired_y):
     """Returns the coordinates of the topleft corner of a sprite that is centered at its middle
-
-    Args:
-        sprite (pygame.sprite.Sprite): The sprite to get the topleft coordinates of
-        desired_x (int): The x-value of the desired location of the sprite's topleft corner
-        desired_y (int): The y-value of the desired location of the sprite's topleft corner
-
-    Returns:
-        pygame.math.Vector2: The coordinates of the sprite's center, with its topleft corner in the desired x and y locations
+    
+    ### Parameters
+        - ``sprite`` ``(pygame.sprite.Sprite)``: The sprite to get the topleft coordinates of
+        - ``desired_x`` ``(float)``: The x-value of the desired location of the sprite's topleft corner
+        - ``desired_y`` ``(float)``: The y-value of the desired location of the sprite's topleft corner
+    
+    ### Returns
+        - ``pygame.math.Vector2``: The coordinates of the sprite's center, with its topleft corner in the desired x and y locations
     """    
     width = sprite.image.get_width()
     height = sprite.image.get_height()
@@ -167,10 +176,12 @@ def getTopLeft(sprite, desired_x, desired_y):
 
 def getRandComponents(maxValue):
     """Given a maximum value, will output a vector containing two components that vectorially add to that value. The result can be positive or negative.
-
-    Parameters:
-    -------
-        maxValue (float): The value in which the components will vectorially add to. The result can add to +maxValue ot -maxValue.
+    
+    ### Parameters
+        - ``maxValue`` ``(pygame.math.vector2)``: The value in which the components will vectorially add to. The result can add to +maxValue ot -maxValue.
+    
+    ### Returns
+        - ``pygame.math.Vector2``: The resultant random vector
     """    
     x = rand.uniform(-maxValue, maxValue)
     y = math.sqrt(pow(maxValue, 2) - pow(x, 2))
@@ -179,45 +190,42 @@ def getRandComponents(maxValue):
     return vec(x, y)
 
 #------------------------------ Returns None ------------------------------#
-def collideCheck(object, contact_list):
+def collideCheck(instig, contact_list):
     """Check if an entity comes into contact with an entity from a specific group.
     If the entities do collide, the entities will perform a hitbox collision.
-
-    Args:
-        object (pygame.sprite.Sprite): The instigator of the collision
-        contact_list (pygame.sprite.Group): The group to check for collisions with the instigator
-    """
+    
+    ### Parameters
+        - ``instig`` ``(pygame.sprite.Sprite)``: The instigator of the collision
+        - ``contact_list`` ``(pygame.sprite.Group)``: The sprite group to check for a collision with
+    """    
     global timer
     for entity in contact_list:
         if hasattr(entity, 'visible') and entity.visible:
-            pushFromSide(object, entity)
+            pushFromSide(instig, entity)
         elif hasattr(entity, 'visible') and not entity.visible:
             pass
         else:
-            pushFromSide(object, entity)
+            pushFromSide(instig, entity)
 
-def pushFromSide(object, entity):
-    if object.hitbox.colliderect(entity.hitbox):
-        if object.pos.y < (entity.pos.y + (0.5 * entity.hitbox.height) + 1) and object.pos.y > (entity.pos.y - (0.5 * entity.hitbox.height) - 1):
-            if object.pos.x > entity.pos.x:
-                object.vel.x = 0
-                object.pos.x += 1
+def pushFromSide(instig, entity):
+    if instig.hitbox.colliderect(entity.hitbox):
+        if instig.pos.y < (entity.pos.y + (0.5 * entity.hitbox.height) + 1) and instig.pos.y > (entity.pos.y - (0.5 * entity.hitbox.height) - 1):
+            if instig.pos.x > entity.pos.x:
+                instig.vel.x = 0
+                instig.pos.x += 1
             else:
-                object.vel.x = 0
-                object.pos.x -= 1
-        if object.pos.x > (entity.pos.x - (0.5 * entity.hitbox.width) - 1) and object.pos.x < (entity.pos.x + (0.5 * entity.hitbox.width) + 1):
-            if object.pos.y < entity.pos.y:
-                object.vel.y = 0
-                object.pos.y -= 1
+                instig.vel.x = 0
+                instig.pos.x -= 1
+        if instig.pos.x > (entity.pos.x - (0.5 * entity.hitbox.width) - 1) and instig.pos.x < (entity.pos.x + (0.5 * entity.hitbox.width) + 1):
+            if instig.pos.y < entity.pos.y:
+                instig.vel.y = 0
+                instig.pos.y -= 1
             else:
-                object.vel.y = 0
-                object.pos.y += 1
+                instig.vel.y = 0
+                instig.pos.y += 1
 
 def killGroup(*groups):
-    """Runs sprite.kill() for all entities in one or more group.
-
-    Args:
-        groups (pygame.sprite.Group): The group(s) to kill all sprites within
+    """Calls ``.kill()`` for all sprites within one or more groups.
     """    
     for group in groups:
         for entity in group:
