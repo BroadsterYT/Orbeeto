@@ -231,6 +231,8 @@ def killGroup(*groups):
         for entity in group:
             entity.kill()
 
+
+
 #------------------------------ Classes ------------------------------#
 class CustomError(Exception):
     """Returns a custom error

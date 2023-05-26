@@ -28,8 +28,18 @@ LAYERS = {
     'ui_layer_1': 200
 }
 
-MATERIALS = {
-    0: 'itemdrop_steel'
+MATERIAL = {
+    0: 'itemdrop_metalscrap_000',
+    1: 'itemdrop_placeholder_001',
+    2: 'itemdrop_placeholder_002',
+    3: 'itemdrop_placeholder_003',
+    4: 'itemdrop_placeholder_004',
+    5: 'itemdrop_placeholder_005',
+    6: 'itemdrop_placeholder_006',
+    7: 'itemdrop_placeholder_007',
+    8: 'itemdrop_placeholder_008',
+    9: 'itemdrop_placeholder_009',
+    10: 'itemdrop_placeholder_010'
 }
 
 #------------------------------ Object Movement ------------------------------#

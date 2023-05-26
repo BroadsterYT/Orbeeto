@@ -574,7 +574,7 @@ class StandardGrunt(EnemyBase):
 
         # Kill enemy if their HP reaches 0
         if self.hp <= 0:
-            ItemDrop(self, 0)
+            ItemDrop(self, MATERIAL[0], 0, 1)
             awardXp(self)
             self.kill()
 
@@ -757,7 +757,7 @@ class DropBase(pygame.sprite.Sprite):
         self.pos = vec((0, 0))
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
-        self.accel_const = 0.21
+        self.accel_const = 0.8
     
     def hide(self):
         self.visible = False
@@ -768,12 +768,14 @@ class DropBase(pygame.sprite.Sprite):
         all_sprites.add(self, layer = LAYERS['drops_layer'])
 
 class ItemDrop(DropBase):
-    def __init__(self, dropped_from, item_name):
+    def __init__(self, dropped_from, item_name, item_frame_start, image_count):
         """An item or material dropped by an enemey that is able to be collected
         
         ### Parameters
             - ``droppedFrom`` ``(pygame.sprite.Sprite)``: The enemy that the item was dropped from
             - ``item_name`` ``(int)``: The item to drop
+            - ``item_frame_start`` ``(tuple)``: The index of the first frame to display from the item drop spritesheet (0 = the first image).
+            - ``image_count`` ``(int)``: The number of frames to use
         """        
         super().__init__()
         self.show()
@@ -785,8 +787,8 @@ class ItemDrop(DropBase):
         self.pos = vec(self.droppedFrom.pos.x, self.droppedFrom.pos.y)
         self.randAccel = getRandComponents(self.accel_const)
         
-        self.spritesheet = SpriteSheet("sprites/bullets/bullets.png")
-        self.images = self.spritesheet.get_images(0, 0, 32, 32, 9)
+        self.spritesheet = SpriteSheet("sprites/textures/item_drops.png")
+        self.images = self.spritesheet.get_images(0, 0, 32, 32, image_count, item_frame_start)
         self.index = 0
 
         self.image = self.images[self.index]
@@ -797,7 +799,7 @@ class ItemDrop(DropBase):
         self.accel = vec(0, 0)
         now_time = time.time()
         if self.visible:
-            if now_time - self.start_time <= 0.5:
+            if now_time - self.start_time <= 0.1:
                 self.accel.x = self.randAccel.x
                 self.accel.y = self.randAccel.y
             
@@ -1305,23 +1307,21 @@ def showEnemies(container):
 class InventoryMenu(AbstractBase):
     def __init__(self, owner):
         """A menu used to view collected items and utilize them for various purposes
-
-        Parameters:
-        ---
-            owner (pygame.sprite.Sprite): The player whom the inventory belongs to
+        
+        ### Parameters
+            - ``owner`` ``(pygame.sprite.Sprite)``: The player whom the inventory belongs to
         """        
         super().__init__()
         self.last_time = time.time()
         self.owner = owner
 
-        self.storage = {
-            0: 0
-        }
+        self.storage = {}
+        for item in MATERIAL.values():
+            self.storage.update({item: 0})
 
         space = vec(0, 0)
         space_scale = vec(1.5, 1.5)
         menu_slots = []
-
         for y in range(5):
             for x in range(5):
                 menu_slots.append(MenuSlot(400 + space.x, 100 + space.y))
@@ -1448,9 +1448,12 @@ class LeftMenuArrow(pygame.sprite.Sprite):
         self.hover()
 
 class MenuSlot(pygame.sprite.Sprite):
-    def __init__(self, posX, posY):
+    def __init__(self, posX, posY, item_held = MATERIAL[0], item_count = 0):
         super().__init__()
+        all_slots.add(self)
         self.pos = vec((posX, posY))
+        self.holding = item_held
+        self.count = item_count
 
         self.spritesheet = SpriteSheet("sprites/ui/menu_item_slot.png")
         self.images = self.spritesheet.get_images(0, 0, 64, 64, 1)
@@ -1474,6 +1477,9 @@ class MenuSlot(pygame.sprite.Sprite):
             self.image = self.images[self.index]
             self.rect = self.image.get_rect(center = self.rect.center)
 
+    def update_inventory(self):
+        pass
+        
     def update(self):
         self.hover()
 
