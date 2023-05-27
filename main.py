@@ -443,6 +443,15 @@ class EnemyBase(pygame.sprite.Sprite):
         self.is_shooting = False
         self.healthBar = HealthBar(self)
 
+        self.max_hp = None
+        self.hp = None
+        self.max_attack = None
+        self.attack = None
+        self.max_defense = None
+        self.defense = None
+        self.xp_worth = None
+        self.accel_const = None
+
     def hide(self):
         self.visible = False
         all_sprites.remove(self)
@@ -493,8 +502,6 @@ class StandardGrunt(EnemyBase):
         self.rect = pygame.Rect(0, 0, 64, 64)
         self.hitbox = self.rect.inflate(-32, -32)
 
-        self.accel_const = accel_const
-
         self.room = vec((roomX, roomY))
 
         self.pos = vec((posX, posY))
@@ -504,13 +511,7 @@ class StandardGrunt(EnemyBase):
         self.rand_pos = vec(rand.randint(0, WINDOW_WIDTH), rand.randint(0, WINDOW_HEIGHT))
 
         #---------- Game stats ----------#
-        self.max_hp = hp
-        self.hp = self.max_hp
-        self.max_attack = attack
-        self.attack = self.max_attack
-        self.max_defense = defense
-        self.defense = self.max_defense
-        self.xp_worth = xp_worth
+        initStats(self, 15, 10, 10, 25, 0.4)
 
     def rand_movement(self, canShoot):
         if self.hp > 0 and self.visible == True:
@@ -1286,8 +1287,7 @@ class EntityContainer(AbstractBase):
             self.add(sprite)
 
 def hideEnemies():
-    """Hides all of the enemy sprites in the current room
-    """    
+    """Hides all of the enemy sprites in the current room"""
     for container in all_containers:
         if container.room == room.room:
             for sprite in container.sprites():
@@ -1295,10 +1295,9 @@ def hideEnemies():
 
 def showEnemies(container):
     """Shows all the enemies within an enemy container.
-
-    Parameters:
-    ------
-        container (pygame.sprite.AbstractGroup): The enemy container to unhide
+    
+    ### Parameters
+        - ``container`` ``(pygame.sprite.AbstractGroup)``: The enemy container to unhide
     """    
     for sprite in container.sprites():
         sprite.show()
@@ -1360,11 +1359,10 @@ class InventoryMenu(AbstractBase):
 class RightMenuArrow(pygame.sprite.Sprite):
     def __init__(self, posX, posY):
         """A UI element that allows players to cycle through menu screens to the right.
-
-        Parameters:
-        -----
-            posX (float): The x-position the element should be displayed at\n
-            posY (float): The y-position the element should be displayed at
+        
+        ### Parameters
+            - ``posX`` ``(int)``: The x-position the element should be displayed at
+            - ``posY`` ``(int)``: The y-position the element should be displayed at
         """        
         super().__init__()
         self.pos = vec((posX, posY))
@@ -1382,6 +1380,7 @@ class RightMenuArrow(pygame.sprite.Sprite):
         self.hitbox.center = self.return_pos
 
     def hover(self):
+        """Causes the arrow to "hover" in place when the mouse cursor is above it"""        
         if self.hitbox.collidepoint(pygame.mouse.get_pos()):
             self.pos.x = 5 * sin(time.time() * 15) + self.return_pos.x
         else:
@@ -1392,7 +1391,7 @@ class RightMenuArrow(pygame.sprite.Sprite):
     def update(self):
         global anim_timer
         if anim_timer % 1 == 0:
-            if self.index >= 61:
+            if self.index > 60:
                 self.index = 1
             
             self.image = pygame.transform.scale(self.images[self.index], (128, 128))
@@ -1403,12 +1402,11 @@ class RightMenuArrow(pygame.sprite.Sprite):
 class LeftMenuArrow(pygame.sprite.Sprite):
     def __init__(self, posX, posY):
         """A UI element that allows players to cycle through menu screens to the left.
-
-        Parameters:
-        -----
-            posX (float): The x-position the element should be displayed at\n
-            posY (float): The y-position the element should be displayed at
-        """        
+        
+        ### Parameters
+            - ``posX`` ``(int)``: The x-position the element should be displayed at
+            - ``posY`` ``(int)``: The y-position the element should be displayed at
+        """
         super().__init__()
         self.pos = vec((posX, posY))
         self.return_pos = vec((posX, posY))
@@ -1427,8 +1425,7 @@ class LeftMenuArrow(pygame.sprite.Sprite):
         self.hitbox.center = self.return_pos
 
     def hover(self):
-        """Causes the arrow to "hover" in place when the mouse cursor is above it
-        """        
+        """Causes the arrow to "hover" in place when the mouse cursor is above it"""        
         if self.hitbox.collidepoint(pygame.mouse.get_pos()):
             self.pos.x = 5 * sin(time.time() * 15) + self.return_pos.x
         else:
@@ -1743,10 +1740,7 @@ while running:
     for event in pygame.event.get():
         keyPressed = pygame.key.get_pressed()
 
-        if event.type == QUIT:
-            sys.exit()
-
-        if keyPressed[K_ESCAPE]:
+        if event.type == QUIT or keyPressed[K_ESCAPE]:
             sys.exit()
     
         if event.type == MOUSEBUTTONDOWN and event.button == 3:

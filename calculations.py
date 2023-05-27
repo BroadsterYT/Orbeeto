@@ -125,9 +125,9 @@ def calculateDamage(sender, receiver, proj):
     ### Returns
         - ``int``: Infliction damage upon ``receiver``
     """    
-    damage = sender.attack - receiver.defense + proj.damage
+    damage = math.floor((sender.attack / receiver.defense) * proj.damage)
 
-    if damage < 0:
+    if damage < 1:
         damage = 1
 
     return damage
@@ -231,7 +231,25 @@ def killGroup(*groups):
         for entity in group:
             entity.kill()
 
-
+def initStats(sprite, hp, attack, defense, xp, accel_const):
+    """Quickly initialize the stats of any enemy sprite
+    
+    ### Parameters
+        - ``sprite`` ``(pygame.sprite.Sprite)``: The enemy to initilaize
+        - ``hp`` ``(int)``: Amount of health the enemy should have
+        - ``attack`` ``(int)``: Attack value the enemy should have
+        - ``defense`` ``(int)``: Defense value the enemy should have
+        - ``xp`` ``(int)``: The amount of xp the player should receive after killing the enemy
+        - ``accel_const`` ``(float)``: How fast the enemy should move
+    """    
+    sprite.max_hp = hp
+    sprite.hp = hp
+    sprite.max_attack = attack
+    sprite.attack = attack
+    sprite.max_defense = defense
+    sprite.defense = defense
+    sprite.xp_worth = xp
+    sprite.accel_const = accel_const
 
 #------------------------------ Classes ------------------------------#
 class CustomError(Exception):
