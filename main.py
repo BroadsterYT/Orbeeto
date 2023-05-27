@@ -1663,6 +1663,7 @@ def redrawGameWindow():
 
         # Updating all item drops
         for item in all_drops:
+            collideCheck(item, all_walls)
             item.movement()
 
         # Updating player projectiles
