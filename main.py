@@ -512,8 +512,6 @@ class StandardGrunt(EnemyBase):
 
     def rand_movement(self, canShoot):
         if self.hp > 0 and self.visible == True:
-            objectAccel(self)
-
             global anim_timer
             if anim_timer % rand.randint(150, 200) == 0:
                 self.rand_pos.x = rand.randint(self.image.get_width() + 64, WINDOW_WIDTH - self.image.get_width() - 64)
@@ -533,6 +531,8 @@ class StandardGrunt(EnemyBase):
                     self.accel.y = -self.accel_const
                 else:
                     self.accel.y = 0
+
+            self.accel_phys()
             
             if canShoot == True:
                 self.shoot(getClosestPlayer(self), 5, rand.randint(20, 30), PROJ_P_STD)
@@ -598,9 +598,6 @@ class OctoGrunt(EnemyBase):
         self.room = vec((roomX, roomY))
 
         self.pos = vec((posX, posY))
-        self.vel = vec(0, 0)
-        self.accel = vec(0, 0)
-
         self.rand_pos = vec(rand.randint(0, WINDOW_WIDTH), rand.randint(0, WINDOW_HEIGHT))
 
         # Game stats
@@ -708,8 +705,6 @@ class Box(MovableBase):
         self.index = 0
 
         self.pos = vec((posX, posY))
-        self.vel = vec(0, 0)
-        self.accel = vec(0, 0)
         self.accel_const = 0.4
 
         self.image = self.images[self.index]
@@ -739,22 +734,10 @@ class Box(MovableBase):
     def update(self):
         pass
 
-class DropBase(pygame.sprite.Sprite):
+class DropBase(ActorBase):
     def __init__(self):
         super().__init__()
-        
-        self.pos = vec((0, 0))
-        self.vel = vec(0, 0)
-        self.accel = vec(0, 0)
         self.accel_const = 0.8
-    
-    def hide(self):
-        self.visible = False
-        all_sprites.remove(self)
-
-    def show(self):
-        self.visible = True
-        all_sprites.add(self, layer = LAYERS['drops_layer'])
 
 class ItemDrop(DropBase):
     def __init__(self, dropped_from, item_name, item_frame_start, image_count):
@@ -767,7 +750,7 @@ class ItemDrop(DropBase):
             - ``image_count`` ``(int)``: The number of frames to use
         """        
         super().__init__()
-        self.show()
+        self.show(LAYERS['drops_layer'])
         all_drops.add(self)
         self.droppedFrom = dropped_from
         self.type = item_name
@@ -1274,7 +1257,7 @@ class EntityContainer(AbstractBase):
         for sprite in sprites:
             self.add(sprite)
 
-def hideEnemies():
+def hideCurrentEnemies():
     """Hides all of the enemy sprites in the current room"""
     for container in all_containers:
         if container.room == room.room:
@@ -1755,19 +1738,19 @@ while running:
     #------------------------------ Game operation ------------------------------#
     ## Changing rooms
     if player1.pos.x <= 0:
-        hideEnemies()
+        hideCurrentEnemies()
         player1.changeRoomLeft()
 
     if player1.pos.x >= WINDOW_WIDTH:
-        hideEnemies()
+        hideCurrentEnemies()
         player1.changeRoomRight()
 
     if player1.pos.y <= 0:
-        hideEnemies()
+        hideCurrentEnemies()
         player1.changeRoomUp()
 
     if player1.pos.y >= WINDOW_HEIGHT:
-        hideEnemies()
+        hideCurrentEnemies()
         player1.changeRoomDown()
 
     # Random enemy movement for testing purposes
