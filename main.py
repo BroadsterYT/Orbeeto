@@ -190,29 +190,58 @@ def objectAccel(sprite):
     sprite.vel += sprite.accel * dt
     sprite.pos += sprite.vel + sprite.accel_const * sprite.accel
 
-#------------------------------ Player class ------------------------------#
-class PlayerBase(pygame.sprite.Sprite):
+class ActorBase(pygame.sprite.Sprite):
     def __init__(self):
-        """The base class for all player objects. It contains parameters and methods to gain better control over player objects.
-        """        
+        """The base class for all actors in the game."""        
         super().__init__()
-        self.room = vec((0, 0))
         self.visible = True
 
-        self.pos = vec((WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2))
+        self.pos = vec((0, 0))
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
+        self.accel_const = 0.3
+    
+    def hide(self):
+        """Makes the sprite invisible. The sprite's ``update()`` method will not be called."""
+        self.visible = False
+        all_sprites.remove(self)
+
+    def show(self, layer_send):
+        """Makes the sprite visible. The sprite's ``update()`` method will be called.
+        
+        ### Parameters
+            - ``layer_send`` ``(int)``: The layer the sprite should be added to
+        """        
+        self.visible = True
+        all_sprites.add(self, layer = layer_send)
+
+    def accel_phys(self):
+        """Defines the relationship between the sprite's acceleration, velocity, and position (and time, when called once every frame)"""
+        self.accel.x += self.vel.x * FRIC
+        self.accel.y += self.vel.y * FRIC
+        self.vel += self.accel * dt
+        self.pos += self.vel + self.accel_const * self.accel
+
+#------------------------------ Player class ------------------------------#
+class PlayerBase(ActorBase):
+    def __init__(self):
+        """The base class for all player objects. It contains parameters and methods to gain better control over player objects."""        
+        super().__init__()
+        self.room = vec((0, 0))
+
+        self.pos = vec((WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2))
+        self.accel_const = 0.52
 
         self.room = vec((0, 0))
 
         #---------- Game stats ----------#
         self.xp = 0
         self.level = 0
-        self.max_hp = 1
+        self.max_hp = 50
         self.hp = 50
-        self.max_attack = 0
+        self.max_attack = 10
         self.attack = 10
-        self.max_defense = 0
+        self.max_defense = 10
         self.defense = 15
         self.gun_speed = 12
         self.gun_cooldown = 6
@@ -225,21 +254,8 @@ class PlayerBase(pygame.sprite.Sprite):
         self.healthBar = HealthBar(self)
         self.dodgeBar = DodgeBar(self)
 
-    def hide(self):
-        """Makes the player sprite invisible. The player's ``update()``function will not be called.
-        """        
-        self.visible = False
-        all_sprites.remove(self)
-
-    def show(self):
-        """Makes the player sprite visible. The player's ``update()`` function can be called
-        """        
-        self.visible = True
-        all_sprites.add(self, layer = LAYERS['player_layer'])
-
     def changeRoomRight(self):
-        """Relocates the player one room to the right. This ``kill()``s all projectiles and explosions in the current room.
-        """        
+        """Relocates the player one room to the right. This ``kill()``s all projectiles and explosions in the current room."""        
         room.room.x += 1
         room.layoutUpdate()
         
@@ -249,8 +265,7 @@ class PlayerBase(pygame.sprite.Sprite):
         killGroup(all_projs, all_explosions)
 
     def changeRoomLeft(self):
-        """Relocates the player one room to the left. This ``kill()``s all projectiles and explosions in the current room.
-        """   
+        """Relocates the player one room to the left. This ``kill()``s all projectiles and explosions in the current room."""   
         room.room.x -= 1
         room.layoutUpdate()
 
@@ -260,8 +275,7 @@ class PlayerBase(pygame.sprite.Sprite):
         killGroup(all_projs, all_explosions)
 
     def changeRoomUp(self):
-        """Relocates the player one room up. This ``kill()``s all projectiles and explosions in the current room.
-        """   
+        """Relocates the player one room up. This ``kill()``s all projectiles and explosions in the current room."""   
         room.room.y += 1
         room.layoutUpdate()
 
@@ -271,8 +285,7 @@ class PlayerBase(pygame.sprite.Sprite):
         killGroup(all_projs, all_explosions)
 
     def changeRoomDown(self):
-        """Relocates the player one room down. This ``kill()``s all projectiles and explosions in the current room.
-        """   
+        """Relocates the player one room down. This ``kill()``s all projectiles and explosions in the current room."""   
         room.room.y -= 1
         room.layoutUpdate()
 
@@ -332,9 +345,7 @@ class Player(PlayerBase):
         """        
         super().__init__()
         all_players.add(self)
-        self.show()
-
-        self.accel_const = 0.52
+        self.show(LAYERS['player_layer'])
 
         self.spritesheet = SpriteSheet("sprites/orbeeto/orbeeto.png")
         self.images = self.spritesheet.get_images(0, 0, 64, 64, 5)
@@ -366,7 +377,7 @@ class Player(PlayerBase):
             if isInputHeld[K_x] == False:
                 self.accel_const = 0.52
 
-            objectAccel(self)
+            self.accel_phys()
 
             self.rect.center = self.pos
             self.hitbox.center = self.pos
@@ -432,14 +443,11 @@ class Player(PlayerBase):
             self.kill()
 
 #------------------------------ Enemy classes ------------------------------#
-class EnemyBase(pygame.sprite.Sprite):
+class EnemyBase(ActorBase):
     def __init__(self):
         """The base class for all enemy objects. It contains parameters and methods to gain better control over enemy objects.
         """    
         super().__init__()
-        self.visible = True
-
-        self.pos = vec((0, 0))
         self.is_shooting = False
         self.healthBar = HealthBar(self)
 
@@ -450,17 +458,6 @@ class EnemyBase(pygame.sprite.Sprite):
         self.max_defense = None
         self.defense = None
         self.xp_worth = None
-        self.accel_const = None
-
-    def hide(self):
-        self.visible = False
-        all_sprites.remove(self)
-        all_sprites.remove(self.healthBar)
-
-    def show(self):
-        self.visible = True
-        all_sprites.add(self, layer = 1)
-        all_sprites.add(self.healthBar, layer = 100)
 
 class StandardGrunt(EnemyBase):
     def __init__(self, posX, posY, roomX, roomY, hp, attack, defense, xp_worth, accel_const):
@@ -696,23 +693,14 @@ class OctoGrunt(EnemyBase):
             self.kill()
 
 #------------------------------ Interactible classes ------------------------------#
-class MovableBase(pygame.sprite.Sprite):
+class MovableBase(ActorBase):
     def __init__(self):
         super().__init__()
-        self.visible = True
-
-    def hide(self):
-        self.visible = False
-        all_sprites.remove(self)
-
-    def show(self):
-        self.visible = True
-        all_sprites.add(self, layer = LAYERS['movable_layer'])
 
 class Box(MovableBase):
     def __init__(self, posX, posY):
         super().__init__()
-        self.show()
+        self.show(LAYERS['movable_layer'])
         all_movable.add(self)
 
         self.spritesheet = SpriteSheet("sprites/orbeeto/orbeeto.png")
@@ -1300,7 +1288,7 @@ def showEnemies(container):
         - ``container`` ``(pygame.sprite.AbstractGroup)``: The enemy container to unhide
     """    
     for sprite in container.sprites():
-        sprite.show()
+        sprite.show(LAYERS['enemy_layer'])
 
 #------------------------------ UI classes ------------------------------#
 class InventoryMenu(AbstractBase):
