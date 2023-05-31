@@ -321,8 +321,7 @@ class PlayerBase(ActorBase):
         return xpRequired
 
     def updateLevel(self):
-        """Updates the current level of the player
-        """        
+        """Updates the current level of the player."""        
         xpRequired = self.loadXpReq()
         for i in range(250):
             if self.xp < xpRequired[i + 1]:
@@ -333,8 +332,7 @@ class PlayerBase(ActorBase):
                 break
 
     def updateMaxStats(self):
-        """Updates all of the player's max stats
-        """        
+        """Updates all of the player's max stats."""        
         self.max_hp = floor(50 * pow(1.009290219, self.level))
         self.max_attack = floor(10 * pow(1.019580042, self.level))
         self.max_defense = floor(15 * pow(1.016098331, self.level))
@@ -572,7 +570,7 @@ class StandardGrunt(EnemyBase):
 
         # Kill enemy if their HP reaches 0
         if self.hp <= 0:
-            ItemDrop(self, MATERIAL[0], 0, 1)
+            ItemDrop(self, MATERIALS[0], 0, 1)
             awardXp(self)
             self.kill()
 
@@ -744,10 +742,10 @@ class ItemDrop(DropBase):
         """An item or material dropped by an enemey that is able to be collected
         
         ### Parameters
-            - ``droppedFrom`` ``(pygame.sprite.Sprite)``: The enemy that the item was dropped from
-            - ``item_name`` ``(int)``: The item to drop
-            - ``item_frame_start`` ``(tuple)``: The index of the first frame to display from the item drop spritesheet (0 = the first image).
-            - ``image_count`` ``(int)``: The number of frames to use
+            - dropped_from (``pygame.sprite.Sprite``): The enemy that the item was dropped from
+            - item_name (``str``): The item to drop
+            - item_frame_start (``int``): The index of the first frame to display from the item drop spritesheet (0 = the first image).
+            - image_count (``int``): The number of frames to use
         """        
         super().__init__()
         self.show(LAYERS['drops_layer'])
@@ -775,7 +773,7 @@ class ItemDrop(DropBase):
                 self.accel.x = self.randAccel.x
                 self.accel.y = self.randAccel.y
             
-            objectAccel(self)
+            self.accel_phys()
         
         self.rect.center = self.pos
         self.hitbox.center = self.pos
@@ -1028,8 +1026,7 @@ class Portal(PortalBase):
         pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 1)
 
 def portalCountCheck():
-    """If there are more than two portals present during gameplay, the oldest one will be deleted to make room for another one
-    """    
+    """If there are more than two portals present during gameplay, the oldest one will be deleted to make room for another one."""    
     if len(all_portals) > 2:
         portalTemp = all_portals.sprites()
         if len(portalTemp) > 0:
@@ -1041,12 +1038,13 @@ def portalCountCheck():
 
 def portalSideCheck(wall, portal):
     """Checks for which side of a wall a portal hit and assigns it that value
-
-    Parameters:
-    ----------
-        wall (pygame.sprite.Sprite): The wall being hit
-
-        portal (pygame.sprite.Sprite): The projectile that is hitting the wall
+    
+    ### Parameters
+        - ``wall`` ``(pygame.sprite.Sprite)``: The wall being hit
+        - ``portal`` ``(pygame.sprite.Sprite)``: The portal being fired
+    
+    ### Returns
+        - ``str``: The direction the portal should face
     """    
     if wall.pos.x - 0.5 * wall.image.get_width() <= portal.pos.x <= wall.pos.x + 0.5 * wall.image.get_width() and portal.pos.y > wall.pos.y:
         return DOWN
@@ -1286,18 +1284,20 @@ class InventoryMenu(AbstractBase):
         self.owner = owner
 
         self.storage = {}
-        for item in MATERIAL.values():
+        for item in MATERIALS.values():
             self.storage.update({item: 0})
 
         space = vec(0, 0)
         space_scale = vec(1.5, 1.5)
         menu_slots = []
+        slot_count = 0
         for y in range(5):
             for x in range(5):
-                menu_slots.append(MenuSlot(400 + space.x, 100 + space.y))
+                menu_slots.append(MenuSlot(400 + space.x, 100 + space.y, MATERIALS[slot_count]))
                 space.x += 64 * space_scale.x
             space.y += 64 * space_scale.y
             space.x = 0
+            slot_count += 1
         
         self.add(
             RightMenuArrow(1206, WINDOW_HEIGHT / 2),
@@ -1416,14 +1416,22 @@ class LeftMenuArrow(pygame.sprite.Sprite):
         self.hover()
 
 class MenuSlot(pygame.sprite.Sprite):
-    def __init__(self, posX, posY, item_held = MATERIAL[0], item_count = 0):
+    def __init__(self, posX, posY, item_held):
+        """A menu slot that shows the collected amount of a specific item
+        
+        ### Parameters
+            - posX (``float``): The x-position to spawn at
+            - posY (``float``): The y-position to spawn at
+            - item_held (``str``): The item the menu slot will hold
+        """
         super().__init__()
         all_slots.add(self)
         self.pos = vec((posX, posY))
         self.holding = item_held
-        self.count = item_count
+        self.count = 0
 
         self.spritesheet = SpriteSheet("sprites/ui/menu_item_slot.png")
+        self.itemsheet = SpriteSheet("sprites/textures/item_drops.png")
         self.images = self.spritesheet.get_images(0, 0, 64, 64, 1)
         self.index = 0
 

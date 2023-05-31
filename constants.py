@@ -28,7 +28,7 @@ LAYERS = {
     'ui_layer_1': 200
 }
 
-MATERIAL = {
+MATERIALS = {
     0: 'itemdrop_metalscrap_000',
     1: 'itemdrop_placeholder_001',
     2: 'itemdrop_placeholder_002',
@@ -39,7 +39,21 @@ MATERIAL = {
     7: 'itemdrop_placeholder_007',
     8: 'itemdrop_placeholder_008',
     9: 'itemdrop_placeholder_009',
-    10: 'itemdrop_placeholder_010'
+    10: 'itemdrop_placeholder_010',
+    11: 'itemdrop_placeholder_011',
+    12: 'itemdrop_placeholder_012',
+    13: 'itemdrop_placeholder_013',
+    14: 'itemdrop_placeholder_014',
+    15: 'itemdrop_placeholder_015',
+    16: 'itemdrop_placeholder_016',
+    17: 'itemdrop_placeholder_017',
+    18: 'itemdrop_placeholder_018',
+    19: 'itemdrop_placeholder_019',
+    20: 'itemdrop_placeholder_020',
+    21: 'itemdrop_placeholder_021',
+    22: 'itemdrop_placeholder_022',
+    23: 'itemdrop_placeholder_023',
+    24: 'itemdrop_placeholder_024',
 }
 
 #------------------------------ Object Movement ------------------------------#

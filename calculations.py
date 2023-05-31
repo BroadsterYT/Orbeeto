@@ -11,7 +11,7 @@ def get_angle_to_mouse(any_sprite):
     """Gets the angle between a sprite and the mouse cursor
     
     ### Parameters
-        - ``any_sprite`` ``(pygame.sprite.Sprite)``: The sprite to measure the angle from
+        - any_sprite ``(pygame.sprite.Sprite)``: The sprite to measure the angle from
     
     ### Returns
         - ``float``: The angle between ``any_sprite`` and the mouse cursor
@@ -42,11 +42,11 @@ def get_angle_to_entity(any_sprite, target_sprite):
     """Gets the angle from one sprite to another
     
     ### Parameters
-        - ``any_sprite`` ``(pygame.sprite.Sprite)``: The sprite to begin the measurement from
-        - ``target_sprite`` ``(pygame.sprite.Sprite)``: The sprite to measure the angle to
+        - any_sprite (``pygame.sprite.Sprite``): The sprite to begin the measurement from
+        - target_sprite (``pygame.sprite.Sprite``): The sprite to measure the angle to
     
     ### Returns
-        - ``float``: The angle between the two sprites
+        ``float``: The angle between the two sprites
     """    
     length_to_x = (target_sprite.pos.x - (0.5 * target_sprite.image.get_width())) - (any_sprite.pos.x - (0.5 * any_sprite.image.get_width()))
     length_to_y = (target_sprite.pos.y - (0.5 * target_sprite.image.get_height())) - (any_sprite.pos.y - (0.5 * any_sprite.image.get_height()))
