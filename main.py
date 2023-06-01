@@ -6,10 +6,12 @@ import random as rand
 
 from math import sin, cos, radians, degrees, floor
 
-from groups import *
-from spritesheet import *
-from constants import *
-from calculations import *
+from Calculations import *
+from ClassBases import *
+from Constants import *
+from Groups import *
+from Spritesheet import *
+from UI_Actors import *
 
 pygame.init()
 
@@ -39,7 +41,7 @@ def getClosestPlayer(check_sprite):
     """    
     playerCoords = {}
     for a_player in all_players:
-        playerCoords[a_player] = get_dist_to_entity(check_sprite, a_player)
+        playerCoords[a_player] = getDistToSprite(check_sprite, a_player)
 
     try:
         temp = min(playerCoords.values())
@@ -190,38 +192,6 @@ def objectAccel(sprite):
     sprite.vel += sprite.accel * dt
     sprite.pos += sprite.vel + sprite.accel_const * sprite.accel
 
-class ActorBase(pygame.sprite.Sprite):
-    def __init__(self):
-        """The base class for all actors in the game."""        
-        super().__init__()
-        self.visible = True
-
-        self.pos = vec((0, 0))
-        self.vel = vec(0, 0)
-        self.accel = vec(0, 0)
-        self.accel_const = 0.3
-    
-    def hide(self):
-        """Makes the sprite invisible. The sprite's ``update()`` method will not be called."""
-        self.visible = False
-        all_sprites.remove(self)
-
-    def show(self, layer_send):
-        """Makes the sprite visible. The sprite's ``update()`` method will be called.
-        
-        ### Parameters
-            - ``layer_send`` ``(int)``: The layer the sprite should be added to
-        """        
-        self.visible = True
-        all_sprites.add(self, layer = layer_send)
-
-    def accel_phys(self):
-        """Defines the relationship between the sprite's acceleration, velocity, and position (and time, when called once every frame)"""
-        self.accel.x += self.vel.x * FRIC
-        self.accel.y += self.vel.y * FRIC
-        self.vel += self.accel * dt
-        self.pos += self.vel + self.accel_const * self.accel
-
 #------------------------------ Player class ------------------------------#
 class PlayerBase(ActorBase):
     def __init__(self):
@@ -234,7 +204,7 @@ class PlayerBase(ActorBase):
 
         self.room = vec((0, 0))
 
-        #---------- Game stats ----------#
+        #-------------------- Game stats & UI --------------------#
         self.xp = 0
         self.level = 0
         self.max_hp = 50
@@ -345,7 +315,7 @@ class Player(PlayerBase):
         all_players.add(self)
         self.show(LAYERS['player_layer'])
 
-        self.spritesheet = SpriteSheet("sprites/orbeeto/orbeeto.png")
+        self.spritesheet = Spritesheet("sprites/orbeeto/orbeeto.png")
         self.images = self.spritesheet.get_images(0, 0, 64, 64, 5)
         self.original_images = self.spritesheet.get_images(0, 0, 64, 64, 5)
         self.index = 0
@@ -375,7 +345,7 @@ class Player(PlayerBase):
             if isInputHeld[K_x] == False:
                 self.accel_const = 0.52
 
-            self.accel_phys()
+            objectAccel(self)
 
             self.rect.center = self.pos
             self.hitbox.center = self.pos
@@ -388,7 +358,7 @@ class Player(PlayerBase):
             - ``cannonSide`` ``(str)``: Where to shoot the bullet from?
             - ``bulletType`` ``(str, optional)``: What bullet to shoot? Defaults to ``PROJ_P_STD``.
         """        
-        angle_to_mouse = get_angle_to_mouse(self)
+        angle_to_mouse = getAngleToMouse(self)
 
         velX = vel * -sin(rad(angle_to_mouse))
         velY = vel * -cos(rad(angle_to_mouse))
@@ -430,7 +400,7 @@ class Player(PlayerBase):
             self.image = self.images[self.index]
             self.original_image = self.original_images[self.index]
 
-            self.image = pygame.transform.rotate(self.original_image, int(get_angle_to_mouse(self)))
+            self.image = pygame.transform.rotate(self.original_image, int(getAngleToMouse(self)))
             self.rect = self.image.get_rect(center = self.rect.center)
 
         # Gameplay
@@ -441,24 +411,8 @@ class Player(PlayerBase):
             self.kill()
 
 #------------------------------ Enemy classes ------------------------------#
-class EnemyBase(ActorBase):
-    def __init__(self):
-        """The base class for all enemy objects. It contains parameters and methods to gain better control over enemy objects.
-        """    
-        super().__init__()
-        self.is_shooting = False
-        self.healthBar = HealthBar(self)
-
-        self.max_hp = None
-        self.hp = None
-        self.max_attack = None
-        self.attack = None
-        self.max_defense = None
-        self.defense = None
-        self.xp_worth = None
-
 class StandardGrunt(EnemyBase):
-    def __init__(self, posX, posY, roomX, roomY, hp, attack, defense, xp_worth, accel_const):
+    def __init__(self, posX, posY, roomX, roomY):
         """A simple enemy that moves to random locations and shoots at random intervals
 
         Parameters
@@ -486,7 +440,7 @@ class StandardGrunt(EnemyBase):
         all_sprites.add(self, layer = LAYERS['enemy_layer'])
         all_enemies.add(self)
 
-        self.spritesheet = SpriteSheet("sprites/enemies/standard_grunt.png")
+        self.spritesheet = Spritesheet("sprites/enemies/standard_grunt.png")
         self.images = self.spritesheet.get_images(0, 0, 64, 64, 5)
         self.original_images = self.spritesheet.get_images(0, 0, 64, 64, 5)
         self.index = 0
@@ -499,14 +453,13 @@ class StandardGrunt(EnemyBase):
 
         self.room = vec((roomX, roomY))
 
+        #---------------------- Physics ----------------------#
         self.pos = vec((posX, posY))
-        self.vel = vec(0, 0)
-        self.accel = vec(0, 0)
-
         self.rand_pos = vec(rand.randint(0, WINDOW_WIDTH), rand.randint(0, WINDOW_HEIGHT))
 
-        #---------- Game stats ----------#
+        #---------------------- Game stats & UI ----------------------#
         initStats(self, 15, 10, 10, 25, 0.4)
+        self.healthBar = HealthBar(self)
 
     def rand_movement(self, canShoot):
         if self.hp > 0 and self.visible == True:
@@ -530,7 +483,7 @@ class StandardGrunt(EnemyBase):
                 else:
                     self.accel.y = 0
 
-            self.accel_phys()
+            objectAccel(self)
             
             if canShoot == True:
                 self.shoot(getClosestPlayer(self), 5, rand.randint(20, 30), PROJ_P_STD)
@@ -542,7 +495,7 @@ class StandardGrunt(EnemyBase):
         if anim_timer % shoot_time == 0 and self.hp > 0:
             self.is_shooting = True
             try:
-                angle_to_mouse = get_angle_to_entity(self, target)
+                angle_to_mouse = getAngleToSprite(self, target)
             except:
                 angle_to_mouse = 0
 
@@ -564,7 +517,7 @@ class StandardGrunt(EnemyBase):
         self.original_image = self.original_images[self.index]
 
         # Rotate sprite to player
-        self.image = pygame.transform.rotate(self.original_image, int(get_angle_to_entity(self, getClosestPlayer(self))))
+        self.image = pygame.transform.rotate(self.original_image, int(getAngleToSprite(self, getClosestPlayer(self))))
         self.rect = self.image.get_rect(center = self.pos)
         self.hitbox.center = self.pos
 
@@ -575,12 +528,12 @@ class StandardGrunt(EnemyBase):
             self.kill()
 
 class OctoGrunt(EnemyBase):
-    def __init__(self, posX, posY, roomX, roomY, hp, attack, defense, xp_worth, accel_const):
+    def __init__(self, posX, posY, roomX, roomY):
         super().__init__()
         all_sprites.add(self, layer = LAYERS['enemy_layer'])
         all_enemies.add(self)
 
-        self.spritesheet = SpriteSheet("sprites/enemies/standard_grunt.png")
+        self.spritesheet = Spritesheet("sprites/enemies/standard_grunt.png")
         self.images = self.spritesheet.get_images(0, 0, 64, 64, 5)
         self.original_images = self.spritesheet.get_images(0, 0, 64, 64, 5)
         self.index = 0
@@ -591,21 +544,14 @@ class OctoGrunt(EnemyBase):
         self.rect = pygame.Rect(0, 0, 64, 64)
         self.hitbox = self.rect.inflate(-32, -32)
 
-        self.accel_const = accel_const
-
         self.room = vec((roomX, roomY))
 
         self.pos = vec((posX, posY))
         self.rand_pos = vec(rand.randint(0, WINDOW_WIDTH), rand.randint(0, WINDOW_HEIGHT))
 
-        # Game stats
-        self.max_hp = hp
-        self.hp = self.max_hp
-        self.max_attack = attack
-        self.attack = self.max_attack
-        self.max_defense = defense
-        self.defense = self.max_defense
-        self.xp_worth = xp_worth
+        #---------------------- Game stats & UI ----------------------#
+        initStats(self, 44, 10, 10, 45, 0.4)
+        self.healthbar = HealthBar(self)
 
     def rand_movement(self, canShoot):
         if self.hp > 0:
@@ -640,7 +586,7 @@ class OctoGrunt(EnemyBase):
         global anim_timer
         if anim_timer % shoot_time == 0 and self.hp > 0:
             self.is_shooting = True
-            angle_to_target = get_angle_to_entity(self, target)
+            angle_to_target = getAngleToSprite(self, target)
 
             vel_x = vel * -sin(rad(angle_to_target))
             vel_y = vel * -cos(rad(angle_to_target))
@@ -678,7 +624,7 @@ class OctoGrunt(EnemyBase):
         self.original_image = self.original_images[self.index]
 
         # Rotate sprite to player
-        self.image = pygame.transform.rotate(self.original_image, int(get_angle_to_entity(self, getClosestPlayer(self))))
+        self.image = pygame.transform.rotate(self.original_image, int(getAngleToSprite(self, getClosestPlayer(self))))
         self.rect = self.image.get_rect(center = self.pos)
         self.hitbox.center = self.pos
 
@@ -688,17 +634,13 @@ class OctoGrunt(EnemyBase):
             self.kill()
 
 #------------------------------ Interactible classes ------------------------------#
-class MovableBase(ActorBase):
-    def __init__(self):
-        super().__init__()
-
-class Box(MovableBase):
+class Box(ActorBase):
     def __init__(self, posX, posY):
         super().__init__()
         self.show(LAYERS['movable_layer'])
         all_movable.add(self)
 
-        self.spritesheet = SpriteSheet("sprites/orbeeto/orbeeto.png")
+        self.spritesheet = Spritesheet("sprites/orbeeto/orbeeto.png")
         self.images = self.spritesheet.get_images(0, 0, 64, 64, 1)
         self.index = 0
 
@@ -757,7 +699,7 @@ class ItemDrop(DropBase):
         self.pos = vec(self.droppedFrom.pos.x, self.droppedFrom.pos.y)
         self.randAccel = getRandComponents(self.accel_const)
         
-        self.spritesheet = SpriteSheet("sprites/textures/item_drops.png")
+        self.spritesheet = Spritesheet("sprites/textures/item_drops.png")
         self.images = self.spritesheet.get_images(0, 0, 32, 32, image_count, item_frame_start)
         self.index = 0
 
@@ -773,7 +715,7 @@ class ItemDrop(DropBase):
                 self.accel.x = self.randAccel.x
                 self.accel.y = self.randAccel.y
             
-            self.accel_phys()
+            objectAccel(self)
         
         self.rect.center = self.pos
         self.hitbox.center = self.pos
@@ -781,72 +723,6 @@ class ItemDrop(DropBase):
     def update(self):
         if self.hitbox.colliderect(player1):
             player1.inventory.storage[self.type] += 1
-            self.kill()
-
-#------------------------------ Stat bar classes ------------------------------#
-class HealthBar(pygame.sprite.Sprite):
-    def __init__(self, entity):
-        super().__init__()
-        all_sprites.add(self, layer = LAYERS['statBar_layer'])
-        all_stat_bars.add(self)
-        
-        self.spritesheet = SpriteSheet("sprites/stat_bars/health_bar.png", False)
-        self.images = self.spritesheet.get_images(0, 0, 128, 16, 18)
-        self.original_images = self.spritesheet.get_images(0, 0, 128, 16, 18)
-        self.index = 17
-
-        self.image = self.images[self.index]
-        self.original_image = self.original_images[self.index]
-
-        self.rect = pygame.Rect(0, 0, 128, 16)
-        self.entity = entity
-        self.pos = self.entity.pos
-
-    def movement(self):
-        self.rect.center = vec(self.entity.pos.x, self.entity.pos.y + 42)
-    
-    def update(self):
-        if self.entity.hp > 0:
-            self.index = math.floor((16 * self.entity.hp) / self.entity.max_hp)
-            self.image = self.images[self.index]
-            self.original_image = self.original_images[self.index]
-            self.rect = self.image.get_rect(center = self.rect.center)
-        else:
-            self.index = 17
-            self.image = self.images[self.index]
-            self.kill()
-
-class DodgeBar(pygame.sprite.Sprite):
-    def __init__(self, entity):
-        super().__init__()
-        all_sprites.add(self, layer = LAYERS['statBar_layer'])
-        all_stat_bars.add(self)
-
-        self.spritesheet = SpriteSheet("sprites/stat_bars/dodge_bar.png", False)
-        self.images = self.spritesheet.get_images(0, 0, 128, 16, 18)
-        self.original_images = self.spritesheet.get_images(0, 0, 128, 16, 18)
-        self.index = 17
-
-        self.image = self.images[self.index]
-        self.original_image = self.original_images[self.index]
-
-        self.rect = pygame.Rect(0, 0, 128, 16)
-        self.entity = entity
-        self.pos = self.entity.pos
-    
-    def movement(self):
-        self.rect.center = vec(self.entity.pos.x, self.entity.pos.y + 60)
-
-    def update(self):
-        if self.entity.hp > 0:
-            if self.entity.hitTime < self.entity.hitTime_charge:
-                self.index = math.floor((17 * self.entity.hitTime) / self.entity.hitTime_charge)
-                self.image = self.images[self.index]
-                self.original_image = self.original_images[self.index]
-                self.rect = self.image.get_rect(center = self.rect.center)
-        else:
-            self.index = 17
-            self.image = self.images[self.index]
             self.kill()
 
 #------------------------------ Projectile class ------------------------------#
@@ -897,7 +773,7 @@ class Projectile(pygame.sprite.Sprite):
             self.hitbox_adjust = vec(0, 0)
             self.damage = 0
 
-        self.spritesheet = SpriteSheet("sprites/bullets/bullets.png")
+        self.spritesheet = Spritesheet("sprites/bullets/bullets.png")
         self.images = self.spritesheet.get_images(0, 0, 32, 32, 4)
         self.original_images = self.spritesheet.get_images(0, 0, 32, 32, 4)
         self.index = 0
@@ -912,7 +788,7 @@ class Projectile(pygame.sprite.Sprite):
         self.original_image = self.original_images[self.index]
 
         # Rotate sprite to trajectory
-        self.image = pygame.transform.rotate(self.original_image, int(get_vec_angle(self.vel.x, self.vel.y)))
+        self.image = pygame.transform.rotate(self.original_image, int(getVecAngle(self.vel.x, self.vel.y)))
         self.rect = self.image.get_rect(center = self.rect.center)
 
         self.shotFrom = shotFrom
@@ -933,7 +809,7 @@ class Projectile(pygame.sprite.Sprite):
 
     def update(self):
         if self.type == PROJ_P_STD:
-            self.spritesheet = SpriteSheet("sprites/bullets/bullets.png")
+            self.spritesheet = Spritesheet("sprites/bullets/bullets.png")
             self.images = self.spritesheet.get_images(0, 0, 32, 32, 4)
             self.original_images = self.spritesheet.get_images(0, 0, 32, 32, 4)
             self.hitbox_adjust = vec(-8, -8)
@@ -950,28 +826,10 @@ class Projectile(pygame.sprite.Sprite):
             self.image = self.images[self.index]
             self.original_image = self.original_images[self.index]
 
-            self.image = pygame.transform.rotate(self.original_image, int(get_vec_angle(self.vel.x, self.vel.y)))
+            self.image = pygame.transform.rotate(self.original_image, int(getVecAngle(self.vel.x, self.vel.y)))
             self.rect = self.image.get_rect(center = self.rect.center)
 
 #------------------------------ Portal class ------------------------------#
-class PortalBase(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        
-        self.visible = True
-    
-    def changeRoomRight(self):
-        self.pos.x -= WINDOW_WIDTH
-
-    def changeRoomLeft(self):
-        self.pos.x += WINDOW_WIDTH
-
-    def changeRoomUp(self):
-        self.pos.y += WINDOW_HEIGHT
-
-    def changeRoomDown(self):
-        self.pos.y -= WINDOW_HEIGHT
-
 class Portal(PortalBase):
     def __init__(self, posX, posY, facing=DOWN):
         """A portal object that can teleport players, enemies, and projectiles
@@ -990,7 +848,7 @@ class Portal(PortalBase):
         self.pos = vec((posX, posY))
         self.facing = facing
 
-        self.spritesheet = SpriteSheet("sprites/portals/portals.png")
+        self.spritesheet = Spritesheet("sprites/portals/portals.png")
         self.images = self.spritesheet.get_images(0, 0, 64, 64, 1)
         self.index = 0
         
@@ -1076,7 +934,7 @@ class ProjExplode(pygame.sprite.Sprite):
         self.proj = proj
         self.type = self.proj.type
         
-        self.spritesheet = SpriteSheet("sprites/bullets/bullets.png")
+        self.spritesheet = Spritesheet("sprites/bullets/bullets.png")
         self.index = 1
 
         if self.type == PROJ_P_STD:
@@ -1131,29 +989,13 @@ class Wall(pygame.sprite.Sprite):
         self.texture = pygame.image.load("sprites/textures/wall.png")
         textureWall(self, self.texture)
 
-        self.pos = getTopLeft(self, topleftX_mult * 32, topleftY_mult * 32)
+        self.pos = getTopLeftCoordinates(self, topleftX_mult * 32, topleftY_mult * 32)
         self.rect.center = self.pos
 
     def update(self):
         self.rect.center = self.pos
 
 #------------------------------ Room class ------------------------------#
-class AbstractBase(pygame.sprite.AbstractGroup):
-    def __init__(self):
-        """The base class for all standard abstract groups. Contains methods to help manipulate the abstract group.
-        """        
-        super().__init__()
-    
-    def add(self, *sprites):
-        """Add one or more sprites to the abstract group.
-
-        Parameters:
-        ----
-            sprites (pygame.sprite.Sprite): The sprite(s) to add to the group
-        """        
-        for sprite in sprites:
-            super().add(sprite)
-
 class Room(AbstractBase):
     def __init__(self, roomX, roomY):
         """The room where all the current action is taking place
@@ -1210,7 +1052,7 @@ class Room(AbstractBase):
                 all_containers.append(
                     EntityContainer(
                         self.room.x, self.room.y,
-                        StandardGrunt(WINDOW_WIDTH/2, WINDOW_HEIGHT/2, self.room.x, self.room.y, 25, 10, 10, 25, 0.3)
+                        StandardGrunt(WINDOW_WIDTH/2, WINDOW_HEIGHT/2, self.room.x, self.room.y)
                     )
                 )
 
@@ -1231,6 +1073,7 @@ class Room(AbstractBase):
                 all_containers.append(
                     EntityContainer(
                         self.room.x, self.room.y,
+                        OctoGrunt(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, self.room.x, self.room.y)
                     )
                 )
 
@@ -1326,7 +1169,7 @@ class InventoryMenu(AbstractBase):
         elif keyReleased[K_e] % 2 == 0 and keyReleased[K_e] > 0:
             self.hide()
             can_update = True
-        
+
 class RightMenuArrow(pygame.sprite.Sprite):
     def __init__(self, posX, posY):
         """A UI element that allows players to cycle through menu screens to the right.
@@ -1339,7 +1182,7 @@ class RightMenuArrow(pygame.sprite.Sprite):
         self.pos = vec((posX, posY))
         self.return_pos = vec((posX, posY))
         
-        self.spritesheet = SpriteSheet("sprites/ui/menu_arrow.png")
+        self.spritesheet = Spritesheet("sprites/ui/menu_arrow.png")
         self.images = self.spritesheet.get_images(0, 0, 64, 64, 61)
         self.index = 1
 
@@ -1382,7 +1225,7 @@ class LeftMenuArrow(pygame.sprite.Sprite):
         self.pos = vec((posX, posY))
         self.return_pos = vec((posX, posY))
         
-        self.spritesheet = SpriteSheet("sprites/ui/menu_arrow.png")
+        self.spritesheet = Spritesheet("sprites/ui/menu_arrow.png")
         self.images = self.spritesheet.get_images(0, 0, 64, 64, 61)
         self.index = 1
 
@@ -1430,8 +1273,8 @@ class MenuSlot(pygame.sprite.Sprite):
         self.holding = item_held
         self.count = 0
 
-        self.spritesheet = SpriteSheet("sprites/ui/menu_item_slot.png")
-        self.itemsheet = SpriteSheet("sprites/textures/item_drops.png")
+        self.spritesheet = Spritesheet("sprites/ui/menu_item_slot.png")
+        self.itemsheet = Spritesheet("sprites/textures/item_drops.png")
         self.images = self.spritesheet.get_images(0, 0, 64, 64, 1)
         self.index = 0
 
@@ -1478,7 +1321,7 @@ class DamageChar(pygame.sprite.Sprite):
         all_sprites.add(self, layer = LAYERS['text_layer'])
         all_font_chars.add(self)
         
-        self.spritesheet = SpriteSheet("sprites/ui/font.png")
+        self.spritesheet = Spritesheet("sprites/ui/font.png")
         self.images = self.spritesheet.get_images(0, 0, 9, 14, 36)
 
         self.pos = vec((posX, posY))

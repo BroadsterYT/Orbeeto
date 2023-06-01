@@ -1,13 +1,13 @@
 import pygame, math
-from constants import *
+from Constants import *
 import random as rand
 
-from groups import *
+from Groups import *
 
 vec = pygame.math.Vector2
 
 #------------------------------ Returns float ------------------------------#
-def get_angle_to_mouse(any_sprite):
+def getAngleToMouse(any_sprite):
     """Gets the angle between a sprite and the mouse cursor
     
     ### Parameters
@@ -38,7 +38,7 @@ def get_angle_to_mouse(any_sprite):
                 angle_to_mouse = 0
                 return angle_to_mouse
             
-def get_angle_to_entity(any_sprite, target_sprite):
+def getAngleToSprite(any_sprite, target_sprite):
     """Gets the angle from one sprite to another
     
     ### Parameters
@@ -69,7 +69,7 @@ def get_angle_to_entity(any_sprite, target_sprite):
                 angle_to_mouse = 0
                 return angle_to_mouse
 
-def get_dist_to_entity(selfEntity, targetEntity):
+def getDistToSprite(selfEntity, targetEntity):
     """Returns the distance between two entities
 
     Args:
@@ -84,12 +84,12 @@ def get_dist_to_entity(selfEntity, targetEntity):
     
     return math.sqrt((length_to_x**2) + (length_to_y**2))
 
-def get_vec_angle(vecX, vecY):
+def getVecAngle(vecX, vecY):
     """Returns the angle of a resultant vector
     
     ### Parameters
-        - ``vecX`` ``(float)``: The x-axis component of the vector
-        - ``vecY`` ``(float)``: The y-axis component of the vector
+        - vecX (``float``): The x-axis component of the vector
+        - vecY (``float``): The y-axis component of the vector
     
     ### Returns
         - ``pygame.math.Vector2``: The angle of the resultant vector (in degrees)
@@ -159,7 +159,7 @@ def collideSideCheck(object, instig):
         return None
 
 #------------------------------ Returns pygame.math.Vector2 ------------------------------#
-def getTopLeft(sprite, desired_x, desired_y):
+def getTopLeftCoordinates(sprite, desired_x, desired_y):
     """Returns the coordinates of the topleft corner of a sprite that is centered at its middle
     
     ### Parameters

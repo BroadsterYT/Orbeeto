@@ -1,7 +1,7 @@
 ## Spritesheet function module
 import pygame
 
-class SpriteSheet(object):
+class Spritesheet(object):
     def __init__(self, fileName, isHorizontal=True):
         """A ``pygame.Surface`` object that can be snipped from to create image sequences/animations.
         
