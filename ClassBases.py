@@ -1,6 +1,8 @@
 import pygame
-from Groups import all_sprites
-from Constants import WINDOW_WIDTH, WINDOW_HEIGHT
+
+from Calculations import *
+from Constants import *
+from Groups import *
 
 vec = pygame.math.Vector2
 
@@ -63,7 +65,7 @@ class EnemyBase(ActorBase):
         self.defense = None
         self.xp_worth = None
 
-class PortalBase(pygame.sprite.Sprite):
+class PortalBase(ActorBase):
     def __init__(self):
         super().__init__()
         self.visible = True
@@ -79,3 +81,7 @@ class PortalBase(pygame.sprite.Sprite):
 
     def changeRoomDown(self):
         self.pos.y -= WINDOW_HEIGHT
+
+class StatBarBase(ActorBase):
+    def __init__(self):
+        super().__init__()

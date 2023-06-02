@@ -68,7 +68,7 @@ PROJ_P_PORTAL = 'playerPortal'
 PROJ_E_STD = 'enemyBullet'
 
 # A dictionary that stores all damage constants of all projectile types
-PROJ_DICT = {
+PROJS = {
     PROJ_P_STD: 1,
     PROJ_P_BOUNCE: 1,
     PROJ_P_PORTAL: 15,

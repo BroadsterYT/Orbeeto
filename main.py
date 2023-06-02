@@ -1,19 +1,20 @@
 import pygame
 from pygame.locals import *
 
+pygame.init()
+
 import sys, math, time
 import random as rand
 
 from math import sin, cos, radians, degrees, floor
 
+from Init import can_update, keyReleased
 from Calculations import *
 from ClassBases import *
 from Constants import *
 from Groups import *
 from Spritesheet import *
 from UI_Actors import *
-
-pygame.init()
 
 # Aliases
 vec = pygame.math.Vector2
@@ -26,9 +27,6 @@ clock = pygame.time.Clock()
 screenSize = (WINDOW_WIDTH, WINDOW_HEIGHT)
 screen = pygame.display.set_mode(screenSize, pygame.SCALED)
 pygame.display.set_caption('Orbeeto')
-
-# Globals
-can_update = True
 
 def getClosestPlayer(check_sprite):
     """Checks for the closest player to a given sprite.
@@ -162,8 +160,8 @@ def groupChangeRooms(spriteGroup, direction):
     """Changes the room of all sprites within a group. This is achieved by adding or subtracting the window's width or height from the sprites x-position or y-position, respecively.
     
     ### Parameters
-        - ``spriteGroup`` ``(pygame.sprite.Group)``: The group to relocate
-        - ``direction`` ``(str)``: The direction of the room where ``spriteGroup`` should be relocated
+        - spriteGroup (``pygame.sprite.Group``): The group to relocate
+        - direction (``str``): The direction of the room where ``spriteGroup`` should be relocated
     """    
     if direction == DOWN:
         for sprite in spriteGroup:
@@ -217,6 +215,7 @@ class PlayerBase(ActorBase):
         self.gun_cooldown = 6
         self.hitTime_charge = 1200
         self.hitTime = 0
+        self.lastHit = time.time()
 
         self.updateMaxStats()
 
@@ -307,6 +306,23 @@ class PlayerBase(ActorBase):
         self.max_attack = floor(10 * pow(1.019580042, self.level))
         self.max_defense = floor(15 * pow(1.016098331, self.level))
 
+    def checkRoomChange(self):
+        if self.pos.x <= 0:
+            hideCurrentEnemies()
+            self.changeRoomLeft()
+
+        if self.pos.x >= WINDOW_WIDTH:
+            hideCurrentEnemies()
+            self.changeRoomRight()
+
+        if player1.pos.y <= 0:
+            hideCurrentEnemies()
+            self.changeRoomUp()
+
+        if player1.pos.y >= WINDOW_HEIGHT:
+            hideCurrentEnemies()
+            self.changeRoomDown()
+
 class Player(PlayerBase):
     def __init__(self):
         """A player sprite that can move and shoot.
@@ -325,6 +341,10 @@ class Player(PlayerBase):
         
         self.rect = pygame.Rect(200, 400, 64, 64)
         self.hitbox = self.rect.inflate(-32, -32)
+
+        self.bulletType = PROJ_P_STD
+        
+        self.can_fire_portal = False
 
     def movement(self):
         """When called once every frame, it allows the player to recive input from the user and move accordingly
@@ -350,51 +370,53 @@ class Player(PlayerBase):
             self.rect.center = self.pos
             self.hitbox.center = self.pos
 
-    def shoot(self, vel, cannonSide, bulletType = PROJ_P_STD):
-        """Shoots a bullet with a specified type
+    def shoot(self, vel):
+        """Shoots a bullet
         
         ### Parameters
-            - ``vel`` ``(float)``: The velocity the bullet will travel with
-            - ``cannonSide`` ``(str)``: Where to shoot the bullet from?
-            - ``bulletType`` ``(str, optional)``: What bullet to shoot? Defaults to ``PROJ_P_STD``.
+            - vel ``(float)``: The velocity the bullet will travel with
         """        
         angle_to_mouse = getAngleToMouse(self)
 
         velX = vel * -sin(rad(angle_to_mouse))
         velY = vel * -cos(rad(angle_to_mouse))
 
-        if isInputHeld['LMB'] and anim_timer % self.gun_cooldown == 0:
+        if isInputHeld[1] and self.bulletType == PROJ_P_STD and anim_timer % self.gun_cooldown == 0:
             offset = vec((21, 30))
             players_projs.add(
                 Projectile(self,
                     self.pos.x - (offset.x * cos(rad(angle_to_mouse))) - (offset.y * sin(rad(angle_to_mouse))),
                     self.pos.y + (offset.x * sin(rad(angle_to_mouse))) - (offset.y * cos(rad(angle_to_mouse))),
-                    velX, velY, bulletType
+                    velX, velY, self.bulletType
                 ),
                 
                 Projectile(self,
                     self.pos.x + (offset.x * cos(rad(angle_to_mouse))) - (offset.y * sin(rad(angle_to_mouse))),
                     self.pos.y - (offset.x * sin(rad(angle_to_mouse))) - (offset.y * cos(rad(angle_to_mouse))),
-                    velX, velY, bulletType
+                    velX, velY, self.bulletType
                 )
             )
 
-        elif cannonSide == SHOOT_MIDDLE:
-            players_projs.add(Projectile(self, self.pos.x, self.pos.y, velX, velY, bulletType))
+        if keyReleased[3] % 2 == 0 and self.can_fire_portal:
+            players_projs.add(Projectile(self, self.pos.x, self.pos.y, velX * 0.75, velY * 0.75, PROJ_P_PORTAL))
+            self.can_fire_portal = False
+
+        elif keyReleased[3] % 2 != 0 and not self.can_fire_portal:
+            players_projs.add(Projectile(self, self.pos.x, self.pos.y, velX * 0.75, velY * 0.75, PROJ_P_PORTAL))
+            self.can_fire_portal = True
 
     def update(self):
         global anim_timer
         if can_update:
             if anim_timer % 5 == 0:
-                global isInputHeld
-                if isInputHeld['LMB'] == True:
+                if isInputHeld[1] == True:
                     if self.index == 4:
-                        self.index = -1
+                        self.index = 0
                     self.index += 1
                 else: # Idle animation
                     self.index = 0
             
-            if self.hitTime < self.hitTime_charge and can_update:
+            if self.hitTime < self.hitTime_charge:
                 self.hitTime += 1
 
             self.image = self.images[self.index]
@@ -727,7 +749,7 @@ class ItemDrop(DropBase):
 
 #------------------------------ Projectile class ------------------------------#
 class Projectile(pygame.sprite.Sprite):
-    def __init__(self, shotFrom, posX, posY, velX, velY, bulletType, ricochet = False):
+    def __init__(self, shotFrom, posX, posY, velX, velY, bulletType):
         """A projectile object that moves at a constant velocity
 
         Parameters:
@@ -763,11 +785,11 @@ class Projectile(pygame.sprite.Sprite):
 
         if self.type == PROJ_P_STD:
             self.hitbox_adjust = vec(-2, -2)
-            self.damage = PROJ_DICT[PROJ_P_STD]
+            self.damage = PROJS[PROJ_P_STD]
 
         elif self.type == PROJ_P_PORTAL:
             self.hitbox_adjust = vec(0, 0)
-            self.damage = PROJ_DICT[PROJ_P_PORTAL]
+            self.damage = PROJS[PROJ_P_PORTAL]
 
         else:
             self.hitbox_adjust = vec(0, 0)
@@ -1365,14 +1387,11 @@ class DamageChar(pygame.sprite.Sprite):
 def projectileCollide(entityGroup, proj, canHurt):
     """Destroys a given projectile upon a collision and renders an explosion
     
-    Parameters:
-    ------
-        entityGroup (pygame.sprite.Group): The group of the entity the projectile is colliding with
-
-        proj (pygame.sprite.Sprite): The projectile involved in the collision
-
-        canHurt (bool): Should the projectile calculate damage upon impact? Defaults to False.
-    """
+    ### Parameters
+        - entityGroup (``pygame.sprite.Group``): The group of the entity the projectile is colliding with
+        - proj (``pygame.sprite.Sprite``): The projectile involved in the collision
+        - canHurt (``bool``): Should the projectile calculate damage upon impact?
+    """    
     for colliding_entity in entityGroup:
         if not proj.hitbox.colliderect(colliding_entity.hitbox):
             continue
@@ -1390,12 +1409,12 @@ def projectileCollide(entityGroup, proj, canHurt):
                     all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, calculateDamage(proj.shotFrom, colliding_entity, proj)))
                 proj.land()
 
-            # If the entity is not an enemy 
             elif entityGroup != all_enemies:
                 colliding_entity.hp -= calculateDamage(proj.shotFrom, colliding_entity, proj)
                 all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, calculateDamage(proj.shotFrom, colliding_entity, proj)))
                 if hasattr(colliding_entity, 'hitTime'):
                     colliding_entity.hitTime = 0
+                    colliding_entity.lastHit = time.time()
                 proj.land()
 
         elif not canHurt:
@@ -1435,12 +1454,11 @@ def projectileCollide(entityGroup, proj, canHurt):
 
 def bindProjectile(projectile, projTargetGroup):
     """Binds a projectile to its shooter and confines it to the window borders
-
-    Parameters:
-        projectile (pygame.sprite.Sprite): The projectile to bind
-        projGroup (pygame.sprite.Group): The group of the projectile from which it was shot from (ex. players_proj)
-        projTargetGroup (pygame.sprite.Group): The group of the entities that should take damage from the given projectile
-    """
+    
+    ### Parameters
+        - projectile (``pygame.sprite.Sprite``): The projectile to bind
+        - projTargetGroup (``pygame.sprite.Group``): The group of the projectile from which it was shot from (ex. ``players_proj``)
+    """    
     if (
         projectile.pos.x < WINDOW_WIDTH and 
         projectile.pos.x > 0 and
@@ -1465,7 +1483,8 @@ def redrawGameWindow():
             collideCheck(a_player, all_movable)
 
             a_player.movement()
-            a_player.shoot(12, None)
+            a_player.shoot(a_player.gun_speed)
+            a_player.checkRoomChange()
 
             # Teleport the player if they come into contact with a portal
             for portal in all_portals:
@@ -1530,23 +1549,23 @@ room.layoutUpdate()
 anim_timer = 0
 last_time = time.time()
 
-keyReleased = {
-    K_a: 0,
-    K_w: 0,
-    K_s: 0,
-    K_d: 0,
-    K_e: 0
-}
-
-def checkKeyRelease(key):
-    """Checks if a key has been released. If it has, then its count in ''keyReleased'' will be updated to match.
+def checkKeyRelease(isMouse, *inputs):
+    """Checks if any input(s) has been released. If one has, then its count in ''keyReleased'' will be updated to match.
     
     ### Parameters
-        - ``key`` ``(int)``: The key to check
-    """    
-    if event.type == pygame.KEYUP and event.key == key:
-        if key in isInputHeld and key in keyReleased:
-            keyReleased[key] += 1
+        - isMouse (``bool``): Are the inputs mouse buttons?
+        - inputs (``str``, multiple): The input(s) to check
+    """
+    if isMouse == False:
+        for key in inputs:
+            if event.type == pygame.KEYUP and event.key == key:
+                if key in isInputHeld and key in keyReleased:
+                    keyReleased[key] += 1
+    else:
+        for button in inputs:
+            if event.type == pygame.MOUSEBUTTONUP and event.button == button:
+                if button in isInputHeld and button in keyReleased:
+                    keyReleased[button] += 1
 
 #------------------------------ Main loop ------------------------------#
 running = True
@@ -1565,14 +1584,11 @@ while running:
 
         if event.type == QUIT or keyPressed[K_ESCAPE]:
             sys.exit()
-    
-        if event.type == MOUSEBUTTONDOWN and event.button == 3:
-            player1.shoot(player1.gun_cooldown, SHOOT_MIDDLE, PROJ_P_PORTAL)
 
         isInputHeld = {
-            'LMB': pygame.mouse.get_pressed()[0],
-            'MMB': pygame.mouse.get_pressed()[1],
-            'RMB': pygame.mouse.get_pressed()[2],
+            1: pygame.mouse.get_pressed()[0],
+            2: pygame.mouse.get_pressed()[1],
+            3: pygame.mouse.get_pressed()[2],
 
             K_a: keyPressed[K_a],
             K_w: keyPressed[K_w],
@@ -1582,27 +1598,12 @@ while running:
             K_e: keyPressed[K_e]
         }
 
-        checkKeyRelease(K_e)
+        checkKeyRelease(False, K_e)
+        checkKeyRelease(True, 1, 2, 3)
 
     screen.fill((255, 255, 255))
 
     #------------------------------ Game operation ------------------------------#
-    ## Changing rooms
-    if player1.pos.x <= 0:
-        hideCurrentEnemies()
-        player1.changeRoomLeft()
-
-    if player1.pos.x >= WINDOW_WIDTH:
-        hideCurrentEnemies()
-        player1.changeRoomRight()
-
-    if player1.pos.y <= 0:
-        hideCurrentEnemies()
-        player1.changeRoomUp()
-
-    if player1.pos.y >= WINDOW_HEIGHT:
-        hideCurrentEnemies()
-        player1.changeRoomDown()
 
     # Random enemy movement for testing purposes
     for enemy in all_enemies:
@@ -1610,7 +1611,7 @@ while running:
 
     # Regenerate health for testing purposes
     for a_player in all_players:
-        if anim_timer % 5 == 0 and a_player.hp < a_player.max_hp and isInputHeld['MMB']:
+        if anim_timer % 5 == 0 and a_player.hp < a_player.max_hp and isInputHeld[1]:
             a_player.hp += 2
 
     #------------------------------ Redraw window ------------------------------#
