@@ -65,6 +65,10 @@ class EnemyBase(ActorBase):
         self.defense = None
         self.xp_worth = None
 
+class WallBase(ActorBase):
+    def __init__(self):
+        super().__init__()
+
 class PortalBase(ActorBase):
     def __init__(self):
         super().__init__()

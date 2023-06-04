@@ -999,7 +999,7 @@ class ProjExplode(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = self.rect.center)
 
 #------------------------------ Wall class ------------------------------#
-class Wall(pygame.sprite.Sprite):
+class Wall(WallBase):
     def __init__(self, topleftX_mult, topleftY_mult, widthMult, heightMult):
         super().__init__()
         all_sprites.add(self, layer = LAYERS['wall_layer'])
@@ -1016,6 +1016,10 @@ class Wall(pygame.sprite.Sprite):
 
     def update(self):
         self.rect.center = self.pos
+
+class MovingWall(WallBase):
+    def __init__(self):
+        super().__init__()
 
 #------------------------------ Room class ------------------------------#
 class Room(AbstractBase):
@@ -1158,7 +1162,7 @@ class InventoryMenu(AbstractBase):
         slot_count = 0
         for y in range(5):
             for x in range(5):
-                menu_slots.append(MenuSlot(400 + space.x, 100 + space.y, MATERIALS[slot_count]))
+                menu_slots.append(MenuSlot(400 + space.x, 100 + space.y, MATERIALS[slot_count], 1, 0))
                 space.x += 64 * space_scale.x
             space.y += 64 * space_scale.y
             space.x = 0
@@ -1281,13 +1285,15 @@ class LeftMenuArrow(pygame.sprite.Sprite):
         self.hover()
 
 class MenuSlot(pygame.sprite.Sprite):
-    def __init__(self, posX, posY, item_held):
+    def __init__(self, posX, posY, item_held, num_frames, frame_offset):
         """A menu slot that shows the collected amount of a specific item
         
         ### Parameters
             - posX (``float``): The x-position to spawn at
             - posY (``float``): The y-position to spawn at
-            - item_held (``str``): The item the menu slot will hold
+            - item_held (``str``): The item the menu slot will hold. Items are chosen from ``MATERIALS`` dictionary.
+            - num_frames (``int``): The number of animation frames the item has
+            - frame_offset (``int``): Where the first frame of the animation begins. (0 = first image of sprite sheet)
         """
         super().__init__()
         all_slots.add(self)
@@ -1295,12 +1301,26 @@ class MenuSlot(pygame.sprite.Sprite):
         self.holding = item_held
         self.count = 0
 
-        self.spritesheet = Spritesheet("sprites/ui/menu_item_slot.png")
+        self.menusheet = Spritesheet("sprites/ui/menu_item_slot.png")
         self.itemsheet = Spritesheet("sprites/textures/item_drops.png")
-        self.images = self.spritesheet.get_images(0, 0, 64, 64, 1)
+        menu_imgs = self.menusheet.get_images(0, 0, 64, 64, 1)
+        item_imgs = self.itemsheet.get_images(0, 0, 32, 32, num_frames, frame_offset)
         self.index = 0
 
+        menu_img = menu_imgs[0]
+
+        # Combining the menu slot image and the item images to make a new sprite animation
+        self.images = []
+        for frame in item_imgs:
+            new_img = pygame.Surface(vec(max(menu_img.get_width(), frame.get_width()), max(menu_img.get_height(), frame.get_height())))
+            new_img.blit(menu_img, vec(0, 0))
+            center_x = (new_img.get_width() - frame.get_width()) // 2
+            center_y = (new_img.get_height() - frame.get_height()) // 2
+            new_img.blit(frame, vec(center_x, center_y))
+            new_img.set_colorkey((0, 0, 0))
+            self.images.append(new_img)
         self.image = self.images[self.index]
+
         self.rect = self.image.get_rect()
         self.hitbox = pygame.Rect(0, 0, 64, 64)
 
@@ -1311,7 +1331,7 @@ class MenuSlot(pygame.sprite.Sprite):
         if self.hitbox.collidepoint(pygame.mouse.get_pos()):
             s_time = time.time()
             scale = abs(sin(s_time)) / 2
-            self.image = pygame.transform.smoothscale_by(self.images[self.index], 1 + scale)
+            self.image = pygame.transform.scale_by(self.images[self.index], 1 + scale)
             self.rect = self.image.get_rect(center = self.rect.center)
 
         else:
@@ -1349,7 +1369,7 @@ class DamageChar(pygame.sprite.Sprite):
         self.pos = vec((posX, posY))
         self.vel = vec(0, -2)
 
-        self.timeStart = anim_timer
+        self.start_time = time.time()
 
         width = 9
         height = 14
@@ -1380,7 +1400,7 @@ class DamageChar(pygame.sprite.Sprite):
 
     def update(self):
         global anim_timer
-        if anim_timer == self.timeStart + 40:
+        if time.time() - self.start_time > 0.75:
             self.kill()
 
 #------------------------------ Redraw game window ------------------------------#
