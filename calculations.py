@@ -251,6 +251,25 @@ def initStats(sprite, hp, attack, defense, xp, accel_const):
     sprite.xp_worth = xp
     sprite.accel_const = accel_const
 
+def swapColor(image, old_color, new_color):
+    """Swaps one color of a sprite with another
+    
+    ### Parameters
+        - image (``pygame.Surface``): The image to swap a color within
+        - old_color (``tuple``): The color being replaced
+        - new_color (``tuple``): The new color replacing the old color
+    
+    ### Returns
+        - ``pygame.Surface``: The image with swapped colors
+    """    
+    new_img = image.copy()
+    for x in range(new_img.get_width()):
+        for y in range(new_img.get_height()):
+            current_color = new_img.get_at((x, y))
+            if current_color == old_color:
+                new_img.set_at((x, y), new_color)
+    return new_img
+
 #------------------------------ Classes ------------------------------#
 class CustomError(Exception):
     """Returns a custom error

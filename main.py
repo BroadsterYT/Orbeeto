@@ -1185,13 +1185,10 @@ class InventoryMenu(AbstractBase):
                 menu_slots.append(MenuSlot(400 + space.x, 100 + space.y, MATERIALS[slot_count], 1, offset))
                 space.x += 64 * space_scale.x
                 offset += 1
+                slot_count += 1
             space.y += 64 * space_scale.y
             space.x = 0
-            slot_count += 1
         return menu_slots
-
-    def destroyMenuSlots(self):
-        killGroup(all_slots)
 
     def update(self):
         global can_update
@@ -1310,22 +1307,13 @@ class MenuSlot(pygame.sprite.Sprite):
 
         self.menusheet = Spritesheet("sprites/ui/menu_item_slot.png")
         self.itemsheet = Spritesheet("sprites/textures/item_drops.png")
-        menu_imgs = self.menusheet.get_images(0, 0, 64, 64, 1)
-        item_imgs = self.itemsheet.get_images(0, 0, 32, 32, num_frames, frame_offset)
+        self.menu_imgs = self.menusheet.get_images(0, 0, 64, 64, 1)
+        self.item_imgs = self.itemsheet.get_images(0, 0, 32, 32, num_frames, frame_offset)
         self.index = 0
 
-        menu_img = menu_imgs[0]
+        self.menu_img = self.menu_imgs[0]
 
-        # Combining the menu slot image and the item images to make a new sprite animation
-        self.images = []
-        for frame in item_imgs:
-            new_img = pygame.Surface(vec(max(menu_img.get_width(), frame.get_width()), max(menu_img.get_height(), frame.get_height())))
-            new_img.blit(menu_img, vec(0, 0))
-            center_x = (new_img.get_width() - frame.get_width()) // 2
-            center_y = (new_img.get_height() - frame.get_height()) // 2
-            new_img.blit(frame, vec(center_x, center_y))
-            new_img.set_colorkey((0, 0, 0))
-            self.images.append(new_img)
+        self.images = self.createSlotImages()
         self.image = self.images[self.index]
 
         self.rect = self.image.get_rect()
@@ -1345,10 +1333,47 @@ class MenuSlot(pygame.sprite.Sprite):
             self.image = self.images[self.index]
             self.rect = self.image.get_rect(center = self.rect.center)
 
-    def update_inventory(self):
-        pass
+    def createSlotImages(self):
+        """Combines the menu slot image with the images of the item and adds the player's collected amount of that item on top
         
+        ### Returns
+            - ``list``: A list of the created images
+        """        
+        final_images = []
+        for frame in self.item_imgs:
+            # Combining menu image and item images
+            new_img = pygame.Surface(vec(max(self.menu_img.get_width(), frame.get_width()), max(self.menu_img.get_height(), frame.get_height())))
+            new_img.blit(self.menu_img, vec(0, 0))
+            center_x = (new_img.get_width() - frame.get_width()) // 2
+            center_y = (new_img.get_height() - frame.get_height()) // 2
+            new_img.blit(frame, vec(center_x, center_y))
+
+            # Adding the count of the item to its images
+            char_sheet = Spritesheet("sprites/ui/font.png")
+            chars = char_sheet.get_images(0, 0, 9, 14, 36)
+            width, height = 9, 14
+            
+            charList = []
+            for char in str(self.count):
+                charList.append(chars[int(char) + 26])
+            
+            count_surface = pygame.Surface([width * len(charList), height]).convert()
+
+            len_count = 0
+            for surface in charList:
+                count_surface.blit(surface, (width * len_count, 0), (0, 0, 9, 14))
+                len_count += 1
+
+            count_surface.set_colorkey((0, 0, 0))
+            new_img.set_colorkey((0, 0, 0))
+            new_img.blit(swapColor(swapColor(count_surface, (44, 44, 44), (156, 156, 156)), (0, 0, 1), (255, 255, 255)), vec(center_x, center_y))
+            final_images.append(new_img)
+
+        return final_images
+
     def update(self):
+        self.count = player1.inventory.storage[self.holding]
+        self.images = self.createSlotImages()
         self.hover()
 
 #------------------------------ Font class ------------------------------#
@@ -1395,7 +1420,7 @@ class DamageChar(pygame.sprite.Sprite):
         self.rect = pygame.Rect(0, 0, 9, 14)
 
         self.image = new_surface
-        self.image.set_colorkey((255, 255, 255))
+        self.image.set_colorkey((0, 0, 0))
         self.rect = self.image.get_rect(center = self.rect.center)
         self.rect.center = self.pos
 
