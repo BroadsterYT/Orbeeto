@@ -1155,23 +1155,11 @@ class InventoryMenu(AbstractBase):
         self.storage = {}
         for item in MATERIALS.values():
             self.storage.update({item: 0})
-
-        space = vec(0, 0)
-        space_scale = vec(1.5, 1.5)
-        menu_slots = []
-        slot_count = 0
-        for y in range(5):
-            for x in range(5):
-                menu_slots.append(MenuSlot(400 + space.x, 100 + space.y, MATERIALS[slot_count], 1, 0))
-                space.x += 64 * space_scale.x
-            space.y += 64 * space_scale.y
-            space.x = 0
-            slot_count += 1
         
         self.add(
             RightMenuArrow(1206, WINDOW_HEIGHT / 2),
             LeftMenuArrow(64, WINDOW_HEIGHT / 2),
-            menu_slots
+            self.buildMenuSlots()
         )
 
     def hide(self):
@@ -1185,6 +1173,25 @@ class InventoryMenu(AbstractBase):
         """        
         for sprite in self.sprites():
             all_sprites.add(sprite, layer = LAYERS['ui_layer_1'])
+
+    def buildMenuSlots(self):
+        space = vec(0, 0)
+        space_scale = vec(1.5, 1.5)
+        menu_slots = []
+        slot_count = 0
+        offset = 0
+        for y in range(5):
+            for x in range(5):
+                menu_slots.append(MenuSlot(400 + space.x, 100 + space.y, MATERIALS[slot_count], 1, offset))
+                space.x += 64 * space_scale.x
+                offset += 1
+            space.y += 64 * space_scale.y
+            space.x = 0
+            slot_count += 1
+        return menu_slots
+
+    def destroyMenuSlots(self):
+        killGroup(all_slots)
 
     def update(self):
         global can_update
