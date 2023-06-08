@@ -1,6 +1,6 @@
 #------------------------------ Window ------------------------------#
-WINDOW_WIDTH = 1280
-WINDOW_HEIGHT = 720
+WIN_WIDTH = 1280
+WIN_HEIGHT = 720
 FPS = 60
 
 #------------------------------ Directions ------------------------------#
@@ -28,9 +28,43 @@ LAYERS = {
     'ui_layer_1': 200
 }
 
-MATERIALS = {
+#------------------------------ Object Movement ------------------------------#
+# The coefficient of friction for all objects with an acceleration parameter
+FRIC = -0.07
+
+#------------------------------ Projectiles ------------------------------#
+PROJ_P_STD = 'playerBullet'
+PROJ_P_BOUNCE = 'playerBouncy'
+PROJ_P_PORTAL = 'playerPortal'
+
+PROJ_E_STD = 'enemyBullet'
+
+# A dictionary that stores all damage constants of all projectile types
+PROJS = {
+    PROJ_P_STD: 1,
+    PROJ_P_BOUNCE: 1,
+    PROJ_P_PORTAL: 15,
+    PROJ_E_STD: 1,
+}
+
+SHOOT_RIGHT = 'right'
+SHOOT_LEFT = 'left'
+SHOOT_MIDDLE = 'middle'
+SHOOT_BOTH = 'leftright'
+
+
+'''
+╭──────────────────────────────────────────╮
+│                                          │
+│               Loot Tables                │
+│                                          │
+╰──────────────────────────────────────────╯
+'''
+
+# Dictionary of all materials in the game
+MAT = {
     0: 'itemdrop_metalscrap_000',
-    1: 'itemdrop_placeholder_001',
+    1: 'itemdrop_bolt_001',
     2: 'itemdrop_placeholder_002',
     3: 'itemdrop_placeholder_003',
     4: 'itemdrop_placeholder_004',
@@ -56,26 +90,13 @@ MATERIALS = {
     24: 'itemdrop_placeholder_024',
 }
 
-#------------------------------ Object Movement ------------------------------#
-# The coefficient of friction for all objects with an acceleration parameter
-FRIC = -0.07
-
-#------------------------------ Projectiles ------------------------------#
-PROJ_P_STD = 'playerBullet'
-PROJ_P_BOUNCE = 'playerBouncy'
-PROJ_P_PORTAL = 'playerPortal'
-
-PROJ_E_STD = 'enemyBullet'
-
-# A dictionary that stores all damage constants of all projectile types
-PROJS = {
-    PROJ_P_STD: 1,
-    PROJ_P_BOUNCE: 1,
-    PROJ_P_PORTAL: 15,
-    PROJ_E_STD: 1,
+# All loot tables and their drops
+LTDROPS = {
+    0: [[(MAT[0],), (MAT[0],), (MAT[0],),], # Standard Grunt
+        [(MAT[0],), (MAT[0],), (MAT[0], MAT[0]),],
+        [(MAT[0],), (MAT[0], MAT[0],), (MAT[0], MAT[0],),],],
+    
+    1: [[(MAT[0],), (MAT[0],), (MAT[1],),], # Octogrunt
+        [(MAT[0],), (MAT[0],), (MAT[1],),],
+        [(MAT[1],), (MAT[0], MAT[1],), (MAT[1], MAT[1],),],],
 }
-
-SHOOT_RIGHT = 'right'
-SHOOT_LEFT = 'left'
-SHOOT_MIDDLE = 'middle'
-SHOOT_BOTH = 'leftright'

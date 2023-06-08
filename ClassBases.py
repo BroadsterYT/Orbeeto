@@ -26,7 +26,7 @@ class ActorBase(pygame.sprite.Sprite):
         """Makes the sprite visible. The sprite's ``update()`` method will be called.
         
         ### Parameters
-            - ``layer_send`` ``(int)``: The layer the sprite should be added to
+            - layer_send (``str``): The layer the sprite should be added to
         """        
         self.visible = True
         all_sprites.add(self, layer = layer_send)
@@ -45,26 +45,6 @@ class AbstractBase(pygame.sprite.AbstractGroup):
         for sprite in sprites:
             super().add(sprite)
 
-class EnemyBase(ActorBase):
-    def __init__(self):
-        """The base class for all enemy objects. It contains parameters and methods to gain better control over enemy objects.
-        """    
-        super().__init__()
-        self.pos = vec((0, 0))
-        self.vel = vec(0, 0)
-        self.accel = vec(0, 0)
-
-        self.is_shooting = False
-
-        #-------------------- In-game Stats --------------------#
-        self.max_hp = None
-        self.hp = None
-        self.max_attack = None
-        self.attack = None
-        self.max_defense = None
-        self.defense = None
-        self.xp_worth = None
-
 class WallBase(ActorBase):
     def __init__(self):
         super().__init__()
@@ -75,16 +55,16 @@ class PortalBase(ActorBase):
         self.visible = True
     
     def changeRoomRight(self):
-        self.pos.x -= WINDOW_WIDTH
+        self.pos.x -= WIN_WIDTH
 
     def changeRoomLeft(self):
-        self.pos.x += WINDOW_WIDTH
+        self.pos.x += WIN_WIDTH
 
     def changeRoomUp(self):
-        self.pos.y += WINDOW_HEIGHT
+        self.pos.y += WIN_HEIGHT
 
     def changeRoomDown(self):
-        self.pos.y -= WINDOW_HEIGHT
+        self.pos.y -= WIN_HEIGHT
 
 class StatBarBase(ActorBase):
     def __init__(self):

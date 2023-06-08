@@ -1,4 +1,4 @@
-import pygame
+import pygame, pygame.font
 from pygame.locals import *
 
 pygame.init()
@@ -6,7 +6,7 @@ pygame.init()
 import sys, math, time
 import random as rand
 
-from math import sin, cos, radians, degrees, floor
+from math import sin, cos, radians, degrees, floor, pi
 
 from Init import can_update, keyReleased
 from Calculations import *
@@ -24,7 +24,7 @@ deg = degrees
 
 clock = pygame.time.Clock()
 
-screenSize = (WINDOW_WIDTH, WINDOW_HEIGHT)
+screenSize = (WIN_WIDTH, WIN_HEIGHT)
 screen = pygame.display.set_mode(screenSize, pygame.SCALED)
 pygame.display.set_caption('Orbeeto')
 
@@ -197,7 +197,7 @@ class PlayerBase(ActorBase):
         super().__init__()
         self.room = vec((0, 0))
 
-        self.pos = vec((WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2))
+        self.pos = vec((WIN_WIDTH / 2, WIN_HEIGHT / 2))
         self.accel_const = 0.52
 
         self.room = vec((0, 0))
@@ -219,16 +219,20 @@ class PlayerBase(ActorBase):
 
         self.updateMaxStats()
 
-        self.inventory = InventoryMenu(self)
+        self.menu = InventoryMenu()
         self.healthBar = HealthBar(self)
         self.dodgeBar = DodgeBar(self)
+
+        self.inventory = {}
+        for item in MAT.values():
+            self.inventory.update({item: 0})
 
     def changeRoomRight(self):
         """Relocates the player one room to the right. This ``kill()``s all projectiles and explosions in the current room."""        
         room.room.x += 1
         room.layoutUpdate()
         
-        self.pos.x -= WINDOW_WIDTH
+        self.pos.x -= WIN_WIDTH
         groupChangeRooms(all_portals, RIGHT)
         
         killGroup(all_projs, all_explosions)
@@ -238,7 +242,7 @@ class PlayerBase(ActorBase):
         room.room.x -= 1
         room.layoutUpdate()
 
-        self.pos.x += WINDOW_WIDTH
+        self.pos.x += WIN_WIDTH
         groupChangeRooms(all_portals, LEFT)
 
         killGroup(all_projs, all_explosions)
@@ -248,7 +252,7 @@ class PlayerBase(ActorBase):
         room.room.y += 1
         room.layoutUpdate()
 
-        self.pos.y += WINDOW_HEIGHT
+        self.pos.y += WIN_HEIGHT
         groupChangeRooms(all_portals, UP)
 
         killGroup(all_projs, all_explosions)
@@ -258,7 +262,7 @@ class PlayerBase(ActorBase):
         room.room.y -= 1
         room.layoutUpdate()
 
-        self.pos.y -= WINDOW_HEIGHT
+        self.pos.y -= WIN_HEIGHT
         groupChangeRooms(all_portals, DOWN)
 
         killGroup(all_projs, all_explosions)
@@ -311,7 +315,7 @@ class PlayerBase(ActorBase):
             hideCurrentEnemies()
             self.changeRoomLeft()
 
-        if self.pos.x >= WINDOW_WIDTH:
+        if self.pos.x >= WIN_WIDTH:
             hideCurrentEnemies()
             self.changeRoomRight()
 
@@ -319,14 +323,13 @@ class PlayerBase(ActorBase):
             hideCurrentEnemies()
             self.changeRoomUp()
 
-        if player1.pos.y >= WINDOW_HEIGHT:
+        if player1.pos.y >= WIN_HEIGHT:
             hideCurrentEnemies()
             self.changeRoomDown()
 
 class Player(PlayerBase):
     def __init__(self):
-        """A player sprite that can move and shoot.
-        """        
+        """A player sprite that can move and shoot."""        
         super().__init__()
         all_players.add(self)
         self.show(LAYERS['player_layer'])
@@ -419,9 +422,7 @@ class Player(PlayerBase):
             if self.hitTime < self.hitTime_charge:
                 self.hitTime += 1
 
-            self.image = self.images[self.index]
             self.original_image = self.original_images[self.index]
-
             self.image = pygame.transform.rotate(self.original_image, int(getAngleToMouse(self)))
             self.rect = self.image.get_rect(center = self.rect.center)
 
@@ -433,8 +434,36 @@ class Player(PlayerBase):
             self.kill()
 
 #------------------------------ Enemy classes ------------------------------#
+class EnemyBase(ActorBase):
+    def __init__(self):
+        """The base class for all enemy objects. It contains parameters and methods to gain better control over enemy objects."""    
+        super().__init__()
+        self.pos = vec((0, 0))
+        self.vel = vec(0, 0)
+        self.accel = vec(0, 0)
+
+        self.is_shooting = False
+
+        #-------------------- In-game Stats --------------------#
+        self.max_hp = None
+        self.hp = None
+        self.max_attack = None
+        self.attack = None
+        self.max_defense = None
+        self.defense = None
+        self.xp_worth = None
+
+    def dropItems(self, table_index):
+        drops = LTDROPS[table_index]
+        row = rand.randint(0, 2)
+        column = rand.randint(0, 2)
+        
+        for item in drops[row][column]:
+            ItemDrop(self, item)
+            print(item)
+
 class StandardGrunt(EnemyBase):
-    def __init__(self, posX, posY, roomX, roomY):
+    def __init__(self, posX, posY):
         """A simple enemy that moves to random locations and shoots at random intervals
 
         Parameters
@@ -473,22 +502,20 @@ class StandardGrunt(EnemyBase):
         self.rect = pygame.Rect(0, 0, 64, 64)
         self.hitbox = self.rect.inflate(-32, -32)
 
-        self.room = vec((roomX, roomY))
-
         #---------------------- Physics ----------------------#
         self.pos = vec((posX, posY))
-        self.rand_pos = vec(rand.randint(0, WINDOW_WIDTH), rand.randint(0, WINDOW_HEIGHT))
+        self.rand_pos = vec(rand.randint(0, WIN_WIDTH), rand.randint(0, WIN_HEIGHT))
 
         #---------------------- Game stats & UI ----------------------#
         initStats(self, 15, 10, 10, 25, 0.4)
         self.healthBar = HealthBar(self)
 
     def movement(self, canShoot):
-        if self.hp > 0 and self.visible == True:
+        if self.hp > 0 and self.visible == True and can_update:
             global anim_timer
             if anim_timer % rand.randint(150, 200) == 0:
-                self.rand_pos.x = rand.randint(self.image.get_width() + 64, WINDOW_WIDTH - self.image.get_width() - 64)
-                self.rand_pos.y = rand.randint(self.image.get_height() + 64, WINDOW_HEIGHT - self.image.get_height() - 64)
+                self.rand_pos.x = rand.randint(self.image.get_width() + 64, WIN_WIDTH - self.image.get_width() - 64)
+                self.rand_pos.y = rand.randint(self.image.get_height() + 64, WIN_HEIGHT - self.image.get_height() - 64)
 
             if self.pos.x != (self.rand_pos.x) or self.pos.y != (self.rand_pos.y):
                 if self.pos.x < self.rand_pos.x - 32:
@@ -517,16 +544,17 @@ class StandardGrunt(EnemyBase):
         if anim_timer % shoot_time == 0 and self.hp > 0:
             self.is_shooting = True
             try:
-                angle_to_mouse = getAngleToSprite(self, target)
+                angle_to_target = getAngleToSprite(self, target)
             except:
-                angle_to_mouse = 0
+                angle_to_target = 0
 
-            vel_x = vel * -sin(rad(angle_to_mouse))
-            vel_y = vel * -cos(rad(angle_to_mouse))
+            vel_x = vel * -sin(rad(angle_to_target))
+            vel_y = vel * -cos(rad(angle_to_target))
 
-            enemy_projs.add(Projectile(self, self.pos.x - (21 * cos(rad(angle_to_mouse))) - (30 * sin(rad(angle_to_mouse))), self.pos.y + (21 * sin(rad(angle_to_mouse))) - (30 * cos(rad(angle_to_mouse))), vel_x, vel_y, bulletType))
+            enemy_projs.add(Projectile(self, self.pos.x - (21 * cos(rad(angle_to_target))) - (30 * sin(rad(angle_to_target))), self.pos.y + (21 * sin(rad(angle_to_target))) - (30 * cos(rad(angle_to_target))), vel_x, vel_y, bulletType))
 
     def update(self):
+        self.movement(True)
         global anim_timer
         if anim_timer % 5 == 0:
             if self.is_shooting == True:
@@ -535,7 +563,7 @@ class StandardGrunt(EnemyBase):
                     self.index = 0
                     self.is_shooting = False
 
-        self.image = self.images[self.index]
+        # self.image = self.images[self.index]
         self.original_image = self.original_images[self.index]
 
         # Rotate sprite to player
@@ -545,17 +573,17 @@ class StandardGrunt(EnemyBase):
 
         # Kill enemy if their HP reaches 0
         if self.hp <= 0:
-            ItemDrop(self, MATERIALS[0], 0, 1)
+            self.dropItems(0)
             awardXp(self)
             self.kill()
 
 class OctoGrunt(EnemyBase):
-    def __init__(self, posX, posY, roomX, roomY):
+    def __init__(self, posX, posY):
         super().__init__()
         all_sprites.add(self, layer = LAYERS['enemy_layer'])
         all_enemies.add(self)
 
-        self.spritesheet = Spritesheet("sprites/enemies/standard_grunt.png")
+        self.spritesheet = Spritesheet("sprites/enemies/octogrunt.png")
         self.images = self.spritesheet.get_images(0, 0, 64, 64, 5)
         self.original_images = self.spritesheet.get_images(0, 0, 64, 64, 5)
         self.index = 0
@@ -566,23 +594,21 @@ class OctoGrunt(EnemyBase):
         self.rect = pygame.Rect(0, 0, 64, 64)
         self.hitbox = self.rect.inflate(-32, -32)
 
-        self.room = vec((roomX, roomY))
-
         self.pos = vec((posX, posY))
-        self.rand_pos = vec(rand.randint(0, WINDOW_WIDTH), rand.randint(0, WINDOW_HEIGHT))
+        self.rand_pos = vec(rand.randint(0, WIN_WIDTH), rand.randint(0, WIN_HEIGHT))
 
         #---------------------- Game stats & UI ----------------------#
         initStats(self, 44, 10, 10, 45, 0.4)
         self.healthBar = HealthBar(self)
 
     def movement(self, canShoot):
-        if self.hp > 0 and self.visible:
+        if self.hp > 0 and self.visible and can_update:
             objectAccel(self)
 
             global anim_timer
             if anim_timer % rand.randint(250, 300) == 0:
-                self.rand_pos.x = rand.randint(0, WINDOW_WIDTH)
-                self.rand_pos.y = rand.randint(0, WINDOW_HEIGHT)
+                self.rand_pos.x = rand.randint(0, WIN_WIDTH)
+                self.rand_pos.y = rand.randint(0, WIN_HEIGHT)
 
             if self.pos.x != (self.rand_pos.x) or self.pos.y != (self.rand_pos.y):
                 if self.pos.x < self.rand_pos.x - 32:
@@ -600,7 +626,7 @@ class OctoGrunt(EnemyBase):
                     self.accel.y = 0
             
             if canShoot == True:
-                self.shoot(getClosestPlayer(enemy), 5, 80, PROJ_P_STD)
+                self.shoot(getClosestPlayer(self), 5, 80, PROJ_P_STD)
             else:
                 pass
 
@@ -630,6 +656,7 @@ class OctoGrunt(EnemyBase):
             )
 
     def update(self):
+        self.movement(True)
         global anim_timer
         if anim_timer % 5 == 0:
             if self.is_shooting == True:
@@ -652,6 +679,55 @@ class OctoGrunt(EnemyBase):
 
         # Kill enemy if their HP reaches 0
         if self.hp <= 0:
+            self.dropItems(1)
+            awardXp(self)
+            self.kill()
+
+class Ambusher(EnemyBase):
+    def __init__(self, posX, posY):
+        super().__init__()
+        self.show(LAYERS['enemy_layer'])
+        all_enemies.add(self)
+
+        self.spritesheet = Spritesheet("sprites/enemies/standard_grunt.png")
+        self.images = self.spritesheet.get_images(0, 0, 64, 64, 5)
+        self.original_images = self.spritesheet.get_images(0, 0, 64, 64, 5)
+        self.index = 0
+
+        self.image = self.images[self.index]
+        self.original_image = self.original_images[self.index]
+        
+        self.rect = pygame.Rect(0, 0, 64, 64)
+        self.hitbox = self.rect.inflate(-32, -32)
+
+        #---------------------- Physics ----------------------#
+        self.pos = vec((posX, posY))
+        
+        self.last_dash = time.time()
+
+        #---------------------- Game stats & UI ----------------------#
+        initStats(self, 15, 10, 10, 25, 0.4)
+        self.healthBar = HealthBar(self)
+
+    def movement(self, canShoot):
+        if self.hp > 0 and self.visible:
+            if time.time() - self.last_dash > 3:
+                target = getClosestPlayer(self)
+                self.image = self.images[self.index]
+                self.original_image = self.original_images[self.index]
+
+                self.last_dash = time.time()
+            objectAccel(self)
+
+    def update(self):
+        self.movement(False)
+
+        self.rect = self.image.get_rect(center = self.pos)
+        self.hitbox.center = self.pos
+
+        # Kill enemy if their HP reaches 0
+        if self.hp <= 0:
+            self.dropItems(1)
             awardXp(self)
             self.kill()
 
@@ -702,7 +778,7 @@ class DropBase(ActorBase):
         self.accel_const = 0.8
 
 class ItemDrop(DropBase):
-    def __init__(self, dropped_from, item_name, item_frame_start, image_count):
+    def __init__(self, dropped_from, item_name):
         """An item or material dropped by an enemey that is able to be collected
         
         ### Parameters
@@ -715,27 +791,40 @@ class ItemDrop(DropBase):
         self.show(LAYERS['drops_layer'])
         all_drops.add(self)
         self.droppedFrom = dropped_from
-        self.type = item_name
+        self.mat = item_name
 
         self.start_time = time.time()
         self.pos = vec(self.droppedFrom.pos.x, self.droppedFrom.pos.y)
         self.randAccel = getRandComponents(self.accel_const)
         
         self.spritesheet = Spritesheet("sprites/textures/item_drops.png")
-        self.images = self.spritesheet.get_images(0, 0, 32, 32, image_count, item_frame_start)
         self.index = 0
+
+        if self.mat == MAT[0]:
+            self.original_images = self.spritesheet.get_images(0, 0, 32, 32, 1, 0)
+            self.images = self.spritesheet.get_images(0, 0, 32, 32, 1, 0)
+        elif self.mat == MAT[1]:
+            self.original_images = self.spritesheet.get_images(0, 0, 32, 32, 1, 1)
+            self.images = self.spritesheet.get_images(0, 0, 32, 32, 1, 1)
 
         self.image = self.images[self.index]
         self.rect = pygame.Rect(0, 0, 32, 32)
         self.hitbox = pygame.Rect(0, 0, 64, 64)
 
+        self.period_mult = rand.uniform(0.5, 1.5)
+
     def movement(self):
         self.accel = vec(0, 0)
-        now_time = time.time()
         if self.visible:
-            if now_time - self.start_time <= 0.1:
+            time_since_start = time.time() - self.start_time
+            if time_since_start <= 0.1:
                 self.accel.x = self.randAccel.x
                 self.accel.y = self.randAccel.y
+            
+            if time_since_start <= 10:
+                self.original_image = self.original_images[self.index]
+                self.image = pygame.transform.rotate(self.original_image, int(degrees(sin(self.period_mult * pi * time_since_start) * (1 / time_since_start))))
+                self.rect = self.image.get_rect(center = self.rect.center)
             
             objectAccel(self)
         
@@ -743,8 +832,9 @@ class ItemDrop(DropBase):
         self.hitbox.center = self.pos
 
     def update(self):
+        self.movement()
         if self.hitbox.colliderect(player1):
-            player1.inventory.storage[self.type] += 1
+            player1.inventory[self.mat] += 1
             self.kill()
 
 #------------------------------ Projectile class ------------------------------#
@@ -1013,10 +1103,6 @@ class Wall(WallBase):
     def update(self):
         self.rect.center = self.pos
 
-class MovingWall(WallBase):
-    def __init__(self):
-        super().__init__()
-
 #------------------------------ Room class ------------------------------#
 class Room(AbstractBase):
     def __init__(self, roomX, roomY):
@@ -1054,7 +1140,8 @@ class Room(AbstractBase):
                 all_containers.append(
                     EntityContainer(
                         self.room.x, self.room.y,
-                        Box(800, WINDOW_HEIGHT / 2)
+                        Box(800, WIN_HEIGHT / 2),
+                        Ambusher(500, 500)
                     )
                 )
 
@@ -1073,7 +1160,8 @@ class Room(AbstractBase):
                 all_containers.append(
                     EntityContainer(
                         self.room.x, self.room.y,
-                        StandardGrunt(WINDOW_WIDTH/2, WINDOW_HEIGHT/2, self.room.x, self.room.y)
+                        StandardGrunt(WIN_WIDTH / 2, WIN_HEIGHT / 2),
+                        StandardGrunt(WIN_WIDTH / 2, WIN_HEIGHT / 2),
                     )
                 )
 
@@ -1094,12 +1182,10 @@ class Room(AbstractBase):
                 all_containers.append(
                     EntityContainer(
                         self.room.x, self.room.y,
-                        OctoGrunt(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, self.room.x, self.room.y)
+                        OctoGrunt(WIN_WIDTH / 2, WIN_HEIGHT / 2),
+                        OctoGrunt(WIN_WIDTH / 2, WIN_HEIGHT / 2)
                     )
                 )
-
-    def update(self):
-        pass
 
 class EntityContainer(AbstractBase):
     def __init__(self, roomX, roomY, *sprites):
@@ -1129,10 +1215,10 @@ def hideCurrentEnemies():
                 sprite.hide()
 
 def showEnemies(container):
-    """Shows all the enemies within an enemy container.
+    """Shows all the enemies within an enemy container
     
     ### Parameters
-        - ``container`` ``(pygame.sprite.AbstractGroup)``: The enemy container to unhide
+        - container (``pygame.sprite.AbstractGroup``): The enemy container to unhide
     """    
     for sprite in container.sprites():
         sprite.show(LAYERS['enemy_layer'])
@@ -1141,7 +1227,7 @@ def showEnemies(container):
 
 #------------------------------ UI classes ------------------------------#
 class InventoryMenu(AbstractBase):
-    def __init__(self, owner):
+    def __init__(self):
         """A menu used to view collected items and utilize them for various purposes
         
         ### Parameters
@@ -1149,15 +1235,10 @@ class InventoryMenu(AbstractBase):
         """        
         super().__init__()
         self.last_time = time.time()
-        self.owner = owner
-
-        self.storage = {}
-        for item in MATERIALS.values():
-            self.storage.update({item: 0})
         
         self.add(
-            RightMenuArrow(1206, WINDOW_HEIGHT / 2),
-            LeftMenuArrow(64, WINDOW_HEIGHT / 2),
+            RightMenuArrow(WIN_WIDTH - 16, WIN_HEIGHT / 2),
+            LeftMenuArrow(80, WIN_HEIGHT / 2),
             self.buildMenuSlots()
         )
 
@@ -1173,17 +1254,17 @@ class InventoryMenu(AbstractBase):
 
     def buildMenuSlots(self):
         space = vec(0, 0)
-        space_scale = vec(1.5, 1.5)
+        space_cushion = vec(82, 82)
         menu_slots = []
         slot_count = 0
         offset = 0
         for y in range(5):
             for x in range(5):
-                menu_slots.append(MenuSlot(400 + space.x, 100 + space.y, MATERIALS[slot_count], 1, offset))
-                space.x += 64 * space_scale.x
+                menu_slots.append(MenuSlot(64 + space.x, 64 + space.y, MAT[slot_count], 1, offset))
+                space.x += space_cushion.x
                 offset += 1
                 slot_count += 1
-            space.y += 64 * space_scale.y
+            space.y += space_cushion.y
             space.x = 0
         return menu_slots
 
@@ -1213,7 +1294,7 @@ class RightMenuArrow(pygame.sprite.Sprite):
         self.images = self.spritesheet.get_images(0, 0, 64, 64, 61)
         self.index = 1
 
-        self.image = pygame.transform.scale(self.images[self.index], (128, 128))
+        self.image = pygame.transform.scale(self.images[self.index], (64, 64))
         
         self.rect = pygame.Rect(posX - 32, posY - 32, 128, 128)
         self.hitbox = pygame.Rect(posX - 32, posY - 32, 128, 128)
@@ -1235,7 +1316,7 @@ class RightMenuArrow(pygame.sprite.Sprite):
             if self.index > 60:
                 self.index = 1
             
-            self.image = pygame.transform.scale(self.images[self.index], (128, 128))
+            self.image = pygame.transform.scale(self.images[self.index], (64, 64))
             self.index += 1
 
         self.hover()
@@ -1257,7 +1338,7 @@ class LeftMenuArrow(pygame.sprite.Sprite):
         self.index = 1
 
         self.image = self.images[self.index]
-        self.image = pygame.transform.scale(self.image, (128, 128))
+        self.image = pygame.transform.scale(self.image, (64, 64))
         self.image = pygame.transform.flip(self.image, True, False)
         
         self.rect = pygame.Rect(posX - 32, posY - 32, 128, 128)
@@ -1280,7 +1361,7 @@ class LeftMenuArrow(pygame.sprite.Sprite):
             if self.index >= 61:
                 self.index = 1
             
-            self.image = pygame.transform.flip(pygame.transform.scale(self.images[self.index], (128, 128)), True, False)
+            self.image = pygame.transform.flip(pygame.transform.scale(self.images[self.index], (64, 64)), True, False)
             self.index += 1
 
         self.hover()
@@ -1369,7 +1450,7 @@ class MenuSlot(pygame.sprite.Sprite):
         return final_images
 
     def update(self):
-        self.count = player1.inventory.storage[self.holding]
+        self.count = player1.inventory[self.holding]
         self.images = self.createSlotImages()
         self.hover()
 
@@ -1509,9 +1590,9 @@ def bindProjectile(projectile, projTargetGroup):
         - projTargetGroup (``pygame.sprite.Group``): The group of the projectile from which it was shot from (ex. ``players_proj``)
     """    
     if (
-        projectile.pos.x < WINDOW_WIDTH and 
+        projectile.pos.x < WIN_WIDTH and 
         projectile.pos.x > 0 and
-        projectile.pos.y < WINDOW_HEIGHT and 
+        projectile.pos.y < WIN_HEIGHT and 
         projectile.pos.y > 0
     ):
         projectile.movement()
@@ -1542,7 +1623,7 @@ def redrawGameWindow():
 
         # Updating enemies
         for enemy in all_enemies:
-            if enemy.visible == True:
+            if enemy.visible:
                 collideCheck(enemy, all_players,)
                 collideCheck(enemy, players_projs)
                 collideCheck(enemy, all_walls)
@@ -1554,7 +1635,6 @@ def redrawGameWindow():
         # Updating all item drops
         for item in all_drops:
             collideCheck(item, all_walls)
-            item.movement()
 
         # Updating player projectiles
         for projectile in players_projs:
@@ -1581,7 +1661,7 @@ def redrawGameWindow():
             char.movement()
 
     # Updating inventory
-    player1.inventory.update()
+    player1.menu.update()
 
     all_sprites.update()
     all_sprites.draw(screen)
@@ -1650,18 +1730,13 @@ while running:
         checkKeyRelease(False, K_e)
         checkKeyRelease(True, 1, 2, 3)
 
-    screen.fill((255, 255, 255))
+    screen.fill((255, 250, 255))
 
     #------------------------------ Game operation ------------------------------#
-
-    # Random enemy movement for testing purposes
-    for enemy in all_enemies:
-        enemy.movement(True)
-
     # Regenerate health for testing purposes
     for a_player in all_players:
-        if anim_timer % 5 == 0 and a_player.hp < a_player.max_hp and isInputHeld[1]:
-            a_player.hp += 2
+        if anim_timer % 5 == 0 and a_player.hp < a_player.max_hp and isInputHeld[2]:
+            a_player.hp += 1
 
     #------------------------------ Redraw window ------------------------------#
     redrawGameWindow()

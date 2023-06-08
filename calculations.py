@@ -225,8 +225,7 @@ def pushFromSide(instig, entity):
                 instig.pos.y += 1
 
 def killGroup(*groups):
-    """Calls ``.kill()`` for all sprites within one or more groups.
-    """    
+    """Calls ``.kill()`` for all sprites within one or more groups."""    
     for group in groups:
         for entity in group:
             entity.kill()
