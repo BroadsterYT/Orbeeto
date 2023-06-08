@@ -483,7 +483,7 @@ class StandardGrunt(EnemyBase):
         initStats(self, 15, 10, 10, 25, 0.4)
         self.healthBar = HealthBar(self)
 
-    def rand_movement(self, canShoot):
+    def movement(self, canShoot):
         if self.hp > 0 and self.visible == True:
             global anim_timer
             if anim_timer % rand.randint(150, 200) == 0:
@@ -573,10 +573,10 @@ class OctoGrunt(EnemyBase):
 
         #---------------------- Game stats & UI ----------------------#
         initStats(self, 44, 10, 10, 45, 0.4)
-        self.healthbar = HealthBar(self)
+        self.healthBar = HealthBar(self)
 
-    def rand_movement(self, canShoot):
-        if self.hp > 0:
+    def movement(self, canShoot):
+        if self.hp > 0 and self.visible:
             objectAccel(self)
 
             global anim_timer
@@ -765,10 +765,6 @@ class Projectile(pygame.sprite.Sprite):
             velY (float): The y-axis component of the projectile's velocity
 
             bulletType (str): The type of projectile that should be spawned
-
-            doesBreak (bool): Should the bullet terminate upon impact?
-
-            ricochet (bool, optional): Should the bullet bounce off of walls? Defaults to False.
         """           
         super().__init__()
 
@@ -1036,8 +1032,7 @@ class Room(AbstractBase):
         self.room = vec((roomX, roomY))
 
     def layoutUpdate(self):
-        """Updates the layout of the room.
-        """        
+        """Updates the layout of the room."""        
         for sprite in self.sprites():
             sprite.kill()
         
@@ -1129,6 +1124,8 @@ def hideCurrentEnemies():
     for container in all_containers:
         if container.room == room.room:
             for sprite in container.sprites():
+                if hasattr(sprite, "healthBar"):
+                    sprite.healthBar.hide()
                 sprite.hide()
 
 def showEnemies(container):
@@ -1139,6 +1136,8 @@ def showEnemies(container):
     """    
     for sprite in container.sprites():
         sprite.show(LAYERS['enemy_layer'])
+        if hasattr(sprite, "healthBar"):
+            sprite.healthBar.show(LAYERS['statBar_layer'])
 
 #------------------------------ UI classes ------------------------------#
 class InventoryMenu(AbstractBase):
@@ -1163,14 +1162,12 @@ class InventoryMenu(AbstractBase):
         )
 
     def hide(self):
-        """Makes all of the elements of the inventory menu invisible (closes the inventory menu)
-        """        
+        """Makes all of the elements of the inventory menu invisible (closes the inventory menu)"""        
         for sprite in self.sprites():
             all_sprites.remove(sprite)
 
     def show(self):
-        """Makes all of the elements of the inventory menu visible
-        """        
+        """Makes all of the elements of the inventory menu visible"""        
         for sprite in self.sprites():
             all_sprites.add(sprite, layer = LAYERS['ui_layer_1'])
 
@@ -1624,6 +1621,7 @@ running = True
 while running:
     dt = (time.time() - last_time) * 60
     last_time = time.time()
+    
     anim_timer += 1
 
     if player1.hp <= 0:
@@ -1658,7 +1656,7 @@ while running:
 
     # Random enemy movement for testing purposes
     for enemy in all_enemies:
-        enemy.rand_movement(True)
+        enemy.movement(True)
 
     # Regenerate health for testing purposes
     for a_player in all_players:
