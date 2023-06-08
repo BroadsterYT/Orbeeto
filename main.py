@@ -1624,7 +1624,6 @@ running = True
 while running:
     dt = (time.time() - last_time) * 60
     last_time = time.time()
-
     anim_timer += 1
 
     if player1.hp <= 0:
