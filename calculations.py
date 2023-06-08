@@ -1,13 +1,13 @@
 import pygame, math
-from Constants import *
+from constants import *
 import random as rand
 
-from Groups import *
+from groups import *
 
 vec = pygame.math.Vector2
 
 #------------------------------ Returns float ------------------------------#
-def getAngleToMouse(any_sprite):
+def getAngleToMouse(any_sprite: pygame.sprite.Sprite) -> float:
     """Gets the angle between a sprite and the mouse cursor
     
     ### Parameters
@@ -38,7 +38,7 @@ def getAngleToMouse(any_sprite):
                 angle_to_mouse = 0
                 return angle_to_mouse
             
-def getAngleToSprite(any_sprite, target_sprite):
+def getAngleToSprite(any_sprite: pygame.sprite.Sprite, target_sprite: pygame.sprite.Sprite) -> float:
     """Gets the angle from one sprite to another
     
     ### Parameters
@@ -69,22 +69,22 @@ def getAngleToSprite(any_sprite, target_sprite):
                 angle_to_mouse = 0
                 return angle_to_mouse
 
-def getDistToSprite(selfEntity, targetEntity):
-    """Returns the distance between two entities
-
-    Args:
-        selfEntity (pygame.sprite.Sprite): The entity to start the measurement from
-        targetEntity (pygame.sprite.Sprite): The second entity to measure to from the first
-
-    Returns:
-        float: Distance between selfEntity and targetEntity
-    """
+def getDistToSprite(selfEntity: pygame.sprite.Sprite, targetEntity: pygame.sprite.Sprite) -> float:
+    """Gets the distance between two entities
+    
+    ### Parameters
+        - selfEntity (``pygame.sprite.Sprite``): The entity to start the measurement from
+        - targetEntity (``pygame.sprite.Sprite``): The second entity to measure to from the first
+    
+    ### Returns
+        - ``float``: Distance between ``selfEntity`` and ``targetEntity``
+    """    
     length_to_x = (targetEntity.pos.x - (0.5 * targetEntity.image.get_width())) - (selfEntity.pos.x - (0.5 * selfEntity.image.get_width()))
     length_to_y = (targetEntity.pos.y - (0.5 * targetEntity.image.get_height())) - (selfEntity.pos.y - (0.5 * selfEntity.image.get_height()))
     
     return math.sqrt((length_to_x**2) + (length_to_y**2))
 
-def getVecAngle(vecX, vecY):
+def getVecAngle(vecX: float, vecY: float) -> pygame.math.Vector2:
     """Returns the angle of a resultant vector
     
     ### Parameters

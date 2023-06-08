@@ -3,11 +3,11 @@ from pygame.locals import *
 
 from math import floor
 
-from Init import *
-from ClassBases import StatBarBase
-from Constants import *
-from Groups import all_sprites, all_stat_bars
-from Spritesheet import Spritesheet
+from init import *
+from class_bases import StatBarBase
+from constants import *
+from groups import all_sprites, all_stat_bars
+from spritesheet import Spritesheet
 
 vec = pygame.math.Vector2
 

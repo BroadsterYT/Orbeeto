@@ -2,6 +2,7 @@
 WIN_WIDTH = 1280
 WIN_HEIGHT = 720
 FPS = 60
+SPF = 0.0167
 
 #------------------------------ Directions ------------------------------#
 LEFT = 'loc_left'
@@ -14,12 +15,13 @@ BOTTOM = 'loc_bottom'
 
 #------------------------------ Layers ------------------------------#
 LAYERS = {
-    'player_layer': 1,
-    'enemy_layer': 1,
-    'movable_layer': 1,
-    'drops_layer': 0,
-    'proj_layer': 1,
-    'explosion_layer': 1,
+    'floor': 1,
+    'player_layer': 2,
+    'enemy_layer': 2,
+    'movable_layer': 2,
+    'drops_layer': 2,
+    'proj_layer': 2,
+    'explosion_layer': 2,
     'wall_layer': 10,
     'portal_layer': 11,
     'text_layer': 51,

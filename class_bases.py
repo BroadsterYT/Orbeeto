@@ -1,8 +1,8 @@
 import pygame
 
-from Calculations import *
-from Constants import *
-from Groups import *
+from calculations import *
+from constants import *
+from groups import *
 
 vec = pygame.math.Vector2
 

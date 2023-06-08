@@ -1,3 +1,4 @@
+from typing import Any
 import pygame, pygame.font
 from pygame.locals import *
 
@@ -8,13 +9,13 @@ import random as rand
 
 from math import sin, cos, radians, degrees, floor, pi
 
-from Init import can_update, keyReleased
-from Calculations import *
-from ClassBases import *
-from Constants import *
-from Groups import *
-from Spritesheet import *
-from UI_Actors import *
+from init import can_update, keyReleased
+from calculations import *
+from class_bases import *
+from constants import *
+from groups import *
+from spritesheet import *
+from ui_actors import *
 
 # Aliases
 vec = pygame.math.Vector2
@@ -1086,7 +1087,7 @@ class ProjExplode(pygame.sprite.Sprite):
 
 #------------------------------ Wall class ------------------------------#
 class Wall(WallBase):
-    def __init__(self, topleftX_mult, topleftY_mult, widthMult, heightMult):
+    def __init__(self, topleftX_mult: float, topleftY_mult: float, widthMult: float, heightMult: float):
         super().__init__()
         all_sprites.add(self, layer = LAYERS['wall_layer'])
         all_walls.add(self)
@@ -1099,9 +1100,51 @@ class Wall(WallBase):
 
         self.pos = getTopLeftCoordinates(self, topleftX_mult * 32, topleftY_mult * 32)
         self.rect.center = self.pos
-
+    
     def update(self):
+        pass
+
+class Floor(ActorBase):
+    def __init__(self, topleftX_mult: float, topleftY_mult: float, widthMult: float, heightMult: float):
+        super().__init__()
+        self.show(LAYERS['floor'])
+        all_floors.add(self)
+        self.lastFrame = time.time()
+
+        self.sizeMult = vec(widthMult, heightMult)
+
+        self.spritesheet = Spritesheet("sprites/textures/floor.png")
+        self.textures = self.spritesheet.get_images(0, 0, 64, 64, 4)
+        self.index = 0
+
+        self.image = pygame.Surface((32 * widthMult, 32 * heightMult))
+        self.texture = self.textures[self.index]
+        self.textureFloor((0, 0, 0))
+
+        self.pos = getTopLeftCoordinates(self, topleftX_mult * 32, topleftY_mult * 32)
         self.rect.center = self.pos
+    
+    def textureFloor(self, colorkey: tuple):
+        image_width, image_height = self.image.get_size()
+        tile_width, tile_height = self.texture.get_size()
+
+        for x in range(0, image_width, tile_width):
+            for y in range(0, image_height, tile_height):
+                tile_rect = pygame.Rect(x, y, tile_width, tile_height)
+                self.image.blit(self.texture, tile_rect)
+
+        self.image.set_colorkey(colorkey)
+        self.rect = self.image.get_rect()
+        self.hitbox = self.rect
+    
+    def update(self):
+        if self.visible and time.time() - self.lastFrame >= 0.25:
+            self.index += 1
+            if self.index > 3:
+                self.index = 0
+            self.texture = self.textures[self.index]
+            self.textureFloor((0, 0, 0))
+            self.lastFrame = time.time()
 
 #------------------------------ Room class ------------------------------#
 class Room(AbstractBase):
@@ -1129,6 +1172,7 @@ class Room(AbstractBase):
                 Wall(36, 0, 4, 4),
                 Wall(0, 18.5, 4, 4),
                 Wall(36, 18.5, 4, 4),
+                Floor(0, 0, 10, 22.5),
             )
 
             # Search for an enemy container for this room
@@ -1140,8 +1184,6 @@ class Room(AbstractBase):
                 all_containers.append(
                     EntityContainer(
                         self.room.x, self.room.y,
-                        Box(800, WIN_HEIGHT / 2),
-                        Ambusher(500, 500)
                     )
                 )
 
@@ -1170,7 +1212,7 @@ class Room(AbstractBase):
                 Wall(0, 0, 4, 22.5),
                 Wall(36, 0, 4, 22.5),
                 Wall(8, 4, 4, 4),
-                Wall(28, 4, 4, 4)
+                Wall(28, 4, 4, 4),
             )
 
             # Search for an enemy container for this room
@@ -1647,10 +1689,6 @@ def redrawGameWindow():
         # Updating UI
         for statBar in all_stat_bars:
             statBar.movement()
-
-        # Updating walls
-        for wall in all_walls:
-            pass
 
         # Updating portals
         for portal in all_portals:

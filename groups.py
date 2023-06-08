@@ -23,6 +23,7 @@ all_portals = spriteGroup()
 
 #--------------------------------- Room groups ---------------------------------#
 all_walls = spriteGroup()
+all_floors = spriteGroup()
 all_rooms = []
 
 all_containers = []
