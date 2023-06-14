@@ -114,13 +114,13 @@ def getVecAngle(vecX: float, vecY: float) -> pygame.math.Vector2:
                 return vec_angle
 
 #------------------------------ Returns int ------------------------------#
-def calculateDamage(sender, receiver, proj):
+def calculateDamage(sender: pygame.sprite.Sprite, receiver: pygame.sprite.Sprite, proj: pygame.sprite.Sprite) -> int:
     """Calculates the damage an entity receives after being hit
     
     ### Parameters
-        - ``sender`` ``(pygame.sprite.Sprite)``: The entity that shot the projectile
-        - ``receiver`` ``(pygame.sprite.Sprite)``: The entity that got shot
-        - ``proj`` ``(pygame.sprite.Sprite)``: The projectile the receiver got hit by
+        - sender ``(pygame.sprite.Sprite)``: The entity that shot the projectile
+        - receiver ``(pygame.sprite.Sprite)``: The entity that got shot
+        - proj ``(pygame.sprite.Sprite)``: The projectile the receiver got hit by
     
     ### Returns
         - ``int``: Infliction damage upon ``receiver``

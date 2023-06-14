@@ -213,10 +213,12 @@ class PlayerBase(ActorBase):
         self.max_defense = 10
         self.defense = 15
         self.gun_speed = 12
-        self.gun_cooldown = 6
+        self.gun_cooldown = 0.12
         self.hitTime_charge = 1200
         self.hitTime = 0
+        
         self.lastHit = time.time()
+        self.last_shot = time.time()
 
         self.updateMaxStats()
 
@@ -385,7 +387,7 @@ class Player(PlayerBase):
         velX = vel * -sin(rad(angle_to_mouse))
         velY = vel * -cos(rad(angle_to_mouse))
 
-        if isInputHeld[1] and self.bulletType == PROJ_P_STD and anim_timer % self.gun_cooldown == 0:
+        if isInputHeld[1] and self.bulletType == PROJ_P_STD and time.time() - self.last_shot >= self.gun_cooldown:
             offset = vec((21, 30))
             players_projs.add(
                 Projectile(self,
@@ -400,6 +402,7 @@ class Player(PlayerBase):
                     velX, velY, self.bulletType
                 )
             )
+            self.last_shot = time.time()
 
         if keyReleased[3] % 2 == 0 and self.can_fire_portal:
             players_projs.add(Projectile(self, self.pos.x, self.pos.y, velX * 0.75, velY * 0.75, PROJ_P_PORTAL))
@@ -410,15 +413,16 @@ class Player(PlayerBase):
             self.can_fire_portal = True
 
     def update(self):
-        global anim_timer
         if can_update:
-            if anim_timer % 5 == 0:
+            if time.time() - self.lastFrame > 0.1:
                 if isInputHeld[1] == True:
                     if self.index == 4:
                         self.index = 0
                     self.index += 1
                 else: # Idle animation
                     self.index = 0
+                
+                self.lastFrame = time.time()
             
             if self.hitTime < self.hitTime_charge:
                 self.hitTime += 1
@@ -461,7 +465,6 @@ class EnemyBase(ActorBase):
         
         for item in drops[row][column]:
             ItemDrop(self, item)
-            print(item)
 
 class StandardGrunt(EnemyBase):
     def __init__(self, posX, posY):
@@ -505,7 +508,7 @@ class StandardGrunt(EnemyBase):
 
         #---------------------- Physics ----------------------#
         self.pos = vec((posX, posY))
-        self.rand_pos = vec(rand.randint(0, WIN_WIDTH), rand.randint(0, WIN_HEIGHT))
+        self.rand_pos = vec(rand.randint(self.image.get_width(), WIN_WIDTH - self.image.get_width()), rand.randint(0, WIN_HEIGHT))
 
         #---------------------- Game stats & UI ----------------------#
         initStats(self, 15, 10, 10, 25, 0.4)
@@ -728,7 +731,7 @@ class Ambusher(EnemyBase):
 
         # Kill enemy if their HP reaches 0
         if self.hp <= 0:
-            self.dropItems(1)
+            self.dropItems(2)
             awardXp(self)
             self.kill()
 
@@ -1013,18 +1016,18 @@ def portalSideCheck(wall, portal):
     ### Returns
         - ``str``: The direction the portal should face
     """    
-    if wall.pos.x - 0.5 * wall.image.get_width() <= portal.pos.x <= wall.pos.x + 0.5 * wall.image.get_width() and portal.pos.y > wall.pos.y:
-        return DOWN
-    
-    elif wall.pos.x - 0.5 * wall.image.get_width() <= portal.pos.x <= wall.pos.x + 0.5 * wall.image.get_width() and portal.pos.y < wall.pos.y:
-        return UP
-
-    elif wall.pos.y - 0.5 * wall.image.get_height() <= portal.pos.y <= wall.pos.y + 0.5 * wall.image.get_height() and portal.pos.x > wall.pos.x:
-        return RIGHT
-    
-    elif wall.pos.y - 0.5 * wall.image.get_height() <= portal.pos.y <= wall.pos.y + 0.5 * wall.image.get_height() and portal.pos.x < wall.pos.x:
-        return LEFT
-    
+    if wall.pos.x - 0.45 * wall.image.get_width() <= portal.pos.x <= wall.pos.x + 0.45 * wall.image.get_width():
+        if portal.pos.y < wall.pos.y:
+            return UP
+        elif portal.pos.y > wall.pos.y:
+            return DOWN
+        
+    elif wall.pos.y - 0.45 * wall.image.get_height() <= portal.pos.y <= wall.pos.y + 0.45 * wall.image.get_height():
+        if portal.pos.x < wall.pos.x:
+            return LEFT
+        elif portal.pos.x > wall.pos.x:
+            return RIGHT
+        
     else:
         return None
 
@@ -1086,7 +1089,7 @@ class ProjExplode(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = self.rect.center)
 
 #------------------------------ Wall class ------------------------------#
-class Wall(WallBase):
+class Wall(EnvirBase):
     def __init__(self, topleftX_mult: float, topleftY_mult: float, widthMult: float, heightMult: float):
         super().__init__()
         all_sprites.add(self, layer = LAYERS['wall_layer'])
@@ -1096,7 +1099,7 @@ class Wall(WallBase):
 
         self.image = pygame.Surface((32 * widthMult, 32 * heightMult))
         self.texture = pygame.image.load("sprites/textures/wall.png")
-        textureWall(self, self.texture)
+        self.tileTexture(None)
 
         self.pos = getTopLeftCoordinates(self, topleftX_mult * 32, topleftY_mult * 32)
         self.rect.center = self.pos
@@ -1104,12 +1107,11 @@ class Wall(WallBase):
     def update(self):
         pass
 
-class Floor(ActorBase):
+class Floor(EnvirBase):
     def __init__(self, topleftX_mult: float, topleftY_mult: float, widthMult: float, heightMult: float):
         super().__init__()
         self.show(LAYERS['floor'])
         all_floors.add(self)
-        self.lastFrame = time.time()
 
         self.sizeMult = vec(widthMult, heightMult)
 
@@ -1119,23 +1121,10 @@ class Floor(ActorBase):
 
         self.image = pygame.Surface((32 * widthMult, 32 * heightMult))
         self.texture = self.textures[self.index]
-        self.textureFloor((0, 0, 0))
+        self.tileTexture((0, 0, 0))
 
         self.pos = getTopLeftCoordinates(self, topleftX_mult * 32, topleftY_mult * 32)
         self.rect.center = self.pos
-    
-    def textureFloor(self, colorkey: tuple):
-        image_width, image_height = self.image.get_size()
-        tile_width, tile_height = self.texture.get_size()
-
-        for x in range(0, image_width, tile_width):
-            for y in range(0, image_height, tile_height):
-                tile_rect = pygame.Rect(x, y, tile_width, tile_height)
-                self.image.blit(self.texture, tile_rect)
-
-        self.image.set_colorkey(colorkey)
-        self.rect = self.image.get_rect()
-        self.hitbox = self.rect
     
     def update(self):
         if self.visible and time.time() - self.lastFrame >= 0.25:
@@ -1143,7 +1132,7 @@ class Floor(ActorBase):
             if self.index > 3:
                 self.index = 0
             self.texture = self.textures[self.index]
-            self.textureFloor((0, 0, 0))
+            self.tileTexture((0, 0, 0))
             self.lastFrame = time.time()
 
 #------------------------------ Room class ------------------------------#
@@ -1273,14 +1262,22 @@ class InventoryMenu(AbstractBase):
         """A menu used to view collected items and utilize them for various purposes
         
         ### Parameters
-            - ``owner`` ``(pygame.sprite.Sprite)``: The player whom the inventory belongs to
+            - owner ``(pygame.sprite.Sprite)``: The player whom the inventory belongs to
         """        
         super().__init__()
-        self.last_time = time.time()
+        self.is_cyclingLeft = False
+        self.is_cyclingRight = False
+        
+        self.wipeTime = 1
+
+        self.window = 0
+        
+        self.last_cycle = time.time()
+
+        self.rightArrow = RightMenuArrow(WIN_WIDTH - 64, WIN_HEIGHT / 2)
+        self.leftArrow = LeftMenuArrow(64, WIN_HEIGHT / 2)
         
         self.add(
-            RightMenuArrow(WIN_WIDTH - 16, WIN_HEIGHT / 2),
-            LeftMenuArrow(80, WIN_HEIGHT / 2),
             self.buildMenuSlots()
         )
 
@@ -1293,6 +1290,42 @@ class InventoryMenu(AbstractBase):
         """Makes all of the elements of the inventory menu visible"""        
         for sprite in self.sprites():
             all_sprites.add(sprite, layer = LAYERS['ui_layer_1'])
+
+    def cycleLeft(self):
+        if not self.is_cyclingLeft and not self.is_cyclingRight:
+            if isInputHeld[1] and self.leftArrow.hitbox.collidepoint(pygame.mouse.get_pos()):
+                self.window -= 1
+                self.last_cycle = time.time()
+                self.is_cyclingLeft = True
+
+        if self.is_cyclingLeft and not self.is_cyclingRight:
+            t_lapsed = time.time() - self.last_cycle
+            if t_lapsed <= self.wipeTime:
+                for sprite in self.sprites():
+                    sprite.pos.x = sprite.start_pos.x - (-(WIN_WIDTH / 2) * cos((1 / self.wipeTime) * pi * t_lapsed) + (WIN_WIDTH / 2))
+            else:
+                for sprite in self.sprites():
+                    sprite.start_pos.x = sprite.pos.x
+                    sprite.pos.x = sprite.start_pos.x + (WIN_WIDTH * self.window)
+                self.is_cyclingLeft = False
+
+    def cycleRight(self):
+        if not self.is_cyclingRight and not self.is_cyclingLeft:
+            if isInputHeld[1] and self.rightArrow.hitbox.collidepoint(pygame.mouse.get_pos()):
+                self.window += 1
+                self.last_cycle = time.time()
+                self.is_cyclingRight = True
+
+        if self.is_cyclingRight and not self.is_cyclingLeft:
+            t_lapsed = time.time() - self.last_cycle
+            if t_lapsed <= self.wipeTime:
+                for sprite in self.sprites():
+                    sprite.pos.x = sprite.start_pos.x + (-(WIN_WIDTH / 2) * cos((1 / self.wipeTime) * pi * t_lapsed) + (WIN_WIDTH / 2))
+            else:
+                for sprite in self.sprites():
+                    sprite.start_pos.x = sprite.pos.x
+                    sprite.pos.x = sprite.start_pos.x + (WIN_WIDTH * self.window)
+                self.is_cyclingRight = False
 
     def buildMenuSlots(self):
         space = vec(0, 0)
@@ -1314,13 +1347,20 @@ class InventoryMenu(AbstractBase):
         global can_update
         if keyReleased[K_e] % 2 != 0 and keyReleased[K_e] > 0:
             self.show()
+            self.rightArrow.show(LAYERS['ui_layer_1'])
+            self.leftArrow.show(LAYERS['ui_layer_1'])
             can_update = False
 
         elif keyReleased[K_e] % 2 == 0 and keyReleased[K_e] > 0:
             self.hide()
+            self.rightArrow.hide()
+            self.leftArrow.hide()
             can_update = True
+            
+        self.cycleLeft()
+        self.cycleRight()
 
-class RightMenuArrow(pygame.sprite.Sprite):
+class RightMenuArrow(ActorBase):
     def __init__(self, posX, posY):
         """A UI element that allows players to cycle through menu screens to the right.
         
@@ -1338,9 +1378,10 @@ class RightMenuArrow(pygame.sprite.Sprite):
 
         self.image = pygame.transform.scale(self.images[self.index], (64, 64))
         
-        self.rect = pygame.Rect(posX - 32, posY - 32, 128, 128)
-        self.hitbox = pygame.Rect(posX - 32, posY - 32, 128, 128)
+        self.rect = self.image.get_rect()
+        self.hitbox = pygame.Rect(posX - 32, posY - 32, 64, 64)
 
+        self.rect.center = self.return_pos
         self.hitbox.center = self.return_pos
 
     def hover(self):
@@ -1363,7 +1404,7 @@ class RightMenuArrow(pygame.sprite.Sprite):
 
         self.hover()
 
-class LeftMenuArrow(pygame.sprite.Sprite):
+class LeftMenuArrow(ActorBase):
     def __init__(self, posX, posY):
         """A UI element that allows players to cycle through menu screens to the left.
         
@@ -1383,9 +1424,10 @@ class LeftMenuArrow(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (64, 64))
         self.image = pygame.transform.flip(self.image, True, False)
         
-        self.rect = pygame.Rect(posX - 32, posY - 32, 128, 128)
-        self.hitbox = pygame.Rect(posX - 32, posY - 32, 128, 128)
+        self.rect = self.image.get_rect()
+        self.hitbox = pygame.Rect(posX - 32, posY - 32, 64, 64)
 
+        self.rect.center = self.return_pos
         self.hitbox.center = self.return_pos
 
     def hover(self):
@@ -1400,7 +1442,7 @@ class LeftMenuArrow(pygame.sprite.Sprite):
     def update(self):
         global anim_timer
         if anim_timer % 1 == 0:
-            if self.index >= 61:
+            if self.index > 60:
                 self.index = 1
             
             self.image = pygame.transform.flip(pygame.transform.scale(self.images[self.index], (64, 64)), True, False)
@@ -1422,6 +1464,7 @@ class MenuSlot(pygame.sprite.Sprite):
         super().__init__()
         all_slots.add(self)
         self.pos = vec((posX, posY))
+        self.start_pos = vec((posX, posY))
         self.holding = item_held
         self.count = 0
 
@@ -1492,6 +1535,8 @@ class MenuSlot(pygame.sprite.Sprite):
         return final_images
 
     def update(self):
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
         self.count = player1.inventory[self.holding]
         self.images = self.createSlotImages()
         self.hover()
@@ -1611,14 +1656,19 @@ def projectileCollide(entityGroup, proj, canHurt):
             elif proj.type == PROJ_P_PORTAL:
                 if entityGroup == all_walls:
                     side = portalSideCheck(colliding_entity, proj)
-                    if side == DOWN or side == UP:
-                        if proj.pos.x - 32 > colliding_entity.pos.x - 0.5 * colliding_entity.image.get_width() and proj.pos.x + 32 < colliding_entity.pos.x + 0.5 * colliding_entity.image.get_width():
-                            all_portals.add(Portal(proj.pos.x, proj.pos.y, side))
-                            portalCountCheck()
-                    elif side == RIGHT or side == LEFT:
-                        if proj.pos.y - 32 > colliding_entity.pos.y - 0.5 * colliding_entity.image.get_height() and proj.pos.y + 32 < colliding_entity.pos.y + 0.5 * colliding_entity.image.get_height():
-                            all_portals.add(Portal(proj.pos.x, proj.pos.y, side))
-                            portalCountCheck()
+                    print(side)
+                    if side == DOWN:
+                        all_portals.add(Portal(proj.pos.x, colliding_entity.pos.y + (colliding_entity.image.get_height() / 2), side))
+                        portalCountCheck()
+                    if side == UP:
+                        all_portals.add(Portal(proj.pos.x, colliding_entity.pos.y - (colliding_entity.image.get_height() / 2), side))
+                        portalCountCheck()
+                    if side == RIGHT:
+                        all_portals.add(Portal(proj.pos.x, proj.pos.y, side))
+                        portalCountCheck()
+                    if side == LEFT:
+                        all_portals.add(Portal(proj.pos.x, proj.pos.y, side))
+                        portalCountCheck()
                     proj.land()
                 # If a portal hits anything but a wall
                 else:

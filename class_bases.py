@@ -1,4 +1,4 @@
-import pygame
+import pygame, time
 
 from calculations import *
 from constants import *
@@ -11,6 +11,7 @@ class ActorBase(pygame.sprite.Sprite):
         """The base class for all actors in the game."""        
         super().__init__()
         self.visible = True
+        self.lastFrame = time.time()
 
         self.pos = vec((0, 0))
         self.vel = vec(0, 0)
@@ -45,9 +46,22 @@ class AbstractBase(pygame.sprite.AbstractGroup):
         for sprite in sprites:
             super().add(sprite)
 
-class WallBase(ActorBase):
+class EnvirBase(ActorBase):
     def __init__(self):
         super().__init__()
+
+    def tileTexture(self, colorkey: tuple):
+        image_width, image_height = self.image.get_size()
+        tile_width, tile_height = self.texture.get_size()
+
+        for x in range(0, image_width, tile_width):
+            for y in range(0, image_height, tile_height):
+                tile_rect = pygame.Rect(x, y, tile_width, tile_height)
+                self.image.blit(self.texture, tile_rect)
+
+        self.image.set_colorkey(colorkey)
+        self.rect = self.image.get_rect()
+        self.hitbox = self.rect
 
 class PortalBase(ActorBase):
     def __init__(self):

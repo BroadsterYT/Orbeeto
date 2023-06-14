@@ -101,4 +101,8 @@ LTDROPS = {
     1: [[(MAT[0],), (MAT[0],), (MAT[1],),], # Octogrunt
         [(MAT[0],), (MAT[0],), (MAT[1],),],
         [(MAT[1],), (MAT[0], MAT[1],), (MAT[1], MAT[1],),],],
+
+    2: [[(MAT[0],), (MAT[1],), (MAT[1],),], # Ambusher
+        [(MAT[1],), (MAT[0], MAT[1],), (MAT[0], MAT[1],),],
+        [(MAT[0],), (MAT[1], MAT[1],), (MAT[0], MAT[1], MAT[1]),],],
 }

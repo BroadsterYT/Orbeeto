@@ -44,21 +44,3 @@ class Spritesheet(object):
                 offset += height
         
         return imageList
-    
-def textureWall(sprite, texture):
-    """Tiles a sprite with a given texture.
-    
-    ### Parameters
-        - ``sprite`` ``(pygame.sprite.Sprite)``: The sprite to tile with a texture
-        - ``texture`` ``(pygame.Surface)``: The texture to tile the sprite with
-    """    
-    image_width, image_height = sprite.image.get_size()
-    tile_width, tile_height = texture.get_size()
-
-    for x in range(0, image_width, tile_width):
-        for y in range(0, image_height, tile_height):
-            tile_rect = pygame.Rect(x, y, tile_width, tile_height)
-            sprite.image.blit(texture, tile_rect)
-
-    sprite.rect = sprite.image.get_rect()
-    sprite.hitbox = sprite.rect
