@@ -1,4 +1,4 @@
-import pygame
+import pygame, time
 from pygame.locals import *
 
 from math import floor
@@ -35,6 +35,8 @@ class HealthBar(StatBarBase):
         self.rect.center = vec(self.entity.pos.x, self.entity.pos.y + 42)
 
     def update(self):
+        self.movement()
+
         if self.entity.hp > 0:
             self.index = floor((16 * self.entity.hp) / self.entity.max_hp)
             self.image = self.images[self.index]
@@ -68,6 +70,8 @@ class DodgeBar(StatBarBase):
         self.rect.center = vec(self.entity.pos.x, self.entity.pos.y + 60)
 
     def update(self):
+        self.movement()
+
         if self.entity.hp > 0:
             if self.entity.hitTime < self.entity.hitTime_charge:
                 self.index = floor((17 * self.entity.hitTime) / self.entity.hitTime_charge)

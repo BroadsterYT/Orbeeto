@@ -3,6 +3,7 @@ import pygame, time
 from calculations import *
 from constants import *
 from groups import *
+from spritesheet import Spritesheet
 
 vec = pygame.math.Vector2
 
@@ -32,6 +33,58 @@ class ActorBase(pygame.sprite.Sprite):
         self.visible = True
         all_sprites.add(self, layer = layer_send)
 
+    def setImages(self, imageFile: str, frameWidth: int, frameHeight: int, imageCount: int, imageOffset: int = 0, index: int = 0):
+        """Initializes the sprite's spritesheet, images, and animations. Should be used in the object's ``__init__()`` method.
+        
+        ### Parameters
+            - imageFile (``str``): The path of the spritesheet image
+            - frameWidth (``int``): The width of each individual frame
+            - frameHeight (``int``): The height of each individual frame
+            - imageCount (``int``): The number of images in the sprite's animation
+            - imageOffset (``int``, optional): The index of the frame to begin the snip from. Defaults to ``0``.
+            - index (``int``, optional): The index of the sprite's animation to start from. Defaults to ``0`` (the first image).
+        """        
+        self.spritesheet = Spritesheet(imageFile)
+        self.images = self.spritesheet.get_images(0, 0, frameWidth, frameHeight, imageCount, imageOffset)
+        self.original_images = self.spritesheet.get_images(0, 0, frameWidth, frameHeight, imageCount, imageOffset)
+        self.index = index
+
+        self.image = self.images[self.index]
+        self.original_image = self.original_images[self.index]
+
+    def setRects(self, rectPosX: int, rectPosY: int, rectWidth: int, rectHeight: int, hitboxInfWidth: int = 0, hitboxInfHeight: int = 0, setPos: bool = True):
+        """Defines the rect and hitbox of a sprite
+        
+        ### Parameters
+            - rectPosX (``int``): The x-axis position to spawn the rect and hitbox
+            - rectPosY (``int``): The y-axis position to spawn the rect and hitbox
+            - rectWidth (``int``): The width of the rect
+            - rectHeight (``int``): The height of the rect
+            - hitboxInfWidth (``int``, optional): The change in width of the hitbox with respect to the rect. Defaults to ``0`` (rect and hitbox have same width).
+            - hitboxInfHeight (``int``, optional): The change in height of the hitbox with respect to the rect. Defaults to ``0`` (rect and hitbox have same height).
+            - setPos (``bool``, optional): Should the rect and hitbox be snapped to the position of the sprite?. Defaults to ``True``.
+        """        
+        self.image = self.images[self.index]
+        self.original_image = self.original_images[self.index]
+        
+        self.rect = pygame.Rect(rectPosX, rectPosY, rectWidth, rectHeight)
+        self.hitbox = self.rect.inflate(hitboxInfWidth, hitboxInfHeight)
+
+        if setPos:
+            self.rect.center = self.pos
+            self.hitbox.center = self.pos
+
+    def rotateImage(self, angle: float):
+        """Rotates the sprite's image by a specific angle
+        
+        ### Parameters
+            - angle (``float``): The angle to rotate the sprite's image by
+        """        
+        self.original_image = self.original_images[self.index]
+        self.image = pygame.transform.rotate(self.original_image, int(angle))
+        self.rect = self.image.get_rect(center = self.rect.center)
+
+
 class AbstractBase(pygame.sprite.AbstractGroup):
     def __init__(self):
         """The base class for all standard abstract groups. Contains methods to help manipulate the abstract group."""        
@@ -45,6 +98,7 @@ class AbstractBase(pygame.sprite.AbstractGroup):
         """         
         for sprite in sprites:
             super().add(sprite)
+
 
 class EnvirBase(ActorBase):
     def __init__(self):
@@ -61,7 +115,8 @@ class EnvirBase(ActorBase):
 
         self.image.set_colorkey(colorkey)
         self.rect = self.image.get_rect()
-        self.hitbox = self.rect
+        self.hitbox = self.rect\
+
 
 class PortalBase(ActorBase):
     def __init__(self):
@@ -79,6 +134,7 @@ class PortalBase(ActorBase):
 
     def changeRoomDown(self):
         self.pos.y -= WIN_HEIGHT
+
 
 class StatBarBase(ActorBase):
     def __init__(self):

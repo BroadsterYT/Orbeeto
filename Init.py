@@ -13,5 +13,6 @@ keyReleased = {
     K_w: 0,
     K_s: 0,
     K_d: 0,
-    K_e: 0
+    K_e: 0,
+    K_x: 0,
 }

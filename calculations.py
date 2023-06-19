@@ -37,7 +37,8 @@ def getAngleToMouse(any_sprite: pygame.sprite.Sprite) -> float:
             else:
                 angle_to_mouse = 0
                 return angle_to_mouse
-            
+
+
 def getAngleToSprite(any_sprite: pygame.sprite.Sprite, target_sprite: pygame.sprite.Sprite) -> float:
     """Gets the angle from one sprite to another
     
@@ -69,6 +70,7 @@ def getAngleToSprite(any_sprite: pygame.sprite.Sprite, target_sprite: pygame.spr
                 angle_to_mouse = 0
                 return angle_to_mouse
 
+
 def getDistToSprite(selfEntity: pygame.sprite.Sprite, targetEntity: pygame.sprite.Sprite) -> float:
     """Gets the distance between two entities
     
@@ -84,7 +86,8 @@ def getDistToSprite(selfEntity: pygame.sprite.Sprite, targetEntity: pygame.sprit
     
     return math.sqrt((length_to_x**2) + (length_to_y**2))
 
-def getVecAngle(vecX: float, vecY: float) -> pygame.math.Vector2:
+
+def getVecAngle(vecX: float, vecY: float) -> float:
     """Returns the angle of a resultant vector
     
     ### Parameters
@@ -92,7 +95,7 @@ def getVecAngle(vecX: float, vecY: float) -> pygame.math.Vector2:
         - vecY (``float``): The y-axis component of the vector
     
     ### Returns
-        - ``pygame.math.Vector2``: The angle of the resultant vector (in degrees)
+        - ``float``: The angle of the resultant vector (in degrees)
     """    
     if vecX and vecY != 0:
         vec_angle = -math.degrees(math.atan2(vecY, vecX)) - 90
@@ -113,6 +116,7 @@ def getVecAngle(vecX: float, vecY: float) -> pygame.math.Vector2:
                 vec_angle = 0
                 return vec_angle
 
+
 #------------------------------ Returns int ------------------------------#
 def calculateDamage(sender: pygame.sprite.Sprite, receiver: pygame.sprite.Sprite, proj: pygame.sprite.Sprite) -> int:
     """Calculates the damage an entity receives after being hit
@@ -132,17 +136,9 @@ def calculateDamage(sender: pygame.sprite.Sprite, receiver: pygame.sprite.Sprite
 
     return damage
 
+
 #------------------------------ Returns string ------------------------------#
-def collideSideCheck(object, instig):
-    """Determines the side of an object that an instigator has hit
-    
-    ### Parameters
-        - ``object`` ``(pygame.sprite.Sprite)``: The sprite that is being hit
-        - ``instig`` ``(pygame.sprite.Sprite)``: The instigating sprite of the collision
-    
-    ### Returns
-        - ``str``: The side the instigator has hit
-    """    
+def collideSideCheck(object: pygame.sprite.Sprite, instig: pygame.sprite.Sprite) -> str:
     if object.pos.x - 0.5 * object.hitbox.width <= instig.pos.x <= object.pos.x + 0.5 * object.hitbox.width and instig.pos.y > object.pos.y:
         return DOWN
     
@@ -158,8 +154,9 @@ def collideSideCheck(object, instig):
     else:
         return None
 
+
 #------------------------------ Returns pygame.math.Vector2 ------------------------------#
-def getTopLeftCoordinates(sprite, desired_x, desired_y):
+def getTopLeftCoordinates(sprite, desired_x, desired_y) -> pygame.math.Vector2:
     """Returns the coordinates of the topleft corner of a sprite that is centered at its middle
     
     ### Parameters
@@ -174,7 +171,8 @@ def getTopLeftCoordinates(sprite, desired_x, desired_y):
     height = sprite.image.get_height()
     return vec(desired_x + width / 2, desired_y + height / 2)
 
-def getRandComponents(maxValue):
+
+def getRandComponents(maxValue) -> pygame.math.Vector2:
     """Given a maximum value, will output a vector containing two components that vectorially add to that value. The result can be positive or negative.
     
     ### Parameters
@@ -189,25 +187,27 @@ def getRandComponents(maxValue):
         y = -y
     return vec(x, y)
 
+
 #------------------------------ Returns None ------------------------------#
-def collideCheck(instig, contact_list):
-    """Check if an entity comes into contact with an entity from a specific group.
-    If the entities do collide, the entities will perform a hitbox collision.
+def collideCheck(instig: pygame.sprite.Sprite, *contactLists: pygame.sprite.Group) -> None:
+    """Check if a sprite comes into contact with another sprite from a specific group.
+    If the sprites do collide, then they will perform a hitbox collision.
     
     ### Parameters
-        - ``instig`` ``(pygame.sprite.Sprite)``: The instigator of the collision
-        - ``contact_list`` ``(pygame.sprite.Group)``: The sprite group to check for a collision with
+        - instig (``pygame.sprite.Sprite``): The instigator of the collision
+        - contactLists (``pygame.sprite.Group``): The sprite group(s) to check for a collision with
     """    
-    global timer
-    for entity in contact_list:
-        if hasattr(entity, 'visible') and entity.visible:
-            pushFromSide(instig, entity)
-        elif hasattr(entity, 'visible') and not entity.visible:
-            pass
-        else:
-            pushFromSide(instig, entity)
+    for list in contactLists:
+        for entity in list:
+            if hasattr(entity, 'visible') and entity.visible:
+                pushFromSide(instig, entity)
+            elif hasattr(entity, 'visible') and not entity.visible:
+                pass
+            else:
+                pushFromSide(instig, entity)
 
-def pushFromSide(instig, entity):
+
+def pushFromSide(instig, entity) -> None:
     if instig.hitbox.colliderect(entity.hitbox):
         if instig.pos.y < (entity.pos.y + (0.5 * entity.hitbox.height) + 1) and instig.pos.y > (entity.pos.y - (0.5 * entity.hitbox.height) - 1):
             if instig.pos.x > entity.pos.x:
@@ -224,22 +224,24 @@ def pushFromSide(instig, entity):
                 instig.vel.y = 0
                 instig.pos.y += 1
 
-def killGroup(*groups):
+
+def killGroups(*groups: pygame.sprite.Group) -> None:
     """Calls ``.kill()`` for all sprites within one or more groups."""    
     for group in groups:
         for entity in group:
             entity.kill()
 
-def initStats(sprite, hp, attack, defense, xp, accel_const):
+
+def initStats(sprite: pygame.sprite.Sprite, hp: int, attack: int, defense: int, xp: int, accel_const: float) -> None:
     """Quickly initialize the stats of any enemy sprite
     
     ### Parameters
-        - ``sprite`` ``(pygame.sprite.Sprite)``: The enemy to initilaize
-        - ``hp`` ``(int)``: Amount of health the enemy should have
-        - ``attack`` ``(int)``: Attack value the enemy should have
-        - ``defense`` ``(int)``: Defense value the enemy should have
-        - ``xp`` ``(int)``: The amount of xp the player should receive after killing the enemy
-        - ``accel_const`` ``(float)``: How fast the enemy should move
+        - sprite (``pygame.sprite.Sprite``): The enemy to initilaize
+        - hp (``int``): Amount of health the enemy should have
+        - attack (``int``): Attack value the enemy should have
+        - defense (``int``): Defense value the enemy should have
+        - xp (``int``): The amount of xp the player should receive after killing the enemy
+        - accel_const (``float``): How fast the enemy should move
     """    
     sprite.max_hp = hp
     sprite.hp = hp
@@ -250,7 +252,8 @@ def initStats(sprite, hp, attack, defense, xp, accel_const):
     sprite.xp_worth = xp
     sprite.accel_const = accel_const
 
-def swapColor(image, old_color, new_color):
+
+def swapColor(image: pygame.Surface, old_color: tuple, new_color: tuple) -> None:
     """Swaps one color of a sprite with another
     
     ### Parameters
@@ -268,6 +271,31 @@ def swapColor(image, old_color, new_color):
             if current_color == old_color:
                 new_img.set_at((x, y), new_color)
     return new_img
+
+
+def groupChangeRooms(spriteGroup: pygame.sprite.Group, direction: str) -> None:
+    """Changes the room of all sprites within a group. This is achieved by adding or subtracting the window's width or height from the sprite's x-position or y-position, respecively.
+    
+    ### Parameters
+        - spriteGroup (``pygame.sprite.Group``): The group to relocate
+        - direction (``str``): The direction of the room where ``spriteGroup`` should be relocated
+    """    
+    if direction == DOWN:
+        for sprite in spriteGroup:
+            sprite.changeRoomDown()
+
+    if direction == RIGHT:
+        for sprite in spriteGroup:
+            sprite.changeRoomRight()
+
+    if direction == UP:
+        for sprite in spriteGroup:
+            sprite.changeRoomUp()
+
+    if direction == LEFT:
+        for sprite in spriteGroup:
+            sprite.changeRoomLeft()
+
 
 #------------------------------ Classes ------------------------------#
 class CustomError(Exception):

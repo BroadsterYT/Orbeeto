@@ -16,8 +16,6 @@ all_slots = spriteGroup()
 
 #--------------------------------- Projectile groups ---------------------------------#
 all_projs = spriteGroup()
-players_projs = spriteGroup()
-enemy_projs = spriteGroup()
 all_explosions = spriteGroup()
 all_portals = spriteGroup()
 

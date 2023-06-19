@@ -4,6 +4,8 @@ WIN_HEIGHT = 720
 FPS = 60
 SPF = 0.0167
 
+ANIMTIME = 0.1
+
 #------------------------------ Directions ------------------------------#
 LEFT = 'loc_left'
 RIGHT = 'loc_right'
@@ -36,7 +38,6 @@ FRIC = -0.07
 
 #------------------------------ Projectiles ------------------------------#
 PROJ_P_STD = 'playerBullet'
-PROJ_P_BOUNCE = 'playerBouncy'
 PROJ_P_PORTAL = 'playerPortal'
 
 PROJ_E_STD = 'enemyBullet'
@@ -44,7 +45,6 @@ PROJ_E_STD = 'enemyBullet'
 # A dictionary that stores all damage constants of all projectile types
 PROJS = {
     PROJ_P_STD: 1,
-    PROJ_P_BOUNCE: 1,
     PROJ_P_PORTAL: 15,
     PROJ_E_STD: 1,
 }
@@ -55,13 +55,9 @@ SHOOT_MIDDLE = 'middle'
 SHOOT_BOTH = 'leftright'
 
 
-'''
-╭──────────────────────────────────────────╮
-│                                          │
-│               Loot Tables                │
-│                                          │
-╰──────────────────────────────────────────╯
-'''
+# ============================================================================ #
+#                                  Loot Tables                                 #
+# ============================================================================ #
 
 # Dictionary of all materials in the game
 MAT = {
