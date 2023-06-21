@@ -56,7 +56,7 @@ class ActorBase(pygame.sprite.Sprite):
         self.image = self.images[self.index]
         self.original_image = self.original_images[self.index]
 
-    def setRects(self, rectPosX: int, rectPosY: int, rectWidth: int, rectHeight: int, hitboxInfWidth: int = 0, hitboxInfHeight: int = 0, setPos: bool = True):
+    def setRects(self, rectPosX: int, rectPosY: int, rectWidth: int, rectHeight: int, hitboxWidth: int, hitboxHeight: int, setPos: bool = True):
         """Defines the rect and hitbox of a sprite
         
         ### Parameters
@@ -72,7 +72,7 @@ class ActorBase(pygame.sprite.Sprite):
         self.original_image = self.original_images[self.index]
         
         self.rect = pygame.Rect(rectPosX, rectPosY, rectWidth, rectHeight)
-        self.hitbox = self.rect.inflate(hitboxInfWidth, hitboxInfHeight)
+        self.hitbox = pygame.Rect(rectPosX, rectPosY, hitboxWidth, hitboxHeight)
 
         if setPos:
             self.rect.center = self.pos

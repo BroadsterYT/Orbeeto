@@ -15,8 +15,8 @@ def getAngleToMouse(any_sprite: pygame.sprite.Sprite) -> float:
         - ``float``: The angle between ``any_sprite`` and the mouse cursor
     """    
     mouseX, mouseY = pygame.mouse.get_pos()
-    length_to_x = mouseX - any_sprite.rect.x - 32
-    length_to_y = mouseY - any_sprite.rect.y - 32
+    length_to_x = mouseX - any_sprite.pos.x
+    length_to_y = mouseY - any_sprite.pos.y
     if length_to_x and length_to_y != 0:
         angle_to_mouse = -math.degrees(math.atan2(length_to_y, length_to_x)) - 90
         return angle_to_mouse
@@ -47,26 +47,49 @@ def getAngleToSprite(any_sprite: pygame.sprite.Sprite, target_sprite: pygame.spr
     ### Returns
         ``float``: The angle between the two sprites
     """    
-    length_to_x = (target_sprite.pos.x - (0.5 * target_sprite.image.get_width())) - (any_sprite.pos.x - (0.5 * any_sprite.image.get_width()))
-    length_to_y = (target_sprite.pos.y - (0.5 * target_sprite.image.get_height())) - (any_sprite.pos.y - (0.5 * any_sprite.image.get_height()))
+    length_to_x = target_sprite.pos.x - any_sprite.pos.x
+    length_to_y = target_sprite.pos.y - any_sprite.pos.y
     if length_to_x and length_to_y != 0:
-        angle_to_mouse = -math.degrees(math.atan2(length_to_y, length_to_x)) - 90
-        return angle_to_mouse
+        angle = -math.degrees(math.atan2(length_to_y, length_to_x)) - 90
+        return angle
     else:
         if length_to_y == 0:
             if length_to_x > 0:
-                angle_to_mouse = -90
-                return angle_to_mouse
+                angle = -90
+                return angle
             else:
-                angle_to_mouse = 90
-                return angle_to_mouse
+                angle = 90
+                return angle
         else:
             if length_to_y > 0:
-                angle_to_mouse = -180
-                return angle_to_mouse
+                angle = -180
+                return angle
             else:
-                angle_to_mouse = 0
-                return angle_to_mouse
+                angle = 0
+                return angle
+
+
+def getAngleToCoords(any_sprite: pygame.sprite.Sprite, coords: pygame.math.Vector2) -> float:
+    length_to_x = coords.x - any_sprite.rect.x - any_sprite.rect.width
+    length_to_y = coords.y - any_sprite.rect.y - any_sprite.rect.height
+    if length_to_x and length_to_y != 0:
+        angle = -math.degrees(math.atan2(length_to_y, length_to_x)) - 90
+        return angle
+    else:
+        if length_to_y == 0:
+            if length_to_x > 0:
+                angle = -90
+                return angle
+            else:
+                angle = 90
+                return angle
+        else:
+            if length_to_y > 0:
+                angle = -180
+                return angle
+            else:
+                angle = 0
+                return angle
 
 
 def getDistToSprite(selfEntity: pygame.sprite.Sprite, targetEntity: pygame.sprite.Sprite) -> float:
@@ -184,6 +207,7 @@ def getRandComponents(maxValue) -> pygame.math.Vector2:
     if rand.choice((True, False)) == True:
         y = -y
     return vec(x, y)
+
 
 def getVecToSprite(fromSprite: pygame.sprite.Sprite, toSprite: pygame.sprite.Sprite, vecMag: float) -> pygame.math.Vector2:
     angle = getAngleToSprite(fromSprite, toSprite)

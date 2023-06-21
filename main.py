@@ -276,12 +276,12 @@ class Player(PlayerBase):
         self.show(LAYERS['player_layer'])
 
         self.setImages("sprites/orbeeto/orbeeto.png", 64, 64, 5, 0, 0)
-        self.setRects(0, 0, 64, 64, -32, -32)
+        self.setRects(0, 0, 64, 64, 32, 32)
 
         self.bulletType = PROJ_STD
         
-        self.can_fire_portal = False
-        self.can_grapple = True
+        self.canPortal = False
+        self.canGrapple = True
 
         self.grapple = None
 
@@ -289,14 +289,29 @@ class Player(PlayerBase):
         """When called once every frame, it allows the player to recive input from the user and move accordingly"""        
         self.accel = vec(0, 0)
         if self.visible:
-            if isInputHeld[K_a] == True:
-                self.accel.x = -self.accel_const * dt
-            if isInputHeld[K_d] == True:
-                self.accel.x = self.accel_const * dt
-            if isInputHeld[K_s] == True:
-                self.accel.y = self.accel_const * dt
-            if isInputHeld[K_w] == True:
-                self.accel.y = -self.accel_const * dt
+            if self.grapple == None:
+                if isInputHeld[K_a]:
+                    self.accel.x = -self.accel_const * dt
+                if isInputHeld[K_d]:
+                    self.accel.x = self.accel_const * dt
+                if isInputHeld[K_s]:
+                    self.accel.y = self.accel_const * dt
+                if isInputHeld[K_w]:
+                    self.accel.y = -self.accel_const * dt
+
+            elif self.grapple != None:
+                if self.grapple.grappledTo == None:
+                    if isInputHeld[K_a]:
+                        self.accel.x = -self.accel_const * dt
+                    if isInputHeld[K_d]:
+                        self.accel.x = self.accel_const * dt
+                    if isInputHeld[K_s]:
+                        self.accel.y = self.accel_const * dt
+                    if isInputHeld[K_w]:
+                        self.accel.y = -self.accel_const * dt
+                
+                if self.grapple.returning and self.grapple.grappledTo in all_walls:
+                    self.accel = vec((self.accel_const * 3) * -sin(getAngleToSprite(self, self.grapple)) * dt, (self.accel_const * 3) * -cos(getAngleToSprite(self, self.grapple)) * dt)
 
             self.rect.center = self.pos
             self.hitbox.center = self.pos
@@ -327,24 +342,24 @@ class Player(PlayerBase):
             self.last_shot = time.time()
 
         # Firing portals
-        if keyReleased[3] % 2 == 0 and self.can_fire_portal:
+        if keyReleased[3] % 2 == 0 and self.canPortal and self.canGrapple:
             all_projs.add(PortalBullet(self, self.pos.x, self.pos.y, velX * 0.75, velY * 0.75))
-            self.can_fire_portal = False
+            self.canPortal = False
 
-        elif keyReleased[3] % 2 != 0 and not self.can_fire_portal:
+        elif keyReleased[3] % 2 != 0 and not self.canPortal and self.canGrapple:
             all_projs.add(PortalBullet(self, self.pos.x, self.pos.y, velX * 0.75, velY * 0.75))
-            self.can_fire_portal = True
+            self.canPortal = True
 
         # Grappling hook
-        if keyReleased[2] % 2 != 0 and self.can_grapple:
+        if keyReleased[2] % 2 != 0 and self.canGrapple:
             if hasattr(self.grapple, 'kill'):
                 self.grapple.kill()
             self.grapple = GrappleBullet(self, self.pos.x, self.pos.y, velX * 1.25, velY * 1.25)
-            self.can_grapple = False
+            self.canGrapple = False
 
-        elif keyReleased[2] % 2 == 0 and not self.can_grapple:
+        elif keyReleased[2] % 2 == 0 and not self.canGrapple:
             self.grapple.returning = True
-            self.can_grapple = True
+            self.canGrapple = True
 
     def update(self):
         if can_update and self.visible:
@@ -441,7 +456,7 @@ class StandardGrunt(EnemyBase):
         self.rand_pos = vec(rand.randint(64, WIN_WIDTH - 64), rand.randint(64, WIN_HEIGHT - 64))
 
         self.setImages("sprites/enemies/standard_grunt.png", 64, 64, 5, 0, 0)
-        self.setRects(0, 0, 64, 64, -32, -32)
+        self.setRects(0, 0, 64, 64, 32, 32)
 
         #---------------------- Game stats & UI ----------------------#
         initStats(self, 15, 10, 10, 25, 0.4)
@@ -525,7 +540,7 @@ class OctoGrunt(EnemyBase):
         self.rand_pos = vec(rand.randint(64, WIN_WIDTH - 64), rand.randint(64, WIN_HEIGHT - 64))
 
         self.setImages("sprites/enemies/octogrunt.png", 64, 64, 1, 0, 0)
-        self.setRects(0, 0, 64, 64, -32, -32)
+        self.setRects(0, 0, 64, 64, 32, 32)
 
         #---------------------- Game stats & UI ----------------------#
         initStats(self, 44, 10, 10, 45, 0.4)
@@ -625,7 +640,7 @@ class Box(ActorBase):
         self.accel_const = 0.4
         
         self.setImages("sprites/orbeeto/orbeeto.png", 64, 64, 1, 0, 0)
-        self.setRects(0, 0, 64, 64, 0, 0, True)
+        self.setRects(0, 0, 64, 64, 64, 64, True)
 
     def movement(self):
         self.accel = vec(0, 0)
@@ -943,7 +958,7 @@ class PortalBullet(BulletBase):
         self.damage = PROJ_DMG[PROJ_PORTAL]
 
         self.setImages("sprites/bullets/bullets.png", 32, 32, 4)
-        self.setRects(-24, -24, 8, 8)
+        self.setRects(-24, -24, 8, 8, 8, 8)
 
         # Rotate sprite to trajectory
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
@@ -1059,16 +1074,25 @@ class GrappleBullet(BulletBase):
         self.grappledTo = None
         self.returning = False
 
+        self.canTp = True
+        self.tpPoints = []
+
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
 
         self.setImages("sprites/bullets/bullets.png", 32, 32, 2, 9)
-        self.setRects(0, 0, 16, 16, 0, 0)
+        self.setRects(0, 0, 32, 32, 16, 16)
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
 
     def land(self, grappledTo):
         self.isHooked = True
         self.grappledTo = grappledTo
+
+    def shatter(self):
+        """Destroys the grappling hook"""   
+        self.shotFrom.grapple = None
+        self.returning = False
+        self.kill()
 
     def projCollide(self, spriteGroup, canHurt):
         for colliding_entity in spriteGroup:
@@ -1099,13 +1123,16 @@ class GrappleBullet(BulletBase):
             elif not canHurt:
                 if spriteGroup == all_portals:
                     if len(all_portals) == 2:
+                        self.tpPoints.append(copy.copy(self.pos))
                         for portal in all_portals:
                             if self.hitbox.colliderect(portal.hitbox):
                                 self.teleport(portal)
+                                self.canTp = False
+                                self.tpPoints.append(copy.copy(self.pos))
                         return
                     
                     elif len(all_portals) < 2:
-                        self.land(colliding_entity)
+                        self.land(None)
                         return
 
                 else:
@@ -1125,38 +1152,66 @@ class GrappleBullet(BulletBase):
             if not self.isHooked:
                 self.projCollide(all_enemies, True)
                 self.projCollide(all_walls, False)
-                self.projCollide(all_portals, False)
                 self.projCollide(all_drops, False)
+                if self.canTp:
+                    self.projCollide(all_portals, False)
+
+    def sendBack(self):
+        """Sends the grappling hook back to the player"""        
+        angle = getAngleToSprite(self, self.shotFrom)
+        self.pos.x += 20 * -sin(rad(angle))
+        self.pos.y += 20 * -cos(rad(angle))
+
+        if self.hitbox.colliderect(self.shotFrom.rect):
+            self.shatter()
 
     def movement(self):
-        if not self.isHooked and not self.returning:
-            self.pos.x += self.vel.x * dt
-            self.pos.y += self.vel.y * dt
-        
-        if self.isHooked and not self.returning:
-            if self.grappledTo != None:
-                self.pos.x = self.grappledTo.pos.x
-                self.pos.y = self.grappledTo.pos.y
-                self.grappledTo.isGrappled = True
-            
+        if not self.returning:
+            if not self.isHooked:
+                self.pos.x += self.vel.x * dt
+                self.pos.y += self.vel.y * dt
+
             else:
-                self.pos = self.pos
+                if self.grappledTo != None and self.grappledTo not in all_walls:
+                    self.pos.x = self.grappledTo.pos.x
+                    self.pos.y = self.grappledTo.pos.y
+                    self.grappledTo.isGrappled = True
+                
+                elif self.grappledTo != None and self.grappledTo in all_walls:
+                    side = portalSideCheck(self.grappledTo, self)
+                    if side == DOWN:
+                        self.pos.x = self.pos.x
+                        self.pos.y = self.grappledTo.pos.y + (self.grappledTo.rect.height // 2)
+                    if side == UP:
+                        self.pos.x = self.pos.x
+                        self.pos.y = self.grappledTo.pos.y - (self.grappledTo.rect.height // 2)
+                    if side == RIGHT:
+                        self.pos.x = self.grappledTo.pos.x + (self.grappledTo.rect.width // 2)
+                        self.pos.y = self.pos.y
+                    if side == LEFT:
+                        self.pos.x = self.grappledTo.pos.x - (self.grappledTo.rect.width // 2)
+                        self.pos.y = self.pos.y
+                
+                else:
+                    self.pos = self.pos
 
         if self.returning:
-            angle = getAngleToSprite(self, self.shotFrom)
-            self.pos.x += 10 * -sin(rad(angle))
-            self.pos.y += 10 * -cos(rad(angle))
-
+            if self.grappledTo == None:
+                self.sendBack()
+            
+            # Grapple will move if attached to an enemy or item
             if self.grappledTo != None and self.grappledTo not in all_walls:
+                self.sendBack()
                 self.grappledTo.pos.x = self.pos.x
                 self.grappledTo.pos.y = self.pos.y
 
-            if self.hitbox.colliderect(self.shotFrom.rect):
-                self.kill()
+            if self.grappledTo != None and self.grappledTo in all_walls:
+                if self.shotFrom.hitbox.colliderect(self.hitbox):
+                    self.shatter()
 
             for wall in all_walls:
-                if self.hitbox.colliderect(wall.rect) and wall != self.grappledTo:
-                    self.kill() # Replace with "self.shatter"
+                if self.hitbox.colliderect(wall.hitbox) and wall != self.grappledTo:
+                    self.shatter()
 
         self.rect.center = self.pos
         self.hitbox.center = self.pos
@@ -1165,12 +1220,15 @@ class GrappleBullet(BulletBase):
         if not self.isHooked:
             self.index = 0
             self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
-        else:
+        elif not self.returning:
             self.index = 1
             self.rotateImage(getAngleToSprite(self, self.shotFrom) + 180)
         
         self.bindProj()
-        pygame.draw.line(screen, (255, 0, 0), vec(self.shotFrom.pos.x, self.shotFrom.pos.y), self.pos, 3)
+        
+        pygame.draw.line(screen, RED, self.shotFrom.pos, self.pos)
+        pygame.draw.rect(screen, GREEN, self.hitbox, 1)
+        pygame.draw.rect(screen, BLUE, self.rect, 1)
 
 
 class PlayerStdBullet(PlayerBulletBase):
@@ -1202,7 +1260,7 @@ class PlayerStdBullet(PlayerBulletBase):
         self.damage = PROJ_DMG[PROJ_STD]
 
         self.setImages("sprites/bullets/bullets.png", 32, 32, 1)
-        self.setRects(-24, -24, 8, 8, -2, -2)
+        self.setRects(-24, -24, 8, 8, 6, 6)
 
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
     
@@ -2005,6 +2063,9 @@ while running:
     last_time = time.time()
     
     anim_timer += 1
+
+    if hasattr(player1.grapple, 'tpPoints'):
+        print(player1.grapple.tpPoints)
 
     if player1.hp <= 0:
         pygame.quit()
