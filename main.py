@@ -1003,7 +1003,7 @@ class PortalBullet(BulletBase):
                         return
 
                 elif spriteGroup == all_walls:
-                    side = portalSideCheck(colliding_entity, self)
+                    side = wallSideCheck(colliding_entity, self)
                     if side == DOWN:
                         all_portals.add(Portal(self.pos.x, colliding_entity.pos.y + (colliding_entity.image.get_height() // 2), side))
                         portalCountCheck()
@@ -1178,7 +1178,7 @@ class GrappleBullet(BulletBase):
                     self.grappledTo.isGrappled = True
                 
                 elif self.grappledTo != None and self.grappledTo in all_walls:
-                    side = portalSideCheck(self.grappledTo, self)
+                    side = wallSideCheck(self.grappledTo, self)
                     if side == DOWN:
                         self.pos.x = self.pos.x
                         self.pos.y = self.grappledTo.pos.y + (self.grappledTo.rect.height // 2)
@@ -1388,7 +1388,7 @@ def portalCountCheck():
                 all_portals.add(portalTemp[1:])
 
 
-def portalSideCheck(wall, portal):
+def wallSideCheck(wall, portal):
     """Checks for which side of a wall a portal hit and assigns it that value
     
     ### Parameters
