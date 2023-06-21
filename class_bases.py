@@ -5,7 +5,6 @@ from constants import *
 from groups import *
 from spritesheet import Spritesheet
 
-vec = pygame.math.Vector2
 
 class ActorBase(pygame.sprite.Sprite):
     def __init__(self):
@@ -13,6 +12,8 @@ class ActorBase(pygame.sprite.Sprite):
         super().__init__()
         self.visible = True
         self.lastFrame = time.time()
+
+        self.isGrappled = False
 
         self.pos = vec((0, 0))
         self.vel = vec(0, 0)
@@ -49,6 +50,9 @@ class ActorBase(pygame.sprite.Sprite):
         self.original_images = self.spritesheet.get_images(0, 0, frameWidth, frameHeight, imageCount, imageOffset)
         self.index = index
 
+        self.renderImages()
+
+    def renderImages(self):
         self.image = self.images[self.index]
         self.original_image = self.original_images[self.index]
 

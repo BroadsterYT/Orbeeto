@@ -4,9 +4,7 @@ import random as rand
 
 from groups import *
 
-vec = pygame.math.Vector2
-
-#------------------------------ Returns float ------------------------------#
+# ------------------------------- Returns float ------------------------------ #
 def getAngleToMouse(any_sprite: pygame.sprite.Sprite) -> float:
     """Gets the angle between a sprite and the mouse cursor
     
@@ -117,7 +115,7 @@ def getVecAngle(vecX: float, vecY: float) -> float:
                 return vec_angle
 
 
-#------------------------------ Returns int ------------------------------#
+# -------------------------------- Returns int ------------------------------- #
 def calculateDamage(sender: pygame.sprite.Sprite, receiver: pygame.sprite.Sprite, proj: pygame.sprite.Sprite) -> int:
     """Calculates the damage an entity receives after being hit
     
@@ -137,7 +135,7 @@ def calculateDamage(sender: pygame.sprite.Sprite, receiver: pygame.sprite.Sprite
     return damage
 
 
-#------------------------------ Returns string ------------------------------#
+# ------------------------------ Returns string ------------------------------ #
 def collideSideCheck(object: pygame.sprite.Sprite, instig: pygame.sprite.Sprite) -> str:
     if object.pos.x - 0.5 * object.hitbox.width <= instig.pos.x <= object.pos.x + 0.5 * object.hitbox.width and instig.pos.y > object.pos.y:
         return DOWN
@@ -155,7 +153,7 @@ def collideSideCheck(object: pygame.sprite.Sprite, instig: pygame.sprite.Sprite)
         return None
 
 
-#------------------------------ Returns pygame.math.Vector2 ------------------------------#
+# ------------------------ Returns pygame.math.Vector2 ----------------------- #
 def getTopLeftCoordinates(sprite, desired_x, desired_y) -> pygame.math.Vector2:
     """Returns the coordinates of the topleft corner of a sprite that is centered at its middle
     
@@ -187,8 +185,38 @@ def getRandComponents(maxValue) -> pygame.math.Vector2:
         y = -y
     return vec(x, y)
 
+def getVecToSprite(fromSprite: pygame.sprite.Sprite, toSprite: pygame.sprite.Sprite, vecMag: float) -> pygame.math.Vector2:
+    angle = getAngleToSprite(fromSprite, toSprite)
+    
+    vecX = vecMag * -math.sin(math.radians(angle))
+    vecY = vecMag * -math.cos(math.radians(angle))
 
-#------------------------------ Returns None ------------------------------#
+    return vec(vecX, vecY)
+
+
+# ----------------------- Returns pygame.sprite.Sprite ----------------------- #
+def getClosestPlayer(check_sprite: pygame.sprite.Sprite) -> pygame.sprite.Sprite:
+    """Checks for the closest player to a given sprite.
+    
+    ### Parameters
+        - check_sprite ``(pygame.sprite.Sprite)``: The entity checking for the closest player
+    
+    ### Returns
+        - ``pygame.sprite.Sprite``: The player closest to ``check_sprite``
+    """    
+    playerCoords = {}
+    for a_player in all_players:
+        playerCoords[a_player] = getDistToSprite(check_sprite, a_player)
+
+    try:
+        temp = min(playerCoords.values())
+        result = [key for key in playerCoords if playerCoords[key] == temp]
+        return result[0]
+    except:
+        return check_sprite
+
+
+# ------------------------------- Returns None ------------------------------- #
 def collideCheck(instig: pygame.sprite.Sprite, *contactLists: pygame.sprite.Group) -> None:
     """Check if a sprite comes into contact with another sprite from a specific group.
     If the sprites do collide, then they will perform a hitbox collision.

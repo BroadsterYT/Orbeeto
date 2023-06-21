@@ -17,7 +17,6 @@ from spritesheet import *
 from ui_actors import *
 
 # Aliases
-vec = pygame.math.Vector2
 spriteGroup = pygame.sprite.Group
 rad = radians
 deg = degrees
@@ -27,27 +26,6 @@ clock = pygame.time.Clock()
 screenSize = (WIN_WIDTH, WIN_HEIGHT)
 screen = pygame.display.set_mode(screenSize, pygame.SCALED)
 pygame.display.set_caption('Orbeeto')
-
-
-def getClosestPlayer(check_sprite: pygame.sprite.Sprite) -> pygame.sprite.Sprite:
-    """Checks for the closest player to a given sprite.
-    
-    ### Parameters
-        - check_sprite ``(pygame.sprite.Sprite)``: The entity checking for the closest player
-    
-    ### Returns
-        - ``pygame.sprite.Sprite``: The player closest to ``check_sprite``
-    """    
-    playerCoords = {}
-    for a_player in all_players:
-        playerCoords[a_player] = getDistToSprite(check_sprite, a_player)
-
-    try:
-        temp = min(playerCoords.values())
-        result = [key for key in playerCoords if playerCoords[key] == temp]
-        return result[0]
-    except:
-        return check_sprite
 
 
 def objectAccel(sprite):
@@ -300,8 +278,12 @@ class Player(PlayerBase):
         self.setImages("sprites/orbeeto/orbeeto.png", 64, 64, 5, 0, 0)
         self.setRects(0, 0, 64, 64, -32, -32)
 
-        self.bulletType = PROJ_P_STD
+        self.bulletType = PROJ_STD
+        
         self.can_fire_portal = False
+        self.can_grapple = True
+
+        self.grapple = None
 
     def movement(self):
         """When called once every frame, it allows the player to recive input from the user and move accordingly"""        
@@ -327,7 +309,7 @@ class Player(PlayerBase):
         velX = self.bulletVel * -sin(angle_to_mouse)
         velY = self.bulletVel * -cos(angle_to_mouse)
 
-        if isInputHeld[1] and self.bulletType == PROJ_P_STD and time.time() - self.last_shot >= self.gun_cooldown:
+        if isInputHeld[1] and self.bulletType == PROJ_STD and time.time() - self.last_shot >= self.gun_cooldown:
             offset = vec((21, 30))
             all_projs.add(
                 PlayerStdBullet(self,
@@ -352,6 +334,17 @@ class Player(PlayerBase):
         elif keyReleased[3] % 2 != 0 and not self.can_fire_portal:
             all_projs.add(PortalBullet(self, self.pos.x, self.pos.y, velX * 0.75, velY * 0.75))
             self.can_fire_portal = True
+
+        # Grappling hook
+        if keyReleased[2] % 2 != 0 and self.can_grapple:
+            if hasattr(self.grapple, 'kill'):
+                self.grapple.kill()
+            self.grapple = GrappleBullet(self, self.pos.x, self.pos.y, velX * 1.25, velY * 1.25)
+            self.can_grapple = False
+
+        elif keyReleased[2] % 2 == 0 and not self.can_grapple:
+            self.grapple.returning = True
+            self.can_grapple = True
 
     def update(self):
         if can_update and self.visible:
@@ -455,7 +448,7 @@ class StandardGrunt(EnemyBase):
 
     def movement(self, canShoot: bool):
         if self.hp > 0:
-            if time.time() - self.lastRelocate > rand.uniform(2.5, 5.0):
+            if time.time() - self.lastRelocate > rand.uniform(2.5, 5.0) and not self.isGrappled:
                 self.rand_pos.x = rand.randint(self.image.get_width() + 64, WIN_WIDTH - self.image.get_width() - 64)
                 self.rand_pos.y = rand.randint(self.image.get_height() + 64, WIN_HEIGHT - self.image.get_height() - 64)
                 self.lastRelocate = time.time()
@@ -628,22 +621,15 @@ class Box(ActorBase):
         self.show(LAYERS['movable_layer'])
         all_movable.add(self)
 
-        self.spritesheet = Spritesheet("sprites/orbeeto/orbeeto.png")
-        self.images = self.spritesheet.get_images(0, 0, 64, 64, 1)
-        self.index = 0
-
         self.pos = vec((posX, posY))
         self.accel_const = 0.4
-
-        self.image = self.images[self.index]
-        self.rect = pygame.Rect(0, 0, 64, 64)
-        self.hitbox = self.rect
-
-        self.rect.center = self.pos
+        
+        self.setImages("sprites/orbeeto/orbeeto.png", 64, 64, 1, 0, 0)
+        self.setRects(0, 0, 64, 64, 0, 0, True)
 
     def movement(self):
         self.accel = vec(0, 0)
-        if self.visible:
+        if can_update and self.visible:
             if self.hitbox.colliderect(player1.rect):
                 if collideSideCheck(self, player1) == DOWN:
                     self.accel.y = -self.accel_const * dt
@@ -954,22 +940,13 @@ class PortalBullet(BulletBase):
         self.vel = vec(velX, velY)
 
         self.hitbox_adjust = vec(0, 0)
-        self.damage = PROJS[PROJ_P_PORTAL]
+        self.damage = PROJ_DMG[PROJ_PORTAL]
 
-        self.spritesheet = Spritesheet("sprites/bullets/bullets.png")
-        self.images = self.spritesheet.get_images(0, 0, 32, 32, 4)
-        self.original_images = self.spritesheet.get_images(0, 0, 32, 32, 4)
-        self.index = 0
-
-        self.image = self.images[self.index]
-        self.original_image = self.original_images[self.index]
-        
-        self.rect = pygame.Rect(-24, -24, 8, 8)
-        self.hitbox = self.rect.inflate(self.hitbox_adjust.x, self.hitbox_adjust.y)
+        self.setImages("sprites/bullets/bullets.png", 32, 32, 4)
+        self.setRects(-24, -24, 8, 8)
 
         # Rotate sprite to trajectory
-        self.image = pygame.transform.rotate(self.original_image, int(getVecAngle(self.vel.x, self.vel.y)))
-        self.rect = self.image.get_rect(center = self.rect.center)
+        self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
 
     def projCollide(self, spriteGroup, canHurt):
         for colliding_entity in spriteGroup:
@@ -1013,16 +990,16 @@ class PortalBullet(BulletBase):
                 elif spriteGroup == all_walls:
                     side = portalSideCheck(colliding_entity, self)
                     if side == DOWN:
-                        all_portals.add(Portal(self.pos.x, colliding_entity.pos.y + (colliding_entity.image.get_height() / 2), side))
+                        all_portals.add(Portal(self.pos.x, colliding_entity.pos.y + (colliding_entity.image.get_height() // 2), side))
                         portalCountCheck()
                     if side == UP:
-                        all_portals.add(Portal(self.pos.x, colliding_entity.pos.y - (colliding_entity.image.get_height() / 2), side))
+                        all_portals.add(Portal(self.pos.x, colliding_entity.pos.y - (colliding_entity.image.get_height() // 2), side))
                         portalCountCheck()
                     if side == RIGHT:
-                        all_portals.add(Portal(self.pos.x, self.pos.y, side))
+                        all_portals.add(Portal(colliding_entity.pos.x + (colliding_entity.image.get_width() // 2), self.pos.y, side))
                         portalCountCheck()
                     if side == LEFT:
-                        all_portals.add(Portal(self.pos.x, self.pos.y, side))
+                        all_portals.add(Portal(colliding_entity.pos.x - (colliding_entity.image.get_width() // 2), self.pos.y, side))
                         portalCountCheck()
                     self.land()
                 
@@ -1069,6 +1046,133 @@ class PortalBullet(BulletBase):
         self.bindProj()
 
 
+class GrappleBullet(BulletBase):
+    def __init__(self, shotFrom, posX, posY, velX, velY):
+        super().__init__()
+        self.show(LAYERS['grapple'])
+        all_projs.add(self)
+
+        self.shotFrom = shotFrom
+        self.damage = PROJ_DMG[PROJ_GRAPPLE]
+
+        self.isHooked = False
+        self.grappledTo = None
+        self.returning = False
+
+        self.pos = vec((posX, posY))
+        self.vel = vec(velX, velY)
+
+        self.setImages("sprites/bullets/bullets.png", 32, 32, 2, 9)
+        self.setRects(0, 0, 16, 16, 0, 0)
+        self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
+
+    def land(self, grappledTo):
+        self.isHooked = True
+        self.grappledTo = grappledTo
+
+    def projCollide(self, spriteGroup, canHurt):
+        for colliding_entity in spriteGroup:
+            if not self.hitbox.colliderect(colliding_entity.hitbox):
+                continue
+            
+            if not colliding_entity.visible:
+                continue
+
+            if canHurt:
+                if spriteGroup == all_enemies:
+                    if rand.randint(1, 20) == 1:
+                        colliding_entity.hp -= (calculateDamage(self.shotFrom, colliding_entity, self)) * 3
+                        all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, 3 * calculateDamage(self.shotFrom, colliding_entity, self)))
+                    else:
+                        colliding_entity.hp -= calculateDamage(self.shotFrom, colliding_entity, self)
+                        all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, calculateDamage(self.shotFrom, colliding_entity, self)))
+                    self.land(colliding_entity)
+
+                elif spriteGroup != all_enemies:
+                    colliding_entity.hp -= calculateDamage(self.shotFrom, colliding_entity, self)
+                    all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, calculateDamage(self.shotFrom, colliding_entity, self)))
+                    if hasattr(colliding_entity, 'hitTime'):
+                        colliding_entity.hitTime = 0
+                        colliding_entity.lastHit = time.time()
+                    self.land(colliding_entity)
+
+            elif not canHurt:
+                if spriteGroup == all_portals:
+                    if len(all_portals) == 2:
+                        for portal in all_portals:
+                            if self.hitbox.colliderect(portal.hitbox):
+                                self.teleport(portal)
+                        return
+                    
+                    elif len(all_portals) < 2:
+                        self.land(colliding_entity)
+                        return
+
+                else:
+                    self.land(colliding_entity)
+
+    def bindProj(self):
+        if can_update:
+            self.movement()
+            if (
+                self.pos.x > WIN_WIDTH or 
+                self.pos.x < 0 or
+                self.pos.y > WIN_HEIGHT or 
+                self.pos.y < 0
+            ):
+                self.land(None)
+
+            if not self.isHooked:
+                self.projCollide(all_enemies, True)
+                self.projCollide(all_walls, False)
+                self.projCollide(all_portals, False)
+                self.projCollide(all_drops, False)
+
+    def movement(self):
+        if not self.isHooked and not self.returning:
+            self.pos.x += self.vel.x * dt
+            self.pos.y += self.vel.y * dt
+        
+        if self.isHooked and not self.returning:
+            if self.grappledTo != None:
+                self.pos.x = self.grappledTo.pos.x
+                self.pos.y = self.grappledTo.pos.y
+                self.grappledTo.isGrappled = True
+            
+            else:
+                self.pos = self.pos
+
+        if self.returning:
+            angle = getAngleToSprite(self, self.shotFrom)
+            self.pos.x += 10 * -sin(rad(angle))
+            self.pos.y += 10 * -cos(rad(angle))
+
+            if self.grappledTo != None and self.grappledTo not in all_walls:
+                self.grappledTo.pos.x = self.pos.x
+                self.grappledTo.pos.y = self.pos.y
+
+            if self.hitbox.colliderect(self.shotFrom.rect):
+                self.kill()
+
+            for wall in all_walls:
+                if self.hitbox.colliderect(wall.rect) and wall != self.grappledTo:
+                    self.kill() # Replace with "self.shatter"
+
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
+
+    def update(self):
+        if not self.isHooked:
+            self.index = 0
+            self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
+        else:
+            self.index = 1
+            self.rotateImage(getAngleToSprite(self, self.shotFrom) + 180)
+        
+        self.bindProj()
+        pygame.draw.line(screen, (255, 0, 0), vec(self.shotFrom.pos.x, self.shotFrom.pos.y), self.pos, 3)
+
+
 class PlayerStdBullet(PlayerBulletBase):
     def __init__(self, shotFrom, posX, posY, velX, velY):
         """A projectile object that moves at a constant velocity
@@ -1095,22 +1199,12 @@ class PlayerStdBullet(PlayerBulletBase):
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
 
-        self.damage = PROJS[PROJ_P_STD]
+        self.damage = PROJ_DMG[PROJ_STD]
 
-        self.spritesheet = Spritesheet("sprites/bullets/bullets.png")
-        self.images = self.spritesheet.get_images(0, 0, 32, 32, 4)
-        self.original_images = self.spritesheet.get_images(0, 0, 32, 32, 4)
-        self.index = 0
+        self.setImages("sprites/bullets/bullets.png", 32, 32, 1)
+        self.setRects(-24, -24, 8, 8, -2, -2)
 
-        self.image = self.images[self.index]
-        self.original_image = self.original_images[self.index]
-        
-        self.rect = pygame.Rect(-24, -24, 8, 8)
-        self.hitbox = self.rect.inflate(-2, -2)
-
-        # Rotate sprite to trajectory
-        self.image = pygame.transform.rotate(self.original_image, int(getVecAngle(self.vel.x, self.vel.y)))
-        self.rect = self.image.get_rect(center = self.rect.center)
+        self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
     
     def movement(self):
         self.pos.x += self.vel.x * dt
@@ -1120,11 +1214,7 @@ class PlayerStdBullet(PlayerBulletBase):
         self.hitbox.center = self.pos
 
     def update(self):
-        self.original_image = self.original_images[self.index]
-
-        self.image = pygame.transform.rotate(self.original_image, int(getVecAngle(self.vel.x, self.vel.y)))
-        self.rect = self.image.get_rect(center = self.rect.center)
-
+        self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
         self.bindProj()
 
 
@@ -1138,7 +1228,7 @@ class EnemyStdBullet(EnemyBulletBase):
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
 
-        self.damage = PROJS[PROJ_P_STD]
+        self.damage = PROJ_DMG[PROJ_STD]
 
         self.spritesheet = Spritesheet("sprites/bullets/bullets.png")
         self.images = self.spritesheet.get_images(0, 0, 32, 32, 4)
@@ -1331,7 +1421,7 @@ class ProjExplode(ActorBase):
 class Wall(EnvirBase):
     def __init__(self, topleftX_mult: float, topleftY_mult: float, widthMult: float, heightMult: float):
         super().__init__()
-        all_sprites.add(self, layer = LAYERS['wall_layer'])
+        self.show(LAYERS['wall_layer'])
         all_walls.add(self)
 
         self.visible = True
@@ -1947,7 +2037,7 @@ while running:
     #------------------------------ Game operation ------------------------------#
     # Regenerate health for testing purposes
     for a_player in all_players:
-        if anim_timer % 5 == 0 and a_player.hp < a_player.max_hp and isInputHeld[2]:
+        if anim_timer % 5 == 0 and a_player.hp < a_player.max_hp and isInputHeld[K_x]:
             a_player.hp += 1
 
     #------------------------------ Redraw window ------------------------------#

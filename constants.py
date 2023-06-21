@@ -1,4 +1,9 @@
-#------------------------------ Window ------------------------------#
+import pygame
+
+# ---------------------------------- Aliases --------------------------------- #
+vec = pygame.math.Vector2
+
+# ---------------------------------- Window ---------------------------------- #
 WIN_WIDTH = 1280
 WIN_HEIGHT = 720
 FPS = 60
@@ -6,16 +11,13 @@ SPF = 0.0167
 
 ANIMTIME = 0.1
 
-#------------------------------ Directions ------------------------------#
+# -------------------------------- Directions -------------------------------- #
 LEFT = 'loc_left'
 RIGHT = 'loc_right'
 UP = 'loc_up'
 DOWN = 'loc_down'
 
-TOP = 'loc_top'
-BOTTOM = 'loc_bottom'
-
-#------------------------------ Layers ------------------------------#
+# ---------------------------------- Layers ---------------------------------- #
 LAYERS = {
     'floor': 1,
     'player_layer': 2,
@@ -25,6 +27,7 @@ LAYERS = {
     'proj_layer': 2,
     'explosion_layer': 2,
     'wall_layer': 10,
+    'grapple': 11,
     'portal_layer': 11,
     'text_layer': 51,
     'statBar_layer': 100,
@@ -32,27 +35,23 @@ LAYERS = {
     'ui_layer_1': 200
 }
 
-#------------------------------ Object Movement ------------------------------#
+# ------------------------------ Object Movement ----------------------------- #
 # The coefficient of friction for all objects with an acceleration parameter
 FRIC = -0.07
 
-#------------------------------ Projectiles ------------------------------#
-PROJ_P_STD = 'playerBullet'
-PROJ_P_PORTAL = 'playerPortal'
+# -------------------------------- Projectiles ------------------------------- #
+PROJ_STD = 'proj_StdBullet'
 
-PROJ_E_STD = 'enemyBullet'
+PROJ_PORTAL = 'proj_PortalBullet'
+PROJ_GRAPPLE = 'proj_GrappleHook'
 
 # A dictionary that stores all damage constants of all projectile types
-PROJS = {
-    PROJ_P_STD: 1,
-    PROJ_P_PORTAL: 15,
-    PROJ_E_STD: 1,
+PROJ_DMG = {
+    PROJ_STD: 1,
+    
+    PROJ_PORTAL: 15,
+    PROJ_GRAPPLE: 10
 }
-
-SHOOT_RIGHT = 'right'
-SHOOT_LEFT = 'left'
-SHOOT_MIDDLE = 'middle'
-SHOOT_BOTH = 'leftright'
 
 
 # ============================================================================ #
