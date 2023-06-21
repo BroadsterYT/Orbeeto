@@ -1,6 +1,6 @@
 # Orbeeto
 
-[![CC BY NC 4.0][cc-by-nc-shield]][cc-by-nc]
+[![cc-by-nc-nd-shield]][cc-by-nc-nd]
 
 ## Description
 
@@ -14,20 +14,13 @@ Featuring retro graphics and a dynamic soundtrack, Orbeeto's adventure will take
 
 Take on the challenge, protect the Cygnus Ascendant, and become the hero the universe needs. Are you ready to blast your way through this action-packed adventure? Get ready to save the galaxy as Orbeeto in this exhilarating bullet-hell puzzle-solving game!
 
-## Gameplay
-
-* Use <kbd>W</kbd>, <kbd>A</kbd>, <kbd>S</kbd>, and <kbd>D</kbd> to move
-* Use LMB to fire
-* Use RMB to fire portals
-* [_Developer Use Only_] Hold MMB to regenerate health
-
 ## License
 
 This work is licensed under a
-[Creative Commons Attribution-NonCommercial 4.0 International License][cc-by-nc].
+[Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License][cc-by-nc-nd].
 
-[![CC BY NC 4.0][cc-by-nc-image]][cc-by-nc]
+[![cc-by-nc-nd-image]][cc-by-nc-nd]
 
-[cc-by-nc]: https://creativecommons.org/licenses/by-nc/4.0/
-[cc-by-nc-image]: https://i.creativecommons.org/l/by-nc/4.0/88x31.png
-[cc-by-nc-shield]: https://img.shields.io/badge/license-CC%20BY%20NC%204.0-lightgrey
+[cc-by-nc-nd]: https://creativecommons.org/licenses/by-nc-nd/4.0/
+[cc-by-nc-nd-image]: https://i.creativecommons.org/l/by-nc-nd/4.0/88x31.png
+[cc-by-nc-nd-shield]: https://img.shields.io/badge/license-CC%20BY%20NC%20%20ND%204.0-lightgrey
