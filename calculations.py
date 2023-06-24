@@ -69,9 +69,9 @@ def getAngleToSprite(any_sprite: pygame.sprite.Sprite, target_sprite: pygame.spr
                 return angle
 
 
-def getAngleToCoords(any_sprite: pygame.sprite.Sprite, coords: pygame.math.Vector2) -> float:
-    length_to_x = coords.x - any_sprite.rect.x - any_sprite.rect.width
-    length_to_y = coords.y - any_sprite.rect.y - any_sprite.rect.height
+def getAngleToCFromS(any_sprite: pygame.sprite.Sprite, coords: pygame.math.Vector2) -> float:
+    length_to_x = coords.x - any_sprite.pos.x
+    length_to_y = coords.y - any_sprite.pos.y
     if length_to_x and length_to_y != 0:
         angle = -math.degrees(math.atan2(length_to_y, length_to_x)) - 90
         return angle
@@ -92,6 +92,29 @@ def getAngleToCoords(any_sprite: pygame.sprite.Sprite, coords: pygame.math.Vecto
                 return angle
 
 
+def getAngleToCFromC(startCoords: pygame.math.Vector2, endCoords: pygame.math.Vector2):
+    lengthX = endCoords.x - startCoords.x
+    lengthY = endCoords.y - startCoords.y
+    if lengthX and lengthY != 0:
+        angle = -math.degrees(math.atan2(lengthY, lengthX)) - 90
+        return angle
+    else:
+        if lengthY == 0:
+            if lengthX > 0:
+                angle = -90
+                return angle
+            else:
+                angle = 90
+                return angle
+        else:
+            if lengthY > 0:
+                angle = -180
+                return angle
+            else:
+                angle = 0
+                return angle
+
+
 def getDistToSprite(selfEntity: pygame.sprite.Sprite, targetEntity: pygame.sprite.Sprite) -> float:
     """Gets the distance between two entities
     
@@ -102,10 +125,26 @@ def getDistToSprite(selfEntity: pygame.sprite.Sprite, targetEntity: pygame.sprit
     ### Returns
         - ``float``: Distance between ``selfEntity`` and ``targetEntity``
     """    
-    length_to_x = (targetEntity.pos.x - (0.5 * targetEntity.image.get_width())) - (selfEntity.pos.x - (0.5 * selfEntity.image.get_width()))
-    length_to_y = (targetEntity.pos.y - (0.5 * targetEntity.image.get_height())) - (selfEntity.pos.y - (0.5 * selfEntity.image.get_height()))
+    length_to_x = targetEntity.pos.x - selfEntity.pos.x
+    length_to_y = targetEntity.pos.y - selfEntity.pos.y
     
     return math.sqrt((length_to_x**2) + (length_to_y**2))
+
+
+def getDistToCoords(startCoords: pygame.math.Vector2, endCoords: pygame.math.Vector2):
+    """Returns the distance between two coordinates
+    
+    ### Parameters
+        - startCoords (``pygame.math.Vector2``): The first set of coordinates
+        - endCoords (``pygame.math.Vector2``): The second set of coordinates
+    
+    ### Returns
+        - ``float``: The distance between the two coordinates
+    """    
+    lengthX = endCoords.x - startCoords.x
+    lengthY = endCoords.y - startCoords.y
+    
+    return math.sqrt(pow(lengthX, 2) + pow(lengthY, 2))
 
 
 def getVecAngle(vecX: float, vecY: float) -> float:
@@ -209,15 +248,6 @@ def getRandComponents(maxValue) -> pygame.math.Vector2:
     return vec(x, y)
 
 
-def getVecToSprite(fromSprite: pygame.sprite.Sprite, toSprite: pygame.sprite.Sprite, vecMag: float) -> pygame.math.Vector2:
-    angle = getAngleToSprite(fromSprite, toSprite)
-    
-    vecX = vecMag * -math.sin(math.radians(angle))
-    vecY = vecMag * -math.cos(math.radians(angle))
-
-    return vec(vecX, vecY)
-
-
 # ----------------------- Returns pygame.sprite.Sprite ----------------------- #
 def getClosestPlayer(check_sprite: pygame.sprite.Sprite) -> pygame.sprite.Sprite:
     """Checks for the closest player to a given sprite.
@@ -281,7 +311,10 @@ def killGroups(*groups: pygame.sprite.Group) -> None:
     """Calls ``.kill()`` for all sprites within one or more groups."""    
     for group in groups:
         for entity in group:
-            entity.kill()
+            if hasattr(entity, 'shatter'):
+                entity.shatter()
+            else:
+                entity.kill()
 
 
 def initStats(sprite: pygame.sprite.Sprite, hp: int, attack: int, defense: int, xp: int, accel_const: float) -> None:
@@ -349,7 +382,7 @@ def groupChangeRooms(spriteGroup: pygame.sprite.Group, direction: str) -> None:
             sprite.changeRoomLeft()
 
 
-#------------------------------ Classes ------------------------------#
+# ---------------------------------- Classes --------------------------------- #
 class CustomError(Exception):
     """Returns a custom error
 

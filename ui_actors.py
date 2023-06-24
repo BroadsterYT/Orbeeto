@@ -11,6 +11,7 @@ from spritesheet import Spritesheet
 
 vec = pygame.math.Vector2
 
+
 class HealthBar(StatBarBase):
     def __init__(self, entity):
         super().__init__()
@@ -47,6 +48,7 @@ class HealthBar(StatBarBase):
             self.index = 17
             self.image = self.images[self.index]
             self.kill()
+
 
 class DodgeBar(StatBarBase):
     def __init__(self, entity):

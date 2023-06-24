@@ -300,15 +300,14 @@ class Player(PlayerBase):
                     self.accel.y = -self.accel_const * dt
 
             elif self.grapple != None:
-                if self.grapple.grappledTo == None:
-                    if isInputHeld[K_a]:
-                        self.accel.x = -self.accel_const * dt
-                    if isInputHeld[K_d]:
-                        self.accel.x = self.accel_const * dt
-                    if isInputHeld[K_s]:
-                        self.accel.y = self.accel_const * dt
-                    if isInputHeld[K_w]:
-                        self.accel.y = -self.accel_const * dt
+                if isInputHeld[K_a]:
+                    self.accel.x = -self.accel_const * dt
+                if isInputHeld[K_d]:
+                    self.accel.x = self.accel_const * dt
+                if isInputHeld[K_s]:
+                    self.accel.y = self.accel_const * dt
+                if isInputHeld[K_w]:
+                    self.accel.y = -self.accel_const * dt
                 
                 if self.grapple.returning and self.grapple.grappledTo in all_walls:
                     self.accel = vec((self.accel_const * 3) * -sin(getAngleToSprite(self, self.grapple)) * dt, (self.accel_const * 3) * -cos(getAngleToSprite(self, self.grapple)) * dt)
@@ -352,13 +351,14 @@ class Player(PlayerBase):
 
         # Grappling hook
         if keyReleased[2] % 2 != 0 and self.canGrapple:
-            if hasattr(self.grapple, 'kill'):
-                self.grapple.kill()
+            if self.grapple != None:
+                self.grapple.shatter()
             self.grapple = GrappleBullet(self, self.pos.x, self.pos.y, velX * 1.25, velY * 1.25)
             self.canGrapple = False
 
         elif keyReleased[2] % 2 == 0 and not self.canGrapple:
-            self.grapple.returning = True
+            if self.grapple != None:
+                self.grapple.returning = True
             self.canGrapple = True
 
     def update(self):
@@ -1074,6 +1074,8 @@ class GrappleBullet(BulletBase):
         self.grappledTo = None
         self.returning = False
 
+        self.chain = SpriteBeam(self.shotFrom, self)
+
         self.canTp = True
         self.tpPoints = []
 
@@ -1092,6 +1094,7 @@ class GrappleBullet(BulletBase):
         """Destroys the grappling hook"""   
         self.shotFrom.grapple = None
         self.returning = False
+        self.chain.kill()
         self.kill()
 
     def projCollide(self, spriteGroup, canHurt):
@@ -1122,7 +1125,7 @@ class GrappleBullet(BulletBase):
 
             elif not canHurt:
                 if spriteGroup == all_portals:
-                    if len(all_portals) == 2:
+                    if len(all_portals) == 2 and self.canTp:
                         self.tpPoints.append(copy.copy(self.pos))
                         for portal in all_portals:
                             if self.hitbox.colliderect(portal.hitbox):
@@ -1134,6 +1137,9 @@ class GrappleBullet(BulletBase):
                     elif len(all_portals) < 2:
                         self.land(None)
                         return
+                    
+                elif not self.canTp and spriteGroup == all_portals:
+                    pass
 
                 else:
                     self.land(colliding_entity)
@@ -1153,14 +1159,13 @@ class GrappleBullet(BulletBase):
                 self.projCollide(all_enemies, True)
                 self.projCollide(all_walls, False)
                 self.projCollide(all_drops, False)
-                if self.canTp:
-                    self.projCollide(all_portals, False)
+                self.projCollide(all_portals, False)
 
     def sendBack(self):
         """Sends the grappling hook back to the player"""        
         angle = getAngleToSprite(self, self.shotFrom)
-        self.pos.x += 20 * -sin(rad(angle))
-        self.pos.y += 20 * -cos(rad(angle))
+        self.pos.x += 10 * -sin(rad(angle))
+        self.pos.y += 10 * -cos(rad(angle))
 
         if self.hitbox.colliderect(self.shotFrom.rect):
             self.shatter()
@@ -1225,8 +1230,7 @@ class GrappleBullet(BulletBase):
             self.rotateImage(getAngleToSprite(self, self.shotFrom) + 180)
         
         self.bindProj()
-        
-        pygame.draw.line(screen, RED, self.shotFrom.pos, self.pos)
+
         pygame.draw.rect(screen, GREEN, self.hitbox, 1)
         pygame.draw.rect(screen, BLUE, self.rect, 1)
 
@@ -1519,6 +1523,65 @@ class Floor(EnvirBase):
             self.texture = self.textures[self.index]
             self.tileTexture((0, 0, 0))
             self.lastFrame = time.time()
+
+
+# ============================================================================ #
+#                                Visual Classes                                #
+# ============================================================================ #
+class SpriteBeam(ActorBase):
+    def __init__(self, fromSprite: pygame.sprite.Sprite, toSprite: pygame.sprite.Sprite):
+        super().__init__()
+        self.show(LAYERS['floor'])
+
+        self.fromSprite, self.toSprite = fromSprite, toSprite
+        self.index = 0
+        
+        self.length = getDistToCoords(self.fromSprite.pos, self.toSprite.pos)
+        self.angle = getAngleToSprite(self.fromSprite, self.toSprite)
+        self.image = pygame.Surface(vec(1, 1))
+
+        self.rect = self.image.get_rect()
+        self.rect.center = self.pos
+
+    def buildSetup(self, startPos: pygame.math.Vector2, endPos: pygame.math.Vector2):
+        self.length = getDistToCoords(startPos, endPos)
+        self.angle = getAngleToSprite(self.fromSprite, self.toSprite)
+
+        print(self.angle + 90)
+
+        opp = (self.length / 2) * cos(rad(self.angle + 90))
+        adj = (self.length / 2) * sin(rad(self.angle + 90))
+
+        self.pos = vec(self.fromSprite.pos.x + opp, self.fromSprite.pos.y - adj)
+
+    def buildImage(self, frameOffset: int) -> pygame.Surface:
+        """Builds the image of the beam 
+        
+        ### Parameters
+            - frameOffset (``int``): The frame from "beams.png" to build the beam from
+        
+        ### Returns
+            - ``pygame.Surface``: The image of the beam
+        """        
+        self.spritesheet = Spritesheet("sprites/textures/beams.png")
+        baseImages = self.spritesheet.get_images(0, 0, 12, 12, 1, frameOffset)
+        baseImage: pygame.Surface = baseImages[self.index]
+
+        finalImage = pygame.Surface(vec(baseImage.get_width(), int(self.length)))
+
+        offset = 0
+        for i in range(int(self.length / baseImage.get_height())):
+            finalImage.blit(baseImage, vec(0, offset))
+            offset += baseImage.get_height()
+
+        finalImage.set_colorkey(BLACK)
+        self.image = pygame.transform.rotate(finalImage, self.angle)
+
+    def update(self):
+        self.buildSetup(self.fromSprite.pos, self.toSprite.pos)
+        self.buildImage(0)
+        self.rect = self.image.get_rect()
+        self.rect.center = self.pos
 
 
 # ============================================================================ #
