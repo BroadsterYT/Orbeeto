@@ -289,22 +289,20 @@ def collideCheck(instig: pygame.sprite.Sprite, *contactLists: pygame.sprite.Grou
                 pushFromSide(instig, entity)
 
 
-def pushFromSide(instig, entity) -> None:
+def pushFromSide(instig: pygame.sprite.Sprite, entity: pygame.sprite.Sprite) -> None:
     if instig.hitbox.colliderect(entity.hitbox):
         if instig.pos.y < (entity.pos.y + (0.5 * entity.hitbox.height) + 1) and instig.pos.y > (entity.pos.y - (0.5 * entity.hitbox.height) - 1):
-            if instig.pos.x > entity.pos.x:
-                instig.vel.x = 0
-                instig.pos.x += 1
-            else:
-                instig.vel.x = 0
-                instig.pos.x -= 1
-        if instig.pos.x > (entity.pos.x - (0.5 * entity.hitbox.width) - 1) and instig.pos.x < (entity.pos.x + (0.5 * entity.hitbox.width) + 1):
-            if instig.pos.y < entity.pos.y:
-                instig.vel.y = 0
-                instig.pos.y -= 1
-            else:
-                instig.vel.y = 0
-                instig.pos.y += 1
+            if instig.pos.x > entity.pos.x: # Right
+                instig.pos.x = entity.pos.x + (entity.hitbox.width // 2) + (instig.hitbox.width // 2)
+            else: # Left
+                instig.pos.x = entity.pos.x - (entity.hitbox.width // 2) - (instig.hitbox.width // 2)
+        elif instig.pos.x > (entity.pos.x - (0.5 * entity.hitbox.width) - 1) and instig.pos.x < (entity.pos.x + (0.5 * entity.hitbox.width) + 1):
+            if instig.pos.y < entity.pos.y: # Up
+                # instig.vel.y = 0
+                instig.pos.y = entity.pos.y - (entity.hitbox.height // 2) - (instig.hitbox.height // 2)
+            else: # Down
+                # instig.vel.y = 0
+                instig.pos.y = entity.pos.y + (entity.hitbox.height // 2) + (instig.hitbox.height // 2)
 
 
 def killGroups(*groups: pygame.sprite.Group) -> None:

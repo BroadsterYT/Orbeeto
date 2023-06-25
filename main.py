@@ -353,7 +353,7 @@ class Player(PlayerBase):
         if keyReleased[2] % 2 != 0 and self.canGrapple:
             if self.grapple != None:
                 self.grapple.shatter()
-            self.grapple = GrappleBullet(self, self.pos.x, self.pos.y, velX * 1.25, velY * 1.25)
+            self.grapple = GrappleBullet(self, self.pos.x, self.pos.y, velX, velY)
             self.canGrapple = False
 
         elif keyReleased[2] % 2 == 0 and not self.canGrapple:
@@ -405,6 +405,8 @@ class EnemyBase(ActorBase):
         self.pos = vec((0, 0))
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
+
+        self.isGrappled = False
 
         self.is_shooting = False
 
@@ -463,7 +465,7 @@ class StandardGrunt(EnemyBase):
 
     def movement(self, canShoot: bool):
         if self.hp > 0:
-            if time.time() - self.lastRelocate > rand.uniform(2.5, 5.0) and not self.isGrappled:
+            if time.time() - self.lastRelocate > rand.uniform(2.5, 5.0):
                 self.rand_pos.x = rand.randint(self.image.get_width() + 64, WIN_WIDTH - self.image.get_width() - 64)
                 self.rand_pos.y = rand.randint(self.image.get_height() + 64, WIN_HEIGHT - self.image.get_height() - 64)
                 self.lastRelocate = time.time()
@@ -491,7 +493,6 @@ class StandardGrunt(EnemyBase):
             objectAccel(self)
 
     def shoot(self, target, vel, shoot_time):
-        global anim_timer
         if time.time() - self.lastShot > shoot_time:
             self.is_shooting = True
             try:
@@ -668,6 +669,8 @@ class DropBase(ActorBase):
     def __init__(self):
         super().__init__()
         self.accel_const = 0.8
+
+        self.isGrappled = False
 
 
 class ItemDrop(DropBase):
@@ -1089,6 +1092,8 @@ class GrappleBullet(BulletBase):
     def land(self, grappledTo):
         self.isHooked = True
         self.grappledTo = grappledTo
+        if self.grappledTo != None:
+            self.grappledTo.isGrappled = True
 
     def shatter(self):
         """Destroys the grappling hook"""   
@@ -1180,7 +1185,6 @@ class GrappleBullet(BulletBase):
                 if self.grappledTo != None and self.grappledTo not in all_walls:
                     self.pos.x = self.grappledTo.pos.x
                     self.pos.y = self.grappledTo.pos.y
-                    self.grappledTo.isGrappled = True
                 
                 elif self.grappledTo != None and self.grappledTo in all_walls:
                     side = wallSideCheck(self.grappledTo, self)
@@ -1546,8 +1550,6 @@ class SpriteBeam(ActorBase):
     def buildSetup(self, startPos: pygame.math.Vector2, endPos: pygame.math.Vector2):
         self.length = getDistToCoords(startPos, endPos)
         self.angle = getAngleToSprite(self.fromSprite, self.toSprite)
-
-        print(self.angle + 90)
 
         opp = (self.length / 2) * cos(rad(self.angle + 90))
         adj = (self.length / 2) * sin(rad(self.angle + 90))
@@ -2126,9 +2128,6 @@ while running:
     last_time = time.time()
     
     anim_timer += 1
-
-    if hasattr(player1.grapple, 'tpPoints'):
-        print(player1.grapple.tpPoints)
 
     if player1.hp <= 0:
         pygame.quit()
