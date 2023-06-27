@@ -1,7 +1,7 @@
-import pygame, math
-from constants import *
+import pygame, math, time, copy
 import random as rand
 
+from constants import *
 from groups import *
 
 # ------------------------------- Returns float ------------------------------ #
@@ -177,6 +177,17 @@ def getVecAngle(vecX: float, vecY: float) -> float:
                 return vec_angle
 
 
+def getTimeDiff(timeValue: float) -> float:
+    """Returns the difference between the current time and another 
+    
+    ### Parameters
+        - timeValue (``float``): The time to compare to the current time
+    
+    ### Returns
+        - ``float``: The difference between the current time and the other time
+    """    
+    return time.time() - timeValue
+
 # -------------------------------- Returns int ------------------------------- #
 def calculateDamage(sender: pygame.sprite.Sprite, receiver: pygame.sprite.Sprite, proj: pygame.sprite.Sprite) -> int:
     """Calculates the damage an entity receives after being hit
@@ -197,22 +208,51 @@ def calculateDamage(sender: pygame.sprite.Sprite, receiver: pygame.sprite.Sprite
     return damage
 
 
+# ------------------------------- Returns bool ------------------------------- #
+def isLeftOrRight(instig: pygame.sprite.Sprite, other: pygame.sprite.Sprite) -> bool:
+    """Determines if a sprite is to the left or right of another sprite
+    
+    ### Parameters
+        - instig (``pygame.sprite.Sprite``): The sprite that may or may not be to the left or right
+        - other (``pygame.sprite.Sprite``): The sprite to determine the relative position from
+    
+    ### Returns
+        - ``bool``: Whether or not the instigator is to the left or right of the other sprite
+    """    
+    if instig.pos.y < (other.pos.y + (other.hitbox.height // 2)) and instig.pos.y > (other.pos.y - (other.hitbox.height // 2)):
+        return True
+    else:
+        return False
+    
+
+def isAboveOrBelow(instig: pygame.sprite.Sprite, other: pygame.sprite.Sprite) -> bool:
+    """Determines if a sprite is above or below another sprite
+    
+    ### Parameters
+        - instig (``pygame.sprite.Sprite``): The sprite that may or may not be above or below
+        - other (``pygame.sprite.Sprite``): The sprite to determine the relative position from
+    
+    ### Returns
+        - ``bool``: Whether or not the instigator is above or below the other sprite
+    """    
+    if instig.pos.x > (other.pos.x - (other.hitbox.width // 2)) and instig.pos.x < (other.pos.x + (other.hitbox.width // 2)):
+        return True
+    else:
+        return False
+
+
 # ------------------------------ Returns string ------------------------------ #
 def collideSideCheck(object: pygame.sprite.Sprite, instig: pygame.sprite.Sprite) -> str:
-    if object.pos.x - 0.5 * object.hitbox.width <= instig.pos.x <= object.pos.x + 0.5 * object.hitbox.width and instig.pos.y > object.pos.y:
-        return DOWN
-    
-    elif object.pos.x - 0.5 * object.hitbox.width <= instig.pos.x <= object.pos.x + 0.5 * object.hitbox.width and instig.pos.y < object.pos.y:
-        return UP
-
-    elif object.pos.y - 0.5 * object.hitbox.height <= instig.pos.y <= object.pos.y + 0.5 * object.hitbox.height and instig.pos.x > object.pos.x:
-        return RIGHT
-    
-    elif object.pos.y - 0.5 * object.hitbox.height <= instig.pos.y <= object.pos.y + 0.5 * object.hitbox.height and instig.pos.x < object.pos.x:
-        return LEFT
-    
-    else:
-        return None
+    if instig.pos.y < (object.pos.y + (0.5 * object.hitbox.height) + 1) and instig.pos.y > (object.pos.y - (0.5 * object.hitbox.height) - 1):
+        if instig.pos.x > object.pos.x:
+            return EAST
+        else:
+            return WEST
+    if instig.pos.x > (object.pos.x - (0.5 * object.hitbox.width) - 1) and instig.pos.x < (object.pos.x + (0.5 * object.hitbox.width) + 1):
+        if instig.pos.y < object.pos.y:
+            return NORTH
+        else:
+            return SOUTH
 
 
 # ------------------------ Returns pygame.math.Vector2 ----------------------- #
@@ -289,21 +329,23 @@ def collideCheck(instig: pygame.sprite.Sprite, *contactLists: pygame.sprite.Grou
                 pushFromSide(instig, entity)
 
 
-def pushFromSide(instig: pygame.sprite.Sprite, entity: pygame.sprite.Sprite) -> None:
-    if instig.hitbox.colliderect(entity.hitbox):
-        if instig.pos.y < (entity.pos.y + (0.5 * entity.hitbox.height) + 1) and instig.pos.y > (entity.pos.y - (0.5 * entity.hitbox.height) - 1):
-            if instig.pos.x > entity.pos.x: # Right
-                instig.pos.x = entity.pos.x + (entity.hitbox.width // 2) + (instig.hitbox.width // 2)
-            else: # Left
-                instig.pos.x = entity.pos.x - (entity.hitbox.width // 2) - (instig.hitbox.width // 2)
-        elif instig.pos.x > (entity.pos.x - (0.5 * entity.hitbox.width) - 1) and instig.pos.x < (entity.pos.x + (0.5 * entity.hitbox.width) + 1):
-            if instig.pos.y < entity.pos.y: # Up
-                # instig.vel.y = 0
-                instig.pos.y = entity.pos.y - (entity.hitbox.height // 2) - (instig.hitbox.height // 2)
-            else: # Down
-                # instig.vel.y = 0
-                instig.pos.y = entity.pos.y + (entity.hitbox.height // 2) + (instig.hitbox.height // 2)
-
+def pushFromSide(instig: pygame.sprite.Sprite, sprite: pygame.sprite.Sprite) -> None:
+    if instig.hitbox.colliderect(sprite.hitbox):
+        if isLeftOrRight(instig, sprite):
+            if instig.pos.x > sprite.pos.x and instig.vel.x < 0:
+                instig.vel.x = 0
+                instig.pos.x = sprite.pos.x + (sprite.hitbox.width // 2) + (instig.hitbox.width // 2)
+            if instig.pos.x < sprite.pos.x and instig.vel.x > 0:
+                instig.vel.x = 0
+                instig.pos.x = sprite.pos.x - (sprite.hitbox.width // 2) - (instig.hitbox.width // 2)
+        if isAboveOrBelow(instig, sprite):
+            if instig.pos.y < sprite.pos.y and instig.vel.y > 0:
+                instig.vel.y = 0
+                instig.pos.y = sprite.pos.y - (sprite.hitbox.height // 2) - (instig.hitbox.height // 2)
+            if instig.pos.y > sprite.pos.y and instig.vel.y < 0:
+                instig.vel.y = 0
+                instig.pos.y = sprite.pos.y + (sprite.hitbox.height // 2) + (instig.hitbox.height // 2)
+  
 
 def killGroups(*groups: pygame.sprite.Group) -> None:
     """Calls ``.kill()`` for all sprites within one or more groups."""    
@@ -363,19 +405,19 @@ def groupChangeRooms(spriteGroup: pygame.sprite.Group, direction: str) -> None:
         - spriteGroup (``pygame.sprite.Group``): The group to relocate
         - direction (``str``): The direction of the room where ``spriteGroup`` should be relocated
     """    
-    if direction == DOWN:
+    if direction == SOUTH:
         for sprite in spriteGroup:
             sprite.changeRoomDown()
 
-    if direction == RIGHT:
+    if direction == EAST:
         for sprite in spriteGroup:
             sprite.changeRoomRight()
 
-    if direction == UP:
+    if direction == NORTH:
         for sprite in spriteGroup:
             sprite.changeRoomUp()
 
-    if direction == LEFT:
+    if direction == WEST:
         for sprite in spriteGroup:
             sprite.changeRoomLeft()
 

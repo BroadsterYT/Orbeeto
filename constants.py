@@ -18,13 +18,18 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
 # -------------------------------- Directions -------------------------------- #
-LEFT = 'loc_left'
-RIGHT = 'loc_right'
-UP = 'loc_up'
-DOWN = 'loc_down'
+WEST = 'loc_west'
+EAST = 'loc_east'
+NORTH = 'loc_north'
+SOUTH = 'loc_south'
+
+NORTHEAST = 'loc_northeast'
+NORTHWEST = 'loc_northwest'
+SOUTHEAST = 'loc_southeast'
+SOUTHWEST = 'loc_southwest'
 
 # ---------------------------------- Layers ---------------------------------- #
-LAYERS = {
+LAYER = {
     'floor': 1,
     'player_layer': 2,
     'enemy_layer': 2,

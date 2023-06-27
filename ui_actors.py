@@ -15,7 +15,7 @@ vec = pygame.math.Vector2
 class HealthBar(StatBarBase):
     def __init__(self, entity):
         super().__init__()
-        self.show(LAYERS['statBar_layer'])
+        self.show(LAYER['statBar_layer'])
         all_stat_bars.add(self)
         
         self.entity = entity
@@ -53,7 +53,7 @@ class HealthBar(StatBarBase):
 class DodgeBar(StatBarBase):
     def __init__(self, entity):
         super().__init__()
-        all_sprites.add(self, layer = LAYERS['statBar_layer'])
+        all_sprites.add(self, layer = LAYER['statBar_layer'])
         all_stat_bars.add(self)
 
         self.spritesheet = Spritesheet("sprites/stat_bars/dodge_bar.png", False)

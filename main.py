@@ -84,45 +84,45 @@ class PlayerBase(ActorBase):
     def changeRoom(self, direction: str) -> None:
         hideCurrentEnemies()
 
-        if direction == DOWN:
+        if direction == SOUTH:
             room.room.y -= 1
             room.layoutUpdate()
             self.pos.y -= WIN_HEIGHT
-            groupChangeRooms(all_portals, DOWN)
+            groupChangeRooms(all_portals, SOUTH)
 
-        elif direction == RIGHT:
+        elif direction == EAST:
             room.room.x += 1
             room.layoutUpdate()
             self.pos.x -= WIN_WIDTH
-            groupChangeRooms(all_portals, RIGHT)
+            groupChangeRooms(all_portals, EAST)
 
-        elif direction == UP:
+        elif direction == NORTH:
             room.room.y += 1
             room.layoutUpdate()
             self.pos.y += WIN_HEIGHT
-            groupChangeRooms(all_portals, UP)
+            groupChangeRooms(all_portals, NORTH)
         
-        elif direction == LEFT:
+        elif direction == WEST:
             room.room.x -= 1
             room.layoutUpdate()
 
             self.pos.x += WIN_WIDTH
-            groupChangeRooms(all_portals, LEFT)
+            groupChangeRooms(all_portals, WEST)
 
         killGroups(all_projs, all_explosions)
 
     def checkRoomChange(self):
         if self.pos.x <= 0:
-            self.changeRoom(LEFT)
+            self.changeRoom(WEST)
 
         if self.pos.x >= WIN_WIDTH:
-            self.changeRoom(RIGHT)
+            self.changeRoom(EAST)
 
         if player1.pos.y <= 0:
-            self.changeRoom(UP)
+            self.changeRoom(NORTH)
 
         if player1.pos.y >= WIN_HEIGHT:
-            self.changeRoom(DOWN)
+            self.changeRoom(SOUTH)
 
     def teleport(self, portal_in):
         for portal in all_portals:
@@ -134,90 +134,90 @@ class PlayerBase(ActorBase):
         width = portalOut.hitbox.height // 2
         height = portalOut.hitbox.width // 2
 
-        if portal_in.facing == DOWN:
+        if portal_in.facing == SOUTH:
             distOffset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
             
-            if portalOut.facing == DOWN:
+            if portalOut.facing == SOUTH:
                 self.pos.x = portalOut.pos.x + distOffset
                 self.pos.y = portalOut.pos.y + height
                 self.vel = vec(-velCopy.x, -velCopy.y)
             
-            if portalOut.facing == RIGHT:
+            if portalOut.facing == EAST:
                 self.pos.x = portalOut.pos.x + width
                 self.pos.y = portalOut.pos.y + distOffset
                 self.vel = vec(-velCopy.y, velCopy.x)
             
-            if portalOut.facing == UP:
+            if portalOut.facing == NORTH:
                 self.pos.x = portalOut.pos.x + distOffset
                 self.pos.y = portalOut.pos.y - height
             
-            if portalOut.facing == LEFT:
+            if portalOut.facing == WEST:
                 self.pos.x = portalOut.pos.x - width
                 self.pos.y = portalOut.pos.y + distOffset
                 self.vel = vec(velCopy.y, velCopy.x)
 
-        if portal_in.facing == RIGHT:
+        if portal_in.facing == EAST:
             distOffset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
             
-            if portalOut.facing == DOWN:
+            if portalOut.facing == SOUTH:
                 self.pos.x = portalOut.pos.x + distOffset
                 self.pos.y = portalOut.pos.y + height
                 self.vel = vec(velCopy.y, -velCopy.x)
                 
-            if portalOut.facing == RIGHT:
+            if portalOut.facing == EAST:
                 self.pos.x = portalOut.pos.x + width
                 self.pos.y = portalOut.pos.y + distOffset
                 self.vel = vec(-velCopy.x, -velCopy.y)
 
-            if portalOut.facing == UP:
+            if portalOut.facing == NORTH:
                 self.pos.x = portalOut.pos.x + distOffset
                 self.pos.y = portalOut.pos.y - width
                 self.vel = vec(-velCopy.y, velCopy.x)
 
-            if portalOut.facing == LEFT:
+            if portalOut.facing == WEST:
                 self.pos.x = portalOut.pos.x - width
                 self.pos.y = portalOut.pos.y + distOffset
 
-        if portal_in.facing == UP:
+        if portal_in.facing == NORTH:
             distOffset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
             
-            if portalOut.facing == DOWN:
+            if portalOut.facing == SOUTH:
                 self.pos.x = portalOut.pos.x + distOffset
                 self.pos.y = portalOut.pos.y + height
             
-            if portalOut.facing == RIGHT:
+            if portalOut.facing == EAST:
                 self.pos.x = portalOut.pos.x + width
                 self.pos.y = portalOut.pos.y + distOffset
                 self.vel = vec(velCopy.y, velCopy.x)
             
-            if portalOut.facing == UP:
+            if portalOut.facing == NORTH:
                 self.pos.x = portalOut.pos.x + distOffset
                 self.pos.y = portalOut.pos.y - height
                 self.vel = vec(-velCopy.x, -velCopy.y)
             
-            if portalOut.facing == LEFT:
+            if portalOut.facing == WEST:
                 self.pos.x = portalOut.pos.x - width
                 self.pos.y = portalOut.pos.y + distOffset
                 self.vel = vec(-velCopy.y, velCopy.x)
 
-        if portal_in.facing == LEFT:
+        if portal_in.facing == WEST:
             distOffset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
 
-            if portalOut.facing == DOWN:
+            if portalOut.facing == SOUTH:
                 self.pos.x = portalOut.pos.x + distOffset
                 self.pos.y = portalOut.pos.y + height
                 self.vel = vec(velCopy.y, velCopy.x)
             
-            if portalOut.facing == RIGHT:
+            if portalOut.facing == EAST:
                 self.pos.x = portalOut.pos.x + width
                 self.pos.y = portalOut.pos.y + distOffset
             
-            if portalOut.facing == UP:
+            if portalOut.facing == NORTH:
                 self.pos.x = portalOut.pos.x + distOffset
                 self.pos.y = portalOut.pos.y - height
                 self.vel = vec(velCopy.y, -velCopy.x)
             
-            if portalOut.facing == LEFT:
+            if portalOut.facing == WEST:
                 self.pos.x = portalOut.pos.x - width
                 self.pos.y = portalOut.pos.y + distOffset
                 self.vel = vec(-velCopy.x, -velCopy.y)
@@ -273,7 +273,7 @@ class Player(PlayerBase):
         """A player sprite that can move and shoot."""        
         super().__init__()
         all_players.add(self)
-        self.show(LAYERS['player_layer'])
+        self.show(LAYER['player_layer'])
 
         self.setImages("sprites/orbeeto/orbeeto.png", 64, 64, 5, 0, 0)
         self.setRects(0, 0, 64, 64, 32, 32)
@@ -323,7 +323,7 @@ class Player(PlayerBase):
         velX = self.bulletVel * -sin(angle_to_mouse)
         velY = self.bulletVel * -cos(angle_to_mouse)
 
-        if isInputHeld[1] and self.bulletType == PROJ_STD and time.time() - self.last_shot >= self.gun_cooldown:
+        if isInputHeld[1] and self.bulletType == PROJ_STD and getTimeDiff(self.last_shot) >= self.gun_cooldown:
             offset = vec((21, 30))
             all_projs.add(
                 PlayerStdBullet(self,
@@ -374,7 +374,7 @@ class Player(PlayerBase):
                     self.teleport(portal)
 
             # Animation
-            if time.time() - self.lastFrame > ANIMTIME:
+            if getTimeDiff(self.lastFrame) > ANIMTIME:
                 if isInputHeld[1]:
                     self.index += 1
                     if self.index > 4:
@@ -393,7 +393,6 @@ class Player(PlayerBase):
         
         if self.hp <= 0:
             self.kill()
-
 
 # ============================================================================ #
 #                                 Enemy Classes                                #
@@ -448,7 +447,7 @@ class StandardGrunt(EnemyBase):
             - posY (``_type_``): _description_
         """         
         super().__init__()
-        self.show(LAYERS['enemy_layer'])
+        self.show(LAYER['enemy_layer'])
         all_enemies.add(self)
 
         self.lastRelocate = time.time()
@@ -465,7 +464,7 @@ class StandardGrunt(EnemyBase):
 
     def movement(self, canShoot: bool):
         if self.hp > 0:
-            if time.time() - self.lastRelocate > rand.uniform(2.5, 5.0):
+            if getTimeDiff(self.lastRelocate) > rand.uniform(2.5, 5.0):
                 self.rand_pos.x = rand.randint(self.image.get_width() + 64, WIN_WIDTH - self.image.get_width() - 64)
                 self.rand_pos.y = rand.randint(self.image.get_height() + 64, WIN_HEIGHT - self.image.get_height() - 64)
                 self.lastRelocate = time.time()
@@ -493,7 +492,7 @@ class StandardGrunt(EnemyBase):
             objectAccel(self)
 
     def shoot(self, target, vel, shoot_time):
-        if time.time() - self.lastShot > shoot_time:
+        if getTimeDiff(self.lastShot) > shoot_time:
             self.is_shooting = True
             try:
                 angle_to_target = getAngleToSprite(self, target)
@@ -512,7 +511,7 @@ class StandardGrunt(EnemyBase):
             self.movement(True)
             
             # Animation
-            if time.time() - self.lastFrame > ANIMTIME:
+            if getTimeDiff(self.lastFrame) > ANIMTIME:
                 if self.is_shooting == True:
                     self.index += 1
                     if self.index > 4:
@@ -531,7 +530,7 @@ class StandardGrunt(EnemyBase):
 class OctoGrunt(EnemyBase):
     def __init__(self, posX, posY):
         super().__init__()
-        self.show(LAYERS['enemy_layer'])
+        self.show(LAYER['enemy_layer'])
         all_enemies.add(self)
 
         self.lastRelocate = time.time()
@@ -548,7 +547,7 @@ class OctoGrunt(EnemyBase):
 
     def movement(self, canShoot):
         if can_update and self.visible:
-            if time.time() - self.lastRelocate > rand.uniform(2.5, 5.0):
+            if getTimeDiff(self.lastRelocate) > rand.uniform(2.5, 5.0):
                 self.rand_pos.x = rand.randint(0, WIN_WIDTH)
                 self.rand_pos.y = rand.randint(0, WIN_HEIGHT)
                 self.lastRelocate = time.time()
@@ -576,7 +575,7 @@ class OctoGrunt(EnemyBase):
             objectAccel(self)
 
     def shoot(self, target, vel, shoot_time):
-        if time.time() - self.lastShot > shoot_time:
+        if getTimeDiff(self.lastShot) > shoot_time:
             self.is_shooting = True
             angle_to_target = getAngleToSprite(self, target)
 
@@ -607,7 +606,7 @@ class OctoGrunt(EnemyBase):
             self.movement(True)
 
             # Animation
-            if time.time() - self.lastFrame > ANIMTIME:
+            if getTimeDiff(self.lastFrame) > ANIMTIME:
                 if self.is_shooting:
                     self.index += 0
                     if self.index > 4:
@@ -634,7 +633,7 @@ class OctoGrunt(EnemyBase):
 class Box(ActorBase):
     def __init__(self, posX, posY):
         super().__init__()
-        self.show(LAYERS['movable_layer'])
+        self.show(LAYER['movable_layer'])
         all_movable.add(self)
 
         self.pos = vec((posX, posY))
@@ -647,13 +646,13 @@ class Box(ActorBase):
         self.accel = vec(0, 0)
         if can_update and self.visible:
             if self.hitbox.colliderect(player1.rect):
-                if collideSideCheck(self, player1) == DOWN:
+                if collideSideCheck(self, player1) == SOUTH:
                     self.accel.y = -self.accel_const * dt
-                if collideSideCheck(self, player1) == RIGHT:
+                if collideSideCheck(self, player1) == EAST:
                     self.accel.x = -self.accel_const * dt
-                if collideSideCheck(self, player1) == UP:
+                if collideSideCheck(self, player1) == NORTH:
                     self.accel.y = self.accel_const * dt
-                if collideSideCheck(self, player1) == LEFT:
+                if collideSideCheck(self, player1) == WEST:
                     self.accel.x = self.accel_const * dt
 
             self.rect.center = self.pos
@@ -684,7 +683,7 @@ class ItemDrop(DropBase):
             - image_count (``int``): The number of frames to use
         """        
         super().__init__()
-        self.show(LAYERS['drops_layer'])
+        self.show(LAYER['drops_layer'])
         all_drops.add(self)
         self.droppedFrom = dropped_from
         self.mat = item_name
@@ -712,7 +711,7 @@ class ItemDrop(DropBase):
     def movement(self):
         self.accel = vec(0, 0)
         if self.visible:
-            time_since_start = time.time() - self.start_time
+            time_since_start = getTimeDiff(self.start_time)
             if time_since_start <= 0.1:
                 self.accel.x = self.randAccel.x
                 self.accel.y = self.randAccel.y
@@ -765,90 +764,90 @@ class BulletBase(ActorBase):
         width = portalOut.hitbox.height // 4
         height = portalOut.hitbox.width // 4
 
-        if portal_in.facing == DOWN:
+        if portal_in.facing == SOUTH:
             distOffset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
             
-            if portalOut.facing == DOWN:
+            if portalOut.facing == SOUTH:
                 self.pos.x = portalOut.pos.x + distOffset
                 self.pos.y = portalOut.pos.y + height
                 self.vel = vec(-velCopy.x, -velCopy.y)
             
-            if portalOut.facing == RIGHT:
+            if portalOut.facing == EAST:
                 self.pos.x = portalOut.pos.x + width
                 self.pos.y = portalOut.pos.y + distOffset
                 self.vel = vec(-velCopy.y, velCopy.x)
             
-            if portalOut.facing == UP:
+            if portalOut.facing == NORTH:
                 self.pos.x = portalOut.pos.x + distOffset
                 self.pos.y = portalOut.pos.y - height
             
-            if portalOut.facing == LEFT:
+            if portalOut.facing == WEST:
                 self.pos.x = portalOut.pos.x - width
                 self.pos.y = portalOut.pos.y + distOffset
                 self.vel = vec(velCopy.y, velCopy.x)
 
-        if portal_in.facing == RIGHT:
+        if portal_in.facing == EAST:
             distOffset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
             
-            if portalOut.facing == DOWN:
+            if portalOut.facing == SOUTH:
                 self.pos.x = portalOut.pos.x + distOffset
                 self.pos.y = portalOut.pos.y + height
                 self.vel = vec(velCopy.y, -velCopy.x)
                 
-            if portalOut.facing == RIGHT:
+            if portalOut.facing == EAST:
                 self.pos.x = portalOut.pos.x + width
                 self.pos.y = portalOut.pos.y + distOffset
                 self.vel = vec(-velCopy.x, -velCopy.y)
 
-            if portalOut.facing == UP:
+            if portalOut.facing == NORTH:
                 self.pos.x = portalOut.pos.x + distOffset
                 self.pos.y = portalOut.pos.y - width
                 self.vel = vec(-velCopy.y, velCopy.x)
 
-            if portalOut.facing == LEFT:
+            if portalOut.facing == WEST:
                 self.pos.x = portalOut.pos.x - width
                 self.pos.y = portalOut.pos.y + distOffset
 
-        if portal_in.facing == UP:
+        if portal_in.facing == NORTH:
             distOffset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
             
-            if portalOut.facing == DOWN:
+            if portalOut.facing == SOUTH:
                 self.pos.x = portalOut.pos.x + distOffset
                 self.pos.y = portalOut.pos.y + height
             
-            if portalOut.facing == RIGHT:
+            if portalOut.facing == EAST:
                 self.pos.x = portalOut.pos.x + width
                 self.pos.y = portalOut.pos.y + distOffset
                 self.vel = vec(velCopy.y, velCopy.x)
             
-            if portalOut.facing == UP:
+            if portalOut.facing == NORTH:
                 self.pos.x = portalOut.pos.x + distOffset
                 self.pos.y = portalOut.pos.y - height
                 self.vel = vec(-velCopy.x, -velCopy.y)
             
-            if portalOut.facing == LEFT:
+            if portalOut.facing == WEST:
                 self.pos.x = portalOut.pos.x - width
                 self.pos.y = portalOut.pos.y + distOffset
                 self.vel = vec(-velCopy.y, velCopy.x)
 
-        if portal_in.facing == LEFT:
+        if portal_in.facing == WEST:
             distOffset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
 
-            if portalOut.facing == DOWN:
+            if portalOut.facing == SOUTH:
                 self.pos.x = portalOut.pos.x + distOffset
                 self.pos.y = portalOut.pos.y + height
                 self.vel = vec(velCopy.y, velCopy.x)
             
-            if portalOut.facing == RIGHT:
+            if portalOut.facing == EAST:
                 self.pos.x = portalOut.pos.x + width
                 self.pos.y = portalOut.pos.y + distOffset
             
-            if portalOut.facing == UP:
+            if portalOut.facing == NORTH:
                 self.pos.x = portalOut.pos.x + distOffset
                 self.pos.y = portalOut.pos.y - height
                 self.vel = vec(velCopy.y, -velCopy.x)
             
-            if portalOut.facing == LEFT:
+            if portalOut.facing == WEST:
                 self.pos.x = portalOut.pos.x - width
                 self.pos.y = portalOut.pos.y + distOffset
                 self.vel = vec(-velCopy.x, -velCopy.y)
@@ -950,7 +949,7 @@ class EnemyBulletBase(BulletBase):
 class PortalBullet(BulletBase):
     def __init__(self, shotFrom, posX, posY, velX, velY): 
         super().__init__()
-        self.show(LAYERS['proj_layer'])
+        self.show(LAYER['proj_layer'])
         
         self.shotFrom = shotFrom
 
@@ -1007,16 +1006,16 @@ class PortalBullet(BulletBase):
 
                 elif spriteGroup == all_walls:
                     side = wallSideCheck(colliding_entity, self)
-                    if side == DOWN:
+                    if side == SOUTH:
                         all_portals.add(Portal(self.pos.x, colliding_entity.pos.y + (colliding_entity.image.get_height() // 2), side))
                         portalCountCheck()
-                    if side == UP:
+                    if side == NORTH:
                         all_portals.add(Portal(self.pos.x, colliding_entity.pos.y - (colliding_entity.image.get_height() // 2), side))
                         portalCountCheck()
-                    if side == RIGHT:
+                    if side == EAST:
                         all_portals.add(Portal(colliding_entity.pos.x + (colliding_entity.image.get_width() // 2), self.pos.y, side))
                         portalCountCheck()
-                    if side == LEFT:
+                    if side == WEST:
                         all_portals.add(Portal(colliding_entity.pos.x - (colliding_entity.image.get_width() // 2), self.pos.y, side))
                         portalCountCheck()
                     self.land()
@@ -1067,10 +1066,10 @@ class PortalBullet(BulletBase):
 class GrappleBullet(BulletBase):
     def __init__(self, shotFrom, posX, posY, velX, velY):
         super().__init__()
-        self.show(LAYERS['grapple'])
+        self.show(LAYER['grapple'])
         all_projs.add(self)
 
-        self.shotFrom = shotFrom
+        self.shotFrom: pygame.sprite.Sprite = shotFrom
         self.damage = PROJ_DMG[PROJ_GRAPPLE]
 
         self.isHooked = False
@@ -1188,16 +1187,16 @@ class GrappleBullet(BulletBase):
                 
                 elif self.grappledTo != None and self.grappledTo in all_walls:
                     side = wallSideCheck(self.grappledTo, self)
-                    if side == DOWN:
+                    if side == SOUTH:
                         self.pos.x = self.pos.x
                         self.pos.y = self.grappledTo.pos.y + (self.grappledTo.rect.height // 2)
-                    if side == UP:
+                    if side == NORTH:
                         self.pos.x = self.pos.x
                         self.pos.y = self.grappledTo.pos.y - (self.grappledTo.rect.height // 2)
-                    if side == RIGHT:
+                    if side == EAST:
                         self.pos.x = self.grappledTo.pos.x + (self.grappledTo.rect.width // 2)
                         self.pos.y = self.pos.y
-                    if side == LEFT:
+                    if side == WEST:
                         self.pos.x = self.grappledTo.pos.x - (self.grappledTo.rect.width // 2)
                         self.pos.y = self.pos.y
                 
@@ -1217,6 +1216,9 @@ class GrappleBullet(BulletBase):
             if self.grappledTo != None and self.grappledTo in all_walls:
                 if self.shotFrom.hitbox.colliderect(self.hitbox):
                     self.shatter()
+                for wall in all_walls:
+                    if self.shotFrom.hitbox.colliderect(wall.hitbox) and wall != self.grappledTo:
+                        self.shatter()
 
             for wall in all_walls:
                 if self.hitbox.colliderect(wall.hitbox) and wall != self.grappledTo:
@@ -1258,7 +1260,7 @@ class PlayerStdBullet(PlayerBulletBase):
             bulletType (str): The type of projectile that should be spawned
         """           
         super().__init__()
-        self.show(LAYERS['proj_layer'])
+        self.show(LAYER['proj_layer'])
 
         self.shotFrom = shotFrom
 
@@ -1287,7 +1289,7 @@ class PlayerStdBullet(PlayerBulletBase):
 class EnemyStdBullet(EnemyBulletBase):
     def __init__(self, shotFrom, posX, posY, velX, velY):
         super().__init__()
-        self.show(LAYERS['proj_layer'])
+        self.show(LAYER['proj_layer'])
 
         self.shotFrom = shotFrom
 
@@ -1331,7 +1333,7 @@ class EnemyStdBullet(EnemyBulletBase):
 #                                 Portal Class                                 #
 # ============================================================================ #
 class Portal(PortalBase):
-    def __init__(self, posX, posY, facing=DOWN):
+    def __init__(self, posX, posY, facing=SOUTH):
         """A portal object that can teleport players, enemies, and projectiles
 
         Parameters:
@@ -1343,7 +1345,7 @@ class Portal(PortalBase):
             facing (str, optional): The direction of an entity's velocity after being expelled. Defaults to DOWN.
         """        
         super().__init__()
-        all_sprites.add(self, layer = LAYERS['portal_layer'])
+        all_sprites.add(self, layer = LAYER['portal_layer'])
         
         self.pos = vec((posX, posY))
         self.facing = facing
@@ -1360,15 +1362,15 @@ class Portal(PortalBase):
 
         self.hitbox = self.rect.inflate(-10, -10)
 
-        if self.facing == DOWN:
+        if self.facing == SOUTH:
             self.hitbox = self.rect.inflate(0, -40)
-        if self.facing == RIGHT:
+        if self.facing == EAST:
             self.image = pygame.transform.rotate(self.image, 90)
             self.hitbox = self.rect.inflate(-40, 0)
-        if self.facing == UP:
+        if self.facing == NORTH:
             self.image = pygame.transform.rotate(self.image, 180)
             self.hitbox = self.rect.inflate(0, -40)
-        if self.facing == LEFT:
+        if self.facing == WEST:
             self.image = pygame.transform.rotate(self.image, 270)
             self.hitbox = self.rect.inflate(-40, 0)
         if self.facing == None:
@@ -1408,15 +1410,15 @@ def wallSideCheck(wall, portal):
     """    
     if wall.pos.x - 0.45 * wall.image.get_width() <= portal.pos.x <= wall.pos.x + 0.45 * wall.image.get_width():
         if portal.pos.y < wall.pos.y:
-            return UP
+            return NORTH
         elif portal.pos.y > wall.pos.y:
-            return DOWN
+            return SOUTH
         
     elif wall.pos.y - 0.45 * wall.image.get_height() <= portal.pos.y <= wall.pos.y + 0.45 * wall.image.get_height():
         if portal.pos.x < wall.pos.x:
-            return LEFT
+            return WEST
         elif portal.pos.x > wall.pos.x:
-            return RIGHT
+            return EAST
         
     else:
         return None
@@ -1434,7 +1436,7 @@ class ProjExplode(ActorBase):
             proj (pygame.sprite.Sprite): The projectile that is exploding
         """
         super().__init__()
-        self.show(LAYERS['explosion_layer'])
+        self.show(LAYER['explosion_layer'])
 
         self.proj = proj
         
@@ -1487,7 +1489,7 @@ class ProjExplode(ActorBase):
 class Wall(EnvirBase):
     def __init__(self, topleftX_mult: float, topleftY_mult: float, widthMult: float, heightMult: float):
         super().__init__()
-        self.show(LAYERS['wall_layer'])
+        self.show(LAYER['wall_layer'])
         all_walls.add(self)
 
         self.visible = True
@@ -1503,7 +1505,7 @@ class Wall(EnvirBase):
 class Floor(EnvirBase):
     def __init__(self, topleftX_mult: float, topleftY_mult: float, widthMult: float, heightMult: float):
         super().__init__()
-        self.show(LAYERS['floor'])
+        self.show(LAYER['floor'])
         all_floors.add(self)
 
         self.sizeMult = vec(widthMult, heightMult)
@@ -1520,7 +1522,7 @@ class Floor(EnvirBase):
         self.rect.center = self.pos
     
     def update(self):
-        if self.visible and time.time() - self.lastFrame >= 0.25:
+        if self.visible and getTimeDiff(self.lastFrame) >= 0.25:
             self.index += 1
             if self.index > 3:
                 self.index = 0
@@ -1535,7 +1537,7 @@ class Floor(EnvirBase):
 class SpriteBeam(ActorBase):
     def __init__(self, fromSprite: pygame.sprite.Sprite, toSprite: pygame.sprite.Sprite):
         super().__init__()
-        self.show(LAYERS['floor'])
+        self.show(LAYER['floor'])
 
         self.fromSprite, self.toSprite = fromSprite, toSprite
         self.index = 0
@@ -1708,9 +1710,9 @@ def showEnemies(container):
         - container (``pygame.sprite.AbstractGroup``): The enemy container to unhide
     """    
     for sprite in container.sprites():
-        sprite.show(LAYERS['enemy_layer'])
+        sprite.show(LAYER['enemy_layer'])
         if hasattr(sprite, "healthBar"):
-            sprite.healthBar.show(LAYERS['statBar_layer'])
+            sprite.healthBar.show(LAYER['statBar_layer'])
 
 
 # ============================================================================ #
@@ -1748,7 +1750,7 @@ class InventoryMenu(AbstractBase):
     def show(self):
         """Makes all of the elements of the inventory menu visible"""        
         for sprite in self.sprites():
-            all_sprites.add(sprite, layer = LAYERS['ui_layer_1'])
+            all_sprites.add(sprite, layer = LAYER['ui_layer_1'])
 
     def cycleMenu(self):
         if not self.is_cyclingLeft and not self.is_cyclingRight:
@@ -1758,7 +1760,7 @@ class InventoryMenu(AbstractBase):
                 self.is_cyclingLeft = True
 
         if self.is_cyclingLeft and not self.is_cyclingRight:
-            t_lapsed = time.time() - self.last_cycle
+            t_lapsed = getTimeDiff(self.last_cycle)
             if t_lapsed <= self.wipeTime:
                 for sprite in self.sprites():
                     sprite.pos.x = sprite.start_pos.x - (-(WIN_WIDTH / 2) * cos((1 / self.wipeTime) * pi * t_lapsed) + (WIN_WIDTH / 2))
@@ -1775,7 +1777,7 @@ class InventoryMenu(AbstractBase):
                 self.is_cyclingRight = True
 
         if self.is_cyclingRight and not self.is_cyclingLeft:
-            t_lapsed = time.time() - self.last_cycle
+            t_lapsed = getTimeDiff(self.last_cycle)
             if t_lapsed <= self.wipeTime:
                 for sprite in self.sprites():
                     sprite.pos.x = sprite.start_pos.x + (-(WIN_WIDTH / 2) * cos((1 / self.wipeTime) * pi * t_lapsed) + (WIN_WIDTH / 2))
@@ -1805,8 +1807,8 @@ class InventoryMenu(AbstractBase):
         global can_update
         if keyReleased[K_e] % 2 != 0 and keyReleased[K_e] > 0:
             self.show()
-            self.rightArrow.show(LAYERS['ui_layer_1'])
-            self.leftArrow.show(LAYERS['ui_layer_1'])
+            self.rightArrow.show(LAYER['ui_layer_1'])
+            self.leftArrow.show(LAYER['ui_layer_1'])
             can_update = False
 
         elif keyReleased[K_e] % 2 == 0 and keyReleased[K_e] > 0:
@@ -2020,7 +2022,7 @@ class DamageChar(pygame.sprite.Sprite):
         """        
         super().__init__()
         global anim_timer
-        all_sprites.add(self, layer = LAYERS['text_layer'])
+        all_sprites.add(self, layer = LAYER['text_layer'])
         all_font_chars.add(self)
         
         self.spritesheet = Spritesheet("sprites/ui/font.png")
@@ -2060,7 +2062,7 @@ class DamageChar(pygame.sprite.Sprite):
 
     def update(self):
         global anim_timer
-        if time.time() - self.start_time > 0.75:
+        if getTimeDiff(self.start_time) > 0.75:
             self.kill()
 
 
@@ -2124,7 +2126,7 @@ def checkKeyRelease(isMouse, *inputs):
 #------------------------------ Main loop ------------------------------#
 running = True
 while running:
-    dt = (time.time() - last_time) * 60
+    dt = getTimeDiff(last_time) * 60
     last_time = time.time()
     
     anim_timer += 1
