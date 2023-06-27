@@ -23,11 +23,6 @@ EAST = 'loc_east'
 NORTH = 'loc_north'
 SOUTH = 'loc_south'
 
-NORTHEAST = 'loc_northeast'
-NORTHWEST = 'loc_northwest'
-SOUTHEAST = 'loc_southeast'
-SOUTHWEST = 'loc_southwest'
-
 # ---------------------------------- Layers ---------------------------------- #
 LAYER = {
     'floor': 1,
@@ -40,7 +35,7 @@ LAYER = {
     'wall_layer': 10,
     'grapple': 11,
     'portal_layer': 11,
-    'text_layer': 51,
+    'text_layer': 50,
     'statBar_layer': 100,
 
     'ui_layer_1': 200
@@ -61,7 +56,7 @@ PROJ_DMG = {
     PROJ_STD: 1,
     
     PROJ_PORTAL: 15,
-    PROJ_GRAPPLE: 10
+    PROJ_GRAPPLE: 0,
 }
 
 

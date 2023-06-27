@@ -1,10 +1,12 @@
-import pygame, math, time, copy
+import pygame, math, time
 import random as rand
 
 from constants import *
 from groups import *
 
-# ------------------------------- Returns float ------------------------------ #
+# ============================================================================ #
+#                                 Returns float                                #
+# ============================================================================ #
 def getAngleToMouse(any_sprite: pygame.sprite.Sprite) -> float:
     """Gets the angle between a sprite and the mouse cursor
     
@@ -188,7 +190,10 @@ def getTimeDiff(timeValue: float) -> float:
     """    
     return time.time() - timeValue
 
-# -------------------------------- Returns int ------------------------------- #
+
+# ============================================================================ #
+#                                  Returns int                                 #
+# ============================================================================ #
 def calculateDamage(sender: pygame.sprite.Sprite, receiver: pygame.sprite.Sprite, proj: pygame.sprite.Sprite) -> int:
     """Calculates the damage an entity receives after being hit
     
@@ -200,15 +205,17 @@ def calculateDamage(sender: pygame.sprite.Sprite, receiver: pygame.sprite.Sprite
     ### Returns
         - ``int``: Infliction damage upon ``receiver``
     """    
-    damage = math.floor((sender.attack / receiver.defense) * proj.damage)
+    damage = math.ceil((sender.attack / receiver.defense) * proj.damage)
 
-    if damage < 1:
-        damage = 1
+    # if damage < 1:
+    #     damage = 1
 
     return damage
 
 
-# ------------------------------- Returns bool ------------------------------- #
+# ============================================================================ #
+#                                 Returns bool                                 #
+# ============================================================================ #
 def isLeftOrRight(instig: pygame.sprite.Sprite, other: pygame.sprite.Sprite) -> bool:
     """Determines if a sprite is to the left or right of another sprite
     
@@ -223,7 +230,7 @@ def isLeftOrRight(instig: pygame.sprite.Sprite, other: pygame.sprite.Sprite) -> 
         return True
     else:
         return False
-    
+
 
 def isAboveOrBelow(instig: pygame.sprite.Sprite, other: pygame.sprite.Sprite) -> bool:
     """Determines if a sprite is above or below another sprite
@@ -241,7 +248,9 @@ def isAboveOrBelow(instig: pygame.sprite.Sprite, other: pygame.sprite.Sprite) ->
         return False
 
 
-# ------------------------------ Returns string ------------------------------ #
+# ============================================================================ #
+#                                Returns string                                #
+# ============================================================================ #
 def collideSideCheck(object: pygame.sprite.Sprite, instig: pygame.sprite.Sprite) -> str:
     if instig.pos.y < (object.pos.y + (0.5 * object.hitbox.height) + 1) and instig.pos.y > (object.pos.y - (0.5 * object.hitbox.height) - 1):
         if instig.pos.x > object.pos.x:
@@ -255,7 +264,35 @@ def collideSideCheck(object: pygame.sprite.Sprite, instig: pygame.sprite.Sprite)
             return SOUTH
 
 
-# ------------------------ Returns pygame.math.Vector2 ----------------------- #
+def wallSideCheck(wall: pygame.sprite.Sprite, proj: pygame.sprite.Sprite) -> str:
+    """Checks for which side of a wall a projectile hit and returns that value
+    
+    ### Parameters
+        - wall (``pygame.sprite.Sprite``): The wall being hit
+        - proj (``pygame.sprite.Sprite``): The projectile being fired
+    
+    ### Returns
+        - ``str``: The side of the wall that the projectile hit
+    """    
+    if wall.pos.x - 0.45 * wall.image.get_width() <= proj.pos.x <= wall.pos.x + 0.45 * wall.image.get_width():
+        if proj.pos.y < wall.pos.y:
+            return NORTH
+        elif proj.pos.y > wall.pos.y:
+            return SOUTH
+        
+    elif wall.pos.y - 0.45 * wall.image.get_height() <= proj.pos.y <= wall.pos.y + 0.45 * wall.image.get_height():
+        if proj.pos.x < wall.pos.x:
+            return WEST
+        elif proj.pos.x > wall.pos.x:
+            return EAST
+        
+    else:
+        return None
+    
+
+# ============================================================================ #
+#                                Returns Vector2                               #
+# ============================================================================ #
 def getTopLeftCoordinates(sprite, desired_x, desired_y) -> pygame.math.Vector2:
     """Returns the coordinates of the topleft corner of a sprite that is centered at its middle
     
@@ -288,7 +325,9 @@ def getRandComponents(maxValue) -> pygame.math.Vector2:
     return vec(x, y)
 
 
-# ----------------------- Returns pygame.sprite.Sprite ----------------------- #
+# ============================================================================ #
+#                                Returns Sprite                                #
+# ============================================================================ #
 def getClosestPlayer(check_sprite: pygame.sprite.Sprite) -> pygame.sprite.Sprite:
     """Checks for the closest player to a given sprite.
     
@@ -310,7 +349,9 @@ def getClosestPlayer(check_sprite: pygame.sprite.Sprite) -> pygame.sprite.Sprite
         return check_sprite
 
 
-# ------------------------------- Returns None ------------------------------- #
+# ============================================================================ #
+#                                 Returns None                                 #
+# ============================================================================ #
 def collideCheck(instig: pygame.sprite.Sprite, *contactLists: pygame.sprite.Group) -> None:
     """Check if a sprite comes into contact with another sprite from a specific group.
     If the sprites do collide, then they will perform a hitbox collision.
@@ -398,31 +439,32 @@ def swapColor(image: pygame.Surface, old_color: tuple, new_color: tuple) -> None
     return new_img
 
 
-def groupChangeRooms(spriteGroup: pygame.sprite.Group, direction: str) -> None:
+def groupChangeRooms(direction: str, *spriteGroups: pygame.sprite.Group) -> None:
     """Changes the room of all sprites within a group. This is achieved by adding or subtracting the window's width or height from the sprite's x-position or y-position, respecively.
     
     ### Parameters
-        - spriteGroup (``pygame.sprite.Group``): The group to relocate
         - direction (``str``): The direction of the room where ``spriteGroup`` should be relocated
+        - spriteGroup (``pygame.sprite.Group``): The group to relocate
     """    
-    if direction == SOUTH:
-        for sprite in spriteGroup:
-            sprite.changeRoomDown()
+    for group in spriteGroups:
+        if direction == SOUTH:
+            for sprite in group:
+                sprite.changeRoomDown()
 
-    if direction == EAST:
-        for sprite in spriteGroup:
-            sprite.changeRoomRight()
+        if direction == EAST:
+            for sprite in group:
+                sprite.changeRoomRight()
 
-    if direction == NORTH:
-        for sprite in spriteGroup:
-            sprite.changeRoomUp()
+        if direction == NORTH:
+            for sprite in group:
+                sprite.changeRoomUp()
 
-    if direction == WEST:
-        for sprite in spriteGroup:
-            sprite.changeRoomLeft()
+        if direction == WEST:
+            for sprite in group:
+                sprite.changeRoomLeft()
 
 
-# ---------------------------------- Classes --------------------------------- #
+
 class CustomError(Exception):
     """Returns a custom error
 

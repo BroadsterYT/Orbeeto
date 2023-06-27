@@ -88,26 +88,26 @@ class PlayerBase(ActorBase):
             room.room.y -= 1
             room.layoutUpdate()
             self.pos.y -= WIN_HEIGHT
-            groupChangeRooms(all_portals, SOUTH)
+            groupChangeRooms(SOUTH, all_portals, all_drops)
 
         elif direction == EAST:
             room.room.x += 1
             room.layoutUpdate()
             self.pos.x -= WIN_WIDTH
-            groupChangeRooms(all_portals, EAST)
+            groupChangeRooms(EAST, all_portals, all_drops)
 
         elif direction == NORTH:
             room.room.y += 1
             room.layoutUpdate()
             self.pos.y += WIN_HEIGHT
-            groupChangeRooms(all_portals, NORTH)
+            groupChangeRooms(NORTH, all_portals, all_drops)
         
         elif direction == WEST:
             room.room.x -= 1
             room.layoutUpdate()
 
             self.pos.x += WIN_WIDTH
-            groupChangeRooms(all_portals, WEST)
+            groupChangeRooms(WEST, all_portals, all_drops)
 
         killGroups(all_projs, all_explosions)
 
@@ -669,8 +669,6 @@ class DropBase(ActorBase):
         super().__init__()
         self.accel_const = 0.8
 
-        self.isGrappled = False
-
 
 class ItemDrop(DropBase):
     def __init__(self, dropped_from, item_name):
@@ -868,18 +866,22 @@ class BulletBase(ActorBase):
                 continue
 
             if canHurt:
+                damage = calculateDamage(self.shotFrom, colliding_entity, self)
                 if spriteGroup == all_enemies:
                     if rand.randint(1, 20) == 1:
-                        colliding_entity.hp -= (calculateDamage(self.shotFrom, colliding_entity, self)) * 3
-                        all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, 3 * calculateDamage(self.shotFrom, colliding_entity, self)))
+                        colliding_entity.hp -= damage * 3
+                        if damage > 0:
+                            all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, 3 * damage))
                     else:
-                        colliding_entity.hp -= calculateDamage(self.shotFrom, colliding_entity, self)
-                        all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, calculateDamage(self.shotFrom, colliding_entity, self)))
+                        colliding_entity.hp -= damage
+                        if damage > 0:
+                            all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, damage))
                     self.land()
 
                 elif spriteGroup != all_enemies:
-                    colliding_entity.hp -= calculateDamage(self.shotFrom, colliding_entity, self)
-                    all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, calculateDamage(self.shotFrom, colliding_entity, self)))
+                    colliding_entity.hp -= damage
+                    if damage > 0:
+                        all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, damage))
                     if hasattr(colliding_entity, 'hitTime'):
                         colliding_entity.hitTime = 0
                         colliding_entity.lastHit = time.time()
@@ -1076,13 +1078,15 @@ class GrappleBullet(BulletBase):
         self.grappledTo = None
         self.returning = False
 
-        self.chain = SpriteBeam(self.shotFrom, self)
+        self.chain = Beam(self.shotFrom, self)
 
         self.canTp = True
         self.tpPoints = []
 
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
+        self.accel = vec(0, 0)
+        self.accel_const = 0.7
 
         self.setImages("sprites/bullets/bullets.png", 32, 32, 2, 9)
         self.setRects(0, 0, 32, 32, 16, 16)
@@ -1168,11 +1172,13 @@ class GrappleBullet(BulletBase):
     def sendBack(self):
         """Sends the grappling hook back to the player"""        
         angle = getAngleToSprite(self, self.shotFrom)
-        self.pos.x += 10 * -sin(rad(angle))
-        self.pos.y += 10 * -cos(rad(angle))
+        self.accel.x = self.accel_const * -sin(rad(angle))
+        self.accel.y = self.accel_const * -cos(rad(angle))
 
         if self.hitbox.colliderect(self.shotFrom.rect):
             self.shatter()
+
+        objectAccel(self)
 
     def movement(self):
         if not self.returning:
@@ -1217,18 +1223,18 @@ class GrappleBullet(BulletBase):
                 if self.shotFrom.hitbox.colliderect(self.hitbox):
                     self.shatter()
                 for wall in all_walls:
-                    if self.shotFrom.hitbox.colliderect(wall.hitbox) and wall != self.grappledTo:
+                    if self.shotFrom.hitbox.colliderect(wall.hitbox):
                         self.shatter()
 
-            for wall in all_walls:
-                if self.hitbox.colliderect(wall.hitbox) and wall != self.grappledTo:
-                    self.shatter()
+            # for wall in all_walls:
+            #     if self.hitbox.colliderect(wall.hitbox) and wall != self.grappledTo:
+            #         self.shatter()
 
         self.rect.center = self.pos
         self.hitbox.center = self.pos
 
     def update(self):
-        if not self.isHooked:
+        if not self.isHooked and not self.returning:
             self.index = 0
             self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
         elif not self.returning:
@@ -1398,32 +1404,6 @@ def portalCountCheck():
                 all_portals.add(portalTemp[1:])
 
 
-def wallSideCheck(wall, portal):
-    """Checks for which side of a wall a portal hit and assigns it that value
-    
-    ### Parameters
-        - ``wall`` ``(pygame.sprite.Sprite)``: The wall being hit
-        - ``portal`` ``(pygame.sprite.Sprite)``: The portal being fired
-    
-    ### Returns
-        - ``str``: The direction the portal should face
-    """    
-    if wall.pos.x - 0.45 * wall.image.get_width() <= portal.pos.x <= wall.pos.x + 0.45 * wall.image.get_width():
-        if portal.pos.y < wall.pos.y:
-            return NORTH
-        elif portal.pos.y > wall.pos.y:
-            return SOUTH
-        
-    elif wall.pos.y - 0.45 * wall.image.get_height() <= portal.pos.y <= wall.pos.y + 0.45 * wall.image.get_height():
-        if portal.pos.x < wall.pos.x:
-            return WEST
-        elif portal.pos.x > wall.pos.x:
-            return EAST
-        
-    else:
-        return None
-
-
 # ============================================================================ #
 #                            Bullet Explosion Class                            #
 # ============================================================================ #
@@ -1534,7 +1514,7 @@ class Floor(EnvirBase):
 # ============================================================================ #
 #                                Visual Classes                                #
 # ============================================================================ #
-class SpriteBeam(ActorBase):
+class Beam(ActorBase):
     def __init__(self, fromSprite: pygame.sprite.Sprite, toSprite: pygame.sprite.Sprite):
         super().__init__()
         self.show(LAYER['floor'])
@@ -1586,6 +1566,21 @@ class SpriteBeam(ActorBase):
         self.buildImage(0)
         self.rect = self.image.get_rect()
         self.rect.center = self.pos
+
+
+class InvisObj(ActorBase):
+    def __init__(self, posX: int, posY: int, width: int, height: int):
+        super().__init__()
+        self.show(LAYER['floor'])
+
+        self.pos = vec((posX, posY))
+        
+        self.image = pygame.Surface(vec(width, height))
+        self.rect = self.image.get_rect()
+        self.hitbox = self.image.get_rect
+
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
 
 
 # ============================================================================ #
