@@ -12,20 +12,20 @@ class Spritesheet(object):
         self.spritesheet = pygame.image.load(fileName).convert()
         self.isHorizontal = isHorizontal
 
-    def get_images(self, x, y, width, height, imageCount, imageOffset=0):
+    def get_images(self, x: int, y: int, width: int, height: int, imageCount: int, imageOffset: int = 0):
         """Returns a list of sprite images to utilize in static sprites or animations.
         
         ### Parameters
-            - ``x`` ``(int)``: The x-position of the image to snip relative to
-            - ``y`` ``(int)``: The y-position of the image to snip relative to
-            - ``width`` ``(int)``: The width of each individual frame
-            - ``height`` ``(int)``: The height of each individual frame
-            - ``imageCount`` ``(int)``: The total number of images to snip
-            - ``imageOffset`` ``(int, optional)``: The index of the frame to begin the snip from. Defaults to 0 (the first image).
+            - x (``int``): The x-position of the image to snip relative to
+            - y (``int``): The y-position of the image to snip relative to
+            - width (``int``): The width of each individual frame
+            - height (``int``): The height of each individual frame
+            - imageCount (``int``): The total number of images to snip
+            - imageOffset (``int``, optional): The index of the frame to begin the snip from. Defaults to ``0`` (the first image).
         
         ### Returns
-            - ``list``: A list of the desired sprite images
-        """          
+            - ``_type_``: _description_
+        """        
         imageList = []
         offset = 0
         if self.isHorizontal == True:

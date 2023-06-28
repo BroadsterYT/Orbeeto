@@ -1,6 +1,8 @@
 import pygame, math, time
 import random as rand
 
+from spritesheet import Spritesheet
+
 from constants import *
 from groups import *
 
@@ -323,6 +325,56 @@ def getRandComponents(maxValue) -> pygame.math.Vector2:
     if rand.choice((True, False)) == True:
         y = -y
     return vec(x, y)
+
+
+# ============================================================================ #
+#                                Returns Surface                               #
+# ============================================================================ #
+def combineImages(baseImg: pygame.Surface, topImg: pygame.Surface) -> pygame.Surface:
+    """Combines two images directly on top of one another
+    
+    ### Parameters
+        - baseImg (``pygame.Surface``): The image to place first
+        - topImg (``pygame.Surface``): The image being pasted on top of the first image
+    
+    ### Returns
+        - ``pygame.Surface``: The combined image
+    """    
+    newImg: pygame.Surface = pygame.Surface(vec(max(baseImg.get_width(), topImg.get_width())), max(baseImg.get_height(), topImg.get_height()))
+    centerX = (newImg.get_width() - baseImg.get_width()) // 2
+    centerY = (newImg.get_height() - baseImg.get_height()) // 2
+    
+    newImg.blit(baseImg, vec(centerX, centerY))
+
+    centerX = (newImg.get_width() - topImg.get_width()) // 2
+    centerY = (newImg.get_height() - topImg.get_height()) // 2
+
+    newImg.blit(topImg, vec(centerX, centerY))
+    newImg.set_colorkey(BLACK)
+    return newImg
+
+
+def textToImage(text: str, fontImg: str, charWidth: int, charHeight: int, charCount: int) -> pygame.Surface:
+    spritesheet = Spritesheet(fontImg)
+    images = spritesheet.get_images(0, 0, charWidth, charHeight, charCount)
+    charList = []
+
+    finalImage = pygame.Surface(vec(len(text) * charWidth, charHeight))
+
+    for char in text:
+        if char in LETTERS.keys():
+            charList.append(images[LETTERS[char]])
+
+        elif char in NUMBERS:
+            charList.append(images[int(char) + 26])
+
+    count = 0
+    for char in charList:
+        finalImage.blit(charList[count], vec(count * charWidth, 0))
+        count += 1
+
+    finalImage.set_colorkey(BLACK)
+    return finalImage
 
 
 # ============================================================================ #

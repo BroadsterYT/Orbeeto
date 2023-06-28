@@ -1961,12 +1961,7 @@ class MenuSlot(pygame.sprite.Sprite):
         """        
         final_images = []
         for frame in self.item_imgs:
-            # Combining menu image and item images
-            new_img = pygame.Surface(vec(max(self.menu_img.get_width(), frame.get_width()), max(self.menu_img.get_height(), frame.get_height())))
-            new_img.blit(self.menu_img, vec(0, 0))
-            center_x = (new_img.get_width() - frame.get_width()) // 2
-            center_y = (new_img.get_height() - frame.get_height()) // 2
-            new_img.blit(frame, vec(center_x, center_y))
+            new_img = combineImages(self.menu_img, frame)
 
             # Adding the count of the item to its images
             char_sheet = Spritesheet("sprites/ui/font.png")
@@ -1986,6 +1981,8 @@ class MenuSlot(pygame.sprite.Sprite):
 
             count_surface.set_colorkey((0, 0, 0))
             new_img.set_colorkey((0, 0, 0))
+            center_x = (new_img.get_width() - frame.get_width()) // 2
+            center_y = (new_img.get_height() - frame.get_height()) // 2
             new_img.blit(swapColor(swapColor(count_surface, (44, 44, 44), (156, 156, 156)), (0, 0, 1), (255, 255, 255)), vec(center_x, center_y))
             final_images.append(new_img)
 
@@ -2002,7 +1999,7 @@ class MenuSlot(pygame.sprite.Sprite):
 # ============================================================================ #
 #                                 Font Classes                                 #
 # ============================================================================ #
-class DamageChar(pygame.sprite.Sprite):
+class DamageChar(ActorBase):
     def __init__(self, posX, posY, damage):
         """A number that pops up after a player or enemy is hit that indicates how much damage that entity has taken
         
@@ -2017,36 +2014,16 @@ class DamageChar(pygame.sprite.Sprite):
         """        
         super().__init__()
         global anim_timer
-        all_sprites.add(self, layer = LAYER['text_layer'])
+        self.show(LAYER['text_layer'])
         all_font_chars.add(self)
-        
-        self.spritesheet = Spritesheet("sprites/ui/font.png")
-        self.images = self.spritesheet.get_images(0, 0, 9, 14, 36)
+        self.start_time = time.time()
 
         self.pos = vec((posX, posY))
         self.vel = vec(0, -2)
 
-        self.start_time = time.time()
-
-        width = 9
-        height = 14
+        self.image = textToImage(str(damage), "sprites/ui/font.png", 9, 14, 36)
         
-        dmg_charList = []
-        for char in str(damage):
-            dmg_charList.append(self.images[int(char) + 26])
-        
-        new_surface = pygame.Surface([width * len(dmg_charList), height]).convert()
-
-        count = 0
-        for surface in dmg_charList:
-            new_surface.blit(surface, (width * count, 0), (0, 0, 9, 14))
-            count += 1
-        
-        self.rect = pygame.Rect(0, 0, 9, 14)
-
-        self.image = new_surface
-        self.image.set_colorkey((0, 0, 0))
-        self.rect = self.image.get_rect(center = self.rect.center)
+        self.rect = self.image.get_rect()
         self.rect.center = self.pos
 
     def movement(self):
@@ -2056,7 +2033,6 @@ class DamageChar(pygame.sprite.Sprite):
         self.rect.center = self.pos
 
     def update(self):
-        global anim_timer
         if getTimeDiff(self.start_time) > 0.75:
             self.kill()
 
