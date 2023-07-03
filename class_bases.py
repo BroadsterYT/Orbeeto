@@ -3,7 +3,7 @@ import pygame, time
 from calculations import *
 from constants import *
 from groups import *
-from spritesheet import Spritesheet
+from spritesheet import NewSpritesheet
 
 
 class ActorBase(pygame.sprite.Sprite):
@@ -34,20 +34,21 @@ class ActorBase(pygame.sprite.Sprite):
         self.visible = True
         all_sprites.add(self, layer = layer_send)
 
-    def setImages(self, imageFile: str, frameWidth: int, frameHeight: int, imageCount: int, imageOffset: int = 0, index: int = 0):
+    def setImages(self, imageFile: str, frameWidth: int, frameHeight: int, spritesPerRow: int, imageCount: int, imageOffset: int = 0, index: int = 0):
         """Initializes the sprite's spritesheet, images, and animations. Should be used in the object's ``__init__()`` method.
         
         ### Parameters
             - imageFile (``str``): The path of the spritesheet image
             - frameWidth (``int``): The width of each individual frame
             - frameHeight (``int``): The height of each individual frame
+            - spritesPerRow (``int``): The number of sprites within each row of the sprite sheet
             - imageCount (``int``): The number of images in the sprite's animation
             - imageOffset (``int``, optional): The index of the frame to begin the snip from. Defaults to ``0``.
             - index (``int``, optional): The index of the sprite's animation to start from. Defaults to ``0`` (the first image).
         """        
-        self.spritesheet = Spritesheet(imageFile)
-        self.images = self.spritesheet.get_images(0, 0, frameWidth, frameHeight, imageCount, imageOffset)
-        self.original_images = self.spritesheet.get_images(0, 0, frameWidth, frameHeight, imageCount, imageOffset)
+        self.spritesheet = NewSpritesheet(imageFile, spritesPerRow)
+        self.images = self.spritesheet.get_images(frameWidth, frameHeight, imageCount, imageOffset)
+        self.original_images = self.spritesheet.get_images(frameWidth, frameHeight, imageCount, imageOffset)
         self.index = index
 
         self.renderImages()
@@ -119,7 +120,7 @@ class EnvirBase(ActorBase):
 
         self.image.set_colorkey(colorkey)
         self.rect = self.image.get_rect()
-        self.hitbox = self.rect\
+        self.hitbox = self.rect
 
 
 class PortalBase(ActorBase):

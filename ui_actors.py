@@ -7,7 +7,7 @@ from init import *
 from class_bases import StatBarBase
 from constants import *
 from groups import all_sprites, all_stat_bars
-from spritesheet import Spritesheet
+from spritesheet import NewSpritesheet
 
 vec = pygame.math.Vector2
 
@@ -20,9 +20,9 @@ class HealthBar(StatBarBase):
         
         self.entity = entity
 
-        self.spritesheet = Spritesheet("sprites/stat_bars/health_bar.png", False)
-        self.images = self.spritesheet.get_images(0, 0, 128, 16, 18)
-        self.original_images = self.spritesheet.get_images(0, 0, 128, 16, 18)
+        self.spritesheet = NewSpritesheet("sprites/stat_bars/health_bar.png", 1)
+        self.images = self.spritesheet.get_images(128, 16, 18)
+        self.original_images = self.spritesheet.get_images(128, 16, 18)
         self.index = 17
 
         self.image = self.images[self.index]
@@ -56,9 +56,9 @@ class DodgeBar(StatBarBase):
         all_sprites.add(self, layer = LAYER['statBar_layer'])
         all_stat_bars.add(self)
 
-        self.spritesheet = Spritesheet("sprites/stat_bars/dodge_bar.png", False)
-        self.images = self.spritesheet.get_images(0, 0, 128, 16, 18)
-        self.original_images = self.spritesheet.get_images(0, 0, 128, 16, 18)
+        self.spritesheet = NewSpritesheet("sprites/stat_bars/dodge_bar.png", 1)
+        self.images = self.spritesheet.get_images(128, 16, 18)
+        self.original_images = self.spritesheet.get_images(128, 16, 18)
         self.index = 17
 
         self.image = self.images[self.index]

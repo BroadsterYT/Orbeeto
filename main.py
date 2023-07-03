@@ -275,7 +275,7 @@ class Player(PlayerBase):
         all_players.add(self)
         self.show(LAYER['player_layer'])
 
-        self.setImages("sprites/orbeeto/orbeeto.png", 64, 64, 5, 0, 0)
+        self.setImages("sprites/orbeeto/orbeeto.png", 64, 64, 5, 5)
         self.setRects(0, 0, 64, 64, 32, 32)
 
         self.bulletType = PROJ_STD
@@ -342,11 +342,11 @@ class Player(PlayerBase):
 
         # Firing portals
         if keyReleased[3] % 2 == 0 and self.canPortal and self.canGrapple:
-            all_projs.add(PortalBullet(self, self.pos.x, self.pos.y, velX * 0.75, velY * 0.75))
+            all_projs.add(PortalBullet(self, self.pos.x, self.pos.y, velX * 0.25, velY * 0.25))
             self.canPortal = False
 
         elif keyReleased[3] % 2 != 0 and not self.canPortal and self.canGrapple:
-            all_projs.add(PortalBullet(self, self.pos.x, self.pos.y, velX * 0.75, velY * 0.75))
+            all_projs.add(PortalBullet(self, self.pos.x, self.pos.y, velX * 0.25, velY * 0.25))
             self.canPortal = True
 
         # Grappling hook
@@ -456,7 +456,7 @@ class StandardGrunt(EnemyBase):
         self.pos = vec((posX, posY))
         self.rand_pos = vec(rand.randint(64, WIN_WIDTH - 64), rand.randint(64, WIN_HEIGHT - 64))
 
-        self.setImages("sprites/enemies/standard_grunt.png", 64, 64, 5, 0, 0)
+        self.setImages("sprites/enemies/standard_grunt.png", 64, 64, 5, 5, 0, 0)
         self.setRects(0, 0, 64, 64, 32, 32)
 
         #---------------------- Game stats & UI ----------------------#
@@ -539,7 +539,7 @@ class OctoGrunt(EnemyBase):
         self.pos = vec((posX, posY))
         self.rand_pos = vec(rand.randint(64, WIN_WIDTH - 64), rand.randint(64, WIN_HEIGHT - 64))
 
-        self.setImages("sprites/enemies/octogrunt.png", 64, 64, 1, 0, 0)
+        self.setImages("sprites/enemies/octogrunt.png", 64, 64, 1, 1, 0, 0)
         self.setRects(0, 0, 64, 64, 32, 32)
 
         #---------------------- Game stats & UI ----------------------#
@@ -639,7 +639,7 @@ class Box(ActorBase):
         self.pos = vec((posX, posY))
         self.accel_const = 0.4
         
-        self.setImages("sprites/orbeeto/orbeeto.png", 64, 64, 1, 0, 0)
+        self.setImages("sprites/orbeeto/orbeeto.png", 64, 64, 5, 1, 0, 0)
         self.setRects(0, 0, 64, 64, 64, 64, True)
 
     def movement(self):
@@ -690,15 +690,15 @@ class ItemDrop(DropBase):
         self.pos = vec(self.droppedFrom.pos.x, self.droppedFrom.pos.y)
         self.randAccel = getRandComponents(self.accel_const)
         
-        self.spritesheet = Spritesheet("sprites/textures/item_drops.png")
+        self.spritesheet = NewSpritesheet("sprites/textures/item_drops.png", 8)
         self.index = 0
 
         if self.mat == MAT[0]:
-            self.original_images = self.spritesheet.get_images(0, 0, 32, 32, 1, 0)
-            self.images = self.spritesheet.get_images(0, 0, 32, 32, 1, 0)
+            self.original_images = self.spritesheet.get_images(32, 32, 1, 0)
+            self.images = self.spritesheet.get_images(32, 32, 1, 0)
         elif self.mat == MAT[1]:
-            self.original_images = self.spritesheet.get_images(0, 0, 32, 32, 1, 1)
-            self.images = self.spritesheet.get_images(0, 0, 32, 32, 1, 1)
+            self.original_images = self.spritesheet.get_images(32, 32, 1, 1)
+            self.images = self.spritesheet.get_images(32, 32, 1, 1)
 
         self.image = self.images[self.index]
         self.rect = pygame.Rect(0, 0, 32, 32)
@@ -961,7 +961,7 @@ class PortalBullet(BulletBase):
         self.hitbox_adjust = vec(0, 0)
         self.damage = PROJ_DMG[PROJ_PORTAL]
 
-        self.setImages("sprites/bullets/bullets.png", 32, 32, 4)
+        self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 5, 4)
         self.setRects(-24, -24, 8, 8, 8, 8)
 
         # Rotate sprite to trajectory
@@ -1048,10 +1048,10 @@ class PortalBullet(BulletBase):
         self.hitbox.center = self.pos
 
     def update(self):
-        self.images = self.spritesheet.get_images(0, 0, 32, 32, 5, 4)
-        self.original_images = self.spritesheet.get_images(0, 0, 32, 32, 5, 4)
+        self.images = self.spritesheet.get_images(32, 32, 5, 4)
+        self.original_images = self.spritesheet.get_images(32, 32, 5, 4)
         self.hitbox_adjust = vec(0, 0)
-        if anim_timer % 5 == 0:
+        if anim_timer % 10 == 0:
             self.index += 1
             if self.index > 4:
                 self.index = 0
@@ -1088,7 +1088,7 @@ class GrappleBullet(BulletBase):
         self.accel = vec(0, 0)
         self.accel_const = 0.7
 
-        self.setImages("sprites/bullets/bullets.png", 32, 32, 2, 9)
+        self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 2, 9)
         self.setRects(0, 0, 32, 32, 16, 16)
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
 
@@ -1275,7 +1275,7 @@ class PlayerStdBullet(PlayerBulletBase):
 
         self.damage = PROJ_DMG[PROJ_STD]
 
-        self.setImages("sprites/bullets/bullets.png", 32, 32, 1)
+        self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 1)
         self.setRects(-24, -24, 8, 8, 6, 6)
 
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
@@ -1304,20 +1304,10 @@ class EnemyStdBullet(EnemyBulletBase):
 
         self.damage = PROJ_DMG[PROJ_STD]
 
-        self.spritesheet = Spritesheet("sprites/bullets/bullets.png")
-        self.images = self.spritesheet.get_images(0, 0, 32, 32, 4)
-        self.original_images = self.spritesheet.get_images(0, 0, 32, 32, 4)
-        self.index = 0
+        self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 1)
+        self.setRects(-24, -24, 8, 8, 6, 6)
 
-        self.image = self.images[self.index]
-        self.original_image = self.original_images[self.index]
-        
-        self.rect = pygame.Rect(-24, -24, 8, 8)
-        self.hitbox = self.rect.inflate(-2, -2)
-
-        # Rotate sprite to trajectory
-        self.image = pygame.transform.rotate(self.original_image, int(getVecAngle(self.vel.x, self.vel.y)))
-        self.rect = self.image.get_rect(center = self.rect.center)
+        self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
     
     def movement(self):
         self.pos.x += self.vel.x * dt
@@ -1327,11 +1317,7 @@ class EnemyStdBullet(EnemyBulletBase):
         self.hitbox.center = self.pos
 
     def update(self):
-        self.original_image = self.original_images[self.index]
-
-        self.image = pygame.transform.rotate(self.original_image, int(getVecAngle(self.vel.x, self.vel.y)))
-        self.rect = self.image.get_rect(center = self.rect.center)
-
+        self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
         self.bindProj()
 
 
@@ -1339,7 +1325,7 @@ class EnemyStdBullet(EnemyBulletBase):
 #                                 Portal Class                                 #
 # ============================================================================ #
 class Portal(PortalBase):
-    def __init__(self, posX, posY, facing=SOUTH):
+    def __init__(self, posX, posY, facing = SOUTH):
         """A portal object that can teleport players, enemies, and projectiles
 
         Parameters:
@@ -1356,17 +1342,17 @@ class Portal(PortalBase):
         self.pos = vec((posX, posY))
         self.facing = facing
 
-        self.spritesheet = Spritesheet("sprites/portals/portals.png")
-        self.images = self.spritesheet.get_images(0, 0, 64, 64, 1)
+        self.spritesheet = NewSpritesheet("sprites/portals/portals.png", 1)
+        self.images = self.spritesheet.get_images(64, 64, 1)
         self.index = 0
         
         self.image = self.images[self.index]
-        self.rect = pygame.Rect(self.pos.x, self.pos.y, 32, 32)
+        self.rect: pygame.Rect = pygame.Rect(self.pos.x, self.pos.y, 32, 32)
         
         self.rect = self.image.get_rect(center = self.rect.center)
         self.rect.center = self.pos
 
-        self.hitbox = self.rect.inflate(-10, -10)
+        self.hitbox: pygame.Rect = self.rect.inflate(-10, -10)
 
         if self.facing == SOUTH:
             self.hitbox = self.rect.inflate(0, -40)
@@ -1389,7 +1375,7 @@ class Portal(PortalBase):
         self.rect.center = self.pos
         self.hitbox.center = self.pos
 
-        pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 1)
+        # pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 1)
 
 
 def portalCountCheck():
@@ -1420,16 +1406,16 @@ class ProjExplode(ActorBase):
 
         self.proj = proj
         
-        self.spritesheet = Spritesheet("sprites/bullets/bullets.png")
+        self.spritesheet = NewSpritesheet("sprites/bullets/bullets.png", 8)
         self.index = 1
 
         if isinstance(proj, PlayerStdBullet) or isinstance(proj, EnemyStdBullet):
-            self.images = self.spritesheet.get_images(0, 0, 32, 32, 4)
-            self.original_images = self.spritesheet.get_images(0, 0, 32, 32, 4)
+            self.images = self.spritesheet.get_images(32, 32, 4)
+            self.original_images = self.spritesheet.get_images(32, 32, 4)
 
         elif isinstance(proj, PortalBullet):
-            self.images = self.spritesheet.get_images(0, 0, 32, 32, 4)
-            self.original_images = self.spritesheet.get_images(0, 0, 32, 32, 4)
+            self.images = self.spritesheet.get_images(32, 32, 4)
+            self.original_images = self.spritesheet.get_images(32, 32, 4)
 
         self.image = self.images[self.index]
         self.original_image = self.original_images[self.index]
@@ -1490,8 +1476,8 @@ class Floor(EnvirBase):
 
         self.sizeMult = vec(widthMult, heightMult)
 
-        self.spritesheet = Spritesheet("sprites/textures/floor.png")
-        self.textures = self.spritesheet.get_images(0, 0, 64, 64, 4)
+        self.spritesheet = NewSpritesheet("sprites/textures/floor.png", 4)
+        self.textures = self.spritesheet.get_images(64, 64, 4)
         self.index = 0
 
         self.image = pygame.Surface((32 * widthMult, 32 * heightMult))
@@ -1547,8 +1533,8 @@ class Beam(ActorBase):
         ### Returns
             - ``pygame.Surface``: The image of the beam
         """        
-        self.spritesheet = Spritesheet("sprites/textures/beams.png")
-        baseImages = self.spritesheet.get_images(0, 0, 12, 12, 1, frameOffset)
+        self.spritesheet = NewSpritesheet("sprites/textures/beams.png", 1)
+        baseImages = self.spritesheet.get_images(12, 12, 1, frameOffset)
         baseImage: pygame.Surface = baseImages[self.index]
 
         finalImage = pygame.Surface(vec(baseImage.get_width(), int(self.length)))
@@ -1827,8 +1813,8 @@ class RightMenuArrow(ActorBase):
         self.pos = vec((posX, posY))
         self.return_pos = vec((posX, posY))
         
-        self.spritesheet = Spritesheet("sprites/ui/menu_arrow.png")
-        self.images = self.spritesheet.get_images(0, 0, 64, 64, 61)
+        self.spritesheet = NewSpritesheet("sprites/ui/menu_arrow.png", 8)
+        self.images = self.spritesheet.get_images(64, 64, 61)
         self.index = 1
 
         self.image = pygame.transform.scale(self.images[self.index], (64, 64))
@@ -1872,8 +1858,8 @@ class LeftMenuArrow(ActorBase):
         self.pos = vec((posX, posY))
         self.return_pos = vec((posX, posY))
         
-        self.spritesheet = Spritesheet("sprites/ui/menu_arrow.png")
-        self.images = self.spritesheet.get_images(0, 0, 64, 64, 61)
+        self.spritesheet = NewSpritesheet("sprites/ui/menu_arrow.png", 8)
+        self.images = self.spritesheet.get_images(64, 64, 61)
         self.index = 1
 
         self.image = self.images[self.index]
@@ -1925,16 +1911,16 @@ class MenuSlot(pygame.sprite.Sprite):
         self.holding = item_held
         self.count = 0
 
-        self.menusheet = Spritesheet("sprites/ui/menu_item_slot.png")
-        self.itemsheet = Spritesheet("sprites/textures/item_drops.png")
-        self.menu_imgs = self.menusheet.get_images(0, 0, 64, 64, 1)
-        self.item_imgs = self.itemsheet.get_images(0, 0, 32, 32, num_frames, frame_offset)
+        self.menusheet = NewSpritesheet("sprites/ui/menu_item_slot.png", 1)
+        self.itemsheet = NewSpritesheet("sprites/textures/item_drops.png", 8)
+        self.menu_imgs = self.menusheet.get_images(64, 64, 1)
+        self.item_imgs = self.itemsheet.get_images(32, 32, num_frames, frame_offset)
         self.index = 0
 
         self.menu_img = self.menu_imgs[0]
 
         self.images = self.createSlotImages()
-        self.image = self.images[self.index]
+        self.image: pygame.Surface = self.images[self.index]
 
         self.rect = self.image.get_rect()
         self.hitbox = pygame.Rect(0, 0, 64, 64)
@@ -1964,8 +1950,8 @@ class MenuSlot(pygame.sprite.Sprite):
             new_img = combineImages(self.menu_img, frame)
 
             # Adding the count of the item to its images
-            char_sheet = Spritesheet("sprites/ui/font.png")
-            chars = char_sheet.get_images(0, 0, 9, 14, 36)
+            char_sheet = NewSpritesheet("sprites/ui/font.png", 36)
+            chars = char_sheet.get_images(9, 14, 36)
             width, height = 9, 14
             
             charList = []
@@ -1991,6 +1977,7 @@ class MenuSlot(pygame.sprite.Sprite):
     def update(self):
         self.rect.center = self.pos
         self.hitbox.center = self.pos
+        
         self.count = player1.inventory[self.holding]
         self.images = self.createSlotImages()
         self.hover()

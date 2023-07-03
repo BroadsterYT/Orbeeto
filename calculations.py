@@ -1,7 +1,7 @@
 import pygame, math, time
 import random as rand
 
-from spritesheet import Spritesheet
+from spritesheet import NewSpritesheet
 
 from constants import *
 from groups import *
@@ -343,20 +343,18 @@ def combineImages(baseImg: pygame.Surface, topImg: pygame.Surface) -> pygame.Sur
     newImg: pygame.Surface = pygame.Surface(vec(max(baseImg.get_width(), topImg.get_width())), max(baseImg.get_height(), topImg.get_height()))
     centerX = (newImg.get_width() - baseImg.get_width()) // 2
     centerY = (newImg.get_height() - baseImg.get_height()) // 2
-    
     newImg.blit(baseImg, vec(centerX, centerY))
 
     centerX = (newImg.get_width() - topImg.get_width()) // 2
     centerY = (newImg.get_height() - topImg.get_height()) // 2
-
     newImg.blit(topImg, vec(centerX, centerY))
     newImg.set_colorkey(BLACK)
     return newImg
 
 
 def textToImage(text: str, fontImg: str, charWidth: int, charHeight: int, charCount: int) -> pygame.Surface:
-    spritesheet = Spritesheet(fontImg)
-    images = spritesheet.get_images(0, 0, charWidth, charHeight, charCount)
+    spritesheet = NewSpritesheet(fontImg, 36)
+    images = spritesheet.get_images(charWidth, charHeight, charCount)
     charList = []
 
     finalImage = pygame.Surface(vec(len(text) * charWidth, charHeight))
@@ -364,7 +362,6 @@ def textToImage(text: str, fontImg: str, charWidth: int, charHeight: int, charCo
     for char in text:
         if char in LETTERS.keys():
             charList.append(images[LETTERS[char]])
-
         elif char in NUMBERS:
             charList.append(images[int(char) + 26])
 
