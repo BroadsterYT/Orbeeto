@@ -2,7 +2,7 @@
 import pygame
 from constants import vec
     
-class NewSpritesheet(object):
+class Spritesheet(object):
     def __init__(self, fileName, spritesPerRow):
         self.spritesheet = pygame.image.load(fileName).convert()
         self.columns = spritesPerRow
@@ -22,6 +22,3 @@ class NewSpritesheet(object):
 
         return imageList
 
-
-if __name__ == '__main__':
-    print("")

@@ -342,11 +342,11 @@ class Player(PlayerBase):
 
         # Firing portals
         if keyReleased[3] % 2 == 0 and self.canPortal and self.canGrapple:
-            all_projs.add(PortalBullet(self, self.pos.x, self.pos.y, velX * 0.25, velY * 0.25))
+            all_projs.add(PortalBullet(self, self.pos.x, self.pos.y, velX * 0.75, velY * 0.75))
             self.canPortal = False
 
         elif keyReleased[3] % 2 != 0 and not self.canPortal and self.canGrapple:
-            all_projs.add(PortalBullet(self, self.pos.x, self.pos.y, velX * 0.25, velY * 0.25))
+            all_projs.add(PortalBullet(self, self.pos.x, self.pos.y, velX * 0.75, velY * 0.75))
             self.canPortal = True
 
         # Grappling hook
@@ -419,9 +419,6 @@ class EnemyBase(ActorBase):
         self.xp_worth = None
 
         self.healthBar = HealthBar(self)
-
-    def collisionDetect(self):
-        collideCheck(self, all_players, all_walls)
 
     def awardXp(self):
         for a_player in all_players:
@@ -507,7 +504,7 @@ class StandardGrunt(EnemyBase):
 
     def update(self):
         if can_update and self.visible and self.hp > 0:
-            self.collisionDetect()
+            collideCheck(self, all_players, all_walls)
             self.movement(True)
             
             # Animation
@@ -602,7 +599,7 @@ class OctoGrunt(EnemyBase):
 
     def update(self):
         if can_update and self.visible and self.hp > 0:
-            self.collisionDetect()
+            collideCheck(self, all_players, all_walls)
             self.movement(True)
 
             # Animation
@@ -690,7 +687,7 @@ class ItemDrop(DropBase):
         self.pos = vec(self.droppedFrom.pos.x, self.droppedFrom.pos.y)
         self.randAccel = getRandComponents(self.accel_const)
         
-        self.spritesheet = NewSpritesheet("sprites/textures/item_drops.png", 8)
+        self.spritesheet = Spritesheet("sprites/textures/item_drops.png", 8)
         self.index = 0
 
         if self.mat == MAT[0]:
@@ -1048,20 +1045,13 @@ class PortalBullet(BulletBase):
         self.hitbox.center = self.pos
 
     def update(self):
-        self.images = self.spritesheet.get_images(32, 32, 5, 4)
-        self.original_images = self.spritesheet.get_images(32, 32, 5, 4)
-        self.hitbox_adjust = vec(0, 0)
-        if anim_timer % 10 == 0:
+        if getTimeDiff(self.lastFrame) > ANIMTIME:
             self.index += 1
             if self.index > 4:
                 self.index = 0
+            self.lastFrame = time.time()
         
-        self.image = self.images[self.index]
-        self.original_image = self.original_images[self.index]
-
-        self.image = pygame.transform.rotate(self.original_image, int(getVecAngle(self.vel.x, self.vel.y)))
-        self.rect = self.image.get_rect(center = self.rect.center)
-
+        self.rotateImage(int(getVecAngle(self.vel.x, self.vel.y)))
         self.bindProj()
 
 
@@ -1342,7 +1332,7 @@ class Portal(PortalBase):
         self.pos = vec((posX, posY))
         self.facing = facing
 
-        self.spritesheet = NewSpritesheet("sprites/portals/portals.png", 1)
+        self.spritesheet = Spritesheet("sprites/portals/portals.png", 1)
         self.images = self.spritesheet.get_images(64, 64, 1)
         self.index = 0
         
@@ -1375,8 +1365,6 @@ class Portal(PortalBase):
         self.rect.center = self.pos
         self.hitbox.center = self.pos
 
-        # pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 1)
-
 
 def portalCountCheck():
     """If there are more than two portals present during gameplay, the oldest one will be deleted to make room for another one."""    
@@ -1406,7 +1394,7 @@ class ProjExplode(ActorBase):
 
         self.proj = proj
         
-        self.spritesheet = NewSpritesheet("sprites/bullets/bullets.png", 8)
+        self.spritesheet = Spritesheet("sprites/bullets/bullets.png", 8)
         self.index = 1
 
         if isinstance(proj, PlayerStdBullet) or isinstance(proj, EnemyStdBullet):
@@ -1476,7 +1464,7 @@ class Floor(EnvirBase):
 
         self.sizeMult = vec(widthMult, heightMult)
 
-        self.spritesheet = NewSpritesheet("sprites/textures/floor.png", 4)
+        self.spritesheet = Spritesheet("sprites/textures/floor.png", 4)
         self.textures = self.spritesheet.get_images(64, 64, 4)
         self.index = 0
 
@@ -1533,7 +1521,7 @@ class Beam(ActorBase):
         ### Returns
             - ``pygame.Surface``: The image of the beam
         """        
-        self.spritesheet = NewSpritesheet("sprites/textures/beams.png", 1)
+        self.spritesheet = Spritesheet("sprites/textures/beams.png", 1)
         baseImages = self.spritesheet.get_images(12, 12, 1, frameOffset)
         baseImage: pygame.Surface = baseImages[self.index]
 
@@ -1813,7 +1801,7 @@ class RightMenuArrow(ActorBase):
         self.pos = vec((posX, posY))
         self.return_pos = vec((posX, posY))
         
-        self.spritesheet = NewSpritesheet("sprites/ui/menu_arrow.png", 8)
+        self.spritesheet = Spritesheet("sprites/ui/menu_arrow.png", 8)
         self.images = self.spritesheet.get_images(64, 64, 61)
         self.index = 1
 
@@ -1858,7 +1846,7 @@ class LeftMenuArrow(ActorBase):
         self.pos = vec((posX, posY))
         self.return_pos = vec((posX, posY))
         
-        self.spritesheet = NewSpritesheet("sprites/ui/menu_arrow.png", 8)
+        self.spritesheet = Spritesheet("sprites/ui/menu_arrow.png", 8)
         self.images = self.spritesheet.get_images(64, 64, 61)
         self.index = 1
 
@@ -1893,7 +1881,7 @@ class LeftMenuArrow(ActorBase):
         self.hover()
 
 
-class MenuSlot(pygame.sprite.Sprite):
+class MenuSlot(ActorBase):
     def __init__(self, posX, posY, item_held, num_frames, frame_offset):
         """A menu slot that shows the collected amount of a specific item
         
@@ -1911,8 +1899,8 @@ class MenuSlot(pygame.sprite.Sprite):
         self.holding = item_held
         self.count = 0
 
-        self.menusheet = NewSpritesheet("sprites/ui/menu_item_slot.png", 1)
-        self.itemsheet = NewSpritesheet("sprites/textures/item_drops.png", 8)
+        self.menusheet = Spritesheet("sprites/ui/menu_item_slot.png", 1)
+        self.itemsheet = Spritesheet("sprites/textures/item_drops.png", 8)
         self.menu_imgs = self.menusheet.get_images(64, 64, 1)
         self.item_imgs = self.itemsheet.get_images(32, 32, num_frames, frame_offset)
         self.index = 0
@@ -1950,7 +1938,7 @@ class MenuSlot(pygame.sprite.Sprite):
             new_img = combineImages(self.menu_img, frame)
 
             # Adding the count of the item to its images
-            char_sheet = NewSpritesheet("sprites/ui/font.png", 36)
+            char_sheet = Spritesheet("sprites/ui/font.png", 36)
             chars = char_sheet.get_images(9, 14, 36)
             width, height = 9, 14
             
@@ -2020,6 +2008,8 @@ class DamageChar(ActorBase):
         self.rect.center = self.pos
 
     def update(self):
+        self.movement()
+
         if getTimeDiff(self.start_time) > 0.75:
             self.kill()
 
@@ -2041,9 +2031,6 @@ def redrawGameWindow():
         for item in all_drops:
             collideCheck(item, all_walls)
 
-        # Updating all font characters
-        for char in all_font_chars:
-            char.movement()
 
     # Updating inventory
     player1.menu.update()

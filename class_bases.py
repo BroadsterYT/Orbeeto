@@ -3,7 +3,7 @@ import pygame, time
 from calculations import *
 from constants import *
 from groups import *
-from spritesheet import NewSpritesheet
+from spritesheet import Spritesheet
 
 
 class ActorBase(pygame.sprite.Sprite):
@@ -46,7 +46,7 @@ class ActorBase(pygame.sprite.Sprite):
             - imageOffset (``int``, optional): The index of the frame to begin the snip from. Defaults to ``0``.
             - index (``int``, optional): The index of the sprite's animation to start from. Defaults to ``0`` (the first image).
         """        
-        self.spritesheet = NewSpritesheet(imageFile, spritesPerRow)
+        self.spritesheet = Spritesheet(imageFile, spritesPerRow)
         self.images = self.spritesheet.get_images(frameWidth, frameHeight, imageCount, imageOffset)
         self.original_images = self.spritesheet.get_images(frameWidth, frameHeight, imageCount, imageOffset)
         self.index = index

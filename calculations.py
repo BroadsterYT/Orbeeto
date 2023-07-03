@@ -1,7 +1,7 @@
 import pygame, math, time
 import random as rand
 
-from spritesheet import NewSpritesheet
+from spritesheet import Spritesheet
 
 from constants import *
 from groups import *
@@ -353,7 +353,7 @@ def combineImages(baseImg: pygame.Surface, topImg: pygame.Surface) -> pygame.Sur
 
 
 def textToImage(text: str, fontImg: str, charWidth: int, charHeight: int, charCount: int) -> pygame.Surface:
-    spritesheet = NewSpritesheet(fontImg, 36)
+    spritesheet = Spritesheet(fontImg, 36)
     images = spritesheet.get_images(charWidth, charHeight, charCount)
     charList = []
 
