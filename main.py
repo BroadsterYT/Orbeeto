@@ -1233,9 +1233,6 @@ class GrappleBullet(BulletBase):
         
         self.bindProj()
 
-        pygame.draw.rect(screen, GREEN, self.hitbox, 1)
-        pygame.draw.rect(screen, BLUE, self.rect, 1)
-
 
 class PlayerStdBullet(PlayerBulletBase):
     def __init__(self, shotFrom, posX, posY, velX, velY):
