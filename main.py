@@ -394,6 +394,7 @@ class Player(PlayerBase):
         if self.hp <= 0:
             self.kill()
 
+
 # ============================================================================ #
 #                                 Enemy Classes                                #
 # ============================================================================ #
@@ -1073,6 +1074,9 @@ class GrappleBullet(BulletBase):
         self.canTp = True
         self.tpPoints = []
 
+        self.retPoint1 = None
+        self.retPoint2 = None
+
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
         self.accel = vec(0, 0)
@@ -1092,7 +1096,13 @@ class GrappleBullet(BulletBase):
         """Destroys the grappling hook"""   
         self.shotFrom.grapple = None
         self.returning = False
+
         self.chain.kill()
+
+        if isinstance(self.retPoint1, InvisObj) and isinstance(self.retPoint2, InvisObj):
+            self.retPoint1.kill()
+            self.retPoint2.kill()
+
         self.kill()
 
     def projCollide(self, spriteGroup, canHurt):
@@ -1130,6 +1140,12 @@ class GrappleBullet(BulletBase):
                                 self.teleport(portal)
                                 self.canTp = False
                                 self.tpPoints.append(copy.copy(self.pos))
+                                
+                                # Creating invisible objects at teleport points so grapple can return through portals
+                                ret1Pos: pygame.math.Vector2 = copy.copy(self.tpPoints[0])
+                                ret2Pos: pygame.math.Vector2 = copy.copy(self.tpPoints[1])
+                                self.retPoint1 = InvisObj(ret1Pos.x, ret1Pos.y, 8, 8)
+                                self.retPoint2 = InvisObj(ret2Pos.x, ret2Pos.y, 8, 8)
                         return
                     
                     elif len(all_portals) < 2:
@@ -1200,25 +1216,40 @@ class GrappleBullet(BulletBase):
                     self.pos = self.pos
 
         if self.returning:
-            if self.grappledTo == None:
-                self.sendBack()
-            
-            # Grapple will move if attached to an enemy or item
-            if self.grappledTo != None and self.grappledTo not in all_walls:
-                self.sendBack()
-                self.grappledTo.pos.x = self.pos.x
-                self.grappledTo.pos.y = self.pos.y
+            if len(self.tpPoints) == 0:
+                if self.grappledTo == None:
+                    self.sendBack()
+                
+                # Grapple will move if attached to an enemy or item
+                if self.grappledTo != None and self.grappledTo not in all_walls:
+                    self.sendBack()
+                    self.grappledTo.pos.x = self.pos.x
+                    self.grappledTo.pos.y = self.pos.y
 
-            if self.grappledTo != None and self.grappledTo in all_walls:
-                if self.shotFrom.hitbox.colliderect(self.hitbox):
-                    self.shatter()
-                for wall in all_walls:
-                    if self.shotFrom.hitbox.colliderect(wall.hitbox):
+                if self.grappledTo != None and self.grappledTo in all_walls:
+                    if self.shotFrom.hitbox.colliderect(self.hitbox):
                         self.shatter()
+                    for wall in all_walls:
+                        if self.shotFrom.hitbox.colliderect(wall.hitbox):
+                            self.shatter()
 
-            # for wall in all_walls:
-            #     if self.hitbox.colliderect(wall.hitbox) and wall != self.grappledTo:
-            #         self.shatter()
+            elif len(self.tpPoints) > 0:
+                
+                if self.grappledTo == None:
+                    self.sendBack()
+                
+                # Grapple will move if attached to an enemy or item
+                if self.grappledTo != None and self.grappledTo not in all_walls:
+                    self.sendBack()
+                    self.grappledTo.pos.x = self.pos.x
+                    self.grappledTo.pos.y = self.pos.y
+
+                if self.grappledTo != None and self.grappledTo in all_walls:
+                    if self.shotFrom.hitbox.colliderect(self.hitbox):
+                        self.shatter()
+                    for wall in all_walls:
+                        if self.shotFrom.hitbox.colliderect(wall.hitbox):
+                            self.shatter()
 
         self.rect.center = self.pos
         self.hitbox.center = self.pos
@@ -1543,15 +1574,15 @@ class InvisObj(ActorBase):
     def __init__(self, posX: int, posY: int, width: int, height: int):
         super().__init__()
         self.show(LAYER['floor'])
+        all_invisible.add(self)
 
         self.pos = vec((posX, posY))
         
-        self.image = pygame.Surface(vec(width, height))
-        self.rect = self.image.get_rect()
-        self.hitbox = self.image.get_rect
+        self.setImages("sprites/ui/menu_item_slot.png", 64, 64, 1, 1)
+        self.setRects(self.pos.x, self.pos.y, 64, 64, 64, 64)
 
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+    def update(self):
+        pygame.draw.rect(screen, RED, self.rect, 3)
 
 
 # ============================================================================ #
@@ -2072,6 +2103,9 @@ while running:
     last_time = time.time()
     
     anim_timer += 1
+
+    if hasattr(player1.grapple, "tpPoints"):
+        print(player1.grapple.tpPoints)
 
     if player1.hp <= 0:
         pygame.quit()

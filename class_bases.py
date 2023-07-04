@@ -20,6 +20,7 @@ class ActorBase(pygame.sprite.Sprite):
 
         self.isGrappled = False
     
+    # -------------------------------- Visibility -------------------------------- #
     def hide(self):
         """Makes the sprite invisible. The sprite's ``update()`` method will not be called."""
         self.visible = False
@@ -33,7 +34,8 @@ class ActorBase(pygame.sprite.Sprite):
         """        
         self.visible = True
         all_sprites.add(self, layer = layer_send)
-
+    
+    # ----------------------------- Images and Rects ----------------------------- #
     def setImages(self, imageFile: str, frameWidth: int, frameHeight: int, spritesPerRow: int, imageCount: int, imageOffset: int = 0, index: int = 0):
         """Initializes the sprite's spritesheet, images, and animations. Should be used in the object's ``__init__()`` method.
         
@@ -88,7 +90,6 @@ class ActorBase(pygame.sprite.Sprite):
         self.original_image = self.original_images[self.index]
         self.image = pygame.transform.rotate(self.original_image, int(angle))
         self.rect = self.image.get_rect(center = self.rect.center)
-
 
 class AbstractBase(pygame.sprite.AbstractGroup):
     def __init__(self):
