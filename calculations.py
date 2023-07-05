@@ -398,6 +398,12 @@ def getClosestPlayer(check_sprite: pygame.sprite.Sprite) -> pygame.sprite.Sprite
         return check_sprite
 
 
+def getOtherPortal(portalIn: pygame.sprite.Sprite) -> pygame.sprite.Sprite:
+    for portal in all_portals:
+        if portal != portalIn:
+            return portal
+
+
 # ============================================================================ #
 #                                 Returns None                                 #
 # ============================================================================ #
@@ -420,6 +426,12 @@ def collideCheck(instig: pygame.sprite.Sprite, *contactLists: pygame.sprite.Grou
 
 
 def pushFromSide(instig: pygame.sprite.Sprite, sprite: pygame.sprite.Sprite) -> None:
+    """If a sprite instigates a collision with another, the sprites will physically engage in a collision
+    
+    ### Parameters
+        - instig (``pygame.sprite.Sprite``): The instigator of the collision
+        - sprite (``pygame.sprite.Sprite``): The sprite being collided into
+    """    
     if instig.hitbox.colliderect(sprite.hitbox):
         # Bottom center of sprite
         pointA = vec(sprite.pos.x,

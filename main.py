@@ -1069,15 +1069,15 @@ class GrappleBullet(BulletBase):
         self.grappledTo = None
         
         self.returning = False
-        self.leftPortal = False
+        self.hasLeftPortal = False
 
         self.chain = Beam(self.shotFrom, self)
 
         self.canTp = True
         self.tpPoints = []
 
-        self.retPoint1 = None
-        self.retPoint2 = None
+        self.enterPoint, self.enterPointFace = None, None
+        self.exitPoint, self.exitPointFace = None, None
 
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
@@ -1101,10 +1101,10 @@ class GrappleBullet(BulletBase):
 
         self.chain.kill()
 
-        if isinstance(self.retPoint1, InvisObj):
-            self.retPoint1.kill()
-        if isinstance(self.retPoint2, InvisObj):
-            self.retPoint2.kill()
+        if isinstance(self.enterPoint, InvisObj):
+            self.enterPoint.kill()
+        if isinstance(self.exitPoint, InvisObj):
+            self.exitPoint.kill()
 
         self.kill()
 
@@ -1145,10 +1145,14 @@ class GrappleBullet(BulletBase):
                                 self.tpPoints.append(copy.copy(self.pos))
                                 
                                 # Creating invisible objects at teleport points so grapple can return through portals
+                                otherPortal = getOtherPortal(portal)
+                                self.enterPointFace = portal.facing
+                                self.exitPointFace = otherPortal.facing
+
                                 ret1Pos: pygame.math.Vector2 = copy.copy(self.tpPoints[0])
                                 ret2Pos: pygame.math.Vector2 = copy.copy(self.tpPoints[1])
-                                self.retPoint1 = InvisObj(ret1Pos.x, ret1Pos.y, 8, 8)
-                                self.retPoint2 = InvisObj(ret2Pos.x, ret2Pos.y, 8, 8)
+                                self.enterPoint = InvisObj(ret1Pos.x, ret1Pos.y, 8, 8)
+                                self.exitPoint = InvisObj(ret2Pos.x, ret2Pos.y, 8, 8)
                         return
                     
                     elif len(all_portals) < 2:
@@ -1189,26 +1193,57 @@ class GrappleBullet(BulletBase):
                 self.shatter()
 
         if len(self.tpPoints) > 0:
-            if not self.leftPortal:
-                angle = getAngleToSprite(self, self.retPoint2)
+            if not self.hasLeftPortal:
+                angle = getAngleToSprite(self, self.exitPoint)
                 self.accel.x = self.accel_const * -sin(rad(angle))
                 self.accel.y = self.accel_const * -cos(rad(angle))
-                if self.hitbox.colliderect(self.retPoint2.hitbox):
-                    side = wallSideCheck(self.retPoint2, self)
-                    
-                    if side == SOUTH:
-                        pass
-                    if side == EAST:
-                        pass
-                    if side == NORTH:
-                        pass
-                    if side == WEST:
-                        pass
-                    
-                    self.pos = self.retPoint1.pos
-                    self.leftPortal = True
+
+                if self.hitbox.colliderect(self.exitPoint.hitbox):
+                    self.pos = self.enterPoint.pos
+                    velCopy = self.vel.copy()
+                    self.hasLeftPortal = True
+
+                    if self.exitPointFace == SOUTH:
+                        if self.enterPointFace == SOUTH:
+                            self.vel = vec(-velCopy.x, -velCopy.y)
+                        if self.enterPointFace == EAST:
+                            self.vel = vec(-velCopy.y, velCopy.x)
+                        if self.enterPointFace == NORTH:
+                            pass
+                        if self.enterPointFace == WEST:
+                            self.vel = vec(velCopy.y, velCopy.x)
+
+                    if self.exitPointFace == EAST:
+                        if self.enterPointFace == SOUTH:
+                            self.vel = vec(velCopy.y, -velCopy.x)
+                        if self.enterPointFace == EAST:
+                            self.vel = vec(-velCopy.x, -velCopy.y)
+                        if self.enterPointFace == NORTH:
+                            self.vel = vec(-velCopy.y, velCopy.x)
+                        if self.enterPointFace == WEST:
+                            pass
+
+                    if self.exitPointFace == NORTH:
+                        if self.enterPointFace == SOUTH:
+                            pass
+                        if self.enterPointFace == EAST:
+                            self.vel = vec(velCopy.y, velCopy.x)
+                        if self.enterPointFace == NORTH:
+                            self.vel = vec(-velCopy.x, -velCopy.y)
+                        if self.enterPointFace == WEST:
+                            self.vel = vec(-velCopy.y, velCopy.x)
+
+                    if self.exitPointFace == WEST:
+                        if self.enterPointFace == SOUTH:
+                            self.vel = vec(velCopy.y, velCopy.x)
+                        if self.enterPointFace == EAST:
+                            pass
+                        if self.enterPointFace == NORTH:
+                            self.vel = vec(velCopy.y, -velCopy.x)
+                        if self.enterPointFace == WEST:
+                            self.vel = vec(-velCopy.x, -velCopy.y)
             
-            elif self.leftPortal:
+            elif self.hasLeftPortal:
                 angle = getAngleToSprite(self, self.shotFrom)
                 self.accel.x = self.accel_const * -sin(rad(angle))
                 self.accel.y = self.accel_const * -cos(rad(angle))
@@ -1591,6 +1626,7 @@ class InvisObj(ActorBase):
         self.pos = vec((posX, posY))
         
         self.image = pygame.Surface(vec(width, height))
+        self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
         self.hitbox = self.image.get_rect()
 
@@ -2119,9 +2155,6 @@ while running:
     last_time = time.time()
     
     anim_timer += 1
-
-    if hasattr(player1.grapple, "tpPoints"):
-        print(player1.grapple.tpPoints)
 
     if player1.hp <= 0:
         pygame.quit()
