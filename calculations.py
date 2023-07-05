@@ -421,20 +421,53 @@ def collideCheck(instig: pygame.sprite.Sprite, *contactLists: pygame.sprite.Grou
 
 def pushFromSide(instig: pygame.sprite.Sprite, sprite: pygame.sprite.Sprite) -> None:
     if instig.hitbox.colliderect(sprite.hitbox):
-        if isLeftOrRight(instig, sprite):
-            if instig.pos.x > sprite.pos.x and instig.vel.x < 0:
-                instig.vel.x = 0
-                instig.pos.x = sprite.pos.x + (sprite.hitbox.width // 2) + (instig.hitbox.width // 2)
-            if instig.pos.x < sprite.pos.x and instig.vel.x > 0:
-                instig.vel.x = 0
-                instig.pos.x = sprite.pos.x - (sprite.hitbox.width // 2) - (instig.hitbox.width // 2)
-        if isAboveOrBelow(instig, sprite):
-            if instig.pos.y < sprite.pos.y and instig.vel.y > 0:
-                instig.vel.y = 0
-                instig.pos.y = sprite.pos.y - (sprite.hitbox.height // 2) - (instig.hitbox.height // 2)
-            if instig.pos.y > sprite.pos.y and instig.vel.y < 0:
-                instig.vel.y = 0
-                instig.pos.y = sprite.pos.y + (sprite.hitbox.height // 2) + (instig.hitbox.height // 2)
+        # Bottom center of sprite
+        pointA = vec(sprite.pos.x,
+                     sprite.pos.y + sprite.hitbox.height)
+        # Right center of sprite
+        pointB = vec(sprite.pos.x + sprite.hitbox.width,
+                     sprite.pos.y)
+        # Top center of sprite
+        pointC = vec(sprite.pos.x,
+                     sprite.pos.y - sprite.hitbox.height)
+        # Left center of sprite
+        pointD = vec(sprite.pos.x - sprite.hitbox.width,
+                     sprite.pos.y)
+        
+        lenPointA, lenPointB = getDistToCoords(instig.pos, pointA), getDistToCoords(instig.pos, pointB)
+        lenPointC, lenPointD = getDistToCoords(instig.pos, pointC), getDistToCoords(instig.pos, pointD)
+        
+        # If hitting the right side
+        if (lenPointB < lenPointA and
+            lenPointB < lenPointC and
+            lenPointB < lenPointD and
+            instig.vel.x < 0):
+            instig.vel.x = 0
+            instig.pos.x = sprite.pos.x + sprite.hitbox.width // 2 + instig.hitbox.width // 2
+
+        # Hitting bottom side
+        if (lenPointA < lenPointB and
+            lenPointA < lenPointC and
+            lenPointA < lenPointD and
+            instig.vel.y < 0):
+            instig.vel.y = 0
+            instig.pos.y = sprite.pos.y + sprite.hitbox.height // 2 + instig.hitbox.height // 2
+
+        # Hitting left side
+        if (lenPointD < lenPointA and
+            lenPointD < lenPointB and
+            lenPointD < lenPointC and
+            instig.vel.x > 0):
+            instig.vel.x = 0
+            instig.pos.x = sprite.pos.x - sprite.hitbox.width // 2 - instig.hitbox.width // 2
+
+        # Hitting top side
+        if (lenPointC < lenPointA and
+            lenPointC < lenPointB and
+            lenPointC < lenPointD and
+            instig.vel.y > 0):
+            instig.vel.y = 0
+            instig.pos.y = sprite.pos.y - sprite.hitbox.height // 2 - instig.hitbox.height // 2
   
 
 def killGroups(*groups: pygame.sprite.Group) -> None:

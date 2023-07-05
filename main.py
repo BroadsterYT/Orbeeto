@@ -1067,7 +1067,9 @@ class GrappleBullet(BulletBase):
 
         self.isHooked = False
         self.grappledTo = None
+        
         self.returning = False
+        self.leftPortal = False
 
         self.chain = Beam(self.shotFrom, self)
 
@@ -1099,8 +1101,9 @@ class GrappleBullet(BulletBase):
 
         self.chain.kill()
 
-        if isinstance(self.retPoint1, InvisObj) and isinstance(self.retPoint2, InvisObj):
+        if isinstance(self.retPoint1, InvisObj):
             self.retPoint1.kill()
+        if isinstance(self.retPoint2, InvisObj):
             self.retPoint2.kill()
 
         self.kill()
@@ -1176,13 +1179,41 @@ class GrappleBullet(BulletBase):
                 self.projCollide(all_portals, False)
 
     def sendBack(self):
-        """Sends the grappling hook back to the player"""        
-        angle = getAngleToSprite(self, self.shotFrom)
-        self.accel.x = self.accel_const * -sin(rad(angle))
-        self.accel.y = self.accel_const * -cos(rad(angle))
+        """Sends the grappling hook back to the player"""
+        if len(self.tpPoints) == 0:  
+            angle = getAngleToSprite(self, self.shotFrom)
+            self.accel.x = self.accel_const * -sin(rad(angle))
+            self.accel.y = self.accel_const * -cos(rad(angle))
 
-        if self.hitbox.colliderect(self.shotFrom.rect):
-            self.shatter()
+            if self.hitbox.colliderect(self.shotFrom.rect):
+                self.shatter()
+
+        if len(self.tpPoints) > 0:
+            if not self.leftPortal:
+                angle = getAngleToSprite(self, self.retPoint2)
+                self.accel.x = self.accel_const * -sin(rad(angle))
+                self.accel.y = self.accel_const * -cos(rad(angle))
+                if self.hitbox.colliderect(self.retPoint2.hitbox):
+                    side = wallSideCheck(self.retPoint2, self)
+                    
+                    if side == SOUTH:
+                        pass
+                    if side == EAST:
+                        pass
+                    if side == NORTH:
+                        pass
+                    if side == WEST:
+                        pass
+                    
+                    self.pos = self.retPoint1.pos
+                    self.leftPortal = True
+            
+            elif self.leftPortal:
+                angle = getAngleToSprite(self, self.shotFrom)
+                self.accel.x = self.accel_const * -sin(rad(angle))
+                self.accel.y = self.accel_const * -cos(rad(angle))
+                if self.hitbox.colliderect(self.shotFrom.rect):
+                    self.shatter()
 
         objectAccel(self)
 
@@ -1216,40 +1247,21 @@ class GrappleBullet(BulletBase):
                     self.pos = self.pos
 
         if self.returning:
-            if len(self.tpPoints) == 0:
-                if self.grappledTo == None:
-                    self.sendBack()
-                
-                # Grapple will move if attached to an enemy or item
-                if self.grappledTo != None and self.grappledTo not in all_walls:
-                    self.sendBack()
-                    self.grappledTo.pos.x = self.pos.x
-                    self.grappledTo.pos.y = self.pos.y
+            if self.grappledTo == None:
+                self.sendBack()
+            
+            # Grapple will move if attached to an enemy or item
+            if self.grappledTo != None and self.grappledTo not in all_walls:
+                self.sendBack()
+                self.grappledTo.pos.x = self.pos.x
+                self.grappledTo.pos.y = self.pos.y
 
-                if self.grappledTo != None and self.grappledTo in all_walls:
-                    if self.shotFrom.hitbox.colliderect(self.hitbox):
+            if self.grappledTo != None and self.grappledTo in all_walls:
+                if self.shotFrom.hitbox.colliderect(self.hitbox):
+                    self.shatter()
+                for wall in all_walls:
+                    if self.shotFrom.hitbox.colliderect(wall.hitbox):
                         self.shatter()
-                    for wall in all_walls:
-                        if self.shotFrom.hitbox.colliderect(wall.hitbox):
-                            self.shatter()
-
-            elif len(self.tpPoints) > 0:
-                
-                if self.grappledTo == None:
-                    self.sendBack()
-                
-                # Grapple will move if attached to an enemy or item
-                if self.grappledTo != None and self.grappledTo not in all_walls:
-                    self.sendBack()
-                    self.grappledTo.pos.x = self.pos.x
-                    self.grappledTo.pos.y = self.pos.y
-
-                if self.grappledTo != None and self.grappledTo in all_walls:
-                    if self.shotFrom.hitbox.colliderect(self.hitbox):
-                        self.shatter()
-                    for wall in all_walls:
-                        if self.shotFrom.hitbox.colliderect(wall.hitbox):
-                            self.shatter()
 
         self.rect.center = self.pos
         self.hitbox.center = self.pos
@@ -1578,8 +1590,12 @@ class InvisObj(ActorBase):
 
         self.pos = vec((posX, posY))
         
-        self.setImages("sprites/ui/menu_item_slot.png", 64, 64, 1, 1)
-        self.setRects(self.pos.x, self.pos.y, 64, 64, 64, 64)
+        self.image = pygame.Surface(vec(width, height))
+        self.rect = self.image.get_rect()
+        self.hitbox = self.image.get_rect()
+
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
 
     def update(self):
         pygame.draw.rect(screen, RED, self.rect, 3)
