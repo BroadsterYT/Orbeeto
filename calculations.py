@@ -290,7 +290,7 @@ def wallSideCheck(wall: pygame.sprite.Sprite, proj: pygame.sprite.Sprite) -> str
         
     else:
         return None
-    
+
 
 # ============================================================================ #
 #                                Returns Vector2                               #
@@ -325,6 +325,50 @@ def getRandComponents(maxValue) -> pygame.math.Vector2:
     if rand.choice((True, False)) == True:
         y = -y
     return vec(x, y)
+
+
+def getTpVel(portalInDir: str, portalOutDir: str, sprite: pygame.sprite.Sprite) -> pygame.math.Vector2:
+    velCopy = sprite.vel.copy()
+    if portalInDir == SOUTH:
+        if portalOutDir == SOUTH:
+            return vec(-velCopy.x, -velCopy.y)
+        if portalOutDir == EAST:
+            return vec(-velCopy.y, velCopy.x)
+        if portalOutDir == NORTH:
+            return velCopy
+        if portalOutDir == WEST:
+            return vec(velCopy.y, velCopy.x)
+    
+    if portalInDir == EAST:
+        if portalOutDir == SOUTH:
+            return vec(velCopy.y, -velCopy.x)
+        if portalOutDir == EAST:
+            return vec(-velCopy.x, -velCopy.y)
+        if portalOutDir == NORTH:
+            return vec(-velCopy.y, velCopy.x)
+        if portalOutDir == WEST:
+            return velCopy
+
+    if portalInDir == NORTH:
+        if portalOutDir == SOUTH:
+            return velCopy
+        if portalOutDir == EAST:
+            return vec(velCopy.y, velCopy.x)
+        if portalOutDir == NORTH:
+            return vec(-velCopy.x, -velCopy.y)
+        if portalOutDir == WEST:
+            return vec(-velCopy.y, velCopy.x)
+
+    if portalInDir == WEST:
+        if portalOutDir == SOUTH:
+            return vec(velCopy.y, velCopy.x)
+        if portalOutDir == EAST:
+            return velCopy
+        if portalOutDir == NORTH:
+            return vec(velCopy.y, -velCopy.x)
+        if portalOutDir == WEST:
+            return vec(-velCopy.x, -velCopy.y)
+
 
 
 # ============================================================================ #
