@@ -140,12 +140,12 @@ class PlayerBase(ActorBase):
             if portalOut.facing == SOUTH:
                 self.pos.x = portalOut.pos.x + distOffset
                 self.pos.y = portalOut.pos.y + height
-                self.vel = vec(-velCopy.x, -velCopy.y)
+                self.vel = self.vel.rotate(180)
             
             if portalOut.facing == EAST:
                 self.pos.x = portalOut.pos.x + width
                 self.pos.y = portalOut.pos.y + distOffset
-                self.vel = vec(-velCopy.y, velCopy.x)
+                self.vel = self.vel.rotate(90)
             
             if portalOut.facing == NORTH:
                 self.pos.x = portalOut.pos.x + distOffset
@@ -324,17 +324,17 @@ class Player(PlayerBase):
         velY = self.bulletVel * -cos(angle_to_mouse)
 
         if isInputHeld[1] and self.bulletType == PROJ_STD and getTimeDiff(self.last_shot) >= self.gun_cooldown:
-            offset = vec((21, 30))
+            OFFSET = vec((21, 30))
             all_projs.add(
                 PlayerStdBullet(self,
-                    self.pos.x - (offset.x * cos(angle_to_mouse)) - (offset.y * sin(angle_to_mouse)),
-                    self.pos.y + (offset.x * sin(angle_to_mouse)) - (offset.y * cos(angle_to_mouse)),
+                    self.pos.x - (OFFSET.x * cos(angle_to_mouse)) - (OFFSET.y * sin(angle_to_mouse)),
+                    self.pos.y + (OFFSET.x * sin(angle_to_mouse)) - (OFFSET.y * cos(angle_to_mouse)),
                     velX, velY
                 ),
                 
                 PlayerStdBullet(self,
-                    self.pos.x + (offset.x * cos(angle_to_mouse)) - (offset.y * sin(angle_to_mouse)),
-                    self.pos.y - (offset.x * sin(angle_to_mouse)) - (offset.y * cos(angle_to_mouse)),
+                    self.pos.x + (OFFSET.x * cos(angle_to_mouse)) - (OFFSET.y * sin(angle_to_mouse)),
+                    self.pos.y - (OFFSET.x * sin(angle_to_mouse)) - (OFFSET.y * cos(angle_to_mouse)),
                     velX, velY
                 )
             )
@@ -369,10 +369,6 @@ class Player(PlayerBase):
             self.shoot()
             self.checkRoomChange()
 
-            for portal in all_portals:
-                if self.hitbox.colliderect(portal.hitbox) and len(all_portals) == 2:
-                    self.teleport(portal)
-
             # Animation
             if getTimeDiff(self.lastFrame) > ANIMTIME:
                 if isInputHeld[1]:
@@ -383,9 +379,11 @@ class Player(PlayerBase):
                     self.index = 0
                 
                 self.lastFrame = time.time()
-
-            # Animation rotation
             self.rotateImage(getAngleToMouse(self))
+
+            for portal in all_portals:
+                if self.hitbox.colliderect(portal.hitbox) and len(all_portals) == 2:
+                    self.teleport(portal)
 
             # Dodge charge up
             if self.hitTime < self.hitTime_charge:
@@ -1155,10 +1153,6 @@ class GrappleBullet(BulletBase):
                                 self.exitPoint = InvisObj(ret2Pos.x, ret2Pos.y, 8, 8)
                         return
                     
-                    elif len(all_portals) < 2:
-                        self.land(None)
-                        return
-                    
                 elif not self.canTp and spriteGroup == all_portals:
                     pass
 
@@ -1200,48 +1194,8 @@ class GrappleBullet(BulletBase):
 
                 if self.hitbox.colliderect(self.exitPoint.hitbox):
                     self.pos = self.enterPoint.pos
-                    velCopy = self.vel.copy()
+                    self.vel = getTpVel(self.exitPointFace, self.enterPointFace, self)
                     self.hasLeftPortal = True
-
-                    if self.exitPointFace == SOUTH:
-                        if self.enterPointFace == SOUTH:
-                            self.vel = vec(-velCopy.x, -velCopy.y)
-                        if self.enterPointFace == EAST:
-                            self.vel = vec(-velCopy.y, velCopy.x)
-                        if self.enterPointFace == NORTH:
-                            pass
-                        if self.enterPointFace == WEST:
-                            self.vel = vec(velCopy.y, velCopy.x)
-
-                    if self.exitPointFace == EAST:
-                        if self.enterPointFace == SOUTH:
-                            self.vel = vec(velCopy.y, -velCopy.x)
-                        if self.enterPointFace == EAST:
-                            self.vel = vec(-velCopy.x, -velCopy.y)
-                        if self.enterPointFace == NORTH:
-                            self.vel = vec(-velCopy.y, velCopy.x)
-                        if self.enterPointFace == WEST:
-                            pass
-
-                    if self.exitPointFace == NORTH:
-                        if self.enterPointFace == SOUTH:
-                            pass
-                        if self.enterPointFace == EAST:
-                            self.vel = vec(velCopy.y, velCopy.x)
-                        if self.enterPointFace == NORTH:
-                            self.vel = vec(-velCopy.x, -velCopy.y)
-                        if self.enterPointFace == WEST:
-                            self.vel = vec(-velCopy.y, velCopy.x)
-
-                    if self.exitPointFace == WEST:
-                        if self.enterPointFace == SOUTH:
-                            self.vel = vec(velCopy.y, velCopy.x)
-                        if self.enterPointFace == EAST:
-                            pass
-                        if self.enterPointFace == NORTH:
-                            self.vel = vec(velCopy.y, -velCopy.x)
-                        if self.enterPointFace == WEST:
-                            self.vel = vec(-velCopy.x, -velCopy.y)
             
             elif self.hasLeftPortal:
                 angle = getAngleToSprite(self, self.shotFrom)
@@ -1305,7 +1259,7 @@ class GrappleBullet(BulletBase):
         if not self.isHooked and not self.returning:
             self.index = 0
             self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
-        elif not self.returning:
+        else:
             self.index = 1
             self.rotateImage(getAngleToSprite(self, self.shotFrom) + 180)
         
@@ -1439,6 +1393,8 @@ class Portal(PortalBase):
         
         self.rect.center = self.pos
         self.hitbox.center = self.pos
+
+        pygame.draw.rect(screen, RED, self.hitbox, 3)
 
 
 def portalCountCheck():
@@ -1634,7 +1590,8 @@ class InvisObj(ActorBase):
         self.hitbox.center = self.pos
 
     def update(self):
-        pygame.draw.rect(screen, RED, self.rect, 3)
+        pass
+        # pygame.draw.rect(screen, RED, self.rect, 3)
 
 
 # ============================================================================ #

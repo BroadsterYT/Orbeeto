@@ -328,16 +328,16 @@ def getRandComponents(maxValue) -> pygame.math.Vector2:
 
 
 def getTpVel(portalInDir: str, portalOutDir: str, sprite: pygame.sprite.Sprite) -> pygame.math.Vector2:
-    velCopy = sprite.vel.copy()
+    velCopy: pygame.math.Vector2 = sprite.vel.copy()
     if portalInDir == SOUTH:
         if portalOutDir == SOUTH:
-            return vec(-velCopy.x, -velCopy.y)
+            return velCopy.rotate(180)
         if portalOutDir == EAST:
-            return vec(-velCopy.y, velCopy.x)
+            return velCopy.rotate(90)
         if portalOutDir == NORTH:
             return velCopy
         if portalOutDir == WEST:
-            return vec(velCopy.y, velCopy.x)
+            return velCopy.rotate(270)
     
     if portalInDir == EAST:
         if portalOutDir == SOUTH:
@@ -368,7 +368,6 @@ def getTpVel(portalInDir: str, portalOutDir: str, sprite: pygame.sprite.Sprite) 
             return vec(velCopy.y, -velCopy.x)
         if portalOutDir == WEST:
             return vec(-velCopy.x, -velCopy.y)
-
 
 
 # ============================================================================ #
