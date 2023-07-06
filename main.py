@@ -1060,7 +1060,7 @@ class GrappleBullet(BulletBase):
         self.show(LAYER['grapple'])
         all_projs.add(self)
 
-        self.shotFrom: pygame.sprite.Sprite = shotFrom
+        self.shotFrom: Player = shotFrom
         self.damage = PROJ_DMG[PROJ_GRAPPLE]
 
         self.isHooked = False
@@ -1069,13 +1069,14 @@ class GrappleBullet(BulletBase):
         self.returning = False
         self.hasLeftPortal = False
 
-        self.chain = Beam(self.shotFrom, self)
+        self.chain1: Beam = Beam(self.shotFrom, self)
+        self.chain2: Beam = None
 
         self.canTp = True
         self.tpPoints = []
 
-        self.enterPoint, self.enterPointFace = None, None
-        self.exitPoint, self.exitPointFace = None, None
+        self.enterPoint: InvisObj = None; self.enterPointFace = None
+        self.exitPoint: InvisObj = None; self.exitPointFace = None
 
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
@@ -1097,7 +1098,9 @@ class GrappleBullet(BulletBase):
         self.shotFrom.grapple = None
         self.returning = False
 
-        self.chain.kill()
+        self.chain1.kill()
+        if isinstance(self.chain2, Beam):
+            self.chain2.kill()
 
         if isinstance(self.enterPoint, InvisObj):
             self.enterPoint.kill()
@@ -1143,7 +1146,7 @@ class GrappleBullet(BulletBase):
                                 self.tpPoints.append(copy.copy(self.pos))
                                 
                                 # Creating invisible objects at teleport points so grapple can return through portals
-                                otherPortal = getOtherPortal(portal)
+                                otherPortal: Portal = getOtherPortal(portal)
                                 self.enterPointFace = portal.facing
                                 self.exitPointFace = otherPortal.facing
 
@@ -1151,6 +1154,11 @@ class GrappleBullet(BulletBase):
                                 ret2Pos: pygame.math.Vector2 = copy.copy(self.tpPoints[1])
                                 self.enterPoint = InvisObj(ret1Pos.x, ret1Pos.y, 8, 8)
                                 self.exitPoint = InvisObj(ret2Pos.x, ret2Pos.y, 8, 8)
+                                
+                                # Correcting chains
+                                self.chain1.kill()
+                                self.chain1: Beam = Beam(self.shotFrom, self.enterPoint)
+                                self.chain2: Beam = Beam(self.exitPoint, self)
                         return
                     
                 elif not self.canTp and spriteGroup == all_portals:
@@ -1196,6 +1204,7 @@ class GrappleBullet(BulletBase):
                     self.pos = self.enterPoint.pos
                     self.vel = getTpVel(self.exitPointFace, self.enterPointFace, self)
                     self.hasLeftPortal = True
+                    self.chain2.kill()
             
             elif self.hasLeftPortal:
                 angle = getAngleToSprite(self, self.shotFrom)
