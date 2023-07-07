@@ -16,7 +16,7 @@ class ActorBase(pygame.sprite.Sprite):
         self.pos = vec((0, 0))
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
-        self.accel_const = 0.3
+        self.ACCELC = 0.3
 
         self.isGrappled = False
     

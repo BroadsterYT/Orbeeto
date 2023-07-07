@@ -28,16 +28,16 @@ screen = pygame.display.set_mode(screenSize, pygame.SCALED)
 pygame.display.set_caption('Orbeeto')
 
 
-def objectAccel(sprite):
+def objectAccel(sprite: pygame.sprite.Sprite):
     """Defines the relationship between acceleration, velocity, and position (and time, when called once every frame)
-    
-    ### Parameters
-        - ``sprite`` ``(pygame.sprite.Sprite)``: The sprite that should follow the acceleration logic
+
+    Args:
+        sprite ``(pygame.sprite.Sprite)``: The sprite that should follow the acceleration logic
     """    
     sprite.accel.x += sprite.vel.x * FRIC
     sprite.accel.y += sprite.vel.y * FRIC
     sprite.vel += sprite.accel * dt
-    sprite.pos += sprite.vel + sprite.accel_const * sprite.accel
+    sprite.pos += sprite.vel + sprite.ACCELC * sprite.accel
 
 
 # ============================================================================ #
@@ -50,7 +50,7 @@ class PlayerBase(ActorBase):
         self.room = vec((0, 0))
 
         self.pos = vec((WIN_WIDTH / 2, WIN_HEIGHT / 2))
-        self.accel_const = 0.52
+        self.ACCELC = 0.52
 
         self.room = vec((0, 0))
 
@@ -291,26 +291,26 @@ class Player(PlayerBase):
         if self.visible:
             if self.grapple == None:
                 if isInputHeld[K_a]:
-                    self.accel.x = -self.accel_const * dt
+                    self.accel.x = -self.ACCELC * dt
                 if isInputHeld[K_d]:
-                    self.accel.x = self.accel_const * dt
+                    self.accel.x = self.ACCELC * dt
                 if isInputHeld[K_s]:
-                    self.accel.y = self.accel_const * dt
+                    self.accel.y = self.ACCELC * dt
                 if isInputHeld[K_w]:
-                    self.accel.y = -self.accel_const * dt
+                    self.accel.y = -self.ACCELC * dt
 
             elif self.grapple != None:
                 if isInputHeld[K_a]:
-                    self.accel.x = -self.accel_const * dt
+                    self.accel.x = -self.ACCELC * dt
                 if isInputHeld[K_d]:
-                    self.accel.x = self.accel_const * dt
+                    self.accel.x = self.ACCELC * dt
                 if isInputHeld[K_s]:
-                    self.accel.y = self.accel_const * dt
+                    self.accel.y = self.ACCELC * dt
                 if isInputHeld[K_w]:
-                    self.accel.y = -self.accel_const * dt
+                    self.accel.y = -self.ACCELC * dt
                 
                 if self.grapple.returning and self.grapple.grappledTo in all_walls:
-                    self.accel = vec((self.accel_const * 3) * -sin(getAngleToSprite(self, self.grapple)) * dt, (self.accel_const * 3) * -cos(getAngleToSprite(self, self.grapple)) * dt)
+                    self.accel = vec((self.ACCELC * 3) * -sin(getAngleToSprite(self, self.grapple)) * dt, (self.ACCELC * 3) * -cos(getAngleToSprite(self, self.grapple)) * dt)
 
             self.rect.center = self.pos
             self.hitbox.center = self.pos
@@ -467,16 +467,16 @@ class StandardGrunt(EnemyBase):
 
             if self.pos.x != (self.rand_pos.x) or self.pos.y != (self.rand_pos.y):
                 if self.pos.x < self.rand_pos.x - 32:
-                    self.accel.x = self.accel_const
+                    self.accel.x = self.ACCELC
                 elif self.pos.x > self.rand_pos.x + 32:
-                    self.accel.x = -self.accel_const
+                    self.accel.x = -self.ACCELC
                 else:
                     self.accel.x = 0
 
                 if self.pos.y < self.rand_pos.y - 32:
-                    self.accel.y = self.accel_const
+                    self.accel.y = self.ACCELC
                 elif self.pos.y > self.rand_pos.y + 32:
-                    self.accel.y = -self.accel_const
+                    self.accel.y = -self.ACCELC
                 else:
                     self.accel.y = 0
             
@@ -550,16 +550,16 @@ class OctoGrunt(EnemyBase):
 
             if self.pos.x != self.rand_pos.x or self.pos.y != self.rand_pos.y:
                 if self.pos.x < self.rand_pos.x - 32:
-                    self.accel.x = self.accel_const
+                    self.accel.x = self.ACCELC
                 elif self.pos.x > self.rand_pos.x + 32:
-                    self.accel.x = -self.accel_const
+                    self.accel.x = -self.ACCELC
                 else:
                     self.accel.x = 0
 
                 if self.pos.y < self.rand_pos.y - 32:
-                    self.accel.y = self.accel_const
+                    self.accel.y = self.ACCELC
                 elif self.pos.y > self.rand_pos.y + 32:
-                    self.accel.y = -self.accel_const
+                    self.accel.y = -self.ACCELC
                 else:
                     self.accel.y = 0
             
@@ -633,7 +633,7 @@ class Box(ActorBase):
         all_movable.add(self)
 
         self.pos = vec((posX, posY))
-        self.accel_const = 0.4
+        self.ACCELC = 0.4
         
         self.setImages("sprites/orbeeto/orbeeto.png", 64, 64, 5, 1, 0, 0)
         self.setRects(0, 0, 64, 64, 64, 64, True)
@@ -643,13 +643,13 @@ class Box(ActorBase):
         if can_update and self.visible:
             if self.hitbox.colliderect(player1.rect):
                 if collideSideCheck(self, player1) == SOUTH:
-                    self.accel.y = -self.accel_const * dt
+                    self.accel.y = -self.ACCELC * dt
                 if collideSideCheck(self, player1) == EAST:
-                    self.accel.x = -self.accel_const * dt
+                    self.accel.x = -self.ACCELC * dt
                 if collideSideCheck(self, player1) == NORTH:
-                    self.accel.y = self.accel_const * dt
+                    self.accel.y = self.ACCELC * dt
                 if collideSideCheck(self, player1) == WEST:
-                    self.accel.x = self.accel_const * dt
+                    self.accel.x = self.ACCELC * dt
 
             self.rect.center = self.pos
             self.hitbox.center = self.pos
@@ -663,7 +663,7 @@ class Box(ActorBase):
 class DropBase(ActorBase):
     def __init__(self):
         super().__init__()
-        self.accel_const = 0.8
+        self.ACCELC = 0.8
 
 
 class ItemDrop(DropBase):
@@ -684,7 +684,7 @@ class ItemDrop(DropBase):
 
         self.start_time = time.time()
         self.pos = vec(self.droppedFrom.pos.x, self.droppedFrom.pos.y)
-        self.randAccel = getRandComponents(self.accel_const)
+        self.randAccel = getRandComponents(self.ACCELC)
         
         self.spritesheet = Spritesheet("sprites/textures/item_drops.png", 8)
         self.index = 0
@@ -1081,7 +1081,7 @@ class GrappleBullet(BulletBase):
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
         self.accel = vec(0, 0)
-        self.accel_const = 0.7
+        self.ACCELC = 0.7
 
         self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 2, 9)
         self.setRects(0, 0, 32, 32, 16, 16)
@@ -1188,8 +1188,8 @@ class GrappleBullet(BulletBase):
         """Sends the grappling hook back to the player"""
         if len(self.tpPoints) == 0:  
             angle = getAngleToSprite(self, self.shotFrom)
-            self.accel.x = self.accel_const * -sin(rad(angle))
-            self.accel.y = self.accel_const * -cos(rad(angle))
+            self.accel.x = self.ACCELC * -sin(rad(angle))
+            self.accel.y = self.ACCELC * -cos(rad(angle))
 
             if self.hitbox.colliderect(self.shotFrom.rect):
                 self.shatter()
@@ -1197,8 +1197,8 @@ class GrappleBullet(BulletBase):
         if len(self.tpPoints) > 0:
             if not self.hasLeftPortal:
                 angle = getAngleToSprite(self, self.exitPoint)
-                self.accel.x = self.accel_const * -sin(rad(angle))
-                self.accel.y = self.accel_const * -cos(rad(angle))
+                self.accel.x = self.ACCELC * -sin(rad(angle))
+                self.accel.y = self.ACCELC * -cos(rad(angle))
 
                 if self.hitbox.colliderect(self.exitPoint.hitbox):
                     self.pos = self.enterPoint.pos
@@ -1208,8 +1208,8 @@ class GrappleBullet(BulletBase):
             
             elif self.hasLeftPortal:
                 angle = getAngleToSprite(self, self.shotFrom)
-                self.accel.x = self.accel_const * -sin(rad(angle))
-                self.accel.y = self.accel_const * -cos(rad(angle))
+                self.accel.x = self.ACCELC * -sin(rad(angle))
+                self.accel.y = self.ACCELC * -cos(rad(angle))
                 if self.hitbox.colliderect(self.shotFrom.rect):
                     self.shatter()
 
