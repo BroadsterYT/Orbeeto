@@ -73,7 +73,7 @@ class PlayerBase(ActorBase):
 
         self.updateMaxStats()
 
-        self.menu = InventoryMenu()
+        self.menu = InventoryMenu(self)
         self.healthBar = HealthBar(self)
         self.dodgeBar = DodgeBar(self)
 
@@ -727,6 +727,7 @@ class ItemDrop(DropBase):
 
         if self.hitbox.colliderect(player1):
             player1.inventory[self.mat] += 1
+            player1.menu.updateMenuSlots()
             self.kill()
 
 
@@ -1734,7 +1735,7 @@ def showEnemies(container):
 #                                  UI Classes                                  #
 # ============================================================================ #
 class InventoryMenu(AbstractBase):
-    def __init__(self):
+    def __init__(self, owner):
         """A menu used to view collected items and utilize them for various purposes
         
         ### Parameters
@@ -1743,9 +1744,10 @@ class InventoryMenu(AbstractBase):
         super().__init__()
         self.is_cyclingLeft = False
         self.is_cyclingRight = False
+
+        self.owner: Player = owner
         
         self.wipeTime = 1
-
         self.window = 0
         
         self.last_cycle = time.time()
@@ -1810,13 +1812,26 @@ class InventoryMenu(AbstractBase):
         offset = 0
         for y in range(5):
             for x in range(5):
-                menu_slots.append(MenuSlot(64 + space.x, 64 + space.y, MAT[slot_count], 1, offset))
+                menu_slots.append(MenuSlot(64 + space.x, 64 + space.y, None))
                 space.x += space_cushion.x
                 offset += 1
                 slot_count += 1
             space.y += space_cushion.y
             space.x = 0
         return menu_slots
+
+    def updateMenuSlots(self):
+        for material in self.owner.inventory:
+            if self.owner.inventory[material] > 0: # For every material in the owner's inventory
+                print(material)
+                for slot in self.sprites():
+                    if slot.holding == material:
+                        break
+                    if slot.holding == None:
+                        slot.holding = material
+                        break
+            for slot in self.sprites():
+                slot.createSlotImages()
 
     def update(self):
         global can_update
@@ -1834,7 +1849,7 @@ class InventoryMenu(AbstractBase):
             
         self.cycleMenu()
 
-
+                    
 class RightMenuArrow(ActorBase):
     def __init__(self, posX, posY):
         """A UI element that allows players to cycle through menu screens to the right.
@@ -1928,7 +1943,7 @@ class LeftMenuArrow(ActorBase):
 
 
 class MenuSlot(ActorBase):
-    def __init__(self, posX, posY, item_held, num_frames, frame_offset):
+    def __init__(self, posX, posY, item_held):
         """A menu slot that shows the collected amount of a specific item
         
         ### Parameters
@@ -1948,7 +1963,7 @@ class MenuSlot(ActorBase):
         self.menusheet = Spritesheet("sprites/ui/menu_item_slot.png", 1)
         self.itemsheet = Spritesheet("sprites/textures/item_drops.png", 8)
         self.menu_imgs = self.menusheet.get_images(64, 64, 1)
-        self.item_imgs = self.itemsheet.get_images(32, 32, num_frames, frame_offset)
+        
         self.index = 0
 
         self.menu_img = self.menu_imgs[0]
@@ -1973,38 +1988,52 @@ class MenuSlot(ActorBase):
             self.image = self.images[self.index]
             self.rect = self.image.get_rect(center = self.rect.center)
 
+    def getItemImages(self) -> list:
+        if self.holding == MAT[0]:
+            return self.itemsheet.get_images(32, 32, 1, 0)
+        elif self.holding == MAT[1]:
+            return self.itemsheet.get_images(32, 32, 1, 1)
+        else:
+            return self.itemsheet.get_images(32, 32, 1, 0)
+
     def createSlotImages(self):
         """Combines the menu slot image with the images of the item and adds the player's collected amount of that item on top
         
         ### Returns
             - ``list``: A list of the created images
         """        
+        self.item_imgs = self.getItemImages()
         final_images = []
-        for frame in self.item_imgs:
-            new_img = combineImages(self.menu_img, frame)
+        if self.holding != None:
+            for frame in self.item_imgs:
+                new_img = combineImages(self.menu_img, frame)
 
-            # Adding the count of the item to its images
-            char_sheet = Spritesheet("sprites/ui/font.png", 36)
-            chars = char_sheet.get_images(9, 14, 36)
-            width, height = 9, 14
-            
-            charList = []
-            for char in str(self.count):
-                charList.append(chars[int(char) + 26])
-            
-            count_surface = pygame.Surface([width * len(charList), height]).convert()
+                # Adding the count of the item to its images
+                char_sheet = Spritesheet("sprites/ui/font.png", 36)
+                chars = char_sheet.get_images(9, 14, 36)
+                width, height = 9, 14
+                
+                charList = []
+                for char in str(self.count):
+                    charList.append(chars[int(char) + 26])
+                
+                count_surface = pygame.Surface([width * len(charList), height]).convert()
 
-            len_count = 0
-            for surface in charList:
-                count_surface.blit(surface, (width * len_count, 0), (0, 0, 9, 14))
-                len_count += 1
+                len_count = 0
+                for surface in charList:
+                    count_surface.blit(surface, (width * len_count, 0), (0, 0, 9, 14))
+                    len_count += 1
 
-            count_surface.set_colorkey((0, 0, 0))
-            new_img.set_colorkey((0, 0, 0))
-            center_x = (new_img.get_width() - frame.get_width()) // 2
-            center_y = (new_img.get_height() - frame.get_height()) // 2
-            new_img.blit(swapColor(swapColor(count_surface, (44, 44, 44), (156, 156, 156)), (0, 0, 1), (255, 255, 255)), vec(center_x, center_y))
-            final_images.append(new_img)
+                count_surface.set_colorkey((0, 0, 0))
+                new_img.set_colorkey((0, 0, 0))
+                center_x = (new_img.get_width() - frame.get_width()) // 2
+                center_y = (new_img.get_height() - frame.get_height()) // 2
+                new_img.blit(swapColor(swapColor(count_surface, (44, 44, 44), (156, 156, 156)), (0, 0, 1), (255, 255, 255)), vec(center_x, center_y))
+                final_images.append(new_img)
+
+        else:
+            final_images.append(self.menu_img)
+
 
         return final_images
 
@@ -2012,7 +2041,9 @@ class MenuSlot(ActorBase):
         self.rect.center = self.pos
         self.hitbox.center = self.pos
         
-        self.count = player1.inventory[self.holding]
+        if self.holding != None:
+            self.count = player1.inventory[self.holding]
+        
         self.images = self.createSlotImages()
         self.hover()
 
@@ -2086,7 +2117,7 @@ def redrawGameWindow():
 
 
 #------------------------------ Initialing parameters ------------------------------#
-player1 = Player()
+player1: Player = Player()
 
 # Load rooms
 room = Room(0, 0)
