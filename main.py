@@ -32,7 +32,7 @@ def objectAccel(sprite: pygame.sprite.Sprite):
     """Defines the relationship between acceleration, velocity, and position (and time, when called once every frame)
 
     Args:
-        sprite ``(pygame.sprite.Sprite)``: The sprite that should follow the acceleration logic
+        sprite (pygame.sprite.Sprite): The sprite that should follow the acceleration logic
     """    
     sprite.accel.x += sprite.vel.x * FRIC
     sprite.accel.y += sprite.vel.y * FRIC
@@ -125,10 +125,7 @@ class PlayerBase(ActorBase):
             self.changeRoom(SOUTH)
 
     def teleport(self, portal_in):
-        for portal in all_portals:
-            if portal != portal_in:
-                portalOut = portal
-
+        portalOut = getOtherPortal()
         velCopy = self.vel.copy()
 
         width = portalOut.hitbox.height // 2
