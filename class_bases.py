@@ -91,6 +91,7 @@ class ActorBase(pygame.sprite.Sprite):
         self.image = pygame.transform.rotate(self.original_image, int(angle))
         self.rect = self.image.get_rect(center = self.rect.center)
 
+
 class AbstractBase(pygame.sprite.AbstractGroup):
     def __init__(self):
         """The base class for all standard abstract groups. Contains methods to help manipulate the abstract group."""        
@@ -129,6 +130,24 @@ class PortalBase(ActorBase):
         super().__init__()
         self.visible = True
     
+    def changeRoomRight(self):
+        self.pos.x -= WIN_WIDTH
+
+    def changeRoomLeft(self):
+        self.pos.x += WIN_WIDTH
+
+    def changeRoomUp(self):
+        self.pos.y += WIN_HEIGHT
+
+    def changeRoomDown(self):
+        self.pos.y -= WIN_HEIGHT
+
+
+class DropBase(ActorBase):
+    def __init__(self):
+        super().__init__()
+        self.ACCELC = 0.8
+
     def changeRoomRight(self):
         self.pos.x -= WIN_WIDTH
 

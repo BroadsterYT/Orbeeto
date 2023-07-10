@@ -385,6 +385,8 @@ class Player(PlayerBase):
             # Dodge charge up
             if self.hitTime < self.hitTime_charge:
                 self.hitTime += 1
+
+        self.menu.update()
         
         if self.hp <= 0:
             self.kill()
@@ -436,8 +438,8 @@ class StandardGrunt(EnemyBase):
         """A simple enemy that moves to random locations and shoots at players.
         
         ### Parameters
-            - posX (``_type_``): _description_
-            - posY (``_type_``): _description_
+            - posX (``int``): The x-position to spawn at
+            - posY (``int``): The y-position to spawn at
         """         
         super().__init__()
         self.show(LAYER['enemy_layer'])
@@ -511,7 +513,6 @@ class StandardGrunt(EnemyBase):
                         self.index = 0
                         self.is_shooting = False
                 self.lastFrame = time.time()
-
             self.rotateImage(getAngleToSprite(self, getClosestPlayer(self)))
 
         if self.hp <= 0:
@@ -654,13 +655,7 @@ class Box(ActorBase):
             objectAccel(self)
 
     def update(self):
-        pass
-
-
-class DropBase(ActorBase):
-    def __init__(self):
-        super().__init__()
-        self.ACCELC = 0.8
+        self.movement()
 
 
 class ItemDrop(DropBase):
@@ -1062,7 +1057,7 @@ class GrappleBullet(BulletBase):
         self.damage = PROJ_DMG[PROJ_GRAPPLE]
 
         self.isHooked = False
-        self.grappledTo = None
+        self.grappledTo: pygame.sprite.Sprite = None
         
         self.returning = False
         self.hasLeftPortal = False
@@ -1274,32 +1269,24 @@ class GrappleBullet(BulletBase):
 
 
 class PlayerStdBullet(PlayerBulletBase):
-    def __init__(self, shotFrom, posX, posY, velX, velY):
-        """A projectile object that moves at a constant velocity
+    def __init__(self, shotFrom: Player, posX: int, posY: int, velX: int, velY: int):
+        """A projectile fired by a player that moves at a constant velocity
 
-        Parameters:
-        ----------
-            shotFrom (pygame.sprite.Sprite): The entity the projectile is being shot from
-
-            posX (float): The x-position that the projectile should be spawned at
-
-            posY (float): The y-position that the projectile should be spawned at
-
-            velX (float): The x-axis component of the projectile's velocity
-
-            velY (float): The y-axis component of the projectile's velocity
-
-            bulletType (str): The type of projectile that should be spawned
-        """           
+        ### Parameters
+            - shotFrom (``Player``): The player that the bullet was shot from
+            - posX (``int``): The x-position where the bullet should be spawned
+            - posY (``int``): The y-position where the bullet should be spawned
+            - velX (``int``): The x-axis component of the bullet's velocity
+            - velY (``int``): The y-axis component of the bullet's velocity
+        """        
         super().__init__()
         self.show(LAYER['proj_layer'])
+        self.damage = PROJ_DMG[PROJ_STD]
 
         self.shotFrom = shotFrom
 
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
-
-        self.damage = PROJ_DMG[PROJ_STD]
 
         self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 1)
         self.setRects(-24, -24, 8, 8, 6, 6)
@@ -1351,16 +1338,13 @@ class EnemyStdBullet(EnemyBulletBase):
 #                                 Portal Class                                 #
 # ============================================================================ #
 class Portal(PortalBase):
-    def __init__(self, posX, posY, facing = SOUTH):
-        """A portal object that can teleport players, enemies, and projectiles
+    def __init__(self, posX: int, posY: int, facing: str = SOUTH):
+        """A portal that can teleport any moving object
 
-        Parameters:
-        ----------
-            posX (float): The x-position where the portal will spawn
-
-            posY (float): The y-position where the portal will spawn
-
-            facing (str, optional): The direction of an entity's velocity after being expelled. Defaults to DOWN.
+        ### Parameters
+            - posX (``int``): The x-position where the portal should spawn
+            - posY (``int``): The y-position where the portal should spawn
+            - facing (``str``, optional): The direction the portal should face. Defaults to ``SOUTH``.
         """        
         super().__init__()
         all_sprites.add(self, layer = LAYER['portal_layer'])
@@ -1368,29 +1352,20 @@ class Portal(PortalBase):
         self.pos = vec((posX, posY))
         self.facing = facing
 
-        self.spritesheet = Spritesheet("sprites/portals/portals.png", 1)
-        self.images = self.spritesheet.get_images(64, 64, 1)
-        self.index = 0
-        
-        self.image = self.images[self.index]
-        self.rect: pygame.Rect = pygame.Rect(self.pos.x, self.pos.y, 32, 32)
-        
-        self.rect = self.image.get_rect(center = self.rect.center)
-        self.rect.center = self.pos
+        self.setImages("sprites/portals/portals.png", 64, 64, 1, 1)
+        self.setRects(self.pos.x, self.pos.y, 64, 64, 54, 54)
 
-        self.hitbox: pygame.Rect = self.rect.inflate(-10, -10)
+        self.image, self.hitbox = self.getFace()
 
+    def getFace(self) -> tuple:
         if self.facing == SOUTH:
-            self.hitbox = self.rect.inflate(0, -40)
+            return self.image, self.rect.inflate(0, -40)
         if self.facing == EAST:
-            self.image = pygame.transform.rotate(self.image, 90)
-            self.hitbox = self.rect.inflate(-40, 0)
+            return pygame.transform.rotate(self.image, 90), self.rect.inflate(-40, 0)
         if self.facing == NORTH:
-            self.image = pygame.transform.rotate(self.image, 180)
-            self.hitbox = self.rect.inflate(0, -40)
+            return pygame.transform.rotate(self.image, 180), self.rect.inflate(0, -40)
         if self.facing == WEST:
-            self.image = pygame.transform.rotate(self.image, 270)
-            self.hitbox = self.rect.inflate(-40, 0)
+            return pygame.transform.rotate(self.image, 270), self.rect.inflate(-40, 0)
         if self.facing == None:
             self.kill()
 
@@ -1608,7 +1583,7 @@ class Room(AbstractBase):
     def __init__(self, roomX, roomY):
         """The room where all the current action is taking place
 
-        Parameters:
+        ### Parameters:
             roomX (int): The room's x-axis location in the grid of the room layout
             roomY (int): The room's y-axis location in the grid of the room layout
         """
@@ -1681,8 +1656,8 @@ class Room(AbstractBase):
                 all_containers.append(
                     EntityContainer(
                         self.room.x, self.room.y,
-                        OctoGrunt(WIN_WIDTH / 2, WIN_HEIGHT / 2),
-                        OctoGrunt(WIN_WIDTH / 2, WIN_HEIGHT / 2)
+                        StandardGrunt(WIN_WIDTH / 2, WIN_HEIGHT / 2),
+                        StandardGrunt(WIN_WIDTH / 2, WIN_HEIGHT / 2),
                     )
                 )
 
@@ -1820,11 +1795,10 @@ class InventoryMenu(AbstractBase):
     def updateMenuSlots(self):
         for material in self.owner.inventory:
             if self.owner.inventory[material] > 0: # For every material in the owner's inventory
-                print(material)
                 for slot in self.sprites():
                     if slot.holding == material:
                         break
-                    if slot.holding == None:
+                    if slot.holding is None:
                         slot.holding = material
                         break
             for slot in self.sprites():
@@ -2093,22 +2067,7 @@ class DamageChar(ActorBase):
 # ============================================================================ #
 def redrawGameWindow():
     """Draws all entities every frame"""
-
     all_sprites.update()
-
-    if can_update:
-        # Updating movable objects
-        for object in all_movable:
-            object.movement()
-
-        # Updating all item drops
-        for item in all_drops:
-            collideCheck(item, all_walls)
-
-
-    # Updating inventory
-    player1.menu.update()
-
     all_sprites.draw(screen)
     pygame.display.update()
 

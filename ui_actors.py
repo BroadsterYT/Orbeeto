@@ -1,4 +1,4 @@
-import pygame, time
+import pygame
 from pygame.locals import *
 
 from math import floor
@@ -8,8 +8,6 @@ from class_bases import StatBarBase
 from constants import *
 from groups import all_sprites, all_stat_bars
 from spritesheet import Spritesheet
-
-vec = pygame.math.Vector2
 
 
 class HealthBar(StatBarBase):

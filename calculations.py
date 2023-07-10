@@ -1,4 +1,7 @@
-import pygame, math, time
+import pygame
+import math 
+import time
+
 import random as rand
 
 from spritesheet import Spritesheet
@@ -193,6 +196,29 @@ def getTimeDiff(timeValue: float) -> float:
     return time.time() - timeValue
 
 
+# ------------------------------ Math Functions ------------------------------ #
+def cosInterp(a: float, b: float, weight: float) -> float:
+    """Cosinusoidally interpolates between two values given a weight
+
+    ### Parameters
+        - a (``float``): The starting value
+        - b (``float``): The ending value
+        - weight (``float``): The weight to interpolate by
+
+    Returns:
+        ``float``: The interpolated value
+    """
+    trueWeight = weight
+    if weight < 0:
+        trueWeight = 0
+    if weight > 1:
+        trueWeight = 1
+    if a > b:
+        CustomError("cosInterp error: The value of a cannot exceed the value of b")
+
+    return ((a - b) / 2) * math.cos(math.pi * trueWeight) + ((a + b) / 2)
+
+
 # ============================================================================ #
 #                                  Returns int                                 #
 # ============================================================================ #
@@ -218,36 +244,7 @@ def calculateDamage(sender: pygame.sprite.Sprite, receiver: pygame.sprite.Sprite
 # ============================================================================ #
 #                                 Returns bool                                 #
 # ============================================================================ #
-def isLeftOrRight(instig: pygame.sprite.Sprite, other: pygame.sprite.Sprite) -> bool:
-    """Determines if a sprite is to the left or right of another sprite
-    
-    ### Parameters
-        - instig (``pygame.sprite.Sprite``): The sprite that may or may not be to the left or right
-        - other (``pygame.sprite.Sprite``): The sprite to determine the relative position from
-    
-    ### Returns
-        - ``bool``: Whether or not the instigator is to the left or right of the other sprite
-    """    
-    if instig.pos.y < (other.pos.y + (other.hitbox.height // 2)) and instig.pos.y > (other.pos.y - (other.hitbox.height // 2)):
-        return True
-    else:
-        return False
 
-
-def isAboveOrBelow(instig: pygame.sprite.Sprite, other: pygame.sprite.Sprite) -> bool:
-    """Determines if a sprite is above or below another sprite
-    
-    ### Parameters
-        - instig (``pygame.sprite.Sprite``): The sprite that may or may not be above or below
-        - other (``pygame.sprite.Sprite``): The sprite to determine the relative position from
-    
-    ### Returns
-        - ``bool``: Whether or not the instigator is above or below the other sprite
-    """    
-    if instig.pos.x > (other.pos.x - (other.hitbox.width // 2)) and instig.pos.x < (other.pos.x + (other.hitbox.width // 2)):
-        return True
-    else:
-        return False
 
 
 # ============================================================================ #
