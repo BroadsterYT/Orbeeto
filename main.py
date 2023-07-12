@@ -52,8 +52,6 @@ class PlayerBase(ActorBase):
         self.pos = vec((WIN_WIDTH / 2, WIN_HEIGHT / 2))
         self.ACCELC = 0.52
 
-        self.room = vec((0, 0))
-
         #-------------------- Game stats & UI --------------------#
         self.xp = 0
         self.level = 0
@@ -85,26 +83,26 @@ class PlayerBase(ActorBase):
         hideCurrentEnemies()
 
         if direction == SOUTH:
-            room.room.y -= 1
-            room.layoutUpdate()
+            mainroom.room.y -= 1
+            mainroom.layoutUpdate()
             self.pos.y -= WIN_HEIGHT
             groupChangeRooms(SOUTH, all_portals, all_drops)
 
         elif direction == EAST:
-            room.room.x += 1
-            room.layoutUpdate()
+            mainroom.room.x += 1
+            mainroom.layoutUpdate()
             self.pos.x -= WIN_WIDTH
             groupChangeRooms(EAST, all_portals, all_drops)
 
         elif direction == NORTH:
-            room.room.y += 1
-            room.layoutUpdate()
+            mainroom.room.y += 1
+            mainroom.layoutUpdate()
             self.pos.y += WIN_HEIGHT
             groupChangeRooms(NORTH, all_portals, all_drops)
         
         elif direction == WEST:
-            room.room.x -= 1
-            room.layoutUpdate()
+            mainroom.room.x -= 1
+            mainroom.layoutUpdate()
 
             self.pos.x += WIN_WIDTH
             groupChangeRooms(WEST, all_portals, all_drops)
@@ -118,10 +116,10 @@ class PlayerBase(ActorBase):
         if self.pos.x >= WIN_WIDTH:
             self.changeRoom(EAST)
 
-        if player1.pos.y <= 0:
+        if self.pos.y <= 0:
             self.changeRoom(NORTH)
 
-        if player1.pos.y >= WIN_HEIGHT:
+        if self.pos.y >= WIN_HEIGHT:
             self.changeRoom(SOUTH)
 
     def teleport(self, portal_in):
@@ -639,15 +637,16 @@ class Box(ActorBase):
     def movement(self):
         self.accel = vec(0, 0)
         if can_update and self.visible:
-            if self.hitbox.colliderect(player1.rect):
-                if collideSideCheck(self, player1) == SOUTH:
-                    self.accel.y = -self.ACCELC * dt
-                if collideSideCheck(self, player1) == EAST:
-                    self.accel.x = -self.ACCELC * dt
-                if collideSideCheck(self, player1) == NORTH:
-                    self.accel.y = self.ACCELC * dt
-                if collideSideCheck(self, player1) == WEST:
-                    self.accel.x = self.ACCELC * dt
+            for a_player in all_players:
+                if self.hitbox.colliderect(a_player.rect):
+                    if collideSideCheck(self, a_player) == SOUTH:
+                        self.accel.y = -self.ACCELC * dt
+                    if collideSideCheck(self, a_player) == EAST:
+                        self.accel.x = -self.ACCELC * dt
+                    if collideSideCheck(self, a_player) == NORTH:
+                        self.accel.y = self.ACCELC * dt
+                    if collideSideCheck(self, a_player) == WEST:
+                        self.accel.x = self.ACCELC * dt
 
             self.rect.center = self.pos
             self.hitbox.center = self.pos
@@ -717,10 +716,11 @@ class ItemDrop(DropBase):
 
         self.movement()
 
-        if self.hitbox.colliderect(player1):
-            player1.inventory[self.mat] += 1
-            player1.menu.updateMenuSlots()
-            self.kill()
+        for a_player in all_players:
+            if self.hitbox.colliderect(a_player):
+                a_player.inventory[self.mat] += 1
+                a_player.menu.updateMenuSlots()
+                self.kill()
 
 
 # ============================================================================ #
@@ -1588,9 +1588,10 @@ class Room(AbstractBase):
             roomY (int): The room's y-axis location in the grid of the room layout
         """
         super().__init__()
-        
         all_rooms.append(self)
         self.room = vec((roomX, roomY))
+
+        self.player1: Player = Player()
 
     def layoutUpdate(self):
         """Updates the layout of the room."""        
@@ -1614,7 +1615,7 @@ class Room(AbstractBase):
 
             except StopIteration:
                 all_containers.append(
-                    EntityContainer(
+                    EnemyContainer(
                         self.room.x, self.room.y,
                     )
                 )
@@ -1632,7 +1633,7 @@ class Room(AbstractBase):
 
             except StopIteration:
                 all_containers.append(
-                    EntityContainer(
+                    EnemyContainer(
                         self.room.x, self.room.y,
                         StandardGrunt(WIN_WIDTH / 2, WIN_HEIGHT / 2),
                         StandardGrunt(WIN_WIDTH / 2, WIN_HEIGHT / 2),
@@ -1654,7 +1655,7 @@ class Room(AbstractBase):
 
             except StopIteration:
                 all_containers.append(
-                    EntityContainer(
+                    EnemyContainer(
                         self.room.x, self.room.y,
                         StandardGrunt(WIN_WIDTH / 2, WIN_HEIGHT / 2),
                         StandardGrunt(WIN_WIDTH / 2, WIN_HEIGHT / 2),
@@ -1662,17 +1663,14 @@ class Room(AbstractBase):
                 )
 
 
-class EntityContainer(AbstractBase):
-    def __init__(self, roomX, roomY, *sprites):
+class EnemyContainer(AbstractBase):
+    def __init__(self, roomX: int, roomY: int, *sprites: EnemyBase):
         """A container for enemies. Contains data about all enemies in a room.
 
-        Parameters:
-        -------
-            roomX (int): The room's x-axis location in the grid of the room layout
-
-            roomY (int): The room's y-axis location in the grid of the room layout
-
-            sprites (pygame.sprite.Sprite): The sprite(s) to add to the container
+        ### Parameters
+            roomX (``int``): The container's x-location in the room grid
+            roomY (``int``): The container's y-location in the room grid
+            sprites (``EnemyBase``): The sprite(s) that should be added to the container
         """        
         super().__init__()
         self.room = vec((roomX, roomY))
@@ -1680,15 +1678,30 @@ class EntityContainer(AbstractBase):
         for sprite in sprites:
             self.add(sprite)
 
+    def hideEnemies(self):
+        """Hides all of the enemies in the container"""
+        if self.room == mainroom.room:
+            for sprite in self.sprites():
+                sprite.hide()
+                if hasattr(sprite, 'healthBar'):
+                    sprite.healthBar.hide()
+
+    def showEnemies(self):
+        """Shows all of the enemies within the container"""      
+        for sprite in self.sprites():
+            sprite.show(LAYER['enemy_layer'])
+            if hasattr(sprite, 'healthBar'):
+                sprite.healthBar.show(LAYER['statBar_layer'])
+
 
 def hideCurrentEnemies():
     """Hides all of the enemy sprites in the current room"""
     for container in all_containers:
-        if container.room == room.room:
+        if container.room == mainroom.room:
             for sprite in container.sprites():
-                if hasattr(sprite, "healthBar"):
-                    sprite.healthBar.hide()
                 sprite.hide()
+                if hasattr(sprite, 'healthBar'):
+                    sprite.healthBar.hide()
 
 
 def showEnemies(container):
@@ -1699,7 +1712,7 @@ def showEnemies(container):
     """    
     for sprite in container.sprites():
         sprite.show(LAYER['enemy_layer'])
-        if hasattr(sprite, "healthBar"):
+        if hasattr(sprite, 'healthBar'):
             sprite.healthBar.show(LAYER['statBar_layer'])
 
 
@@ -1707,22 +1720,22 @@ def showEnemies(container):
 #                                  UI Classes                                  #
 # ============================================================================ #
 class InventoryMenu(AbstractBase):
-    def __init__(self, owner):
+    def __init__(self, owner: Player):
         """A menu used to view collected items and utilize them for various purposes
         
         ### Parameters
             - owner ``(pygame.sprite.Sprite)``: The player whom the inventory belongs to
         """        
         super().__init__()
-        self.is_cyclingLeft = False
-        self.is_cyclingRight = False
+        self.cyclingLeft = False
+        self.cyclingRight = False
 
-        self.owner: Player = owner
+        self.owner = owner
         
         self.wipeTime = 1
         self.window = 0
         
-        self.last_cycle = time.time()
+        self.lastCycle = time.time()
 
         self.rightArrow = RightMenuArrow(WIN_WIDTH - 64, WIN_HEIGHT / 2)
         self.leftArrow = LeftMenuArrow(64, WIN_HEIGHT / 2)
@@ -1742,39 +1755,40 @@ class InventoryMenu(AbstractBase):
             all_sprites.add(sprite, layer = LAYER['ui_layer_1'])
 
     def cycleMenu(self):
-        if not self.is_cyclingLeft and not self.is_cyclingRight:
+        if (not self.cyclingLeft and 
+            not self.cyclingRight and
+            not can_update):
             if isInputHeld[1] and self.leftArrow.hitbox.collidepoint(pygame.mouse.get_pos()):
                 self.window -= 1
-                self.last_cycle = time.time()
-                self.is_cyclingLeft = True
+                self.lastCycle = time.time()
+                self.cyclingLeft = True
 
-        if self.is_cyclingLeft and not self.is_cyclingRight:
-            t_lapsed = getTimeDiff(self.last_cycle)
-            if t_lapsed <= self.wipeTime:
-                for sprite in self.sprites():
-                    sprite.pos.x = sprite.start_pos.x - (-(WIN_WIDTH / 2) * cos((1 / self.wipeTime) * pi * t_lapsed) + (WIN_WIDTH / 2))
-            else:
-                for sprite in self.sprites():
-                    sprite.start_pos.x = sprite.pos.x
-                    sprite.pos.x = sprite.start_pos.x + (WIN_WIDTH * self.window)
-                self.is_cyclingLeft = False
-        
-        if not self.is_cyclingRight and not self.is_cyclingLeft:
             if isInputHeld[1] and self.rightArrow.hitbox.collidepoint(pygame.mouse.get_pos()):
                 self.window += 1
-                self.last_cycle = time.time()
-                self.is_cyclingRight = True
+                self.lastCycle = time.time()
+                self.cyclingRight = True
 
-        if self.is_cyclingRight and not self.is_cyclingLeft:
-            t_lapsed = getTimeDiff(self.last_cycle)
-            if t_lapsed <= self.wipeTime:
+        # Cycling left
+        if self.cyclingLeft and not self.cyclingRight:
+            weight = getTimeDiff(self.lastCycle)
+            if weight <= 1:
                 for sprite in self.sprites():
-                    sprite.pos.x = sprite.start_pos.x + (-(WIN_WIDTH / 2) * cos((1 / self.wipeTime) * pi * t_lapsed) + (WIN_WIDTH / 2))
+                    sprite.pos.x = cosInterp(sprite.start_pos.x, sprite.start_pos.x - WIN_WIDTH, weight)
             else:
                 for sprite in self.sprites():
                     sprite.start_pos.x = sprite.pos.x
-                    sprite.pos.x = sprite.start_pos.x + (WIN_WIDTH * self.window)
-                self.is_cyclingRight = False
+                self.cyclingLeft = False
+
+        # Cycling right
+        if not self.cyclingLeft and self.cyclingRight:
+            weight = getTimeDiff(self.lastCycle)
+            if weight <= 1:
+                for sprite in self.sprites():
+                    sprite.pos.x = cosInterp(sprite.start_pos.x, sprite.start_pos.x + WIN_WIDTH, weight)
+            else:
+                for sprite in self.sprites():
+                    sprite.start_pos.x = sprite.pos.x
+                self.cyclingRight = False
 
     def buildMenuSlots(self):
         space = vec(0, 0)
@@ -1784,7 +1798,7 @@ class InventoryMenu(AbstractBase):
         offset = 0
         for y in range(5):
             for x in range(5):
-                menu_slots.append(MenuSlot(64 + space.x, 64 + space.y, None))
+                menu_slots.append(MenuSlot(self.owner, 64 + space.x, 64 + space.y, None))
                 space.x += space_cushion.x
                 offset += 1
                 slot_count += 1
@@ -1794,7 +1808,7 @@ class InventoryMenu(AbstractBase):
 
     def updateMenuSlots(self):
         for material in self.owner.inventory:
-            if self.owner.inventory[material] > 0: # For every material in the owner's inventory
+            if self.owner.inventory[material] > 0: # Every material in the owner's inventory
                 for slot in self.sprites():
                     if slot.holding == material:
                         break
@@ -1914,10 +1928,11 @@ class LeftMenuArrow(ActorBase):
 
 
 class MenuSlot(ActorBase):
-    def __init__(self, posX, posY, item_held):
+    def __init__(self, owner: Player, posX: float, posY: float, item_held: str):
         """A menu slot that shows the collected amount of a specific item
         
         ### Parameters
+            - owner (``player``): The owner of the inventory to whom the menu slot belongs to
             - posX (``float``): The x-position to spawn at
             - posY (``float``): The y-position to spawn at
             - item_held (``str``): The item the menu slot will hold. Items are chosen from ``MATERIALS`` dictionary.
@@ -1926,6 +1941,8 @@ class MenuSlot(ActorBase):
         """
         super().__init__()
         all_slots.add(self)
+        self.owner = owner
+
         self.pos = vec((posX, posY))
         self.start_pos = vec((posX, posY))
         self.holding = item_held
@@ -1971,49 +1988,34 @@ class MenuSlot(ActorBase):
         """Combines the menu slot image with the images of the item and adds the player's collected amount of that item on top
         
         ### Returns
-            - ``list``: A list of the created images
+            - list: A list of the created images
         """        
         self.item_imgs = self.getItemImages()
-        final_images = []
+        finalImages = []
         if self.holding != None:
             for frame in self.item_imgs:
                 new_img = combineImages(self.menu_img, frame)
 
                 # Adding the count of the item to its images
-                char_sheet = Spritesheet("sprites/ui/font.png", 36)
-                chars = char_sheet.get_images(9, 14, 36)
-                width, height = 9, 14
-                
-                charList = []
-                for char in str(self.count):
-                    charList.append(chars[int(char) + 26])
-                
-                count_surface = pygame.Surface([width * len(charList), height]).convert()
-
-                len_count = 0
-                for surface in charList:
-                    count_surface.blit(surface, (width * len_count, 0), (0, 0, 9, 14))
-                    len_count += 1
-
-                count_surface.set_colorkey((0, 0, 0))
+                countSurface = textToImage(str(self.count), 'sprites/ui/font.png', 9, 14, 36)
                 new_img.set_colorkey((0, 0, 0))
                 center_x = (new_img.get_width() - frame.get_width()) // 2
                 center_y = (new_img.get_height() - frame.get_height()) // 2
-                new_img.blit(swapColor(swapColor(count_surface, (44, 44, 44), (156, 156, 156)), (0, 0, 1), (255, 255, 255)), vec(center_x, center_y))
-                final_images.append(new_img)
+                new_img.blit(swapColor(swapColor(countSurface, (44, 44, 44), (156, 156, 156)), (0, 0, 1), (255, 255, 255)), vec(center_x, center_y))
+                finalImages.append(new_img)
 
         else:
-            final_images.append(self.menu_img)
+            finalImages.append(self.menu_img)
 
 
-        return final_images
+        return finalImages
 
     def update(self):
         self.rect.center = self.pos
         self.hitbox.center = self.pos
         
         if self.holding != None:
-            self.count = player1.inventory[self.holding]
+            self.count = self.owner.inventory[self.holding]
         
         self.images = self.createSlotImages()
         self.hover()
@@ -2073,11 +2075,10 @@ def redrawGameWindow():
 
 
 #------------------------------ Initialing parameters ------------------------------#
-player1: Player = Player()
 
 # Load rooms
-room = Room(0, 0)
-room.layoutUpdate()
+mainroom = Room(0, 0)
+mainroom.layoutUpdate()
 
 # Time control
 anim_timer = 0
@@ -2109,9 +2110,10 @@ while running:
     
     anim_timer += 1
 
-    if player1.hp <= 0:
-        pygame.quit()
-        sys.exit()
+    for a_player in all_players:
+        if a_player.hp <= 0:
+            pygame.quit()
+            sys.exit()
 
     for event in pygame.event.get():
         keyPressed = pygame.key.get_pressed()

@@ -213,8 +213,6 @@ def cosInterp(a: float, b: float, weight: float) -> float:
         trueWeight = 0
     if weight > 1:
         trueWeight = 1
-    if a > b:
-        CustomError("cosInterp error: The value of a cannot exceed the value of b")
 
     return ((a - b) / 2) * math.cos(math.pi * trueWeight) + ((a + b) / 2)
 
@@ -239,12 +237,6 @@ def calculateDamage(sender: pygame.sprite.Sprite, receiver: pygame.sprite.Sprite
     #     damage = 1
 
     return damage
-
-
-# ============================================================================ #
-#                                 Returns bool                                 #
-# ============================================================================ #
-
 
 
 # ============================================================================ #
@@ -292,16 +284,16 @@ def wallSideCheck(wall: pygame.sprite.Sprite, proj: pygame.sprite.Sprite) -> str
 # ============================================================================ #
 #                                Returns Vector2                               #
 # ============================================================================ #
-def getTopLeftCoordinates(sprite, desired_x, desired_y) -> pygame.math.Vector2:
+def getTopLeftCoordinates(sprite: pygame.sprite.Sprite, desired_x: float, desired_y: float) -> pygame.math.Vector2:
     """Returns the coordinates of the topleft corner of a sprite that is centered at its middle
-    
+
     ### Parameters
-        - ``sprite`` ``(pygame.sprite.Sprite)``: The sprite to get the topleft coordinates of
-        - ``desired_x`` ``(float)``: The x-value of the desired location of the sprite's topleft corner
-        - ``desired_y`` ``(float)``: The y-value of the desired location of the sprite's topleft corner
-    
-    ### Returns
-        - ``pygame.math.Vector2``: The coordinates of the sprite's center, with its topleft corner in the desired x and y locations
+        - sprite (``pygame.sprite.Sprite``): The sprite to get the coordinates of
+        - desired_x (``float``): The x-value of the desired location of the sprite's topleft corner
+        - desired_y (``float``): The y-value of the desired location of the sprite's topleft corner
+
+    ### Returns:
+        ``pygame.math.Vector2``: The coordinates of the sprite's center, with its topleft corner in the desired x and y locations
     """    
     width = sprite.image.get_width()
     height = sprite.image.get_height()
@@ -417,25 +409,25 @@ def textToImage(text: str, fontImg: str, charWidth: int, charHeight: int, charCo
 # ============================================================================ #
 #                                Returns Sprite                                #
 # ============================================================================ #
-def getClosestPlayer(check_sprite: pygame.sprite.Sprite) -> pygame.sprite.Sprite:
+def getClosestPlayer(checkSprite: pygame.sprite.Sprite) -> pygame.sprite.Sprite:
     """Checks for the closest player to a given sprite.
     
     ### Parameters
-        - check_sprite ``(pygame.sprite.Sprite)``: The entity checking for the closest player
+         checkSprite ``(pygame.sprite.Sprite)``: The entity checking for the closest player
     
     ### Returns
-        - ``pygame.sprite.Sprite``: The player closest to ``check_sprite``
+        - ``pygame.sprite.Sprite``: The player closest to ``checkSprite``
     """    
     playerCoords = {}
     for a_player in all_players:
-        playerCoords[a_player] = getDistToSprite(check_sprite, a_player)
+        playerCoords[a_player] = getDistToSprite(checkSprite, a_player)
 
     try:
         temp = min(playerCoords.values())
         result = [key for key in playerCoords if playerCoords[key] == temp]
         return result[0]
     except:
-        return check_sprite
+        return checkSprite
 
 
 def getOtherPortal(portalIn: pygame.sprite.Sprite) -> pygame.sprite.Sprite:
@@ -596,7 +588,6 @@ def groupChangeRooms(direction: str, *spriteGroups: pygame.sprite.Group) -> None
         if direction == WEST:
             for sprite in group:
                 sprite.changeRoomLeft()
-
 
 
 class CustomError(Exception):
