@@ -15,7 +15,7 @@ from groups import *
 def getAngleToMouse(any_sprite: pygame.sprite.Sprite) -> float:
     """Gets the angle between a sprite and the mouse cursor
     
-    ### Parameters
+    ### Arguments
         - any_sprite ``(pygame.sprite.Sprite)``: The sprite to measure the angle from
     
     ### Returns
@@ -47,7 +47,7 @@ def getAngleToMouse(any_sprite: pygame.sprite.Sprite) -> float:
 def getAngleToSprite(any_sprite: pygame.sprite.Sprite, target_sprite: pygame.sprite.Sprite) -> float:
     """Gets the angle from one sprite to another
     
-    ### Parameters
+    ### Arguments
         - any_sprite (``pygame.sprite.Sprite``): The sprite to begin the measurement from
         - target_sprite (``pygame.sprite.Sprite``): The sprite to measure the angle to
     
@@ -77,6 +77,15 @@ def getAngleToSprite(any_sprite: pygame.sprite.Sprite, target_sprite: pygame.spr
 
 
 def getAngleToCFromS(any_sprite: pygame.sprite.Sprite, coords: pygame.math.Vector2) -> float:
+    """_summary_
+    
+    Args:
+        any_sprite (pygame.sprite.Sprite): _description_
+        coords (pygame.math.Vector2): _description_
+    
+    Returns:
+        float: _description_
+    """    
     length_to_x = coords.x - any_sprite.pos.x
     length_to_y = coords.y - any_sprite.pos.y
     if length_to_x and length_to_y != 0:
@@ -125,7 +134,7 @@ def getAngleToCFromC(startCoords: pygame.math.Vector2, endCoords: pygame.math.Ve
 def getDistToSprite(selfEntity: pygame.sprite.Sprite, targetEntity: pygame.sprite.Sprite) -> float:
     """Gets the distance between two entities
     
-    ### Parameters
+    ### Arguments
         - selfEntity (``pygame.sprite.Sprite``): The entity to start the measurement from
         - targetEntity (``pygame.sprite.Sprite``): The second entity to measure to from the first
     
@@ -141,7 +150,7 @@ def getDistToSprite(selfEntity: pygame.sprite.Sprite, targetEntity: pygame.sprit
 def getDistToCoords(startCoords: pygame.math.Vector2, endCoords: pygame.math.Vector2):
     """Returns the distance between two coordinates
     
-    ### Parameters
+    ### Arguments
         - startCoords (``pygame.math.Vector2``): The first set of coordinates
         - endCoords (``pygame.math.Vector2``): The second set of coordinates
     
@@ -157,7 +166,7 @@ def getDistToCoords(startCoords: pygame.math.Vector2, endCoords: pygame.math.Vec
 def getVecAngle(vecX: float, vecY: float) -> float:
     """Returns the angle of a resultant vector
     
-    ### Parameters
+    ### Arguments
         - vecX (``float``): The x-axis component of the vector
         - vecY (``float``): The y-axis component of the vector
     
@@ -187,7 +196,7 @@ def getVecAngle(vecX: float, vecY: float) -> float:
 def getTimeDiff(timeValue: float) -> float:
     """Returns the difference between the current time and another 
     
-    ### Parameters
+    ### Arguments
         - timeValue (``float``): The time to compare to the current time
     
     ### Returns
@@ -200,7 +209,7 @@ def getTimeDiff(timeValue: float) -> float:
 def cosInterp(a: float, b: float, weight: float) -> float:
     """Cosinusoidally interpolates between two values given a weight
 
-    ### Parameters
+    ### Arguments
         - a (``float``): The starting value
         - b (``float``): The ending value
         - weight (``float``): The weight to interpolate by
@@ -223,7 +232,7 @@ def cosInterp(a: float, b: float, weight: float) -> float:
 def calculateDamage(sender: pygame.sprite.Sprite, receiver: pygame.sprite.Sprite, proj: pygame.sprite.Sprite) -> int:
     """Calculates the damage an entity receives after being hit
     
-    ### Parameters
+    ### Arguments
         - sender ``(pygame.sprite.Sprite)``: The entity that shot the projectile
         - receiver ``(pygame.sprite.Sprite)``: The entity that got shot
         - proj ``(pygame.sprite.Sprite)``: The projectile the receiver got hit by
@@ -258,7 +267,7 @@ def collideSideCheck(object: pygame.sprite.Sprite, instig: pygame.sprite.Sprite)
 def wallSideCheck(wall: pygame.sprite.Sprite, proj: pygame.sprite.Sprite) -> str:
     """Checks for which side of a wall a projectile hit and returns that value
     
-    ### Parameters
+    ### Arguments
         - wall (``pygame.sprite.Sprite``): The wall being hit
         - proj (``pygame.sprite.Sprite``): The projectile being fired
     
@@ -284,10 +293,10 @@ def wallSideCheck(wall: pygame.sprite.Sprite, proj: pygame.sprite.Sprite) -> str
 # ============================================================================ #
 #                                Returns Vector2                               #
 # ============================================================================ #
-def getTopLeftCoordinates(sprite: pygame.sprite.Sprite, desired_x: float, desired_y: float) -> pygame.math.Vector2:
+def getTopLeftCoordinates(spriteWidth: int, spriteHeight: int, desired_x: float, desired_y: float) -> pygame.math.Vector2:
     """Returns the coordinates of the topleft corner of a sprite that is centered at its middle
 
-    ### Parameters
+    ### Arguments
         - sprite (``pygame.sprite.Sprite``): The sprite to get the coordinates of
         - desired_x (``float``): The x-value of the desired location of the sprite's topleft corner
         - desired_y (``float``): The y-value of the desired location of the sprite's topleft corner
@@ -295,15 +304,13 @@ def getTopLeftCoordinates(sprite: pygame.sprite.Sprite, desired_x: float, desire
     ### Returns:
         ``pygame.math.Vector2``: The coordinates of the sprite's center, with its topleft corner in the desired x and y locations
     """    
-    width = sprite.image.get_width()
-    height = sprite.image.get_height()
-    return vec(desired_x + width / 2, desired_y + height / 2)
+    return vec(desired_x + spriteWidth / 2, desired_y + spriteHeight / 2)
 
 
 def getRandComponents(maxValue) -> pygame.math.Vector2:
     """Given a maximum value, will output a vector containing two components that vectorially add to that value. The result can be positive or negative.
     
-    ### Parameters
+    ### Arguments
         - ``maxValue`` ``(pygame.math.vector2)``: The value in which the components will vectorially add to. The result can add to +maxValue ot -maxValue.
     
     ### Returns
@@ -365,7 +372,7 @@ def getTpVel(portalInDir: str, portalOutDir: str, sprite: pygame.sprite.Sprite) 
 def combineImages(baseImg: pygame.Surface, topImg: pygame.Surface) -> pygame.Surface:
     """Combines two images directly on top of one another
     
-    ### Parameters
+    ### Arguments
         - baseImg (``pygame.Surface``): The image to place first
         - topImg (``pygame.Surface``): The image being pasted on top of the first image
     
@@ -412,7 +419,7 @@ def textToImage(text: str, fontImg: str, charWidth: int, charHeight: int, charCo
 def getClosestPlayer(checkSprite: pygame.sprite.Sprite) -> pygame.sprite.Sprite:
     """Checks for the closest player to a given sprite.
     
-    ### Parameters
+    ### Arguments
          checkSprite ``(pygame.sprite.Sprite)``: The entity checking for the closest player
     
     ### Returns
@@ -443,7 +450,7 @@ def collideCheck(instig: pygame.sprite.Sprite, *contactLists: pygame.sprite.Grou
     """Check if a sprite comes into contact with another sprite from a specific group.
     If the sprites do collide, then they will perform a hitbox collision.
     
-    ### Parameters
+    ### Arguments
         - instig (``pygame.sprite.Sprite``): The instigator of the collision
         - contactLists (``pygame.sprite.Group``): The sprite group(s) to check for a collision with
     """    
@@ -460,7 +467,7 @@ def collideCheck(instig: pygame.sprite.Sprite, *contactLists: pygame.sprite.Grou
 def pushFromSide(instig: pygame.sprite.Sprite, sprite: pygame.sprite.Sprite) -> None:
     """If a sprite instigates a collision with another, the sprites will physically engage in a collision
     
-    ### Parameters
+    ### Arguments
         - instig (``pygame.sprite.Sprite``): The instigator of the collision
         - sprite (``pygame.sprite.Sprite``): The sprite being collided into
     """    
@@ -527,7 +534,7 @@ def killGroups(*groups: pygame.sprite.Group) -> None:
 def initStats(sprite: pygame.sprite.Sprite, hp: int, attack: int, defense: int, xp: int, ACCELC: float) -> None:
     """Quickly initialize the stats of any enemy sprite
     
-    ### Parameters
+    ### Arguments
         - sprite (``pygame.sprite.Sprite``): The enemy to initilaize
         - hp (``int``): Amount of health the enemy should have
         - attack (``int``): Attack value the enemy should have
@@ -548,7 +555,7 @@ def initStats(sprite: pygame.sprite.Sprite, hp: int, attack: int, defense: int, 
 def swapColor(image: pygame.Surface, old_color: tuple, new_color: tuple) -> None:
     """Swaps one color of a sprite with another
     
-    ### Parameters
+    ### Arguments
         - image (``pygame.Surface``): The image to swap a color within
         - old_color (``tuple``): The color being replaced
         - new_color (``tuple``): The new color replacing the old color
@@ -568,7 +575,7 @@ def swapColor(image: pygame.Surface, old_color: tuple, new_color: tuple) -> None
 def groupChangeRooms(direction: str, *spriteGroups: pygame.sprite.Group) -> None:
     """Changes the room of all sprites within a group. This is achieved by adding or subtracting the window's width or height from the sprite's x-position or y-position, respecively.
     
-    ### Parameters
+    ### Arguments
         - direction (``str``): The direction of the room where ``spriteGroup`` should be relocated
         - spriteGroup (``pygame.sprite.Group``): The group to relocate
     """    
@@ -591,9 +598,4 @@ def groupChangeRooms(direction: str, *spriteGroups: pygame.sprite.Group) -> None
 
 
 class CustomError(Exception):
-    """Returns a custom error
-
-    Args:
-        Exception (str): Error to raise
-    """
     pass

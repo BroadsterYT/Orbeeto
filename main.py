@@ -123,7 +123,7 @@ class PlayerBase(ActorBase):
             self.changeRoom(SOUTH)
 
     def teleport(self, portal_in):
-        portalOut = getOtherPortal()
+        portalOut = getOtherPortal(portal_in)
         velCopy = self.vel.copy()
 
         width = portalOut.hitbox.height // 2
@@ -307,9 +307,7 @@ class Player(PlayerBase):
                 if self.grapple.returning and self.grapple.grappledTo in all_walls:
                     self.accel = vec((self.ACCELC * 3) * -sin(getAngleToSprite(self, self.grapple)) * dt, (self.ACCELC * 3) * -cos(getAngleToSprite(self, self.grapple)) * dt)
 
-            self.rect.center = self.pos
-            self.hitbox.center = self.pos
-            objectAccel(self)
+            self.accelMovement(dt)
 
     def shoot(self):
         """Shoots a bullet"""
@@ -435,7 +433,7 @@ class StandardGrunt(EnemyBase):
     def __init__(self, posX: int, posY: int):
         """A simple enemy that moves to random locations and shoots at players.
         
-        ### Parameters
+        ### Arguments
             - posX (``int``): The x-position to spawn at
             - posY (``int``): The y-position to spawn at
         """         
@@ -480,9 +478,7 @@ class StandardGrunt(EnemyBase):
             if canShoot:
                 self.shoot(getClosestPlayer(self), 6, rand.uniform(0.4, 0.9))
 
-            self.rect.center = self.pos
-            self.hitbox.center = self.pos
-            objectAccel(self)
+            self.accelMovement(dt)
 
     def shoot(self, target, vel, shoot_time):
         if getTimeDiff(self.lastShot) > shoot_time:
@@ -562,9 +558,7 @@ class OctoGrunt(EnemyBase):
             if canShoot == True:
                 self.shoot(getClosestPlayer(self), 3, 1)
 
-            self.rect.center = self.pos
-            self.hitbox.center = self.pos
-            objectAccel(self)
+            self.accelMovement(dt)
 
     def shoot(self, target, vel, shoot_time):
         if getTimeDiff(self.lastShot) > shoot_time:
@@ -648,10 +642,7 @@ class Box(ActorBase):
                     if collideSideCheck(self, a_player) == WEST:
                         self.accel.x = self.ACCELC * dt
 
-            self.rect.center = self.pos
-            self.hitbox.center = self.pos
-
-            objectAccel(self)
+            self.accelMovement(dt)
 
     def update(self):
         self.movement()
@@ -661,7 +652,7 @@ class ItemDrop(DropBase):
     def __init__(self, dropped_from, item_name):
         """An item or material dropped by an enemey that is able to be collected
         
-        ### Parameters
+        ### Arguments
             - dropped_from (``pygame.sprite.Sprite``): The enemy that the item was dropped from
             - item_name (``str``): The item to drop
             - item_frame_start (``int``): The index of the first frame to display from the item drop spritesheet (0 = the first image).
@@ -706,10 +697,11 @@ class ItemDrop(DropBase):
                 self.image = pygame.transform.rotate(self.original_image, int(degrees(sin(self.period_mult * pi * time_since_start) * (1 / time_since_start))))
                 self.rect = self.image.get_rect(center = self.rect.center)
             
-            objectAccel(self)
+            # objectAccel(self)
+            self.accelMovement(dt)
         
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+        # self.rect.center = self.pos
+        # self.hitbox.center = self.pos
 
     def update(self):
         collideCheck(self, all_walls)
@@ -842,7 +834,7 @@ class BulletBase(ActorBase):
     def projCollide(self, spriteGroup, canHurt):
         """Destroys a given projectile upon a collision and renders an explosion
 
-        ### Parameters
+        ### Arguments
             - entityGroup (``pygame.sprite.Group``): The group of the entity the projectile is colliding with
             - proj (``pygame.sprite.Sprite``): The projectile involved in the collision
             - canHurt (``bool``): Should the projectile calculate damage upon impact?
@@ -1060,7 +1052,7 @@ class GrappleBullet(BulletBase):
         self.grappledTo: pygame.sprite.Sprite = None
         
         self.returning = False
-        self.hasLeftPortal = False
+        self.hasExitedPortal = False
 
         self.chain1: Beam = Beam(self.shotFrom, self)
         self.chain2: Beam = None
@@ -1188,7 +1180,7 @@ class GrappleBullet(BulletBase):
                 self.shatter()
 
         if len(self.tpPoints) > 0:
-            if not self.hasLeftPortal:
+            if not self.hasExitedPortal:
                 angle = getAngleToSprite(self, self.exitPoint)
                 self.accel.x = self.ACCELC * -sin(rad(angle))
                 self.accel.y = self.ACCELC * -cos(rad(angle))
@@ -1196,10 +1188,10 @@ class GrappleBullet(BulletBase):
                 if self.hitbox.colliderect(self.exitPoint.hitbox):
                     self.pos = self.enterPoint.pos
                     self.vel = getTpVel(self.exitPointFace, self.enterPointFace, self)
-                    self.hasLeftPortal = True
+                    self.hasExitedPortal = True
                     self.chain2.kill()
             
-            elif self.hasLeftPortal:
+            elif self.hasExitedPortal:
                 angle = getAngleToSprite(self, self.shotFrom)
                 self.accel.x = self.ACCELC * -sin(rad(angle))
                 self.accel.y = self.ACCELC * -cos(rad(angle))
@@ -1272,7 +1264,7 @@ class PlayerStdBullet(PlayerBulletBase):
     def __init__(self, shotFrom: Player, posX: int, posY: int, velX: int, velY: int):
         """A projectile fired by a player that moves at a constant velocity
 
-        ### Parameters
+        ### Arguments
             - shotFrom (``Player``): The player that the bullet was shot from
             - posX (``int``): The x-position where the bullet should be spawned
             - posY (``int``): The y-position where the bullet should be spawned
@@ -1341,7 +1333,7 @@ class Portal(PortalBase):
     def __init__(self, posX: int, posY: int, facing: str = SOUTH):
         """A portal that can teleport any moving object
 
-        ### Parameters
+        ### Arguments
             - posX (``int``): The x-position where the portal should spawn
             - posY (``int``): The y-position where the portal should spawn
             - facing (``str``, optional): The direction the portal should face. Defaults to ``SOUTH``.
@@ -1395,16 +1387,14 @@ def portalCountCheck():
 #                            Bullet Explosion Class                            #
 # ============================================================================ #
 class ProjExplode(ActorBase):
-    def __init__(self, proj):
-        """An explosion/shattering that is displayed on-screen when a projectile hits something
-
-        Parameters:
-        --------
-            proj (pygame.sprite.Sprite): The projectile that is exploding
-        """
+    def __init__(self, proj: BulletBase):
+        """An explosion that is displayed on-screen when a projectile hits something
+        
+        ### Arguments
+            - proj (``BulletBase``): The projectile that is exploding
+        """            
         super().__init__()
         self.show(LAYER['explosion_layer'])
-
         self.proj = proj
         
         self.spritesheet = Spritesheet("sprites/bullets/bullets.png", 8)
@@ -1454,39 +1444,42 @@ class ProjExplode(ActorBase):
 #                             Wall & Floor Classes                             #
 # ============================================================================ #
 class Wall(EnvirBase):
-    def __init__(self, topleftX_mult: float, topleftY_mult: float, widthMult: float, heightMult: float):
+    def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float):
         super().__init__()
         self.show(LAYER['wall_layer'])
-        all_walls.add(self)
+        all_walls.add(self) 
 
-        self.visible = True
+        self.blockWidth, self.blockHeight = blockWidth, blockHeight
+        self.pos = getTopLeftCoordinates(blockWidth * 16, blockHeight * 16, blockPosX * 16, blockPosY * 16)
 
-        self.image = pygame.Surface((32 * widthMult, 32 * heightMult))
-        self.texture = pygame.image.load("sprites/textures/wall.png")
-        self.tileTexture(None)
+        self.texture = pygame.image.load("sprites/textures/wall.png").convert()
+        self.image: pygame.Surface = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, None)
 
-        self.pos = getTopLeftCoordinates(self, topleftX_mult * 32, topleftY_mult * 32)
+        self.rect = self.image.get_rect()
+        self.hitbox = self.image.get_rect()
         self.rect.center = self.pos
+        self.hitbox.center = self.pos
 
 
 class Floor(EnvirBase):
-    def __init__(self, topleftX_mult: float, topleftY_mult: float, widthMult: float, heightMult: float):
+    def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float):
         super().__init__()
         self.show(LAYER['floor'])
         all_floors.add(self)
-
-        self.sizeMult = vec(widthMult, heightMult)
+        self.blockWidth, self.blockHeight = blockWidth, blockHeight
+        self.pos = getTopLeftCoordinates(blockWidth * 32, blockHeight * 32, blockPosX * 32, blockPosY * 32)
 
         self.spritesheet = Spritesheet("sprites/textures/floor.png", 4)
         self.textures = self.spritesheet.get_images(64, 64, 4)
         self.index = 0
 
-        self.image = pygame.Surface((32 * widthMult, 32 * heightMult))
         self.texture = self.textures[self.index]
-        self.tileTexture((0, 0, 0))
+        self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
 
-        self.pos = getTopLeftCoordinates(self, topleftX_mult * 32, topleftY_mult * 32)
+        self.rect = self.image.get_rect()
+        self.hitbox = self.image.get_rect()
         self.rect.center = self.pos
+        self.hitbox.center = self.pos
     
     def update(self):
         if self.visible and getTimeDiff(self.lastFrame) >= 0.25:
@@ -1494,7 +1487,7 @@ class Floor(EnvirBase):
             if self.index > 3:
                 self.index = 0
             self.texture = self.textures[self.index]
-            self.tileTexture((0, 0, 0))
+            self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
             self.lastFrame = time.time()
 
 
@@ -1528,7 +1521,7 @@ class Beam(ActorBase):
     def buildImage(self, frameOffset: int) -> pygame.Surface:
         """Builds the image of the beam 
         
-        ### Parameters
+        ### Arguments
             - frameOffset (``int``): The frame from "beams.png" to build the beam from
         
         ### Returns
@@ -1583,7 +1576,7 @@ class Room(AbstractBase):
     def __init__(self, roomX, roomY):
         """The room where all the current action is taking place
 
-        ### Parameters:
+        ### Arguments:
             roomX (int): The room's x-axis location in the grid of the room layout
             roomY (int): The room's y-axis location in the grid of the room layout
         """
@@ -1601,11 +1594,7 @@ class Room(AbstractBase):
         #---------- Room Layouts ----------#
         if self.room == vec(0, 0):
             self.add(
-                Wall(0, 0, 4, 4),
-                Wall(36, 0, 4, 4),
-                Wall(0, 18.5, 4, 4),
-                Wall(36, 18.5, 4, 4),
-                Floor(0, 0, 10, 22.5),
+                Wall(0, 0, 4, 4)
             )
 
             # Search for an enemy container for this room
@@ -1667,7 +1656,7 @@ class EnemyContainer(AbstractBase):
     def __init__(self, roomX: int, roomY: int, *sprites: EnemyBase):
         """A container for enemies. Contains data about all enemies in a room.
 
-        ### Parameters
+        ### Arguments
             roomX (``int``): The container's x-location in the room grid
             roomY (``int``): The container's y-location in the room grid
             sprites (``EnemyBase``): The sprite(s) that should be added to the container
@@ -1707,7 +1696,7 @@ def hideCurrentEnemies():
 def showEnemies(container):
     """Shows all the enemies within an enemy container
     
-    ### Parameters
+    ### Arguments
         - container (``pygame.sprite.AbstractGroup``): The enemy container to unhide
     """    
     for sprite in container.sprites():
@@ -1723,7 +1712,7 @@ class InventoryMenu(AbstractBase):
     def __init__(self, owner: Player):
         """A menu used to view collected items and utilize them for various purposes
         
-        ### Parameters
+        ### Arguments
             - owner ``(pygame.sprite.Sprite)``: The player whom the inventory belongs to
         """        
         super().__init__()
@@ -1839,7 +1828,7 @@ class RightMenuArrow(ActorBase):
     def __init__(self, posX, posY):
         """A UI element that allows players to cycle through menu screens to the right.
         
-        ### Parameters
+        ### Arguments
             - ``posX`` ``(int)``: The x-position the element should be displayed at
             - ``posY`` ``(int)``: The y-position the element should be displayed at
         """        
@@ -1884,7 +1873,7 @@ class LeftMenuArrow(ActorBase):
     def __init__(self, posX, posY):
         """A UI element that allows players to cycle through menu screens to the left.
         
-        ### Parameters
+        ### Arguments
             - ``posX`` ``(int)``: The x-position the element should be displayed at
             - ``posY`` ``(int)``: The y-position the element should be displayed at
         """
@@ -1931,7 +1920,7 @@ class MenuSlot(ActorBase):
     def __init__(self, owner: Player, posX: float, posY: float, item_held: str):
         """A menu slot that shows the collected amount of a specific item
         
-        ### Parameters
+        ### Arguments
             - owner (``player``): The owner of the inventory to whom the menu slot belongs to
             - posX (``float``): The x-position to spawn at
             - posY (``float``): The y-position to spawn at
@@ -2025,17 +2014,13 @@ class MenuSlot(ActorBase):
 #                                 Font Classes                                 #
 # ============================================================================ #
 class DamageChar(ActorBase):
-    def __init__(self, posX, posY, damage):
+    def __init__(self, posX: float, posY: float, damage: int):
         """A number that pops up after a player or enemy is hit that indicates how much damage that entity has taken
         
-        Parameters
-        ----------
-            posX (_type_): _description_
-        
-            posY (_type_): _description_
-        
-            damage (_type_): _description_
-        
+        ### Arguments
+            - posX (``float``): _description_
+            - posY (``float``): _description_
+            - damage (``int``): _description_
         """        
         super().__init__()
         global anim_timer
@@ -2074,8 +2059,9 @@ def redrawGameWindow():
     pygame.display.update()
 
 
-#------------------------------ Initialing parameters ------------------------------#
-
+# ============================================================================ #
+#                         Initialization for Main Loop                         #
+# ============================================================================ #
 # Load rooms
 mainroom = Room(0, 0)
 mainroom.layoutUpdate()
@@ -2084,10 +2070,11 @@ mainroom.layoutUpdate()
 anim_timer = 0
 last_time = time.time()
 
+
 def checkKeyRelease(isMouse, *inputs):
     """Checks if any input(s) has been released. If one has, then its count in ''keyReleased'' will be updated to match.
     
-    ### Parameters
+    ### Arguments
         - isMouse (``bool``): Are the inputs mouse buttons?
         - inputs (``str``, multiple): The input(s) to check
     """
@@ -2102,7 +2089,10 @@ def checkKeyRelease(isMouse, *inputs):
                 if button in isInputHeld and button in keyReleased:
                     keyReleased[button] += 1
 
-#------------------------------ Main loop ------------------------------#
+
+# ============================================================================ #
+#                                   Main Loop                                  #
+# ============================================================================ #
 running = True
 while running:
     dt = getTimeDiff(last_time) * 60

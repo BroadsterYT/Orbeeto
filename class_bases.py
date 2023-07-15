@@ -90,6 +90,47 @@ class ActorBase(pygame.sprite.Sprite):
         self.original_image = self.original_images[self.index]
         self.image = pygame.transform.rotate(self.original_image, int(angle))
         self.rect = self.image.get_rect(center = self.rect.center)
+    
+    # ---------------------------------- Physics --------------------------------- #
+    def accelMovement(self, deltaTime: float):
+        """Makes a sprite move according to its acceleration (``self.accel`` and ``self.ACCELC``)
+        
+        ``self.accel`` MUST BE (0, 0) BEFORE THIS FUCNTION IS CALLED
+        
+        ### Arguments
+            - deltaTime (``float``): The difference in time between frame updates
+        """
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
+        
+        self.accel.x += self.vel.x * FRIC
+        self.accel.y += self.vel.y * FRIC
+        self.vel += self.accel * deltaTime
+        self.pos += self.vel + self.ACCELC * self.accel
+
+    def velMovement(self, deltaTime: float):
+        """Makes a sprite move according to its velocity (``self.vel``)
+        
+        ### Arguments
+            - deltaTime (``float``): The difference in time between frame updates
+        """
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos 
+        
+        self.pos.x += self.vel.x * deltaTime
+        self.pos.y += self.vel.y * deltaTime
+
+    def changeRoomRight(self):
+        self.pos.x -= WIN_WIDTH
+
+    def changeRoomLeft(self):
+        self.pos.x += WIN_WIDTH
+
+    def changeRoomUp(self):
+        self.pos.y += WIN_HEIGHT
+
+    def changeRoomDown(self):
+        self.pos.y -= WIN_HEIGHT
 
 
 class AbstractBase(pygame.sprite.AbstractGroup):
@@ -111,54 +152,43 @@ class EnvirBase(ActorBase):
     def __init__(self):
         super().__init__()
 
-    def tileTexture(self, colorkey: tuple):
-        image_width, image_height = self.image.get_size()
-        tile_width, tile_height = self.texture.get_size()
+    def tileTexture(self, blockWidth: int, blockHeight: int, texture: pygame.Surface, colorkey: tuple) -> pygame.Surface:
+        """Tiles a texture across an image
+        
+        ### Arguments
+            - blockWidth (``int``): The width of the final image in "blocks"
+            - blockHeight (``int``): The height of the final image in "blocks"
+            - texture (``pygame.Surface``): The texture that should be repeated across the final image
+            - colorkey (``tuple``): The color to set as the colorkey on the final image
+        
+        ### Returns
+            - ``pygame.Surface``: The final image with the repeated texture
+        """        
+        finalImage = pygame.Surface(vec(blockWidth * 16, blockHeight * 16))
 
-        for x in range(0, image_width, tile_width):
-            for y in range(0, image_height, tile_height):
-                tile_rect = pygame.Rect(x, y, tile_width, tile_height)
-                self.image.blit(self.texture, tile_rect)
+        imageWidth, imageHeight = finalImage.get_size()
+        textureWidth, textureHeight = texture.get_size()
 
-        self.image.set_colorkey(colorkey)
-        self.rect = self.image.get_rect()
-        self.hitbox = self.rect
+        for x in range(0, imageWidth, textureWidth):
+            for y in range(0, imageHeight, textureHeight):
+                tile_rect = pygame.Rect(x, y, textureWidth, textureHeight)
+                finalImage.blit(texture, tile_rect)
+
+        finalImage.set_colorkey(colorkey)
+        return finalImage
+
 
 
 class PortalBase(ActorBase):
     def __init__(self):
         super().__init__()
         self.visible = True
-    
-    def changeRoomRight(self):
-        self.pos.x -= WIN_WIDTH
-
-    def changeRoomLeft(self):
-        self.pos.x += WIN_WIDTH
-
-    def changeRoomUp(self):
-        self.pos.y += WIN_HEIGHT
-
-    def changeRoomDown(self):
-        self.pos.y -= WIN_HEIGHT
 
 
 class DropBase(ActorBase):
     def __init__(self):
         super().__init__()
         self.ACCELC = 0.8
-
-    def changeRoomRight(self):
-        self.pos.x -= WIN_WIDTH
-
-    def changeRoomLeft(self):
-        self.pos.x += WIN_WIDTH
-
-    def changeRoomUp(self):
-        self.pos.y += WIN_HEIGHT
-
-    def changeRoomDown(self):
-        self.pos.y -= WIN_HEIGHT
 
 
 class StatBarBase(ActorBase):
