@@ -1,4 +1,5 @@
-import pygame, time
+import pygame
+import time
 
 from calculations import *
 from constants import *
@@ -178,7 +179,6 @@ class EnvirBase(ActorBase):
         return finalImage
 
 
-
 class PortalBase(ActorBase):
     def __init__(self):
         super().__init__()
@@ -189,8 +189,3 @@ class DropBase(ActorBase):
     def __init__(self):
         super().__init__()
         self.ACCELC = 0.8
-
-
-class StatBarBase(ActorBase):
-    def __init__(self):
-        super().__init__()

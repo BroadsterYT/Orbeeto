@@ -12,18 +12,18 @@ from groups import *
 # ============================================================================ #
 #                                 Returns float                                #
 # ============================================================================ #
-def getAngleToMouse(any_sprite: pygame.sprite.Sprite) -> float:
-    """Gets the angle between a sprite and the mouse cursor
+def getAngleToMouse(anySprite: pygame.sprite.Sprite) -> float:
+    """Returns the angle between a sprite and the mouse cursor
     
     ### Arguments
-        - any_sprite ``(pygame.sprite.Sprite)``: The sprite to measure the angle from
+        - anySprite ``(pygame.sprite.Sprite)``: The sprite to measure the angle from
     
     ### Returns
         - ``float``: The angle between ``any_sprite`` and the mouse cursor
     """    
     mouseX, mouseY = pygame.mouse.get_pos()
-    length_to_x = mouseX - any_sprite.pos.x
-    length_to_y = mouseY - any_sprite.pos.y
+    length_to_x = mouseX - anySprite.pos.x
+    length_to_y = mouseY - anySprite.pos.y
     if length_to_x and length_to_y != 0:
         angle_to_mouse = -math.degrees(math.atan2(length_to_y, length_to_x)) - 90
         return angle_to_mouse
@@ -44,18 +44,18 @@ def getAngleToMouse(any_sprite: pygame.sprite.Sprite) -> float:
                 return angle_to_mouse
 
 
-def getAngleToSprite(any_sprite: pygame.sprite.Sprite, target_sprite: pygame.sprite.Sprite) -> float:
-    """Gets the angle from one sprite to another
+def getAngleToSprite(firstSprite: pygame.sprite.Sprite, secondSprite: pygame.sprite.Sprite) -> float:
+    """Returns the angle from one sprite to another
     
     ### Arguments
-        - any_sprite (``pygame.sprite.Sprite``): The sprite to begin the measurement from
-        - target_sprite (``pygame.sprite.Sprite``): The sprite to measure the angle to
+        - firstSprite (``pygame.sprite.Sprite``): The sprite to begin the measurement from
+        - secondSprite (``pygame.sprite.Sprite``): The sprite to measure the angle to
     
     ### Returns
         ``float``: The angle between the two sprites
     """    
-    length_to_x = target_sprite.pos.x - any_sprite.pos.x
-    length_to_y = target_sprite.pos.y - any_sprite.pos.y
+    length_to_x = secondSprite.pos.x - firstSprite.pos.x
+    length_to_y = secondSprite.pos.y - firstSprite.pos.y
     if length_to_x and length_to_y != 0:
         angle = -math.degrees(math.atan2(length_to_y, length_to_x)) - 90
         return angle
@@ -76,18 +76,19 @@ def getAngleToSprite(any_sprite: pygame.sprite.Sprite, target_sprite: pygame.spr
                 return angle
 
 
-def getAngleToCFromS(any_sprite: pygame.sprite.Sprite, coords: pygame.math.Vector2) -> float:
-    """_summary_
+def getAngleToCFromS(anySprite: pygame.sprite.Sprite, coords: pygame.math.Vector2) -> float:
+    """Returns the angle between a sprite and a pair of coordinates. 
+    ## NOTE: The angle is measured from the sprite to the coordinates!
     
-    Args:
-        any_sprite (pygame.sprite.Sprite): _description_
-        coords (pygame.math.Vector2): _description_
+    ### Arguments
+        - anySprite (``pygame.sprite.Sprite``): _description_
+        - coords (``pygame.math.Vector2``): _description_
     
-    Returns:
-        float: _description_
+    ### Returns
+        - ``float``: _description_
     """    
-    length_to_x = coords.x - any_sprite.pos.x
-    length_to_y = coords.y - any_sprite.pos.y
+    length_to_x = coords.x - anySprite.pos.x
+    length_to_y = coords.y - anySprite.pos.y
     if length_to_x and length_to_y != 0:
         angle = -math.degrees(math.atan2(length_to_y, length_to_x)) - 90
         return angle
@@ -108,7 +109,16 @@ def getAngleToCFromS(any_sprite: pygame.sprite.Sprite, coords: pygame.math.Vecto
                 return angle
 
 
-def getAngleToCFromC(startCoords: pygame.math.Vector2, endCoords: pygame.math.Vector2):
+def getAngleToCFromC(startCoords: pygame.math.Vector2, endCoords: pygame.math.Vector2) -> float:
+    """Returns the angle between two coordinate points
+    
+    ### Arguments
+        - startCoords (``pygame.math.Vector2``): The first set of coordinates
+        - endCoords (``pygame.math.Vector2``): The second set of coordinates
+    
+    ### Returns
+        - ``float``: The angle between the two coordinate point
+    """    
     lengthX = endCoords.x - startCoords.x
     lengthY = endCoords.y - startCoords.y
     if lengthX and lengthY != 0:

@@ -14,7 +14,7 @@ from class_bases import *
 from constants import *
 from groups import *
 from spritesheet import *
-from ui_actors import *
+from ui_sprites import *
 
 # Aliases
 spriteGroup = pygame.sprite.Group
@@ -26,18 +26,6 @@ clock = pygame.time.Clock()
 screenSize = (WIN_WIDTH, WIN_HEIGHT)
 screen = pygame.display.set_mode(screenSize, pygame.SCALED)
 pygame.display.set_caption('Orbeeto')
-
-
-def objectAccel(sprite: pygame.sprite.Sprite):
-    """Defines the relationship between acceleration, velocity, and position (and time, when called once every frame)
-
-    Args:
-        sprite (pygame.sprite.Sprite): The sprite that should follow the acceleration logic
-    """    
-    sprite.accel.x += sprite.vel.x * FRIC
-    sprite.accel.y += sprite.vel.y * FRIC
-    sprite.vel += sprite.accel * dt
-    sprite.pos += sprite.vel + sprite.ACCELC * sprite.accel
 
 
 # ============================================================================ #
@@ -733,18 +721,16 @@ class BulletBase(ActorBase):
             # Cause the bullet to ricochet
             pass
 
-    def teleport(self, portal_in):
-        for portal in all_portals:
-            if portal != portal_in:
-                portalOut = portal
+    def teleport(self, portalIn):
+        portalOut: Portal = getOtherPortal(portalIn)
 
         velCopy = self.vel.copy()
 
         width = portalOut.hitbox.height // 4
         height = portalOut.hitbox.width // 4
 
-        if portal_in.facing == SOUTH:
-            distOffset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
+        if portalIn.facing == SOUTH:
+            distOffset = copy.copy(self.pos.x) - copy.copy(portalIn.pos.x)
             
             if portalOut.facing == SOUTH:
                 self.pos.x = portalOut.pos.x + distOffset
@@ -765,8 +751,8 @@ class BulletBase(ActorBase):
                 self.pos.y = portalOut.pos.y + distOffset
                 self.vel = vec(velCopy.y, velCopy.x)
 
-        if portal_in.facing == EAST:
-            distOffset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
+        if portalIn.facing == EAST:
+            distOffset = copy.copy(self.pos.y) - copy.copy(portalIn.pos.y)
             
             if portalOut.facing == SOUTH:
                 self.pos.x = portalOut.pos.x + distOffset
@@ -787,8 +773,8 @@ class BulletBase(ActorBase):
                 self.pos.x = portalOut.pos.x - width
                 self.pos.y = portalOut.pos.y + distOffset
 
-        if portal_in.facing == NORTH:
-            distOffset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
+        if portalIn.facing == NORTH:
+            distOffset = copy.copy(self.pos.x) - copy.copy(portalIn.pos.x)
             
             if portalOut.facing == SOUTH:
                 self.pos.x = portalOut.pos.x + distOffset
@@ -809,8 +795,8 @@ class BulletBase(ActorBase):
                 self.pos.y = portalOut.pos.y + distOffset
                 self.vel = vec(-velCopy.y, velCopy.x)
 
-        if portal_in.facing == WEST:
-            distOffset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
+        if portalIn.facing == WEST:
+            distOffset = copy.copy(self.pos.y) - copy.copy(portalIn.pos.y)
 
             if portalOut.facing == SOUTH:
                 self.pos.x = portalOut.pos.x + distOffset
@@ -1198,7 +1184,7 @@ class GrappleBullet(BulletBase):
                 if self.hitbox.colliderect(self.shotFrom.rect):
                     self.shatter()
 
-        objectAccel(self)
+        self.accelMovement(dt)
 
     def movement(self):
         if not self.returning:
