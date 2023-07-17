@@ -2,6 +2,7 @@ import pygame
 
 # ---------------------------------- Aliases --------------------------------- #
 vec = pygame.math.Vector2
+spriteGroup = pygame.sprite.Group
 
 # ---------------------------------- Window ---------------------------------- #
 WIN_WIDTH = 1280

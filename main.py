@@ -821,38 +821,20 @@ class BulletBase(ActorBase):
         """Destroys a given projectile upon a collision and renders an explosion
 
         ### Arguments
-            - entityGroup (``pygame.sprite.Group``): The group of the entity the projectile is colliding with
+            - spriteGroup (``pygame.sprite.Group``): The group of the entity the projectile is colliding with
             - proj (``pygame.sprite.Sprite``): The projectile involved in the collision
             - canHurt (``bool``): Should the projectile calculate damage upon impact?
         """    
-        for colliding_entity in spriteGroup:
-            if not self.hitbox.colliderect(colliding_entity.hitbox):
+        for collidingSprite in spriteGroup:
+            if not self.hitbox.colliderect(collidingSprite.hitbox):
                 continue
             
-            if not colliding_entity.visible:
+            if not collidingSprite.visible:
                 continue
 
             if canHurt:
-                damage = calculateDamage(self.shotFrom, colliding_entity, self)
-                if spriteGroup == all_enemies:
-                    if rand.randint(1, 20) == 1:
-                        colliding_entity.hp -= damage * 3
-                        if damage > 0:
-                            all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, 3 * damage))
-                    else:
-                        colliding_entity.hp -= damage
-                        if damage > 0:
-                            all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, damage))
-                    self.land()
-
-                elif spriteGroup != all_enemies:
-                    colliding_entity.hp -= damage
-                    if damage > 0:
-                        all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, damage))
-                    if hasattr(colliding_entity, 'hitTime'):
-                        colliding_entity.hitTime = 0
-                        colliding_entity.lastHit = time.time()
-                    self.land()
+                self.inflictDamage(spriteGroup, self.shotFrom, collidingSprite)
+                self.land()
 
             elif not canHurt:
                 if spriteGroup == all_portals:
@@ -868,6 +850,35 @@ class BulletBase(ActorBase):
 
                 else:
                     self.land()
+
+    def inflictDamage(self, spriteGroup: pygame.sprite.Group, sender: ActorBase, receiver: ActorBase) -> None:
+        """Executes the subtraction of ``hp`` after a sprite is struck by a projectile
+        
+        ### Arguments
+            - spriteGroup (``pygame.sprite.Group``): The group that the receiving sprite is a member of
+            - sender (``ActorBase``): The sprite that fired the projectile
+            - receiver (``ActorBase``): The sprite being hit by the projectile
+        """        
+        damage = calculateDamage(sender, receiver, self)
+        if spriteGroup == all_enemies:
+            if rand.randint(1, 20) == 1:
+                receiver.hp -= damage * 3
+                if damage > 0:
+                    all_font_chars.add(DamageChar(receiver.pos.x, receiver.pos.y, damage * 3))
+            else:
+                receiver.hp -= damage
+                if damage > 0:
+                    all_font_chars.add(DamageChar(receiver.pos.x, receiver.pos.y, damage))
+
+        elif spriteGroup != all_enemies:
+            receiver.hp -= damage
+            if damage > 0:
+                all_font_chars.add(DamageChar(receiver.pos.x, receiver.pos.y, damage))
+            if hasattr(receiver, 'hitTime'):
+                receiver.hitTime = 0
+                receiver.lastHit = time.time()
+
+        
 
 
 class PlayerBulletBase(BulletBase):
@@ -1692,7 +1703,7 @@ def showEnemies(container):
 
 
 # ============================================================================ #
-#                                  UI Classes                                  #
+#                                 Menu Classes                                 #
 # ============================================================================ #
 class InventoryMenu(AbstractBase):
     def __init__(self, owner: Player):
@@ -1997,7 +2008,7 @@ class MenuSlot(ActorBase):
 
 
 # ============================================================================ #
-#                                 Font Classes                                 #
+#                                 Text Classes                                 #
 # ============================================================================ #
 class DamageChar(ActorBase):
     def __init__(self, posX: float, posY: float, damage: int):
@@ -2115,12 +2126,12 @@ while running:
 
     screen.fill((255, 250, 255))
 
-    #------------------------------ Game operation ------------------------------#
+    # ------------------------------ Game Operation ------------------------------ #
     # Regenerate health for testing purposes
     for a_player in all_players:
         if anim_timer % 5 == 0 and a_player.hp < a_player.max_hp and isInputHeld[K_x]:
             a_player.hp += 1
 
-    #------------------------------ Redraw window ------------------------------#
+    # ------------------------------- Redraw Window ------------------------------ #
     redrawGameWindow()
     clock.tick_busy_loop(FPS)

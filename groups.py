@@ -1,6 +1,5 @@
 import pygame
-
-spriteGroup = pygame.sprite.Group
+from constants import spriteGroup
 
 all_sprites = pygame.sprite.LayeredUpdates()
 

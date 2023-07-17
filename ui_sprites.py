@@ -9,9 +9,11 @@ from constants import *
 from groups import all_sprites, all_stat_bars
 from spritesheet import Spritesheet
 
+
 class StatBarBase(ActorBase):
     def __init__(self):
         super().__init__()
+
 
 class HealthBar(StatBarBase):
     def __init__(self, entity):
