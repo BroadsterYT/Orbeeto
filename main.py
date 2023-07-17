@@ -878,8 +878,6 @@ class BulletBase(ActorBase):
                 receiver.hitTime = 0
                 receiver.lastHit = time.time()
 
-        
-
 
 class PlayerBulletBase(BulletBase):
     def __init__(self):
@@ -946,30 +944,16 @@ class PortalBullet(BulletBase):
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
 
     def projCollide(self, spriteGroup, canHurt):
-        for colliding_entity in spriteGroup:
-            if not self.hitbox.colliderect(colliding_entity.hitbox):
+        for collidingSprite in spriteGroup:
+            if not self.hitbox.colliderect(collidingSprite.hitbox):
                 continue
             
-            if not colliding_entity.visible:
+            if not collidingSprite.visible:
                 continue
 
             if canHurt:
-                if spriteGroup == all_enemies:
-                    if rand.randint(1, 20) == 1:
-                        colliding_entity.hp -= (calculateDamage(self.shotFrom, colliding_entity, self)) * 3
-                        all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, 3 * calculateDamage(self.shotFrom, colliding_entity, self)))
-                    else:
-                        colliding_entity.hp -= calculateDamage(self.shotFrom, colliding_entity, self)
-                        all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, calculateDamage(self.shotFrom, colliding_entity, self)))
-                    self.land()
-
-                elif spriteGroup != all_enemies:
-                    colliding_entity.hp -= calculateDamage(self.shotFrom, colliding_entity, self)
-                    all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, calculateDamage(self.shotFrom, colliding_entity, self)))
-                    if hasattr(colliding_entity, 'hitTime'):
-                        colliding_entity.hitTime = 0
-                        colliding_entity.lastHit = time.time()
-                    self.land()
+                self.inflictDamage(spriteGroup, self.shotFrom, collidingSprite)
+                self.land()
 
             elif not canHurt:
                 # If the projectile hits a portal
@@ -985,18 +969,18 @@ class PortalBullet(BulletBase):
                         return
 
                 elif spriteGroup == all_walls:
-                    side = wallSideCheck(colliding_entity, self)
+                    side = wallSideCheck(collidingSprite, self)
                     if side == SOUTH:
-                        all_portals.add(Portal(self.pos.x, colliding_entity.pos.y + (colliding_entity.image.get_height() // 2), side))
+                        all_portals.add(Portal(self.pos.x, collidingSprite.pos.y + (collidingSprite.image.get_height() // 2), side))
                         portalCountCheck()
                     if side == NORTH:
-                        all_portals.add(Portal(self.pos.x, colliding_entity.pos.y - (colliding_entity.image.get_height() // 2), side))
+                        all_portals.add(Portal(self.pos.x, collidingSprite.pos.y - (collidingSprite.image.get_height() // 2), side))
                         portalCountCheck()
                     if side == EAST:
-                        all_portals.add(Portal(colliding_entity.pos.x + (colliding_entity.image.get_width() // 2), self.pos.y, side))
+                        all_portals.add(Portal(collidingSprite.pos.x + (collidingSprite.image.get_width() // 2), self.pos.y, side))
                         portalCountCheck()
                     if side == WEST:
-                        all_portals.add(Portal(colliding_entity.pos.x - (colliding_entity.image.get_width() // 2), self.pos.y, side))
+                        all_portals.add(Portal(collidingSprite.pos.x - (collidingSprite.image.get_width() // 2), self.pos.y, side))
                         portalCountCheck()
                     self.land()
                 
