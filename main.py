@@ -891,7 +891,7 @@ class PlayerBulletBase(BulletBase):
                 self.pos.y < WIN_HEIGHT and 
                 self.pos.y > 0
             ):
-                self.movement()
+                self.velMovement(dt)
             else:
                 self.kill()
 
@@ -1076,30 +1076,16 @@ class GrappleBullet(BulletBase):
         self.kill()
 
     def projCollide(self, spriteGroup, canHurt):
-        for colliding_entity in spriteGroup:
-            if not self.hitbox.colliderect(colliding_entity.hitbox):
+        for collidingSprite in spriteGroup:
+            if not self.hitbox.colliderect(collidingSprite.hitbox):
                 continue
             
-            if not colliding_entity.visible:
+            if not collidingSprite.visible:
                 continue
 
             if canHurt:
-                if spriteGroup == all_enemies:
-                    if rand.randint(1, 20) == 1:
-                        colliding_entity.hp -= (calculateDamage(self.shotFrom, colliding_entity, self)) * 3
-                        all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, 3 * calculateDamage(self.shotFrom, colliding_entity, self)))
-                    else:
-                        colliding_entity.hp -= calculateDamage(self.shotFrom, colliding_entity, self)
-                        all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, calculateDamage(self.shotFrom, colliding_entity, self)))
-                    self.land(colliding_entity)
-
-                elif spriteGroup != all_enemies:
-                    colliding_entity.hp -= calculateDamage(self.shotFrom, colliding_entity, self)
-                    all_font_chars.add(DamageChar(colliding_entity.pos.x, colliding_entity.pos.y, calculateDamage(self.shotFrom, colliding_entity, self)))
-                    if hasattr(colliding_entity, 'hitTime'):
-                        colliding_entity.hitTime = 0
-                        colliding_entity.lastHit = time.time()
-                    self.land(colliding_entity)
+                self.inflictDamage(spriteGroup, self.shotFrom, collidingSprite)
+                self.land(collidingSprite)
 
             elif not canHurt:
                 if spriteGroup == all_portals:
@@ -1131,7 +1117,7 @@ class GrappleBullet(BulletBase):
                     pass
 
                 else:
-                    self.land(colliding_entity)
+                    self.land(collidingSprite)
 
     def bindProj(self):
         if can_update:
@@ -1266,13 +1252,6 @@ class PlayerStdBullet(PlayerBulletBase):
 
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
     
-    def movement(self):
-        self.pos.x += self.vel.x * dt
-        self.pos.y += self.vel.y * dt
-
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
-
     def update(self):
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
         self.bindProj()
@@ -1294,13 +1273,6 @@ class EnemyStdBullet(EnemyBulletBase):
         self.setRects(-24, -24, 8, 8, 6, 6)
 
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
-    
-    def movement(self):
-        self.pos.x += self.vel.x * dt
-        self.pos.y += self.vel.y * dt
-
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
 
     def update(self):
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
