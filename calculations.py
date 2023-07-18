@@ -1,5 +1,6 @@
 import pygame
-import math 
+import math
+from math import sin, cos, radians
 import time
 
 import random as rand
@@ -284,13 +285,13 @@ def wallSideCheck(wall: pygame.sprite.Sprite, proj: pygame.sprite.Sprite) -> str
     ### Returns
         - ``str``: The side of the wall that the projectile hit
     """    
-    if wall.pos.x - 0.45 * wall.image.get_width() <= proj.pos.x <= wall.pos.x + 0.45 * wall.image.get_width():
+    if wall.pos.x - wall.hitbox.width * 0.45 <= proj.pos.x <= wall.pos.x + wall.hitbox.width * 0.45:
         if proj.pos.y < wall.pos.y:
             return NORTH
         elif proj.pos.y > wall.pos.y:
             return SOUTH
         
-    elif wall.pos.y - 0.45 * wall.image.get_height() <= proj.pos.y <= wall.pos.y + 0.45 * wall.image.get_height():
+    elif wall.pos.y - wall.hitbox.height * 0.45 <= proj.pos.y <= wall.pos.y + wall.hitbox.height * 0.45:
         if proj.pos.x < wall.pos.x:
             return WEST
         elif proj.pos.x > wall.pos.x:
@@ -456,6 +457,8 @@ def getOtherPortal(portalIn: pygame.sprite.Sprite) -> pygame.sprite.Sprite:
 # ============================================================================ #
 #                                 Returns None                                 #
 # ============================================================================ #
+
+# ----------------------------- Hitbox Detection ----------------------------- #
 def collideCheck(instig: pygame.sprite.Sprite, *contactLists: pygame.sprite.Group) -> None:
     """Check if a sprite comes into contact with another sprite from a specific group.
     If the sprites do collide, then they will perform a hitbox collision.
@@ -465,16 +468,16 @@ def collideCheck(instig: pygame.sprite.Sprite, *contactLists: pygame.sprite.Grou
         - contactLists (``pygame.sprite.Group``): The sprite group(s) to check for a collision with
     """    
     for list in contactLists:
-        for entity in list:
-            if hasattr(entity, 'visible') and entity.visible:
-                pushFromSide(instig, entity)
-            elif hasattr(entity, 'visible') and not entity.visible:
+        for sprite in list:
+            if hasattr(sprite, 'visible') and sprite.visible:
+                blockFromSide(instig, sprite)
+            elif hasattr(sprite, 'visible') and not sprite.visible:
                 pass
             else:
-                pushFromSide(instig, entity)
+                blockFromSide(instig, sprite)
 
 
-def pushFromSide(instig: pygame.sprite.Sprite, sprite: pygame.sprite.Sprite) -> None:
+def blockFromSide(instig: pygame.sprite.Sprite, sprite: pygame.sprite.Sprite) -> None:
     """If a sprite instigates a collision with another, the sprites will physically engage in a collision
     
     ### Arguments
@@ -498,39 +501,74 @@ def pushFromSide(instig: pygame.sprite.Sprite, sprite: pygame.sprite.Sprite) -> 
         lenPointA, lenPointB = getDistToCoords(instig.pos, pointA), getDistToCoords(instig.pos, pointB)
         lenPointC, lenPointD = getDistToCoords(instig.pos, pointC), getDistToCoords(instig.pos, pointD)
         
+
+        def isClosestPoint(point: pygame.math.Vector2) -> pygame.math.Vector2:
+            if point == pointA:
+                if (lenPointA < lenPointB and
+                    lenPointA < lenPointC and
+                    lenPointA < lenPointD):
+                    return True
+                else:
+                    return False
+
+            elif point == pointB:
+                if (lenPointB < lenPointA and
+                    lenPointB < lenPointC and
+                    lenPointB < lenPointD):
+                    return True
+                else:
+                    return False
+
+            elif point == pointC:
+                if (lenPointC < lenPointA and
+                    lenPointC < lenPointB and
+                    lenPointC < lenPointD):
+                    return True
+                else:
+                    return False
+
+            elif point == pointD:
+                if (lenPointD < lenPointA and
+                    lenPointD < lenPointB and
+                    lenPointD < lenPointC):
+                    return True
+                else:
+                    return False
+
+            else:
+                CustomError("Error: Point arg does not match any defined point")
+
+
         # If hitting the right side
-        if (lenPointB < lenPointA and
-            lenPointB < lenPointC and
-            lenPointB < lenPointD and
-            instig.vel.x < 0):
+        if (isClosestPoint(pointB) and
+            instig.vel.x < 0 and
+            instig.pos.x <= sprite.pos.x + (sprite.hitbox.width + instig.hitbox.width) // 2):
             instig.vel.x = 0
-            instig.pos.x = sprite.pos.x + sprite.hitbox.width // 2 + instig.hitbox.width // 2
+            instig.pos.x = sprite.pos.x + (sprite.hitbox.width + instig.hitbox.width) // 2
 
         # Hitting bottom side
-        if (lenPointA < lenPointB and
-            lenPointA < lenPointC and
-            lenPointA < lenPointD and
-            instig.vel.y < 0):
+        if (isClosestPoint(pointA) and
+            instig.vel.y < 0 and
+            instig.pos.y <= sprite.pos.y + (sprite.hitbox.height + instig.hitbox.height) // 2):
             instig.vel.y = 0
-            instig.pos.y = sprite.pos.y + sprite.hitbox.height // 2 + instig.hitbox.height // 2
+            instig.pos.y = sprite.pos.y + (sprite.hitbox.height + instig.hitbox.height) // 2
 
         # Hitting left side
-        if (lenPointD < lenPointA and
-            lenPointD < lenPointB and
-            lenPointD < lenPointC and
-            instig.vel.x > 0):
+        if (isClosestPoint(pointD) and
+            instig.vel.x > 0 and
+            instig.pos.x >= sprite.pos.x - (sprite.hitbox.width + instig.hitbox.width) // 2):
             instig.vel.x = 0
             instig.pos.x = sprite.pos.x - sprite.hitbox.width // 2 - instig.hitbox.width // 2
 
         # Hitting top side
-        if (lenPointC < lenPointA and
-            lenPointC < lenPointB and
-            lenPointC < lenPointD and
-            instig.vel.y > 0):
+        if (isClosestPoint(pointC) and
+            instig.vel.y > 0 and
+            instig.pos.y >= sprite.pos.y - (sprite.hitbox.width + instig.hitbox.width) // 2):
             instig.vel.y = 0
             instig.pos.y = sprite.pos.y - sprite.hitbox.height // 2 - instig.hitbox.height // 2
-  
 
+
+# ---------------------------------------------------------------------------- #
 def killGroups(*groups: pygame.sprite.Group) -> None:
     """Calls ``.kill()`` for all sprites within one or more groups."""    
     for group in groups:

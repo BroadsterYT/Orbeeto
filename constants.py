@@ -1,4 +1,5 @@
 import pygame
+import math
 
 # ---------------------------------- Aliases --------------------------------- #
 vec = pygame.math.Vector2

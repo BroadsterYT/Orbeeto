@@ -1,5 +1,6 @@
 import pygame
 import time
+import copy
 
 from calculations import *
 from constants import *
@@ -116,11 +117,102 @@ class ActorBase(pygame.sprite.Sprite):
             - deltaTime (``float``): The difference in time between frame updates
         """
         self.rect.center = self.pos
-        self.hitbox.center = self.pos 
+        self.hitbox.center = self.pos
         
         self.pos.x += self.vel.x * deltaTime
         self.pos.y += self.vel.y * deltaTime
 
+    def teleport(self, portalIn):
+        portalOut: ActorBase = getOtherPortal(portalIn)
+
+        width = (portalOut.hitbox.width + self.hitbox.width) // 2
+        height = (portalOut.hitbox.height + self.hitbox.height) // 2
+
+        if portalIn.facing == SOUTH:
+            distOffset = copy.copy(self.pos.x) - copy.copy(portalIn.pos.x)
+            if portalOut.facing == SOUTH:
+                self.pos.x = portalOut.pos.x + distOffset
+                self.pos.y = portalOut.pos.y + height
+                self.vel = self.vel.rotate(180)
+            
+            if portalOut.facing == EAST:
+                self.pos.x = portalOut.pos.x + width
+                self.pos.y = portalOut.pos.y + distOffset
+                self.vel = self.vel.rotate(90)
+            
+            if portalOut.facing == NORTH:
+                self.pos.x = portalOut.pos.x + distOffset
+                self.pos.y = portalOut.pos.y - height
+            
+            if portalOut.facing == WEST:
+                self.pos.x = portalOut.pos.x - width
+                self.pos.y = portalOut.pos.y + distOffset
+                self.vel = self.vel.rotate(270)
+
+        if portalIn.facing == EAST:
+            distOffset = copy.copy(self.pos.y) - copy.copy(portalIn.pos.y)
+            if portalOut.facing == SOUTH:
+                self.pos.x = portalOut.pos.x + distOffset
+                self.pos.y = portalOut.pos.y + height
+                self.vel = self.vel.rotate(270)
+                
+            if portalOut.facing == EAST:
+                self.pos.x = portalOut.pos.x + width
+                self.pos.y = portalOut.pos.y + distOffset
+                self.vel = self.vel.rotate(180)
+
+            if portalOut.facing == NORTH:
+                self.pos.x = portalOut.pos.x + distOffset
+                self.pos.y = portalOut.pos.y - height
+                self.vel = self.vel.rotate(90)
+
+            if portalOut.facing == WEST:
+                self.pos.x = portalOut.pos.x - width
+                self.pos.y = portalOut.pos.y + distOffset
+
+        if portalIn.facing == NORTH:
+            distOffset = copy.copy(self.pos.x) - copy.copy(portalIn.pos.x)
+            if portalOut.facing == SOUTH:
+                self.pos.x = portalOut.pos.x + distOffset
+                self.pos.y = portalOut.pos.y + height
+            
+            if portalOut.facing == EAST:
+                self.pos.x = portalOut.pos.x + width
+                self.pos.y = portalOut.pos.y + distOffset
+                self.vel = self.vel.rotate(270)
+            
+            if portalOut.facing == NORTH:
+                self.pos.x = portalOut.pos.x + distOffset
+                self.pos.y = portalOut.pos.y - height
+                self.vel = self.vel.rotate(180)
+            
+            if portalOut.facing == WEST:
+                self.pos.x = portalOut.pos.x - width
+                self.pos.y = portalOut.pos.y + distOffset
+                self.vel = self.vel.rotate(90)
+
+        if portalIn.facing == WEST:
+            distOffset = copy.copy(self.pos.y) - copy.copy(portalIn.pos.y)
+            if portalOut.facing == SOUTH:
+                self.pos.x = portalOut.pos.x + distOffset
+                self.pos.y = portalOut.pos.y + height
+                self.vel = self.vel.rotate(90)
+            
+            if portalOut.facing == EAST:
+                self.pos.x = portalOut.pos.x + width
+                self.pos.y = portalOut.pos.y + distOffset
+            
+            if portalOut.facing == NORTH:
+                self.pos.x = portalOut.pos.x + distOffset
+                self.pos.y = portalOut.pos.y - height
+                self.vel = self.vel.rotate(270)
+            
+            if portalOut.facing == WEST:
+                self.pos.x = portalOut.pos.x - width
+                self.pos.y = portalOut.pos.y + distOffset
+                self.vel = self.vel.rotate(180)
+
+    # ----------------------------------- Rooms ---------------------------------- #
     def changeRoomRight(self):
         self.pos.x -= WIN_WIDTH
 

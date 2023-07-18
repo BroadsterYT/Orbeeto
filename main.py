@@ -110,101 +110,6 @@ class PlayerBase(ActorBase):
         if self.pos.y >= WIN_HEIGHT:
             self.changeRoom(SOUTH)
 
-    def teleport(self, portal_in):
-        portalOut = getOtherPortal(portal_in)
-        velCopy = self.vel.copy()
-
-        width = portalOut.hitbox.height // 2
-        height = portalOut.hitbox.width // 2
-
-        if portal_in.facing == SOUTH:
-            distOffset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
-            
-            if portalOut.facing == SOUTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y + height
-                self.vel = self.vel.rotate(180)
-            
-            if portalOut.facing == EAST:
-                self.pos.x = portalOut.pos.x + width
-                self.pos.y = portalOut.pos.y + distOffset
-                self.vel = self.vel.rotate(90)
-            
-            if portalOut.facing == NORTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y - height
-            
-            if portalOut.facing == WEST:
-                self.pos.x = portalOut.pos.x - width
-                self.pos.y = portalOut.pos.y + distOffset
-                self.vel = vec(velCopy.y, velCopy.x)
-
-        if portal_in.facing == EAST:
-            distOffset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
-            
-            if portalOut.facing == SOUTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y + height
-                self.vel = vec(velCopy.y, -velCopy.x)
-                
-            if portalOut.facing == EAST:
-                self.pos.x = portalOut.pos.x + width
-                self.pos.y = portalOut.pos.y + distOffset
-                self.vel = vec(-velCopy.x, -velCopy.y)
-
-            if portalOut.facing == NORTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y - width
-                self.vel = vec(-velCopy.y, velCopy.x)
-
-            if portalOut.facing == WEST:
-                self.pos.x = portalOut.pos.x - width
-                self.pos.y = portalOut.pos.y + distOffset
-
-        if portal_in.facing == NORTH:
-            distOffset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
-            
-            if portalOut.facing == SOUTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y + height
-            
-            if portalOut.facing == EAST:
-                self.pos.x = portalOut.pos.x + width
-                self.pos.y = portalOut.pos.y + distOffset
-                self.vel = vec(velCopy.y, velCopy.x)
-            
-            if portalOut.facing == NORTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y - height
-                self.vel = vec(-velCopy.x, -velCopy.y)
-            
-            if portalOut.facing == WEST:
-                self.pos.x = portalOut.pos.x - width
-                self.pos.y = portalOut.pos.y + distOffset
-                self.vel = vec(-velCopy.y, velCopy.x)
-
-        if portal_in.facing == WEST:
-            distOffset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
-
-            if portalOut.facing == SOUTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y + height
-                self.vel = vec(velCopy.y, velCopy.x)
-            
-            if portalOut.facing == EAST:
-                self.pos.x = portalOut.pos.x + width
-                self.pos.y = portalOut.pos.y + distOffset
-            
-            if portalOut.facing == NORTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y - height
-                self.vel = vec(velCopy.y, -velCopy.x)
-            
-            if portalOut.facing == WEST:
-                self.pos.x = portalOut.pos.x - width
-                self.pos.y = portalOut.pos.y + distOffset
-                self.vel = vec(-velCopy.x, -velCopy.y)
-
     def loadXpReq(self):
         """Returns a list containing the amount of xp needed to reach each level
         
@@ -362,6 +267,7 @@ class Player(PlayerBase):
                 self.lastFrame = time.time()
             self.rotateImage(getAngleToMouse(self))
 
+            # Teleporting
             for portal in all_portals:
                 if self.hitbox.colliderect(portal.hitbox) and len(all_portals) == 2:
                     self.teleport(portal)
@@ -613,7 +519,7 @@ class Box(ActorBase):
         self.pos = vec((posX, posY))
         self.ACCELC = 0.4
         
-        self.setImages("sprites/orbeeto/orbeeto.png", 64, 64, 5, 1, 0, 0)
+        self.setImages("sprites/textures/box.png", 64, 64, 5, 1, 0, 0)
         self.setRects(0, 0, 64, 64, 64, 64, True)
 
     def movement(self):
@@ -633,7 +539,14 @@ class Box(ActorBase):
             self.accelMovement(dt)
 
     def update(self):
+        collideCheck(self, all_walls)
+        
         self.movement()
+
+        # Teleporting
+        for portal in all_portals:
+            if self.hitbox.colliderect(portal.hitbox) and len(all_portals) == 2:
+                self.teleport(portal)
 
 
 class ItemDrop(DropBase):
@@ -720,102 +633,6 @@ class BulletBase(ActorBase):
         else:
             # Cause the bullet to ricochet
             pass
-
-    def teleport(self, portalIn):
-        portalOut: Portal = getOtherPortal(portalIn)
-
-        velCopy = self.vel.copy()
-
-        width = portalOut.hitbox.height // 4
-        height = portalOut.hitbox.width // 4
-
-        if portalIn.facing == SOUTH:
-            distOffset = copy.copy(self.pos.x) - copy.copy(portalIn.pos.x)
-            
-            if portalOut.facing == SOUTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y + height
-                self.vel = vec(-velCopy.x, -velCopy.y)
-            
-            if portalOut.facing == EAST:
-                self.pos.x = portalOut.pos.x + width
-                self.pos.y = portalOut.pos.y + distOffset
-                self.vel = vec(-velCopy.y, velCopy.x)
-            
-            if portalOut.facing == NORTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y - height
-            
-            if portalOut.facing == WEST:
-                self.pos.x = portalOut.pos.x - width
-                self.pos.y = portalOut.pos.y + distOffset
-                self.vel = vec(velCopy.y, velCopy.x)
-
-        if portalIn.facing == EAST:
-            distOffset = copy.copy(self.pos.y) - copy.copy(portalIn.pos.y)
-            
-            if portalOut.facing == SOUTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y + height
-                self.vel = vec(velCopy.y, -velCopy.x)
-                
-            if portalOut.facing == EAST:
-                self.pos.x = portalOut.pos.x + width
-                self.pos.y = portalOut.pos.y + distOffset
-                self.vel = vec(-velCopy.x, -velCopy.y)
-
-            if portalOut.facing == NORTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y - width
-                self.vel = vec(-velCopy.y, velCopy.x)
-
-            if portalOut.facing == WEST:
-                self.pos.x = portalOut.pos.x - width
-                self.pos.y = portalOut.pos.y + distOffset
-
-        if portalIn.facing == NORTH:
-            distOffset = copy.copy(self.pos.x) - copy.copy(portalIn.pos.x)
-            
-            if portalOut.facing == SOUTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y + height
-            
-            if portalOut.facing == EAST:
-                self.pos.x = portalOut.pos.x + width
-                self.pos.y = portalOut.pos.y + distOffset
-                self.vel = vec(velCopy.y, velCopy.x)
-            
-            if portalOut.facing == NORTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y - height
-                self.vel = vec(-velCopy.x, -velCopy.y)
-            
-            if portalOut.facing == WEST:
-                self.pos.x = portalOut.pos.x - width
-                self.pos.y = portalOut.pos.y + distOffset
-                self.vel = vec(-velCopy.y, velCopy.x)
-
-        if portalIn.facing == WEST:
-            distOffset = copy.copy(self.pos.y) - copy.copy(portalIn.pos.y)
-
-            if portalOut.facing == SOUTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y + height
-                self.vel = vec(velCopy.y, velCopy.x)
-            
-            if portalOut.facing == EAST:
-                self.pos.x = portalOut.pos.x + width
-                self.pos.y = portalOut.pos.y + distOffset
-            
-            if portalOut.facing == NORTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y - height
-                self.vel = vec(velCopy.y, -velCopy.x)
-            
-            if portalOut.facing == WEST:
-                self.pos.x = portalOut.pos.x - width
-                self.pos.y = portalOut.pos.y + distOffset
-                self.vel = vec(-velCopy.x, -velCopy.y)
 
     def projCollide(self, spriteGroup, canHurt):
         """Destroys a given projectile upon a collision and renders an explosion
@@ -912,7 +729,7 @@ class EnemyBulletBase(BulletBase):
                 self.pos.y < WIN_HEIGHT and 
                 self.pos.y > 0
             ):
-                self.movement()
+                self.velMovement(dt)
             else:
                 self.kill()
 
@@ -1252,6 +1069,13 @@ class PlayerStdBullet(PlayerBulletBase):
 
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
     
+    def movement(self):
+        self.pos.x += self.vel.x * dt
+        self.pos.y += self.vel.y * dt
+
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
+
     def update(self):
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
         self.bindProj()
@@ -1273,6 +1097,13 @@ class EnemyStdBullet(EnemyBulletBase):
         self.setRects(-24, -24, 8, 8, 6, 6)
 
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
+    
+    def movement(self):
+        self.pos.x += self.vel.x * dt
+        self.pos.y += self.vel.y * dt
+
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
 
     def update(self):
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
@@ -1547,7 +1378,11 @@ class Room(AbstractBase):
         #---------- Room Layouts ----------#
         if self.room == vec(0, 0):
             self.add(
-                Wall(0, 0, 4, 4)
+                Wall(0, 0, 8, 8),
+                Wall(0, 37, 8, 8),
+                Wall(72, 0, 8, 8),
+                Wall(72, 37, 8, 8),
+                Box(500, 500)
             )
 
             # Search for an enemy container for this room
