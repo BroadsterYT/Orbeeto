@@ -57,6 +57,8 @@ LAYER = {
 # The coefficient of friction for all objects with an acceleration parameter
 FRIC = -0.07
 
+
+
 # -------------------------------- Projectiles ------------------------------- #
 PROJ_STD = 'proj_StdBullet'
 
@@ -71,7 +73,12 @@ PROJDMG = {
     PROJ_GRAPPLE: 0,
 }
 
+# ============================================================================ #
+#                                  Enemy Names                                 #
+# ============================================================================ #
 
+STANDARDGRUNT = 'enemy_standardGrunt'
+OCTOGRUNT = 'enemy_octogrunt'
 
 # ============================================================================ #
 #                                  Loot Tables                                 #

@@ -1,10 +1,15 @@
 import pygame
 from pygame.locals import *
 
+from class_bases import *
+from constants import *
+from calculations import *
+from groups import *
+
 #------------------------------ Initialize globals ------------------------------#
 can_update = True
 
-anim_timer = 0
+anim_timer: int = 0
 
 keyReleased = {
     1: 0,

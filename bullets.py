@@ -4,6 +4,7 @@ from class_bases import *
 from portals import *
 from text import *
 from visuals import *
+from init import *
 
 
 class BulletBase(ActorBase):
@@ -22,7 +23,7 @@ class BulletBase(ActorBase):
         else:
             # Cause the bullet to ricochet
             pass
-
+    
     def projCollide(self, spriteGroup, canHurt):
         """Destroys a given projectile upon a collision and renders an explosion
 
@@ -48,6 +49,7 @@ class BulletBase(ActorBase):
                         for portal in all_portals:
                             if self.hitbox.colliderect(portal.hitbox):
                                 self.teleport(portal)
+                                self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
                         return
                     
                     elif len(all_portals) < 2:
@@ -85,6 +87,7 @@ class BulletBase(ActorBase):
                 receiver.lastHit = time.time()
 
 
+
 class PlayerBulletBase(BulletBase):
     def __init__(self):
         """The base class for all projectiles fired by players
@@ -92,7 +95,7 @@ class PlayerBulletBase(BulletBase):
         super().__init__()
 
     def bindProj(self):
-        if can_update:
+        if self.canUpdate:
             if (
                 self.pos.x < WINWIDTH and 
                 self.pos.x > 0 and
@@ -115,7 +118,7 @@ class EnemyBulletBase(BulletBase):
         super().__init__()
 
     def bindProj(self):
-        if can_update:
+        if self.canUpdate:
             if (
                 self.pos.x < WINWIDTH and 
                 self.pos.x > 0 and
@@ -221,7 +224,6 @@ class PlayerStdBullet(PlayerBulletBase):
         self.hitbox.center = self.pos
 
     def update(self):
-        self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
         self.bindProj()
 
 
@@ -289,19 +291,20 @@ class PortalBullet(BulletBase):
                     self.land()
 
     def bindProj(self):
-        if (
-            self.pos.x < WINWIDTH and 
-            self.pos.x > 0 and
-            self.pos.y < WINHEIGHT and 
-            self.pos.y > 0
-        ):
-            self.movement()
-        else:
-            self.kill()
+        if self.canUpdate:
+            if (
+                self.pos.x < WINWIDTH and 
+                self.pos.x > 0 and
+                self.pos.y < WINHEIGHT and 
+                self.pos.y > 0
+            ):
+                self.movement()
+            else:
+                self.kill()
 
-        self.projCollide(all_enemies, True)
-        self.projCollide(all_walls, False)
-        self.projCollide(all_portals, False)
+            self.projCollide(all_enemies, True)
+            self.projCollide(all_walls, False)
+            self.projCollide(all_portals, False)
 
     def movement(self):
         self.pos.x += self.vel.x

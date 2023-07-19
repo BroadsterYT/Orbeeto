@@ -3,7 +3,6 @@ import random as rand
 
 from bullets import *
 from class_bases import *
-from constants import *
 from itemdrops import *
 from statbars import *
 
@@ -71,7 +70,7 @@ class StandardGrunt(EnemyBase):
         initStats(self, 15, 10, 10, 25, 0.4)
 
     def movement(self, canShoot: bool):
-        if self.hp > 0:
+        if self.canUpdate and self.hp > 0:
             if getTimeDiff(self.lastRelocate) > rand.uniform(2.5, 5.0):
                 self.rand_pos.x = rand.randint(self.image.get_width() + 64, WINWIDTH - self.image.get_width() - 64)
                 self.rand_pos.y = rand.randint(self.image.get_height() + 64, WINHEIGHT - self.image.get_height() - 64)
@@ -128,5 +127,91 @@ class StandardGrunt(EnemyBase):
 
         if self.hp <= 0:
             self.dropItems(0)
+            self.awardXp()
+            self.kill()
+
+
+class OctoGrunt(EnemyBase):
+    def __init__(self, posX, posY):
+        super().__init__()
+        self.show(LAYER['enemy_layer'])
+        all_enemies.add(self)
+        self.lastRelocate = time.time()
+        self.lastShot = time.time()
+        self.pos = vec((posX, posY))
+        self.rand_pos = vec(rand.randint(64, WINWIDTH - 64), rand.randint(64, WINHEIGHT - 64))
+        self.setImages("sprites/enemies/octogrunt.png", 64, 64, 1, 1, 0, 0)
+        self.setRects(0, 0, 64, 64, 32, 32)
+
+        #---------------------- Game stats & UI ----------------------#
+        initStats(self, 44, 10, 10, 45, 0.4)
+    
+    def movement(self, canShoot):
+        if self.canUpdate and self.visible:
+            if getTimeDiff(self.lastRelocate) > rand.uniform(2.5, 5.0):
+                self.rand_pos.x = rand.randint(0, WINWIDTH)
+                self.rand_pos.y = rand.randint(0, WINHEIGHT)
+                self.lastRelocate = time.time()
+            
+            if self.pos.x != self.rand_pos.x or self.pos.y != self.rand_pos.y:
+                if self.pos.x < self.rand_pos.x - 32:
+                    self.accel.x = self.ACCELC
+                elif self.pos.x > self.rand_pos.x + 32:
+                    self.accel.x = -self.ACCELC
+                else:
+                    self.accel.x = 0
+                if self.pos.y < self.rand_pos.y - 32:
+                    self.accel.y = self.ACCELC
+                elif self.pos.y > self.rand_pos.y + 32:
+                    self.accel.y = -self.ACCELC
+                else:
+                    self.accel.y = 0
+            
+            if canShoot == True:
+                self.shoot(getClosestPlayer(self), 3, 1)
+            
+            self.accelMovement()
+
+    def shoot(self, target, vel, shoot_time):
+        if getTimeDiff(self.lastShot) > shoot_time:
+            self.is_shooting = True
+            angle_to_target = getAngleToSprite(self, target)
+            vel_x = vel * -sin(rad(angle_to_target))
+            vel_y = vel * -cos(rad(angle_to_target))
+            OFFSET = 21
+            all_projs.add(
+                EnemyStdBullet(self, self.pos.x - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))), vel_x, vel_y),
+                EnemyStdBullet(self, self.pos.x + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))), -vel_x, -vel_y),
+                EnemyStdBullet(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))), self.pos.y + (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target + 90)), vel * -cos(rad(angle_to_target + 90))),
+                EnemyStdBullet(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))), self.pos.y - (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target + 90)), -vel * -cos(rad(angle_to_target + 90))),
+                EnemyStdBullet(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target + 45)), vel * -cos(rad(angle_to_target + 45))),
+                EnemyStdBullet(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target + 45)), -vel * -cos(rad(angle_to_target + 45))),
+                EnemyStdBullet(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target - 45)), vel * -cos(rad(angle_to_target - 45))),
+                EnemyStdBullet(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target - 45)), -vel * -cos(rad(angle_to_target - 45))),
+            )
+            self.lastShot = time.time()
+
+    def update(self):
+        if can_update and self.visible and self.hp > 0:
+            self.collideCheck(all_players, all_walls)
+            self.movement(True)
+
+            # Animation
+            if getTimeDiff(self.lastFrame) > ANIMTIME:
+                if self.is_shooting:
+                    self.index += 0
+                    if self.index > 4:
+                        self.index = 0
+                    self.is_shooting = False
+                self.lastFrame = time.time()
+            self.image = self.images[self.index]
+            self.original_image = self.original_images[self.index]
+            
+            # Animation rotation
+            self.image = pygame.transform.rotate(self.original_image, int(getAngleToSprite(self, getClosestPlayer(self))))
+            self.rect = self.image.get_rect(center = self.pos)
+        
+        if self.hp <= 0:
+            self.dropItems(1)
             self.awardXp()
             self.kill()

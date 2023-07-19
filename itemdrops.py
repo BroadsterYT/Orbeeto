@@ -1,9 +1,7 @@
 import pygame
 from math import degrees, pi
 
-from calculations import *
 from class_bases import *
-from constants import *
 
 
 class DropBase(ActorBase):
@@ -50,7 +48,7 @@ class ItemDrop(DropBase):
 
     def movement(self):
         self.accel = vec(0, 0)
-        if self.visible:
+        if self.canUpdate and self.visible:
             time_since_start = getTimeDiff(self.start_time)
             if time_since_start <= 0.1:
                 self.accel.x = self.randAccel.x

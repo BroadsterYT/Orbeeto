@@ -5,7 +5,6 @@ import copy
 from calculations import *
 from constants import *
 from groups import *
-from init import *
 from spritesheet import Spritesheet
 
 
@@ -14,6 +13,7 @@ class ActorBase(pygame.sprite.Sprite):
         """The base class for all actors in the game."""        
         super().__init__()
         self.visible = True
+        self.canUpdate = True
         self.lastFrame = time.time()
 
         self.pos = vec((0, 0))
@@ -41,7 +41,7 @@ class ActorBase(pygame.sprite.Sprite):
         if hasattr(self, 'healthBar'):
             self.healthBar.show(LAYER['statBar_layer'])
         all_sprites.add(self, layer = layerSend)
-    
+
     # ----------------------------- Images and Rects ----------------------------- #
     def setImages(self, imageFile: str, frameWidth: int, frameHeight: int, spritesPerRow: int, imageCount: int, imageOffset: int = 0, index: int = 0):
         """Initializes the sprite's spritesheet, images, and animations. Should be used in the object's ``__init__()`` method.
@@ -341,6 +341,7 @@ class AbstractBase(pygame.sprite.AbstractGroup):
     def __init__(self):
         """The base class for all standard abstract groups. Contains methods to help manipulate the abstract group."""        
         super().__init__()
+        self.canUpdate = True
     
     def add(self, *sprites):
         """Adds one or more sprites to the abstract group.

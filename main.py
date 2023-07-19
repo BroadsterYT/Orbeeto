@@ -3,7 +3,7 @@ from pygame.locals import *
 
 pygame.init()
 
-import sys, math, time, copy
+import sys, math, time
 import random as rand
 
 from math import sin, cos, radians, degrees, floor, pi
@@ -15,6 +15,8 @@ from itemdrops import *
 from spritesheet import *
 from statbars import *
 from text import *
+
+from init import *
 
 # Aliases
 spriteGroup = pygame.sprite.Group
@@ -247,7 +249,7 @@ class Player(PlayerBase):
             self.canGrapple = True
 
     def update(self):
-        if can_update and self.visible:
+        if self.canUpdate and self.visible:
             self.collideCheck(all_enemies, all_movable, all_walls)
 
             self.movement()
@@ -298,7 +300,7 @@ class Box(ActorBase):
 
     def movement(self):
         self.accel = vec(0, 0)
-        if can_update and self.visible:
+        if self.canUpdate and self.visible:
             for a_player in all_players:
                 if self.hitbox.colliderect(a_player.rect):
                     if collideSideCheck(self, a_player) == SOUTH:
@@ -342,14 +344,14 @@ class Wall(EnvirBase):
         self.rect.center = self.pos
         self.hitbox.center = self.pos
 
-
+# Needs corrected to 16x16
 class Floor(EnvirBase):
     def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float):
         super().__init__()
         self.show(LAYER['floor'])
         all_floors.add(self)
         self.blockWidth, self.blockHeight = blockWidth, blockHeight
-        self.pos = getTopLeftCoordinates(blockWidth * 32, blockHeight * 32, blockPosX * 32, blockPosY * 32)
+        self.pos = getTopLeftCoordinates(blockWidth * 16, blockHeight * 16, blockPosX * 16, blockPosY * 16)
 
         self.spritesheet = Spritesheet("sprites/textures/floor.png", 4)
         self.textures = self.spritesheet.get_images(64, 64, 4)
@@ -377,12 +379,12 @@ class Floor(EnvirBase):
 #                                  Room Class                                  #
 # ============================================================================ #
 class Room(AbstractBase):
-    def __init__(self, roomX, roomY):
+    def __init__(self, roomX: int, roomY: int):
         """The room where all the current action is taking place
 
         ### Arguments:
-            roomX (int): The room's x-axis location in the grid of the room layout
-            roomY (int): The room's y-axis location in the grid of the room layout
+            roomX (``int``): The room's x-axis location in the grid of the room layout
+            roomY (``int``): The room's y-axis location in the grid of the room layout
         """
         super().__init__()
         all_rooms.append(self)
@@ -391,7 +393,8 @@ class Room(AbstractBase):
         self.player1: Player = Player()
 
     def layoutUpdate(self):
-        """Updates the layout of the room."""        
+        """Updates the layout of the room
+        """        
         for sprite in self.sprites():
             sprite.kill()
 
@@ -408,19 +411,16 @@ class Room(AbstractBase):
                 Wall(72, 37, 8, 8),
             )
             
-            matchContainer = None
-            for container in all_containers:
-                if container.room == vec(0, 0):
-                    matchContainer = container
-                    break
-            
-            if matchContainer is not None:
-                self.showEnemies(matchContainer)
-            else:
+            try:
+                matchContainer = next(c for c in all_containers if c.room == self.room)
+                matchContainer.showEnemies()
+
+            except StopIteration:
                 all_containers.append(
                     EnemyContainer(
                         self.room.x, self.room.y,
-                        StandardGrunt(500, 500)
+                        StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
+                        StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
                     )
                 )
 
@@ -429,19 +429,16 @@ class Room(AbstractBase):
                 Wall(0, 0, 8, 45)
             )
 
-            matchContainer = None
-            for container in all_containers:
-                if container.room == vec(-1, 0):
-                    matchContainer = container
-                    break
-            
-            if matchContainer is not None:
-                self.showEnemies(matchContainer)
-            else:
+            try:
+                matchContainer = next(c for c in all_containers if c.room == self.room)
+                matchContainer.showEnemies()
+
+            except StopIteration:
                 all_containers.append(
                     EnemyContainer(
                         self.room.x, self.room.y,
-                        StandardGrunt(500, 500)
+                        StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
+                        StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
                     )
                 )
 
@@ -454,7 +451,7 @@ class Room(AbstractBase):
             # Search for an enemy container for this room
             try:
                 matchContainer = next(c for c in all_containers if c.room == self.room)
-                self.showEnemies(matchContainer)
+                matchContainer.showEnemies()
 
             except StopIteration:
                 all_containers.append(
@@ -471,10 +468,9 @@ class Room(AbstractBase):
                 Wall(0, 18.5, 40, 4),
             )
 
-            # Search for an enemy container for this room
             try:
                 matchContainer = next(c for c in all_containers if c.room == self.room)
-                self.showEnemies(matchContainer)
+                matchContainer.showEnemies()
 
             except StopIteration:
                 all_containers.append(
@@ -485,21 +481,9 @@ class Room(AbstractBase):
                     )
                 )
 
-    def makeContainer(self, roomVec, sprites) -> None:
-        container: EnemyContainer
-        for container in all_containers:
-            if container.room == roomVec:
-                container.showEnemies()
-                break
-        
-
-    def showEnemies(self, container):
-        for sprite in container.sprites():
-            sprite.show(LAYER['enemy_layer'])
-
 
 class EnemyContainer(AbstractBase):
-    def __init__(self, roomX: int, roomY: int, *sprites: EnemyBase):
+    def __init__(self, roomX: int, roomY: int, *sprites):
         """A container for enemies. Contains data about all enemies in a room.
 
         ### Arguments
@@ -521,16 +505,6 @@ class EnemyContainer(AbstractBase):
     def showEnemies(self):
         for sprite in self.sprites():
             sprite.show(LAYER['enemy_layer'])
-
-
-def hideCurrentEnemies():
-    """Hides all of the enemy sprites in the current room"""
-    for container in all_containers:
-        if container.room == mainroom.room:
-            for sprite in container.sprites():
-                sprite.hide()
-                if hasattr(sprite, 'healthBar'):
-                    sprite.healthBar.hide()
 
 
 # ============================================================================ #
@@ -574,7 +548,7 @@ class InventoryMenu(AbstractBase):
     def cycleMenu(self):
         if (not self.cyclingLeft and 
             not self.cyclingRight and
-            not can_update):
+            not self.canUpdate):
             if isInputHeld[1] and self.leftArrow.hitbox.collidepoint(pygame.mouse.get_pos()):
                 self.window -= 1
                 self.lastCycle = time.time()
@@ -636,18 +610,23 @@ class InventoryMenu(AbstractBase):
                 slot.createSlotImages()
 
     def update(self):
-        global can_update
         if keyReleased[K_e] % 2 != 0 and keyReleased[K_e] > 0:
             self.show()
             self.rightArrow.show(LAYER['ui_layer_1'])
             self.leftArrow.show(LAYER['ui_layer_1'])
-            can_update = False
+            
+            self.canUpdate = False
+            for sprite in all_sprites:
+                sprite.canUpdate = False
 
         elif keyReleased[K_e] % 2 == 0 and keyReleased[K_e] > 0:
             self.hide()
             self.rightArrow.hide()
             self.leftArrow.hide()
-            can_update = True
+            
+            self.canUpdate = True
+            for sprite in all_sprites:
+                sprite.canUpdate = True
             
         self.cycleMenu()
 
