@@ -4,6 +4,8 @@ from pygame.locals import *
 #------------------------------ Initialize globals ------------------------------#
 can_update = True
 
+anim_timer = 0
+
 keyReleased = {
     1: 0,
     2: 0,

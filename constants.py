@@ -1,13 +1,20 @@
 import pygame
 import math
+import random as rand
 
 # ---------------------------------- Aliases --------------------------------- #
 vec = pygame.math.Vector2
 spriteGroup = pygame.sprite.Group
 
+rad = math.radians
+deg = math.degrees
+
+sin = math.sin
+cos = math.cos
+
 # ---------------------------------- Window ---------------------------------- #
-WIN_WIDTH = 1280
-WIN_HEIGHT = 720
+WINWIDTH = 1280
+WINHEIGHT = 720
 FPS = 60
 SPF = 0.0167
 
@@ -57,12 +64,13 @@ PROJ_PORTAL = 'proj_PortalBullet'
 PROJ_GRAPPLE = 'proj_GrappleHook'
 
 # A dictionary that stores all damage constants of all projectile types
-PROJ_DMG = {
+PROJDMG = {
     PROJ_STD: 1,
     
     PROJ_PORTAL: 20,
     PROJ_GRAPPLE: 0,
 }
+
 
 
 # ============================================================================ #

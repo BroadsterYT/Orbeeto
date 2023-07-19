@@ -5,6 +5,7 @@ import copy
 from calculations import *
 from constants import *
 from groups import *
+from init import *
 from spritesheet import Spritesheet
 
 
@@ -23,19 +24,23 @@ class ActorBase(pygame.sprite.Sprite):
         self.isGrappled = False
     
     # -------------------------------- Visibility -------------------------------- #
-    def hide(self):
+    def hide(self) -> None:
         """Makes the sprite invisible. The sprite's ``update()`` method will not be called."""
         self.visible = False
+        if hasattr(self, 'healthBar'):
+            self.healthBar.hide()
         all_sprites.remove(self)
 
-    def show(self, layer_send):
+    def show(self, layerSend) -> None:
         """Makes the sprite visible. The sprite's ``update()`` method will be called.
         
         ### Parameters
             - layer_send (``str``): The layer the sprite should be added to
         """        
         self.visible = True
-        all_sprites.add(self, layer = layer_send)
+        if hasattr(self, 'healthBar'):
+            self.healthBar.show(LAYER['statBar_layer'])
+        all_sprites.add(self, layer = layerSend)
     
     # ----------------------------- Images and Rects ----------------------------- #
     def setImages(self, imageFile: str, frameWidth: int, frameHeight: int, spritesPerRow: int, imageCount: int, imageOffset: int = 0, index: int = 0):
@@ -94,7 +99,7 @@ class ActorBase(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = self.rect.center)
     
     # ---------------------------------- Physics --------------------------------- #
-    def accelMovement(self, deltaTime: float):
+    def accelMovement(self) -> None:
         """Makes a sprite move according to its acceleration (``self.accel`` and ``self.ACCELC``)
         
         ``self.accel`` MUST BE (0, 0) BEFORE THIS FUCNTION IS CALLED
@@ -107,10 +112,10 @@ class ActorBase(pygame.sprite.Sprite):
         
         self.accel.x += self.vel.x * FRIC
         self.accel.y += self.vel.y * FRIC
-        self.vel += self.accel * deltaTime
+        self.vel += self.accel
         self.pos += self.vel + self.ACCELC * self.accel
 
-    def velMovement(self, deltaTime: float):
+    def velMovement(self) -> None:
         """Makes a sprite move according to its velocity (``self.vel``)
         
         ### Arguments
@@ -119,10 +124,112 @@ class ActorBase(pygame.sprite.Sprite):
         self.rect.center = self.pos
         self.hitbox.center = self.pos
         
-        self.pos.x += self.vel.x * deltaTime
-        self.pos.y += self.vel.y * deltaTime
+        self.pos.x += self.vel.x
+        self.pos.y += self.vel.y
 
-    def teleport(self, portalIn):
+    def collideCheck(self, *contactLists: list) -> None:
+        """Check if the sprite comes into contact with another sprite from a specific group. 
+        If the sprites do collide, then they will perform a hitbox collision.
+        
+        ### Arguments
+            - contactLists (``list``): The sprite group(s) to check for a collision with
+        """
+        for list in contactLists:
+            sprite: ActorBase
+            for sprite in list:
+                if hasattr(sprite, 'visible'):
+                    if sprite.visible:
+                        self.blockFromSide(sprite)
+                    elif not sprite.visible:
+                        pass
+                else:
+                    self.blockFromSide(sprite)
+
+    def blockFromSide(self, sprite: pygame.sprite.Sprite) -> None:
+        if self.hitbox.colliderect(sprite.hitbox):
+            # Bottom center of sprite
+            pointA = vec(sprite.pos.x,
+                        sprite.pos.y + sprite.hitbox.height)
+            # Right center of sprite
+            pointB = vec(sprite.pos.x + sprite.hitbox.width,
+                        sprite.pos.y)
+            # Top center of sprite
+            pointC = vec(sprite.pos.x,
+                        sprite.pos.y - sprite.hitbox.height)
+            # Left center of sprite
+            pointD = vec(sprite.pos.x - sprite.hitbox.width,
+                        sprite.pos.y)
+            
+            lenPointA, lenPointB = getDistToCoords(self.pos, pointA), getDistToCoords(self.pos, pointB)
+            lenPointC, lenPointD = getDistToCoords(self.pos, pointC), getDistToCoords(self.pos, pointD)
+            
+
+            def isClosestPoint(point: pygame.math.Vector2) -> pygame.math.Vector2:
+                if point == pointA:
+                    if (lenPointA < lenPointB and
+                        lenPointA < lenPointC and
+                        lenPointA < lenPointD):
+                        return True
+                    else:
+                        return False
+
+                elif point == pointB:
+                    if (lenPointB < lenPointA and
+                        lenPointB < lenPointC and
+                        lenPointB < lenPointD):
+                        return True
+                    else:
+                        return False
+
+                elif point == pointC:
+                    if (lenPointC < lenPointA and
+                        lenPointC < lenPointB and
+                        lenPointC < lenPointD):
+                        return True
+                    else:
+                        return False
+
+                elif point == pointD:
+                    if (lenPointD < lenPointA and
+                        lenPointD < lenPointB and
+                        lenPointD < lenPointC):
+                        return True
+                    else:
+                        return False
+
+                else:
+                    CustomError("Error: Point arg does not match any defined point")
+
+
+            # If hitting the right side
+            if (isClosestPoint(pointB) and
+                self.vel.x < 0 and
+                self.pos.x <= sprite.pos.x + (sprite.hitbox.width + self.hitbox.width) // 2):
+                self.vel.x = 0
+                self.pos.x = sprite.pos.x + (sprite.hitbox.width + self.hitbox.width) // 2
+
+            # Hitting bottom side
+            if (isClosestPoint(pointA) and
+                self.vel.y < 0 and
+                self.pos.y <= sprite.pos.y + (sprite.hitbox.height + self.hitbox.height) // 2):
+                self.vel.y = 0
+                self.pos.y = sprite.pos.y + (sprite.hitbox.height + self.hitbox.height) // 2
+
+            # Hitting left side
+            if (isClosestPoint(pointD) and
+                self.vel.x > 0 and
+                self.pos.x >= sprite.pos.x - (sprite.hitbox.width + self.hitbox.width) // 2):
+                self.vel.x = 0
+                self.pos.x = sprite.pos.x - sprite.hitbox.width // 2 - self.hitbox.width // 2
+
+            # Hitting top side
+            if (isClosestPoint(pointC) and
+                self.vel.y > 0 and
+                self.pos.y >= sprite.pos.y - (sprite.hitbox.width + self.hitbox.width) // 2):
+                self.vel.y = 0
+                self.pos.y = sprite.pos.y - sprite.hitbox.height // 2 - self.hitbox.height // 2
+
+    def teleport(self, portalIn) -> None:
         portalOut: ActorBase = getOtherPortal(portalIn)
 
         width = (portalOut.hitbox.width + self.hitbox.width) // 2
@@ -213,17 +320,21 @@ class ActorBase(pygame.sprite.Sprite):
                 self.vel = self.vel.rotate(180)
 
     # ----------------------------------- Rooms ---------------------------------- #
-    def changeRoomRight(self):
-        self.pos.x -= WIN_WIDTH
+    def changeRoom(self, direction: str) -> None:
+        if direction == SOUTH:
+            self.pos.y -= WINHEIGHT
+        
+        elif direction == EAST:
+            self.pos.x -= WINWIDTH
 
-    def changeRoomLeft(self):
-        self.pos.x += WIN_WIDTH
+        elif direction == NORTH:
+            self.pos.y += WINHEIGHT
 
-    def changeRoomUp(self):
-        self.pos.y += WIN_HEIGHT
+        elif direction == WEST:
+            self.pos.x += WINWIDTH
 
-    def changeRoomDown(self):
-        self.pos.y -= WIN_HEIGHT
+        else:
+            raise CustomError(f"Error: \"{direction}\" is not accepted by changeRoom")
 
 
 class AbstractBase(pygame.sprite.AbstractGroup):
@@ -270,14 +381,3 @@ class EnvirBase(ActorBase):
         finalImage.set_colorkey(colorkey)
         return finalImage
 
-
-class PortalBase(ActorBase):
-    def __init__(self):
-        super().__init__()
-        self.visible = True
-
-
-class DropBase(ActorBase):
-    def __init__(self):
-        super().__init__()
-        self.ACCELC = 0.8

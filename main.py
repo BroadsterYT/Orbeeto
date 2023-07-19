@@ -8,13 +8,13 @@ import random as rand
 
 from math import sin, cos, radians, degrees, floor, pi
 
-from init import can_update, keyReleased
-from calculations import *
+from bullets import *
 from class_bases import *
-from constants import *
-from groups import *
+from enemies import *
+from itemdrops import *
 from spritesheet import *
-from ui_sprites import *
+from statbars import *
+from text import *
 
 # Aliases
 spriteGroup = pygame.sprite.Group
@@ -23,7 +23,7 @@ deg = degrees
 
 clock = pygame.time.Clock()
 
-screenSize = (WIN_WIDTH, WIN_HEIGHT)
+screenSize = (WINWIDTH, WINHEIGHT)
 screen = pygame.display.set_mode(screenSize, pygame.SCALED)
 pygame.display.set_caption('Orbeeto')
 
@@ -37,7 +37,7 @@ class PlayerBase(ActorBase):
         super().__init__()
         self.room = vec((0, 0))
 
-        self.pos = vec((WIN_WIDTH / 2, WIN_HEIGHT / 2))
+        self.pos = vec((WINWIDTH / 2, WINHEIGHT / 2))
         self.ACCELC = 0.52
 
         #-------------------- Game stats & UI --------------------#
@@ -68,31 +68,30 @@ class PlayerBase(ActorBase):
             self.inventory.update({item: 0})
 
     def changeRoom(self, direction: str) -> None:
-        hideCurrentEnemies()
-
+        # hideCurrentEnemies()
         if direction == SOUTH:
             mainroom.room.y -= 1
             mainroom.layoutUpdate()
-            self.pos.y -= WIN_HEIGHT
+            self.pos.y -= WINHEIGHT
             groupChangeRooms(SOUTH, all_portals, all_drops)
 
         elif direction == EAST:
             mainroom.room.x += 1
             mainroom.layoutUpdate()
-            self.pos.x -= WIN_WIDTH
+            self.pos.x -= WINWIDTH
             groupChangeRooms(EAST, all_portals, all_drops)
 
         elif direction == NORTH:
             mainroom.room.y += 1
             mainroom.layoutUpdate()
-            self.pos.y += WIN_HEIGHT
+            self.pos.y += WINHEIGHT
             groupChangeRooms(NORTH, all_portals, all_drops)
         
         elif direction == WEST:
             mainroom.room.x -= 1
             mainroom.layoutUpdate()
 
-            self.pos.x += WIN_WIDTH
+            self.pos.x += WINWIDTH
             groupChangeRooms(WEST, all_portals, all_drops)
 
         killGroups(all_projs, all_explosions)
@@ -101,13 +100,13 @@ class PlayerBase(ActorBase):
         if self.pos.x <= 0:
             self.changeRoom(WEST)
 
-        if self.pos.x >= WIN_WIDTH:
+        if self.pos.x >= WINWIDTH:
             self.changeRoom(EAST)
 
         if self.pos.y <= 0:
             self.changeRoom(NORTH)
 
-        if self.pos.y >= WIN_HEIGHT:
+        if self.pos.y >= WINHEIGHT:
             self.changeRoom(SOUTH)
 
     def loadXpReq(self):
@@ -179,28 +178,28 @@ class Player(PlayerBase):
         if self.visible:
             if self.grapple == None:
                 if isInputHeld[K_a]:
-                    self.accel.x = -self.ACCELC * dt
+                    self.accel.x = -self.ACCELC
                 if isInputHeld[K_d]:
-                    self.accel.x = self.ACCELC * dt
+                    self.accel.x = self.ACCELC
                 if isInputHeld[K_s]:
-                    self.accel.y = self.ACCELC * dt
+                    self.accel.y = self.ACCELC
                 if isInputHeld[K_w]:
-                    self.accel.y = -self.ACCELC * dt
+                    self.accel.y = -self.ACCELC
 
             elif self.grapple != None:
                 if isInputHeld[K_a]:
-                    self.accel.x = -self.ACCELC * dt
+                    self.accel.x = -self.ACCELC
                 if isInputHeld[K_d]:
-                    self.accel.x = self.ACCELC * dt
+                    self.accel.x = self.ACCELC
                 if isInputHeld[K_s]:
-                    self.accel.y = self.ACCELC * dt
+                    self.accel.y = self.ACCELC
                 if isInputHeld[K_w]:
-                    self.accel.y = -self.ACCELC * dt
+                    self.accel.y = -self.ACCELC
                 
                 if self.grapple.returning and self.grapple.grappledTo in all_walls:
-                    self.accel = vec((self.ACCELC * 3) * -sin(getAngleToSprite(self, self.grapple)) * dt, (self.ACCELC * 3) * -cos(getAngleToSprite(self, self.grapple)) * dt)
+                    self.accel = vec((self.ACCELC * 3) * -sin(getAngleToSprite(self, self.grapple)), (self.ACCELC * 3) * -cos(getAngleToSprite(self, self.grapple)))
 
-            self.accelMovement(dt)
+            self.accelMovement()
 
     def shoot(self):
         """Shoots a bullet"""
@@ -249,7 +248,7 @@ class Player(PlayerBase):
 
     def update(self):
         if can_update and self.visible:
-            collideCheck(self, all_enemies, all_movable, all_walls)
+            self.collideCheck(all_enemies, all_movable, all_walls)
 
             self.movement()
             self.shoot()
@@ -283,231 +282,6 @@ class Player(PlayerBase):
 
 
 # ============================================================================ #
-#                                 Enemy Classes                                #
-# ============================================================================ #
-class EnemyBase(ActorBase):
-    def __init__(self):
-        """The base class for all enemy objects. It contains parameters and methods to gain better control over enemy objects."""    
-        super().__init__()
-        self.pos = vec((0, 0))
-        self.vel = vec(0, 0)
-        self.accel = vec(0, 0)
-
-        self.isGrappled = False
-
-        self.is_shooting = False
-
-        #-------------------- In-game Stats --------------------#
-        self.max_hp = None
-        self.hp = None
-        self.max_attack = None
-        self.attack = None
-        self.max_defense = None
-        self.defense = None
-        self.xp_worth = None
-
-        self.healthBar = HealthBar(self)
-
-    def awardXp(self):
-        for a_player in all_players:
-            a_player.xp += self.xp_worth
-            a_player.updateLevel()
-            a_player.updateMaxStats()
-
-    def dropItems(self, table_index):
-        drops = LTDROPS[table_index]
-        row = rand.randint(0, 2)
-        column = rand.randint(0, 2)
-        
-        for item in drops[row][column]:
-            ItemDrop(self, item)
-
-
-class StandardGrunt(EnemyBase):
-    def __init__(self, posX: int, posY: int):
-        """A simple enemy that moves to random locations and shoots at players.
-        
-        ### Arguments
-            - posX (``int``): The x-position to spawn at
-            - posY (``int``): The y-position to spawn at
-        """         
-        super().__init__()
-        self.show(LAYER['enemy_layer'])
-        all_enemies.add(self)
-
-        self.lastRelocate = time.time()
-        self.lastShot = time.time()
-
-        self.pos = vec((posX, posY))
-        self.rand_pos = vec(rand.randint(64, WIN_WIDTH - 64), rand.randint(64, WIN_HEIGHT - 64))
-
-        self.setImages("sprites/enemies/standard_grunt.png", 64, 64, 5, 5, 0, 0)
-        self.setRects(0, 0, 64, 64, 32, 32)
-
-        #---------------------- Game stats & UI ----------------------#
-        initStats(self, 15, 10, 10, 25, 0.4)
-
-    def movement(self, canShoot: bool):
-        if self.hp > 0:
-            if getTimeDiff(self.lastRelocate) > rand.uniform(2.5, 5.0):
-                self.rand_pos.x = rand.randint(self.image.get_width() + 64, WIN_WIDTH - self.image.get_width() - 64)
-                self.rand_pos.y = rand.randint(self.image.get_height() + 64, WIN_HEIGHT - self.image.get_height() - 64)
-                self.lastRelocate = time.time()
-
-            if self.pos.x != (self.rand_pos.x) or self.pos.y != (self.rand_pos.y):
-                if self.pos.x < self.rand_pos.x - 32:
-                    self.accel.x = self.ACCELC
-                elif self.pos.x > self.rand_pos.x + 32:
-                    self.accel.x = -self.ACCELC
-                else:
-                    self.accel.x = 0
-
-                if self.pos.y < self.rand_pos.y - 32:
-                    self.accel.y = self.ACCELC
-                elif self.pos.y > self.rand_pos.y + 32:
-                    self.accel.y = -self.ACCELC
-                else:
-                    self.accel.y = 0
-            
-            if canShoot:
-                self.shoot(getClosestPlayer(self), 6, rand.uniform(0.4, 0.9))
-
-            self.accelMovement(dt)
-
-    def shoot(self, target, vel, shoot_time):
-        if getTimeDiff(self.lastShot) > shoot_time:
-            self.is_shooting = True
-            try:
-                angle_to_target = getAngleToSprite(self, target)
-            except:
-                angle_to_target = 0
-
-            vel_x = vel * -sin(rad(angle_to_target))
-            vel_y = vel * -cos(rad(angle_to_target))
-
-            all_projs.add(EnemyStdBullet(self, self.pos.x - (21 * cos(rad(angle_to_target))) - (30 * sin(rad(angle_to_target))), self.pos.y + (21 * sin(rad(angle_to_target))) - (30 * cos(rad(angle_to_target))), vel_x, vel_y))
-            self.lastShot = time.time()
-
-    def update(self):
-        if can_update and self.visible and self.hp > 0:
-            collideCheck(self, all_players, all_walls)
-            self.movement(True)
-            
-            # Animation
-            if getTimeDiff(self.lastFrame) > ANIMTIME:
-                if self.is_shooting == True:
-                    self.index += 1
-                    if self.index > 4:
-                        self.index = 0
-                        self.is_shooting = False
-                self.lastFrame = time.time()
-            self.rotateImage(getAngleToSprite(self, getClosestPlayer(self)))
-
-        if self.hp <= 0:
-            self.dropItems(0)
-            self.awardXp()
-            self.kill()
-
-
-class OctoGrunt(EnemyBase):
-    def __init__(self, posX, posY):
-        super().__init__()
-        self.show(LAYER['enemy_layer'])
-        all_enemies.add(self)
-
-        self.lastRelocate = time.time()
-        self.lastShot = time.time()
-
-        self.pos = vec((posX, posY))
-        self.rand_pos = vec(rand.randint(64, WIN_WIDTH - 64), rand.randint(64, WIN_HEIGHT - 64))
-
-        self.setImages("sprites/enemies/octogrunt.png", 64, 64, 1, 1, 0, 0)
-        self.setRects(0, 0, 64, 64, 32, 32)
-
-        #---------------------- Game stats & UI ----------------------#
-        initStats(self, 44, 10, 10, 45, 0.4)
-
-    def movement(self, canShoot):
-        if can_update and self.visible:
-            if getTimeDiff(self.lastRelocate) > rand.uniform(2.5, 5.0):
-                self.rand_pos.x = rand.randint(0, WIN_WIDTH)
-                self.rand_pos.y = rand.randint(0, WIN_HEIGHT)
-                self.lastRelocate = time.time()
-
-            if self.pos.x != self.rand_pos.x or self.pos.y != self.rand_pos.y:
-                if self.pos.x < self.rand_pos.x - 32:
-                    self.accel.x = self.ACCELC
-                elif self.pos.x > self.rand_pos.x + 32:
-                    self.accel.x = -self.ACCELC
-                else:
-                    self.accel.x = 0
-
-                if self.pos.y < self.rand_pos.y - 32:
-                    self.accel.y = self.ACCELC
-                elif self.pos.y > self.rand_pos.y + 32:
-                    self.accel.y = -self.ACCELC
-                else:
-                    self.accel.y = 0
-            
-            if canShoot == True:
-                self.shoot(getClosestPlayer(self), 3, 1)
-
-            self.accelMovement(dt)
-
-    def shoot(self, target, vel, shoot_time):
-        if getTimeDiff(self.lastShot) > shoot_time:
-            self.is_shooting = True
-            angle_to_target = getAngleToSprite(self, target)
-
-            vel_x = vel * -sin(rad(angle_to_target))
-            vel_y = vel * -cos(rad(angle_to_target))
-
-            OFFSET = 21
-
-            all_projs.add(
-                EnemyStdBullet(self, self.pos.x - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))), vel_x, vel_y),
-                EnemyStdBullet(self, self.pos.x + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))), -vel_x, -vel_y),
-
-                EnemyStdBullet(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))), self.pos.y + (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target + 90)), vel * -cos(rad(angle_to_target + 90))),
-                EnemyStdBullet(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))), self.pos.y - (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target + 90)), -vel * -cos(rad(angle_to_target + 90))),
-
-                EnemyStdBullet(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target + 45)), vel * -cos(rad(angle_to_target + 45))),
-                EnemyStdBullet(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target + 45)), -vel * -cos(rad(angle_to_target + 45))),
-
-                EnemyStdBullet(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target - 45)), vel * -cos(rad(angle_to_target - 45))),
-                EnemyStdBullet(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target - 45)), -vel * -cos(rad(angle_to_target - 45))),
-            )
-
-            self.lastShot = time.time()
-
-    def update(self):
-        if can_update and self.visible and self.hp > 0:
-            collideCheck(self, all_players, all_walls)
-            self.movement(True)
-
-            # Animation
-            if getTimeDiff(self.lastFrame) > ANIMTIME:
-                if self.is_shooting:
-                    self.index += 0
-                    if self.index > 4:
-                        self.index = 0
-                    self.is_shooting = False
-                self.lastFrame = time.time()
-
-            self.image = self.images[self.index]
-            self.original_image = self.original_images[self.index]
-
-            # Animation rotation
-            self.image = pygame.transform.rotate(self.original_image, int(getAngleToSprite(self, getClosestPlayer(self))))
-            self.rect = self.image.get_rect(center = self.pos)
-
-        if self.hp <= 0:
-            self.dropItems(1)
-            self.awardXp()
-            self.kill()
-
-
-# ============================================================================ #
 #                             Interactible Classes                             #
 # ============================================================================ #
 class Box(ActorBase):
@@ -528,700 +302,24 @@ class Box(ActorBase):
             for a_player in all_players:
                 if self.hitbox.colliderect(a_player.rect):
                     if collideSideCheck(self, a_player) == SOUTH:
-                        self.accel.y = -self.ACCELC * dt
+                        self.accel.y = -self.ACCELC
                     if collideSideCheck(self, a_player) == EAST:
-                        self.accel.x = -self.ACCELC * dt
+                        self.accel.x = -self.ACCELC
                     if collideSideCheck(self, a_player) == NORTH:
-                        self.accel.y = self.ACCELC * dt
+                        self.accel.y = self.ACCELC
                     if collideSideCheck(self, a_player) == WEST:
-                        self.accel.x = self.ACCELC * dt
+                        self.accel.x = self.ACCELC
 
-            self.accelMovement(dt)
+            self.accelMovement()
 
     def update(self):
-        collideCheck(self, all_walls)
-        
+        self.collideCheck(all_walls)
         self.movement()
 
         # Teleporting
         for portal in all_portals:
             if self.hitbox.colliderect(portal.hitbox) and len(all_portals) == 2:
                 self.teleport(portal)
-
-
-class ItemDrop(DropBase):
-    def __init__(self, dropped_from, item_name):
-        """An item or material dropped by an enemey that is able to be collected
-        
-        ### Arguments
-            - dropped_from (``pygame.sprite.Sprite``): The enemy that the item was dropped from
-            - item_name (``str``): The item to drop
-            - item_frame_start (``int``): The index of the first frame to display from the item drop spritesheet (0 = the first image).
-            - image_count (``int``): The number of frames to use
-        """        
-        super().__init__()
-        self.show(LAYER['drops_layer'])
-        all_drops.add(self)
-        self.droppedFrom = dropped_from
-        self.mat = item_name
-
-        self.start_time = time.time()
-        self.pos = vec(self.droppedFrom.pos.x, self.droppedFrom.pos.y)
-        self.randAccel = getRandComponents(self.ACCELC)
-        
-        self.spritesheet = Spritesheet("sprites/textures/item_drops.png", 8)
-        self.index = 0
-
-        if self.mat == MAT[0]:
-            self.original_images = self.spritesheet.get_images(32, 32, 1, 0)
-            self.images = self.spritesheet.get_images(32, 32, 1, 0)
-        elif self.mat == MAT[1]:
-            self.original_images = self.spritesheet.get_images(32, 32, 1, 1)
-            self.images = self.spritesheet.get_images(32, 32, 1, 1)
-
-        self.image = self.images[self.index]
-        self.rect = pygame.Rect(0, 0, 32, 32)
-        self.hitbox = pygame.Rect(0, 0, 64, 64)
-
-        self.period_mult = rand.uniform(0.5, 1.5)
-
-    def movement(self):
-        self.accel = vec(0, 0)
-        if self.visible:
-            time_since_start = getTimeDiff(self.start_time)
-            if time_since_start <= 0.1:
-                self.accel.x = self.randAccel.x
-                self.accel.y = self.randAccel.y
-            
-            if time_since_start <= 10:
-                self.original_image = self.original_images[self.index]
-                self.image = pygame.transform.rotate(self.original_image, int(degrees(sin(self.period_mult * pi * time_since_start) * (1 / time_since_start))))
-                self.rect = self.image.get_rect(center = self.rect.center)
-            
-            # objectAccel(self)
-            self.accelMovement(dt)
-        
-        # self.rect.center = self.pos
-        # self.hitbox.center = self.pos
-
-    def update(self):
-        collideCheck(self, all_walls)
-
-        self.movement()
-
-        for a_player in all_players:
-            if self.hitbox.colliderect(a_player):
-                a_player.inventory[self.mat] += 1
-                a_player.menu.updateMenuSlots()
-                self.kill()
-
-
-# ============================================================================ #
-#                            Projectile Class Bases                            #
-# ============================================================================ #
-class BulletBase(ActorBase):
-    def __init__(self):
-        super().__init__()
-        self.ricCount = 1
-
-    def land(self):
-        self.ricCount -= 1
-
-        if self.ricCount <= 0:
-            all_explosions.add(ProjExplode(self))
-            self.kill()
-        else:
-            # Cause the bullet to ricochet
-            pass
-
-    def projCollide(self, spriteGroup, canHurt):
-        """Destroys a given projectile upon a collision and renders an explosion
-
-        ### Arguments
-            - spriteGroup (``pygame.sprite.Group``): The group of the entity the projectile is colliding with
-            - proj (``pygame.sprite.Sprite``): The projectile involved in the collision
-            - canHurt (``bool``): Should the projectile calculate damage upon impact?
-        """    
-        for collidingSprite in spriteGroup:
-            if not self.hitbox.colliderect(collidingSprite.hitbox):
-                continue
-            
-            if not collidingSprite.visible:
-                continue
-
-            if canHurt:
-                self.inflictDamage(spriteGroup, self.shotFrom, collidingSprite)
-                self.land()
-
-            elif not canHurt:
-                if spriteGroup == all_portals:
-                    if len(all_portals) == 2:
-                        for portal in all_portals:
-                            if self.hitbox.colliderect(portal.hitbox):
-                                self.teleport(portal)
-                        return
-                    
-                    elif len(all_portals) < 2:
-                        self.land()
-                        return
-
-                else:
-                    self.land()
-
-    def inflictDamage(self, spriteGroup: pygame.sprite.Group, sender: ActorBase, receiver: ActorBase) -> None:
-        """Executes the subtraction of ``hp`` after a sprite is struck by a projectile
-        
-        ### Arguments
-            - spriteGroup (``pygame.sprite.Group``): The group that the receiving sprite is a member of
-            - sender (``ActorBase``): The sprite that fired the projectile
-            - receiver (``ActorBase``): The sprite being hit by the projectile
-        """        
-        damage = calculateDamage(sender, receiver, self)
-        if spriteGroup == all_enemies:
-            if rand.randint(1, 20) == 1:
-                receiver.hp -= damage * 3
-                if damage > 0:
-                    all_font_chars.add(DamageChar(receiver.pos.x, receiver.pos.y, damage * 3))
-            else:
-                receiver.hp -= damage
-                if damage > 0:
-                    all_font_chars.add(DamageChar(receiver.pos.x, receiver.pos.y, damage))
-
-        elif spriteGroup != all_enemies:
-            receiver.hp -= damage
-            if damage > 0:
-                all_font_chars.add(DamageChar(receiver.pos.x, receiver.pos.y, damage))
-            if hasattr(receiver, 'hitTime'):
-                receiver.hitTime = 0
-                receiver.lastHit = time.time()
-
-
-class PlayerBulletBase(BulletBase):
-    def __init__(self):
-        super().__init__()
-
-    def bindProj(self):
-        if can_update:
-            if (
-                self.pos.x < WIN_WIDTH and 
-                self.pos.x > 0 and
-                self.pos.y < WIN_HEIGHT and 
-                self.pos.y > 0
-            ):
-                self.velMovement(dt)
-            else:
-                self.kill()
-
-            self.projCollide(all_enemies, True)
-            self.projCollide(all_walls, False)
-            self.projCollide(all_portals, False)
-
-
-class EnemyBulletBase(BulletBase):
-    def __init__(self):
-        super().__init__()
-
-    def bindProj(self):
-        if can_update:
-            if (
-                self.pos.x < WIN_WIDTH and 
-                self.pos.x > 0 and
-                self.pos.y < WIN_HEIGHT and 
-                self.pos.y > 0
-            ):
-                self.velMovement(dt)
-            else:
-                self.kill()
-
-            self.projCollide(all_players, True)
-            self.projCollide(all_walls, False)
-            self.projCollide(all_portals, False)
-
-
-# ============================================================================ #
-#                              Projectile Classes                              #
-# ============================================================================ #
-class PortalBullet(BulletBase):
-    def __init__(self, shotFrom, posX, posY, velX, velY): 
-        super().__init__()
-        self.show(LAYER['proj_layer'])
-        
-        self.shotFrom = shotFrom
-
-        self.pos = vec((posX, posY))
-        self.vel = vec(velX, velY)
-
-        self.hitbox_adjust = vec(0, 0)
-        self.damage = PROJ_DMG[PROJ_PORTAL]
-
-        self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 5, 4)
-        self.setRects(-24, -24, 8, 8, 8, 8)
-
-        # Rotate sprite to trajectory
-        self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
-
-    def projCollide(self, spriteGroup, canHurt):
-        for collidingSprite in spriteGroup:
-            if not self.hitbox.colliderect(collidingSprite.hitbox):
-                continue
-            
-            if not collidingSprite.visible:
-                continue
-
-            if canHurt:
-                self.inflictDamage(spriteGroup, self.shotFrom, collidingSprite)
-                self.land()
-
-            elif not canHurt:
-                # If the projectile hits a portal
-                if spriteGroup == all_portals:
-                    if len(all_portals) == 2:
-                        for portal in all_portals:
-                            if self.hitbox.colliderect(portal.hitbox):
-                                self.teleport(portal)
-                        return
-                    
-                    elif len(all_portals) < 2:
-                        self.land()
-                        return
-
-                elif spriteGroup == all_walls:
-                    side = wallSideCheck(collidingSprite, self)
-                    if side == SOUTH:
-                        all_portals.add(Portal(self.pos.x, collidingSprite.pos.y + (collidingSprite.image.get_height() // 2), side))
-                        portalCountCheck()
-                    if side == NORTH:
-                        all_portals.add(Portal(self.pos.x, collidingSprite.pos.y - (collidingSprite.image.get_height() // 2), side))
-                        portalCountCheck()
-                    if side == EAST:
-                        all_portals.add(Portal(collidingSprite.pos.x + (collidingSprite.image.get_width() // 2), self.pos.y, side))
-                        portalCountCheck()
-                    if side == WEST:
-                        all_portals.add(Portal(collidingSprite.pos.x - (collidingSprite.image.get_width() // 2), self.pos.y, side))
-                        portalCountCheck()
-                    self.land()
-                
-                else:
-                    self.land()
-
-    def bindProj(self):
-        if (
-            self.pos.x < WIN_WIDTH and 
-            self.pos.x > 0 and
-            self.pos.y < WIN_HEIGHT and 
-            self.pos.y > 0
-        ):
-            self.movement()
-        else:
-            self.kill()
-
-        self.projCollide(all_enemies, True)
-        self.projCollide(all_walls, False)
-        self.projCollide(all_portals, False)
-
-    def movement(self):
-        self.pos.x += self.vel.x * dt
-        self.pos.y += self.vel.y * dt
-
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
-
-    def update(self):
-        if getTimeDiff(self.lastFrame) > ANIMTIME:
-            self.index += 1
-            if self.index > 4:
-                self.index = 0
-            self.lastFrame = time.time()
-        
-        self.rotateImage(int(getVecAngle(self.vel.x, self.vel.y)))
-        self.bindProj()
-
-
-class GrappleBullet(BulletBase):
-    def __init__(self, shotFrom, posX, posY, velX, velY):
-        super().__init__()
-        self.show(LAYER['grapple'])
-        all_projs.add(self)
-
-        self.shotFrom: Player = shotFrom
-        self.damage = PROJ_DMG[PROJ_GRAPPLE]
-
-        self.isHooked = False
-        self.grappledTo: pygame.sprite.Sprite = None
-        
-        self.returning = False
-        self.hasExitedPortal = False
-
-        self.chain1: Beam = Beam(self.shotFrom, self)
-        self.chain2: Beam = None
-
-        self.canTp = True
-        self.tpPoints = []
-
-        self.enterPoint: InvisObj = None; self.enterPointFace = None
-        self.exitPoint: InvisObj = None; self.exitPointFace = None
-
-        self.pos = vec((posX, posY))
-        self.vel = vec(velX, velY)
-        self.accel = vec(0, 0)
-        self.ACCELC = 0.7
-
-        self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 2, 9)
-        self.setRects(0, 0, 32, 32, 16, 16)
-        self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
-
-    def land(self, grappledTo):
-        self.isHooked = True
-        self.grappledTo = grappledTo
-        if self.grappledTo != None:
-            self.grappledTo.isGrappled = True
-
-    def shatter(self):
-        """Destroys the grappling hook"""   
-        self.shotFrom.grapple = None
-        self.returning = False
-
-        self.chain1.kill()
-        if isinstance(self.chain2, Beam):
-            self.chain2.kill()
-
-        if isinstance(self.enterPoint, InvisObj):
-            self.enterPoint.kill()
-        if isinstance(self.exitPoint, InvisObj):
-            self.exitPoint.kill()
-
-        self.kill()
-
-    def projCollide(self, spriteGroup, canHurt):
-        for collidingSprite in spriteGroup:
-            if not self.hitbox.colliderect(collidingSprite.hitbox):
-                continue
-            
-            if not collidingSprite.visible:
-                continue
-
-            if canHurt:
-                self.inflictDamage(spriteGroup, self.shotFrom, collidingSprite)
-                self.land(collidingSprite)
-
-            elif not canHurt:
-                if spriteGroup == all_portals:
-                    if len(all_portals) == 2 and self.canTp:
-                        self.tpPoints.append(copy.copy(self.pos))
-                        for portal in all_portals:
-                            if self.hitbox.colliderect(portal.hitbox):
-                                self.teleport(portal)
-                                self.canTp = False
-                                self.tpPoints.append(copy.copy(self.pos))
-                                
-                                # Creating invisible objects at teleport points so grapple can return through portals
-                                otherPortal: Portal = getOtherPortal(portal)
-                                self.enterPointFace = portal.facing
-                                self.exitPointFace = otherPortal.facing
-
-                                ret1Pos: pygame.math.Vector2 = copy.copy(self.tpPoints[0])
-                                ret2Pos: pygame.math.Vector2 = copy.copy(self.tpPoints[1])
-                                self.enterPoint = InvisObj(ret1Pos.x, ret1Pos.y, 8, 8)
-                                self.exitPoint = InvisObj(ret2Pos.x, ret2Pos.y, 8, 8)
-                                
-                                # Correcting chains
-                                self.chain1.kill()
-                                self.chain1: Beam = Beam(self.shotFrom, self.enterPoint)
-                                self.chain2: Beam = Beam(self.exitPoint, self)
-                        return
-                    
-                elif not self.canTp and spriteGroup == all_portals:
-                    pass
-
-                else:
-                    self.land(collidingSprite)
-
-    def bindProj(self):
-        if can_update:
-            self.movement()
-            if (
-                self.pos.x > WIN_WIDTH or 
-                self.pos.x < 0 or
-                self.pos.y > WIN_HEIGHT or 
-                self.pos.y < 0
-            ):
-                self.land(None)
-
-            if not self.isHooked:
-                self.projCollide(all_enemies, True)
-                self.projCollide(all_walls, False)
-                self.projCollide(all_drops, False)
-                self.projCollide(all_portals, False)
-
-    def sendBack(self):
-        """Sends the grappling hook back to the player"""
-        if len(self.tpPoints) == 0:  
-            angle = getAngleToSprite(self, self.shotFrom)
-            self.accel.x = self.ACCELC * -sin(rad(angle))
-            self.accel.y = self.ACCELC * -cos(rad(angle))
-
-            if self.hitbox.colliderect(self.shotFrom.rect):
-                self.shatter()
-
-        if len(self.tpPoints) > 0:
-            if not self.hasExitedPortal:
-                angle = getAngleToSprite(self, self.exitPoint)
-                self.accel.x = self.ACCELC * -sin(rad(angle))
-                self.accel.y = self.ACCELC * -cos(rad(angle))
-
-                if self.hitbox.colliderect(self.exitPoint.hitbox):
-                    self.pos = self.enterPoint.pos
-                    self.vel = getTpVel(self.exitPointFace, self.enterPointFace, self)
-                    self.hasExitedPortal = True
-                    self.chain2.kill()
-            
-            elif self.hasExitedPortal:
-                angle = getAngleToSprite(self, self.shotFrom)
-                self.accel.x = self.ACCELC * -sin(rad(angle))
-                self.accel.y = self.ACCELC * -cos(rad(angle))
-                if self.hitbox.colliderect(self.shotFrom.rect):
-                    self.shatter()
-
-        self.accelMovement(dt)
-
-    def movement(self):
-        if not self.returning:
-            if not self.isHooked:
-                self.pos.x += self.vel.x * dt
-                self.pos.y += self.vel.y * dt
-
-            else:
-                if self.grappledTo != None and self.grappledTo not in all_walls:
-                    self.pos.x = self.grappledTo.pos.x
-                    self.pos.y = self.grappledTo.pos.y
-                
-                elif self.grappledTo != None and self.grappledTo in all_walls:
-                    side = wallSideCheck(self.grappledTo, self)
-                    if side == SOUTH:
-                        self.pos.x = self.pos.x
-                        self.pos.y = self.grappledTo.pos.y + (self.grappledTo.rect.height // 2)
-                    if side == NORTH:
-                        self.pos.x = self.pos.x
-                        self.pos.y = self.grappledTo.pos.y - (self.grappledTo.rect.height // 2)
-                    if side == EAST:
-                        self.pos.x = self.grappledTo.pos.x + (self.grappledTo.rect.width // 2)
-                        self.pos.y = self.pos.y
-                    if side == WEST:
-                        self.pos.x = self.grappledTo.pos.x - (self.grappledTo.rect.width // 2)
-                        self.pos.y = self.pos.y
-                
-                else:
-                    self.pos = self.pos
-
-        if self.returning:
-            if self.grappledTo == None:
-                self.sendBack()
-            
-            # Grapple will move if attached to an enemy or item
-            if self.grappledTo != None and self.grappledTo not in all_walls:
-                self.sendBack()
-                self.grappledTo.pos.x = self.pos.x
-                self.grappledTo.pos.y = self.pos.y
-
-            if self.grappledTo != None and self.grappledTo in all_walls:
-                if self.shotFrom.hitbox.colliderect(self.hitbox):
-                    self.shatter()
-                for wall in all_walls:
-                    if self.shotFrom.hitbox.colliderect(wall.hitbox):
-                        self.shatter()
-
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
-
-    def update(self):
-        if not self.isHooked and not self.returning:
-            self.index = 0
-            self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
-        else:
-            self.index = 1
-            self.rotateImage(getAngleToSprite(self, self.shotFrom) + 180)
-        
-        self.bindProj()
-
-
-class PlayerStdBullet(PlayerBulletBase):
-    def __init__(self, shotFrom: Player, posX: int, posY: int, velX: int, velY: int):
-        """A projectile fired by a player that moves at a constant velocity
-
-        ### Arguments
-            - shotFrom (``Player``): The player that the bullet was shot from
-            - posX (``int``): The x-position where the bullet should be spawned
-            - posY (``int``): The y-position where the bullet should be spawned
-            - velX (``int``): The x-axis component of the bullet's velocity
-            - velY (``int``): The y-axis component of the bullet's velocity
-        """        
-        super().__init__()
-        self.show(LAYER['proj_layer'])
-        self.damage = PROJ_DMG[PROJ_STD]
-
-        self.shotFrom = shotFrom
-
-        self.pos = vec((posX, posY))
-        self.vel = vec(velX, velY)
-
-        self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 1)
-        self.setRects(-24, -24, 8, 8, 6, 6)
-
-        self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
-    
-    def movement(self):
-        self.pos.x += self.vel.x * dt
-        self.pos.y += self.vel.y * dt
-
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
-
-    def update(self):
-        self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
-        self.bindProj()
-
-
-class EnemyStdBullet(EnemyBulletBase):
-    def __init__(self, shotFrom, posX, posY, velX, velY):
-        super().__init__()
-        self.show(LAYER['proj_layer'])
-
-        self.shotFrom = shotFrom
-
-        self.pos = vec((posX, posY))
-        self.vel = vec(velX, velY)
-
-        self.damage = PROJ_DMG[PROJ_STD]
-
-        self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 1)
-        self.setRects(-24, -24, 8, 8, 6, 6)
-
-        self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
-    
-    def movement(self):
-        self.pos.x += self.vel.x * dt
-        self.pos.y += self.vel.y * dt
-
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
-
-    def update(self):
-        self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
-        self.bindProj()
-
-
-# ============================================================================ #
-#                                 Portal Class                                 #
-# ============================================================================ #
-class Portal(PortalBase):
-    def __init__(self, posX: int, posY: int, facing: str = SOUTH):
-        """A portal that can teleport any moving object
-
-        ### Arguments
-            - posX (``int``): The x-position where the portal should spawn
-            - posY (``int``): The y-position where the portal should spawn
-            - facing (``str``, optional): The direction the portal should face. Defaults to ``SOUTH``.
-        """        
-        super().__init__()
-        all_sprites.add(self, layer = LAYER['portal_layer'])
-        
-        self.pos = vec((posX, posY))
-        self.facing = facing
-
-        self.setImages("sprites/portals/portals.png", 64, 64, 1, 1)
-        self.setRects(self.pos.x, self.pos.y, 64, 64, 54, 54)
-
-        self.image, self.hitbox = self.getFace()
-
-    def getFace(self) -> tuple:
-        if self.facing == SOUTH:
-            return self.image, self.rect.inflate(0, -40)
-        if self.facing == EAST:
-            return pygame.transform.rotate(self.image, 90), self.rect.inflate(-40, 0)
-        if self.facing == NORTH:
-            return pygame.transform.rotate(self.image, 180), self.rect.inflate(0, -40)
-        if self.facing == WEST:
-            return pygame.transform.rotate(self.image, 270), self.rect.inflate(-40, 0)
-        if self.facing == None:
-            self.kill()
-
-    def update(self):
-        if self.facing == None:
-            self.kill()
-        
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
-
-        pygame.draw.rect(screen, RED, self.hitbox, 3)
-
-
-def portalCountCheck():
-    """If there are more than two portals present during gameplay, the oldest one will be deleted to make room for another one."""    
-    if len(all_portals) > 2:
-        portalTemp = all_portals.sprites()
-        if len(portalTemp) > 0:
-            oldest_portal = portalTemp[0]
-            oldest_portal.kill()
-            all_portals.remove(oldest_portal)
-            if len(portalTemp) > 1:
-                all_portals.add(portalTemp[1:])
-
-
-# ============================================================================ #
-#                            Bullet Explosion Class                            #
-# ============================================================================ #
-class ProjExplode(ActorBase):
-    def __init__(self, proj: BulletBase):
-        """An explosion that is displayed on-screen when a projectile hits something
-        
-        ### Arguments
-            - proj (``BulletBase``): The projectile that is exploding
-        """            
-        super().__init__()
-        self.show(LAYER['explosion_layer'])
-        self.proj = proj
-        
-        self.spritesheet = Spritesheet("sprites/bullets/bullets.png", 8)
-        self.index = 1
-
-        if isinstance(proj, PlayerStdBullet) or isinstance(proj, EnemyStdBullet):
-            self.images = self.spritesheet.get_images(32, 32, 4)
-            self.original_images = self.spritesheet.get_images(32, 32, 4)
-
-        elif isinstance(proj, PortalBullet):
-            self.images = self.spritesheet.get_images(32, 32, 4)
-            self.original_images = self.spritesheet.get_images(32, 32, 4)
-
-        self.image = self.images[self.index]
-        self.original_image = self.original_images[self.index]
-        self.rect = self.proj.rect
-        self.randRotation = rand.randint(1, 360)
-
-        self.pos = self.proj.pos
-
-    def update(self):
-        global anim_timer
-        if isinstance(self.proj, PlayerStdBullet) or isinstance(self.proj, EnemyStdBullet):
-            if anim_timer % 5 == 0:
-                if self.index > 3:
-                    self.kill()
-                else:
-                    self.image = self.images[self.index]
-                    self.original_image = self.original_images[self.index]
-                    self.index += 1
-
-        elif isinstance(self.proj, PortalBullet):
-            if anim_timer % 5 == 0:
-                if self.index > 3:
-                    self.kill()
-                else:
-                    self.image = self.images[self.index]
-                    self.original_image = self.original_images[self.index]
-                    self.index += 1
-        
-        # Give explosion its random rotation
-        self.image = pygame.transform.rotate(self.original_image, self.randRotation)
-        self.rect = self.image.get_rect(center = self.rect.center)
 
 
 # ============================================================================ #
@@ -1276,84 +374,6 @@ class Floor(EnvirBase):
 
 
 # ============================================================================ #
-#                                Visual Classes                                #
-# ============================================================================ #
-class Beam(ActorBase):
-    def __init__(self, fromSprite: pygame.sprite.Sprite, toSprite: pygame.sprite.Sprite):
-        super().__init__()
-        self.show(LAYER['floor'])
-
-        self.fromSprite, self.toSprite = fromSprite, toSprite
-        self.index = 0
-        
-        self.length = getDistToCoords(self.fromSprite.pos, self.toSprite.pos)
-        self.angle = getAngleToSprite(self.fromSprite, self.toSprite)
-        self.image = pygame.Surface(vec(1, 1))
-
-        self.rect = self.image.get_rect()
-        self.rect.center = self.pos
-
-    def buildSetup(self, startPos: pygame.math.Vector2, endPos: pygame.math.Vector2):
-        self.length = getDistToCoords(startPos, endPos)
-        self.angle = getAngleToSprite(self.fromSprite, self.toSprite)
-
-        opp = (self.length / 2) * cos(rad(self.angle + 90))
-        adj = (self.length / 2) * sin(rad(self.angle + 90))
-
-        self.pos = vec(self.fromSprite.pos.x + opp, self.fromSprite.pos.y - adj)
-
-    def buildImage(self, frameOffset: int) -> pygame.Surface:
-        """Builds the image of the beam 
-        
-        ### Arguments
-            - frameOffset (``int``): The frame from "beams.png" to build the beam from
-        
-        ### Returns
-            - ``pygame.Surface``: The image of the beam
-        """        
-        self.spritesheet = Spritesheet("sprites/textures/beams.png", 1)
-        baseImages = self.spritesheet.get_images(12, 12, 1, frameOffset)
-        baseImage: pygame.Surface = baseImages[self.index]
-
-        finalImage = pygame.Surface(vec(baseImage.get_width(), int(self.length)))
-
-        offset = 0
-        for i in range(int(self.length / baseImage.get_height())):
-            finalImage.blit(baseImage, vec(0, offset))
-            offset += baseImage.get_height()
-
-        finalImage.set_colorkey(BLACK)
-        self.image = pygame.transform.rotate(finalImage, self.angle)
-
-    def update(self):
-        self.buildSetup(self.fromSprite.pos, self.toSprite.pos)
-        self.buildImage(0)
-        self.rect = self.image.get_rect()
-        self.rect.center = self.pos
-
-
-class InvisObj(ActorBase):
-    def __init__(self, posX: int, posY: int, width: int, height: int):
-        super().__init__()
-        self.show(LAYER['floor'])
-        all_invisible.add(self)
-
-        self.pos = vec((posX, posY))
-        
-        self.image = pygame.Surface(vec(width, height))
-        self.image.set_colorkey(BLACK)
-        self.rect = self.image.get_rect()
-        self.hitbox = self.image.get_rect()
-
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
-
-    def update(self):
-        pass
-        # pygame.draw.rect(screen, RED, self.rect, 3)
-
-
-# ============================================================================ #
 #                                  Room Class                                  #
 # ============================================================================ #
 class Room(AbstractBase):
@@ -1374,26 +394,74 @@ class Room(AbstractBase):
         """Updates the layout of the room."""        
         for sprite in self.sprites():
             sprite.kill()
+
+        container: EnemyContainer
+        for container in all_containers:
+            container.hideEnemies()
         
-        #---------- Room Layouts ----------#
+        # ------------------------------- Room Layouts ------------------------------- #
         if self.room == vec(0, 0):
             self.add(
                 Wall(0, 0, 8, 8),
                 Wall(0, 37, 8, 8),
                 Wall(72, 0, 8, 8),
                 Wall(72, 37, 8, 8),
-                Box(500, 500)
+            )
+            
+            matchContainer = None
+            for container in all_containers:
+                if container.room == vec(0, 0):
+                    matchContainer = container
+                    break
+            
+            if matchContainer is not None:
+                self.showEnemies(matchContainer)
+            else:
+                all_containers.append(
+                    EnemyContainer(
+                        self.room.x, self.room.y,
+                        StandardGrunt(500, 500)
+                    )
+                )
+
+        elif self.room == vec(-1, 0):
+            self.add(
+                Wall(0, 0, 8, 45)
+            )
+
+            matchContainer = None
+            for container in all_containers:
+                if container.room == vec(-1, 0):
+                    matchContainer = container
+                    break
+            
+            if matchContainer is not None:
+                self.showEnemies(matchContainer)
+            else:
+                all_containers.append(
+                    EnemyContainer(
+                        self.room.x, self.room.y,
+                        StandardGrunt(500, 500)
+                    )
+                )
+
+        elif self.room == vec(0, 1):
+            self.add(
+                Wall(0, 0, 8, 45),
+                Wall(72, 0, 8, 45),
             )
 
             # Search for an enemy container for this room
             try:
-                container = next(c for c in all_containers if c.room == self.room)
-                showEnemies(container)
+                matchContainer = next(c for c in all_containers if c.room == self.room)
+                self.showEnemies(matchContainer)
 
             except StopIteration:
                 all_containers.append(
                     EnemyContainer(
                         self.room.x, self.room.y,
+                        StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
+                        StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
                     )
                 )
 
@@ -1405,39 +473,29 @@ class Room(AbstractBase):
 
             # Search for an enemy container for this room
             try:
-                container = next(c for c in all_containers if c.room == self.room)
-                showEnemies(container)
+                matchContainer = next(c for c in all_containers if c.room == self.room)
+                self.showEnemies(matchContainer)
 
             except StopIteration:
                 all_containers.append(
                     EnemyContainer(
                         self.room.x, self.room.y,
-                        StandardGrunt(WIN_WIDTH / 2, WIN_HEIGHT / 2),
-                        StandardGrunt(WIN_WIDTH / 2, WIN_HEIGHT / 2),
+                        StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
+                        StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
                     )
                 )
 
-        elif self.room == vec(0, 1):
-            self.add(
-                Wall(0, 0, 4, 22.5),
-                Wall(36, 0, 4, 22.5),
-                Wall(8, 4, 4, 4),
-                Wall(28, 4, 4, 4),
-            )
+    def makeContainer(self, roomVec, sprites) -> None:
+        container: EnemyContainer
+        for container in all_containers:
+            if container.room == roomVec:
+                container.showEnemies()
+                break
+        
 
-            # Search for an enemy container for this room
-            try:
-                container = next(c for c in all_containers if c.room == self.room)
-                showEnemies(container)
-
-            except StopIteration:
-                all_containers.append(
-                    EnemyContainer(
-                        self.room.x, self.room.y,
-                        StandardGrunt(WIN_WIDTH / 2, WIN_HEIGHT / 2),
-                        StandardGrunt(WIN_WIDTH / 2, WIN_HEIGHT / 2),
-                    )
-                )
+    def showEnemies(self, container):
+        for sprite in container.sprites():
+            sprite.show(LAYER['enemy_layer'])
 
 
 class EnemyContainer(AbstractBase):
@@ -1457,18 +515,12 @@ class EnemyContainer(AbstractBase):
 
     def hideEnemies(self):
         """Hides all of the enemies in the container"""
-        if self.room == mainroom.room:
-            for sprite in self.sprites():
-                sprite.hide()
-                if hasattr(sprite, 'healthBar'):
-                    sprite.healthBar.hide()
+        for sprite in self.sprites():
+            sprite.hide()
 
     def showEnemies(self):
-        """Shows all of the enemies within the container"""      
         for sprite in self.sprites():
             sprite.show(LAYER['enemy_layer'])
-            if hasattr(sprite, 'healthBar'):
-                sprite.healthBar.show(LAYER['statBar_layer'])
 
 
 def hideCurrentEnemies():
@@ -1479,18 +531,6 @@ def hideCurrentEnemies():
                 sprite.hide()
                 if hasattr(sprite, 'healthBar'):
                     sprite.healthBar.hide()
-
-
-def showEnemies(container):
-    """Shows all the enemies within an enemy container
-    
-    ### Arguments
-        - container (``pygame.sprite.AbstractGroup``): The enemy container to unhide
-    """    
-    for sprite in container.sprites():
-        sprite.show(LAYER['enemy_layer'])
-        if hasattr(sprite, 'healthBar'):
-            sprite.healthBar.show(LAYER['statBar_layer'])
 
 
 # ============================================================================ #
@@ -1514,8 +554,8 @@ class InventoryMenu(AbstractBase):
         
         self.lastCycle = time.time()
 
-        self.rightArrow = RightMenuArrow(WIN_WIDTH - 64, WIN_HEIGHT / 2)
-        self.leftArrow = LeftMenuArrow(64, WIN_HEIGHT / 2)
+        self.rightArrow = RightMenuArrow(WINWIDTH - 64, WINHEIGHT / 2)
+        self.leftArrow = LeftMenuArrow(64, WINHEIGHT / 2)
         
         self.add(
             self.buildMenuSlots()
@@ -1550,7 +590,7 @@ class InventoryMenu(AbstractBase):
             weight = getTimeDiff(self.lastCycle)
             if weight <= 1:
                 for sprite in self.sprites():
-                    sprite.pos.x = cosInterp(sprite.start_pos.x, sprite.start_pos.x - WIN_WIDTH, weight)
+                    sprite.pos.x = cosInterp(sprite.start_pos.x, sprite.start_pos.x - WINWIDTH, weight)
             else:
                 for sprite in self.sprites():
                     sprite.start_pos.x = sprite.pos.x
@@ -1561,7 +601,7 @@ class InventoryMenu(AbstractBase):
             weight = getTimeDiff(self.lastCycle)
             if weight <= 1:
                 for sprite in self.sprites():
-                    sprite.pos.x = cosInterp(sprite.start_pos.x, sprite.start_pos.x + WIN_WIDTH, weight)
+                    sprite.pos.x = cosInterp(sprite.start_pos.x, sprite.start_pos.x + WINWIDTH, weight)
             else:
                 for sprite in self.sprites():
                     sprite.start_pos.x = sprite.pos.x
@@ -1799,45 +839,6 @@ class MenuSlot(ActorBase):
 
 
 # ============================================================================ #
-#                                 Text Classes                                 #
-# ============================================================================ #
-class DamageChar(ActorBase):
-    def __init__(self, posX: float, posY: float, damage: int):
-        """A number that pops up after a player or enemy is hit that indicates how much damage that entity has taken
-        
-        ### Arguments
-            - posX (``float``): _description_
-            - posY (``float``): _description_
-            - damage (``int``): _description_
-        """        
-        super().__init__()
-        global anim_timer
-        self.show(LAYER['text_layer'])
-        all_font_chars.add(self)
-        self.start_time = time.time()
-
-        self.pos = vec((posX, posY))
-        self.vel = vec(0, -2)
-
-        self.image = textToImage(str(damage), "sprites/ui/font.png", 9, 14, 36)
-        
-        self.rect = self.image.get_rect()
-        self.rect.center = self.pos
-
-    def movement(self):
-        self.pos.x += self.vel.x
-        self.pos.y += self.vel.y
-
-        self.rect.center = self.pos
-
-    def update(self):
-        self.movement()
-
-        if getTimeDiff(self.start_time) > 0.75:
-            self.kill()
-
-
-# ============================================================================ #
 #                              Redraw Game Window                              #
 # ============================================================================ #
 def redrawGameWindow():
@@ -1855,7 +856,6 @@ mainroom = Room(0, 0)
 mainroom.layoutUpdate()
 
 # Time control
-anim_timer = 0
 last_time = time.time()
 
 
@@ -1883,7 +883,6 @@ def checkKeyRelease(isMouse, *inputs):
 # ============================================================================ #
 running = True
 while running:
-    dt = getTimeDiff(last_time) * 60
     last_time = time.time()
     
     anim_timer += 1

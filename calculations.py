@@ -1,6 +1,5 @@
 import pygame
 import math
-from math import sin, cos, radians
 import time
 
 import random as rand
@@ -403,6 +402,18 @@ def combineImages(baseImg: pygame.Surface, topImg: pygame.Surface) -> pygame.Sur
 
 
 def textToImage(text: str, fontImg: str, charWidth: int, charHeight: int, charCount: int) -> pygame.Surface:
+    """Converts a spring of text into a surface with a given font
+    
+    ### Arguments
+        - text (``str``): _description_
+        - fontImg (``str``): _description_
+        - charWidth (``int``): _description_
+        - charHeight (``int``): _description_
+        - charCount (``int``): _description_
+    
+    ### Returns
+        - ``pygame.Surface``: _description_
+    """    
     spritesheet = Spritesheet(fontImg, 36)
     images = spritesheet.get_images(charWidth, charHeight, charCount)
     charList = []
@@ -459,24 +470,6 @@ def getOtherPortal(portalIn: pygame.sprite.Sprite) -> pygame.sprite.Sprite:
 # ============================================================================ #
 
 # ----------------------------- Hitbox Detection ----------------------------- #
-def collideCheck(instig: pygame.sprite.Sprite, *contactLists: pygame.sprite.Group) -> None:
-    """Check if a sprite comes into contact with another sprite from a specific group.
-    If the sprites do collide, then they will perform a hitbox collision.
-    
-    ### Arguments
-        - instig (``pygame.sprite.Sprite``): The instigator of the collision
-        - contactLists (``pygame.sprite.Group``): The sprite group(s) to check for a collision with
-    """    
-    for list in contactLists:
-        for sprite in list:
-            if hasattr(sprite, 'visible') and sprite.visible:
-                blockFromSide(instig, sprite)
-            elif hasattr(sprite, 'visible') and not sprite.visible:
-                pass
-            else:
-                blockFromSide(instig, sprite)
-
-
 def blockFromSide(instig: pygame.sprite.Sprite, sprite: pygame.sprite.Sprite) -> None:
     """If a sprite instigates a collision with another, the sprites will physically engage in a collision
     
@@ -630,19 +623,19 @@ def groupChangeRooms(direction: str, *spriteGroups: pygame.sprite.Group) -> None
     for group in spriteGroups:
         if direction == SOUTH:
             for sprite in group:
-                sprite.changeRoomDown()
+                sprite.changeRoom(SOUTH)
 
         if direction == EAST:
             for sprite in group:
-                sprite.changeRoomRight()
+                sprite.changeRoom(EAST)
 
         if direction == NORTH:
             for sprite in group:
-                sprite.changeRoomUp()
+                sprite.changeRoom(NORTH)
 
         if direction == WEST:
             for sprite in group:
-                sprite.changeRoomLeft()
+                sprite.changeRoom(WEST)
 
 
 class CustomError(Exception):
