@@ -344,7 +344,7 @@ class Wall(EnvirBase):
         self.rect.center = self.pos
         self.hitbox.center = self.pos
 
-# Needs corrected to 16x16
+
 class Floor(EnvirBase):
     def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float):
         super().__init__()
@@ -354,7 +354,7 @@ class Floor(EnvirBase):
         self.pos = getTopLeftCoordinates(blockWidth * 16, blockHeight * 16, blockPosX * 16, blockPosY * 16)
 
         self.spritesheet = Spritesheet("sprites/textures/floor.png", 4)
-        self.textures = self.spritesheet.get_images(64, 64, 4)
+        self.textures = self.spritesheet.get_images(16, 16, 4)
         self.index = 0
 
         self.texture = self.textures[self.index]
@@ -366,13 +366,15 @@ class Floor(EnvirBase):
         self.hitbox.center = self.pos
     
     def update(self):
-        if self.visible and getTimeDiff(self.lastFrame) >= 0.25:
-            self.index += 1
-            if self.index > 3:
-                self.index = 0
-            self.texture = self.textures[self.index]
-            self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
-            self.lastFrame = time.time()
+        if self.visible:
+            if getTimeDiff(self.lastFrame) >= 1:
+                self.texture = self.textures[self.index]
+                self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
+                self.lastFrame = time.time()
+                
+                self.index += 1
+                if self.index > 3:
+                    self.index = 0
 
 
 # ============================================================================ #
@@ -409,6 +411,7 @@ class Room(AbstractBase):
                 Wall(0, 37, 8, 8),
                 Wall(72, 0, 8, 8),
                 Wall(72, 37, 8, 8),
+                Floor(0, 0, 80, 45)
             )
             
             try:
