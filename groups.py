@@ -9,6 +9,7 @@ all_enemies = spriteGroup()
 
 #--------------------------------- Interactible groups ---------------------------------#
 all_movable = spriteGroup()
+all_trinkets = spriteGroup()
 all_invisible = spriteGroup()
 
 all_drops = spriteGroup()

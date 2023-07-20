@@ -6,6 +6,8 @@ from constants import *
 from calculations import *
 from groups import *
 
+from trinkets import *
+
 #------------------------------ Initialize globals ------------------------------#
 can_update = True
 

@@ -7,7 +7,6 @@ import sys, math, time
 import random as rand
 
 from math import sin, cos, radians, degrees, floor, pi
-
 from bullets import *
 from class_bases import *
 from enemies import *
@@ -257,7 +256,7 @@ class Player(PlayerBase):
             self.checkRoomChange()
 
             # Animation
-            if getTimeDiff(self.lastFrame) > ANIMTIME:
+            if getTimeDiff(self.lastFrame) > 0.05:
                 if isInputHeld[1]:
                     self.index += 1
                     if self.index > 4:
@@ -287,10 +286,12 @@ class Player(PlayerBase):
 #                             Interactible Classes                             #
 # ============================================================================ #
 class Box(ActorBase):
-    def __init__(self, posX, posY):
+    def __init__(self, id, posX, posY):
         super().__init__()
         self.show(LAYER['movable_layer'])
         all_movable.add(self)
+
+        self.id = id
 
         self.pos = vec((posX, posY))
         self.ACCELC = 0.4
@@ -367,14 +368,15 @@ class Floor(EnvirBase):
     
     def update(self):
         if self.visible:
-            if getTimeDiff(self.lastFrame) >= 1:
+            if getTimeDiff(self.lastFrame) >= 0.235:
                 self.texture = self.textures[self.index]
                 self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
-                self.lastFrame = time.time()
-                
+
                 self.index += 1
                 if self.index > 3:
                     self.index = 0
+                
+                self.lastFrame = time.time()
 
 
 # ============================================================================ #
@@ -411,7 +413,10 @@ class Room(AbstractBase):
                 Wall(0, 37, 8, 8),
                 Wall(72, 0, 8, 8),
                 Wall(72, 37, 8, 8),
-                Floor(0, 0, 80, 45)
+                Floor(0, 0, 80, 45),
+                Box(0, 100, 200),
+
+                Button(0, 20, 20)
             )
             
             try:
