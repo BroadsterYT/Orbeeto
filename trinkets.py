@@ -35,8 +35,7 @@ class Button(ButtonBase):
             else:
                 isActive = True
                 return isActive
-                
-        
+                 
     def update(self):
         if self.activeCheck():
             self.index = 1
@@ -44,3 +43,6 @@ class Button(ButtonBase):
             self.index = 0
         
         self.renderImages()
+
+    def __repr__(self):
+        return f'Button({self.id}, {self.pos}, {self.activeCheck()})'

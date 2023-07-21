@@ -209,7 +209,7 @@ class Player(PlayerBase):
         velX = self.bulletVel * -sin(angle_to_mouse)
         velY = self.bulletVel * -cos(angle_to_mouse)
 
-        if isInputHeld[1] and self.bulletType == PROJ_STD and getTimeDiff(self.last_shot) >= self.gun_cooldown:
+        if isInputHeld[1] and self.bulletType == PROJ_STD and getTimeDiff(self.lastShot) >= self.gun_cooldown:
             OFFSET = vec((21, 30))
             all_projs.add(
                 PlayerStdBullet(self,
@@ -224,7 +224,7 @@ class Player(PlayerBase):
                     velX, velY
                 )
             )
-            self.last_shot = time.time()
+            self.lastShot = time.time()
 
         # Firing portals
         if keyReleased[3] % 2 == 0 and self.canPortal and self.canGrapple:
@@ -281,8 +281,12 @@ class Player(PlayerBase):
         if self.hp <= 0:
             self.kill()
 
+    def __str__(self):
+        return f'Player at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\ncurrent bullet: {self.bulletType}\nxp: {self.xp}\nlevel: {self.level}\n'
+
     def __repr__(self):
-        return f'Player({self.pos}, {self.vel}, {self.accel}, {self.cAccel})'
+        return f'Player({self.pos}, {self.vel}, {self.accel}, {self.cAccel}, {self.bulletType}, {self.xp}, {self.level})'
+
 
 # ============================================================================ #
 #                             Interactible Classes                             #
@@ -872,6 +876,8 @@ def checkKeyRelease(isMouse, *inputs):
 running = True
 while running:
     anim_timer += 1
+
+    print(str(mainroom.player1))
 
     for a_player in all_players:
         if a_player.hp <= 0:

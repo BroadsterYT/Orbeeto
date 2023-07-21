@@ -328,7 +328,8 @@ class PortalBullet(BulletBase):
         self.bindProj()
 
     def __repr__(self):
-        return f'PortalBullet({self.shotFrom}, {self.pos}, {self.vel})'
+        return f'PortalBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.ricCount})'
+
 
 class GrappleBullet(BulletBase):
     def __init__(self, shotFrom, posX, posY, velX, velY):
@@ -536,6 +537,11 @@ class GrappleBullet(BulletBase):
         
         self.bindProj()
 
+    def __str__(self):
+        return f'GrappleBullet at {self.pos}\nshot from: {self.shotFrom}\nvel: {self.vel}\naccel: {self.accel}\nis hooked: {self.isHooked}'
+
+    def __repr__(self):
+        return f'GrappleBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.accel}, {self.isHooked}, {self.isGrappled}, {self.grappledTo}, {self.returning})'
 
 # ============================================================================ #
 #                                 Enemy Bullets                                #

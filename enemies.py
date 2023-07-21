@@ -130,6 +130,12 @@ class StandardGrunt(EnemyBase):
             self.awardXp()
             self.kill()
 
+    def __str__(self):
+        return f'StandardGrunt at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\nxp worth: {self.xp_worth}'
+
+    def __repr__(self):
+        return f'StandardGrunt({self.pos}, {self.vel}, {self.accel}, {self.xp_worth})'
+
 
 class OctoGrunt(EnemyBase):
     def __init__(self, posX, posY):
@@ -215,3 +221,9 @@ class OctoGrunt(EnemyBase):
             self.dropItems(1)
             self.awardXp()
             self.kill()
+
+    def __str__(self):
+        return f'OctoGrunt at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\nxp worth: {self.xp_worth}\n'
+    
+    def __repr__(self):
+        return f'OctoGrunt({self.pos}, {self.vel}, {self.accel}, {self.xp_worth})'
