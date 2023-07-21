@@ -48,6 +48,9 @@ class Portal(PortalBase):
         self.rect.center = self.pos
         self.hitbox.center = self.pos
 
+    def __repr__(self):
+        return f'Portal({self.facing}, {self.pos})'
+
 
 def portalCountCheck():
     """If there are more than two portals present during gameplay, the oldest one will be deleted to make room for another one."""    

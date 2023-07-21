@@ -7,7 +7,7 @@ from class_bases import *
 class DropBase(ActorBase):
     def __init__(self):
         super().__init__()
-        self.ACCELC = 0.8
+        self.cAccel = 0.8
 
 
 class ItemDrop(DropBase):
@@ -28,7 +28,7 @@ class ItemDrop(DropBase):
 
         self.start_time = time.time()
         self.pos = vec(self.droppedFrom.pos.x, self.droppedFrom.pos.y)
-        self.randAccel = getRandComponents(self.ACCELC)
+        self.randAccel = getRandComponents(self.cAccel)
         
         self.spritesheet = Spritesheet("sprites/textures/item_drops.png", 8)
         self.index = 0

@@ -19,7 +19,7 @@ class ActorBase(pygame.sprite.Sprite):
         self.pos = vec((0, 0))
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
-        self.ACCELC = 0.3
+        self.cAccel = 0.3
 
         self.isGrappled = False
     
@@ -100,7 +100,7 @@ class ActorBase(pygame.sprite.Sprite):
     
     # ---------------------------------- Physics --------------------------------- #
     def accelMovement(self) -> None:
-        """Makes a sprite move according to its acceleration (``self.accel`` and ``self.ACCELC``)
+        """Makes a sprite move according to its acceleration (``self.accel`` and ``self.cAccel``)
         
         ``self.accel`` MUST BE (0, 0) BEFORE THIS FUCNTION IS CALLED
         
@@ -113,7 +113,7 @@ class ActorBase(pygame.sprite.Sprite):
         self.accel.x += self.vel.x * FRIC
         self.accel.y += self.vel.y * FRIC
         self.vel += self.accel
-        self.pos += self.vel + self.ACCELC * self.accel
+        self.pos += self.vel + self.cAccel * self.accel
 
     def velMovement(self) -> None:
         """Makes a sprite move according to its velocity (``self.vel``)

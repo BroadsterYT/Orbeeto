@@ -156,8 +156,7 @@ class ProjExplode(ActorBase):
             self.images = self.spritesheet.get_images(32, 32, 4)
             self.original_images = self.spritesheet.get_images(32, 32, 4)
 
-        self.image = self.images[self.index]
-        self.original_image = self.original_images[self.index]
+        self.renderImages()
         self.rect = self.proj.rect
         self.randRotation = rand.randint(1, 360)
 
@@ -187,6 +186,8 @@ class ProjExplode(ActorBase):
         self.image = pygame.transform.rotate(self.original_image, self.randRotation)
         self.rect = self.image.get_rect(center = self.rect.center)
 
+    def __repr__(self):
+        return f'ProjExplode({self.proj}, {self.pos})'
 
 # ============================================================================ #
 #                                Player Bullets                                #
@@ -225,6 +226,9 @@ class PlayerStdBullet(PlayerBulletBase):
 
     def update(self):
         self.bindProj()
+
+    def __repr__(self):
+        return f'PlayerStdBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.ricCount})'
 
 
 class PortalBullet(BulletBase):
@@ -323,6 +327,8 @@ class PortalBullet(BulletBase):
         self.rotateImage(int(getVecAngle(self.vel.x, self.vel.y)))
         self.bindProj()
 
+    def __repr__(self):
+        return f'PortalBullet({self.shotFrom}, {self.pos}, {self.vel})'
 
 class GrappleBullet(BulletBase):
     def __init__(self, shotFrom, posX, posY, velX, velY):
@@ -351,7 +357,7 @@ class GrappleBullet(BulletBase):
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
         self.accel = vec(0, 0)
-        self.ACCELC = 0.7
+        self.cAccel = 0.7
 
         self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 2, 9)
         self.setRects(0, 0, 32, 32, 16, 16)
@@ -444,8 +450,8 @@ class GrappleBullet(BulletBase):
         """Sends the grappling hook back to the player"""
         if len(self.tpPoints) == 0:  
             angle = getAngleToSprite(self, self.shotFrom)
-            self.accel.x = self.ACCELC * -sin(rad(angle))
-            self.accel.y = self.ACCELC * -cos(rad(angle))
+            self.accel.x = self.cAccel * -sin(rad(angle))
+            self.accel.y = self.cAccel * -cos(rad(angle))
 
             if self.hitbox.colliderect(self.shotFrom.rect):
                 self.shatter()
@@ -453,8 +459,8 @@ class GrappleBullet(BulletBase):
         if len(self.tpPoints) > 0:
             if not self.hasExitedPortal:
                 angle = getAngleToSprite(self, self.exitPoint)
-                self.accel.x = self.ACCELC * -sin(rad(angle))
-                self.accel.y = self.ACCELC * -cos(rad(angle))
+                self.accel.x = self.cAccel * -sin(rad(angle))
+                self.accel.y = self.cAccel * -cos(rad(angle))
 
                 if self.hitbox.colliderect(self.exitPoint.hitbox):
                     self.pos = self.enterPoint.pos
@@ -464,8 +470,8 @@ class GrappleBullet(BulletBase):
             
             elif self.hasExitedPortal:
                 angle = getAngleToSprite(self, self.shotFrom)
-                self.accel.x = self.ACCELC * -sin(rad(angle))
-                self.accel.y = self.ACCELC * -cos(rad(angle))
+                self.accel.x = self.cAccel * -sin(rad(angle))
+                self.accel.y = self.cAccel * -cos(rad(angle))
                 if self.hitbox.colliderect(self.shotFrom.rect):
                     self.shatter()
 

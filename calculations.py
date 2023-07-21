@@ -572,7 +572,7 @@ def killGroups(*groups: pygame.sprite.Group) -> None:
                 entity.kill()
 
 
-def initStats(sprite: pygame.sprite.Sprite, hp: int, attack: int, defense: int, xp: int, ACCELC: float) -> None:
+def initStats(sprite: pygame.sprite.Sprite, hp: int, attack: int, defense: int, xp: int, cAccel: float) -> None:
     """Quickly initialize the stats of any enemy sprite
     
     ### Arguments
@@ -581,7 +581,7 @@ def initStats(sprite: pygame.sprite.Sprite, hp: int, attack: int, defense: int, 
         - attack (``int``): Attack value the enemy should have
         - defense (``int``): Defense value the enemy should have
         - xp (``int``): The amount of xp the player should receive after killing the enemy
-        - ACCELC (``float``): How fast the enemy should move
+        - cAccel (``float``): How fast the enemy should move
     """    
     sprite.max_hp = hp
     sprite.hp = hp
@@ -590,7 +590,7 @@ def initStats(sprite: pygame.sprite.Sprite, hp: int, attack: int, defense: int, 
     sprite.max_defense = defense
     sprite.defense = defense
     sprite.xp_worth = xp
-    sprite.ACCELC = ACCELC
+    sprite.cAccel = cAccel
 
 
 def swapColor(image: pygame.Surface, old_color: tuple, new_color: tuple) -> None:

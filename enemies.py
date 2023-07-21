@@ -78,16 +78,16 @@ class StandardGrunt(EnemyBase):
 
             if self.pos.x != (self.rand_pos.x) or self.pos.y != (self.rand_pos.y):
                 if self.pos.x < self.rand_pos.x - 32:
-                    self.accel.x = self.ACCELC
+                    self.accel.x = self.cAccel
                 elif self.pos.x > self.rand_pos.x + 32:
-                    self.accel.x = -self.ACCELC
+                    self.accel.x = -self.cAccel
                 else:
                     self.accel.x = 0
 
                 if self.pos.y < self.rand_pos.y - 32:
-                    self.accel.y = self.ACCELC
+                    self.accel.y = self.cAccel
                 elif self.pos.y > self.rand_pos.y + 32:
-                    self.accel.y = -self.ACCELC
+                    self.accel.y = -self.cAccel
                 else:
                     self.accel.y = 0
             
@@ -155,15 +155,15 @@ class OctoGrunt(EnemyBase):
             
             if self.pos.x != self.rand_pos.x or self.pos.y != self.rand_pos.y:
                 if self.pos.x < self.rand_pos.x - 32:
-                    self.accel.x = self.ACCELC
+                    self.accel.x = self.cAccel
                 elif self.pos.x > self.rand_pos.x + 32:
-                    self.accel.x = -self.ACCELC
+                    self.accel.x = -self.cAccel
                 else:
                     self.accel.x = 0
                 if self.pos.y < self.rand_pos.y - 32:
-                    self.accel.y = self.ACCELC
+                    self.accel.y = self.cAccel
                 elif self.pos.y > self.rand_pos.y + 32:
-                    self.accel.y = -self.ACCELC
+                    self.accel.y = -self.cAccel
                 else:
                     self.accel.y = 0
             

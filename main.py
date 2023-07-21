@@ -39,7 +39,7 @@ class PlayerBase(ActorBase):
         self.room = vec((0, 0))
 
         self.pos = vec((WINWIDTH / 2, WINHEIGHT / 2))
-        self.ACCELC = 0.52
+        self.cAccel = 0.52
 
         #-------------------- Game stats & UI --------------------#
         self.xp = 0
@@ -56,7 +56,7 @@ class PlayerBase(ActorBase):
         self.hitTime = 0
         
         self.lastHit = time.time()
-        self.last_shot = time.time()
+        self.lastShot = time.time()
 
         self.updateMaxStats()
 
@@ -179,26 +179,26 @@ class Player(PlayerBase):
         if self.visible:
             if self.grapple == None:
                 if isInputHeld[K_a]:
-                    self.accel.x = -self.ACCELC
+                    self.accel.x = -self.cAccel
                 if isInputHeld[K_d]:
-                    self.accel.x = self.ACCELC
+                    self.accel.x = self.cAccel
                 if isInputHeld[K_s]:
-                    self.accel.y = self.ACCELC
+                    self.accel.y = self.cAccel
                 if isInputHeld[K_w]:
-                    self.accel.y = -self.ACCELC
+                    self.accel.y = -self.cAccel
 
             elif self.grapple != None:
                 if isInputHeld[K_a]:
-                    self.accel.x = -self.ACCELC
+                    self.accel.x = -self.cAccel
                 if isInputHeld[K_d]:
-                    self.accel.x = self.ACCELC
+                    self.accel.x = self.cAccel
                 if isInputHeld[K_s]:
-                    self.accel.y = self.ACCELC
+                    self.accel.y = self.cAccel
                 if isInputHeld[K_w]:
-                    self.accel.y = -self.ACCELC
+                    self.accel.y = -self.cAccel
                 
                 if self.grapple.returning and self.grapple.grappledTo in all_walls:
-                    self.accel = vec((self.ACCELC * 3) * -sin(getAngleToSprite(self, self.grapple)), (self.ACCELC * 3) * -cos(getAngleToSprite(self, self.grapple)))
+                    self.accel = vec((self.cAccel * 3) * -sin(getAngleToSprite(self, self.grapple)), (self.cAccel * 3) * -cos(getAngleToSprite(self, self.grapple)))
 
             self.accelMovement()
 
@@ -281,6 +281,8 @@ class Player(PlayerBase):
         if self.hp <= 0:
             self.kill()
 
+    def __repr__(self):
+        return f'Player({self.pos}, {self.vel}, {self.accel}, {self.cAccel})'
 
 # ============================================================================ #
 #                             Interactible Classes                             #
@@ -294,7 +296,7 @@ class Box(ActorBase):
         self.id = id
 
         self.pos = vec((posX, posY))
-        self.ACCELC = 0.4
+        self.cAccel = 0.4
         
         self.setImages("sprites/textures/box.png", 64, 64, 5, 1, 0, 0)
         self.setRects(0, 0, 64, 64, 64, 64, True)
@@ -305,13 +307,13 @@ class Box(ActorBase):
             for a_player in all_players:
                 if self.hitbox.colliderect(a_player.rect):
                     if collideSideCheck(self, a_player) == SOUTH:
-                        self.accel.y = -self.ACCELC
+                        self.accel.y = -self.cAccel
                     if collideSideCheck(self, a_player) == EAST:
-                        self.accel.x = -self.ACCELC
+                        self.accel.x = -self.cAccel
                     if collideSideCheck(self, a_player) == NORTH:
-                        self.accel.y = self.ACCELC
+                        self.accel.y = self.cAccel
                     if collideSideCheck(self, a_player) == WEST:
-                        self.accel.x = self.ACCELC
+                        self.accel.x = self.cAccel
 
             self.accelMovement()
 
@@ -489,6 +491,8 @@ class Room(AbstractBase):
                     )
                 )
 
+    def __repr__(self):
+        return f'Room({self.room})'
 
 class EnemyContainer(AbstractBase):
     def __init__(self, roomX: int, roomY: int, *sprites):
@@ -842,9 +846,6 @@ def redrawGameWindow():
 mainroom = Room(0, 0)
 mainroom.layoutUpdate()
 
-# Time control
-last_time = time.time()
-
 
 def checkKeyRelease(isMouse, *inputs):
     """Checks if any input(s) has been released. If one has, then its count in ''keyReleased'' will be updated to match.
@@ -870,8 +871,6 @@ def checkKeyRelease(isMouse, *inputs):
 # ============================================================================ #
 running = True
 while running:
-    last_time = time.time()
-    
     anim_timer += 1
 
     for a_player in all_players:
