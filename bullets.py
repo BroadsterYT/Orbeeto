@@ -87,7 +87,6 @@ class BulletBase(ActorBase):
                 receiver.lastHit = time.time()
 
 
-
 class PlayerBulletBase(BulletBase):
     def __init__(self):
         """The base class for all projectiles fired by players
@@ -96,6 +95,10 @@ class PlayerBulletBase(BulletBase):
 
     def bindProj(self):
         if self.canUpdate:
+            self.projCollide(all_enemies, True)
+            self.projCollide(all_walls, False)
+            self.projCollide(all_portals, False)
+            
             if (
                 self.pos.x < WINWIDTH and 
                 self.pos.x > 0 and
@@ -105,10 +108,6 @@ class PlayerBulletBase(BulletBase):
                 self.velMovement()
             else:
                 self.kill()
-
-            self.projCollide(all_enemies, True)
-            self.projCollide(all_walls, False)
-            self.projCollide(all_portals, False)
 
 
 class EnemyBulletBase(BulletBase):
@@ -188,6 +187,7 @@ class ProjExplode(ActorBase):
 
     def __repr__(self):
         return f'ProjExplode({self.proj}, {self.pos})'
+
 
 # ============================================================================ #
 #                                Player Bullets                                #
@@ -405,8 +405,8 @@ class GrappleBullet(BulletBase):
                         for portal in all_portals:
                             if self.hitbox.colliderect(portal.hitbox):
                                 self.teleport(portal)
-                                self.canTp = False
                                 self.tpPoints.append(copy.copy(self.pos))
+                                self.canTp = False
                                 
                                 # Creating invisible objects at teleport points so grapple can return through portals
                                 otherPortal: Portal = getOtherPortal(portal)
@@ -421,7 +421,7 @@ class GrappleBullet(BulletBase):
                                 # Correcting chains
                                 self.chain1.kill()
                                 self.chain1: Beam = Beam(self.shotFrom, self.enterPoint)
-                                self.chain2: Beam = Beam(self.exitPoint, self)
+                                self.chain2: Beam = Beam(otherPortal, self)
                         return
                     
                 elif not self.canTp and spriteGroup == all_portals:
@@ -432,6 +432,12 @@ class GrappleBullet(BulletBase):
 
     def bindProj(self):
         if can_update:
+            if not self.isHooked:
+                self.projCollide(all_enemies, True)
+                self.projCollide(all_portals, False)
+                self.projCollide(all_walls, False)
+                self.projCollide(all_drops, False)
+
             self.movement()
             if (
                 self.pos.x > WINWIDTH or 
@@ -440,12 +446,6 @@ class GrappleBullet(BulletBase):
                 self.pos.y < 0
             ):
                 self.land(None)
-
-            if not self.isHooked:
-                self.projCollide(all_enemies, True)
-                self.projCollide(all_walls, False)
-                self.projCollide(all_drops, False)
-                self.projCollide(all_portals, False)
 
     def sendBack(self):
         """Sends the grappling hook back to the player"""
@@ -542,6 +542,7 @@ class GrappleBullet(BulletBase):
 
     def __repr__(self):
         return f'GrappleBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.accel}, {self.isHooked}, {self.isGrappled}, {self.grappledTo}, {self.returning})'
+
 
 # ============================================================================ #
 #                                 Enemy Bullets                                #

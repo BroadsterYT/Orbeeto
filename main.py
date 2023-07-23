@@ -25,7 +25,7 @@ deg = degrees
 clock = pygame.time.Clock()
 
 screenSize = (WINWIDTH, WINHEIGHT)
-screen = pygame.display.set_mode(screenSize, pygame.SCALED)
+screen = pygame.display.set_mode(screenSize, pygame.SCALED, 0, 0, 1)
 pygame.display.set_caption('Orbeeto')
 
 
@@ -39,7 +39,7 @@ class PlayerBase(ActorBase):
         self.room = vec((0, 0))
 
         self.pos = vec((WINWIDTH / 2, WINHEIGHT / 2))
-        self.cAccel = 0.52
+        self.cAccel = 0.55
 
         #-------------------- Game stats & UI --------------------#
         self.xp = 0
@@ -344,12 +344,17 @@ class Wall(EnvirBase):
         self.pos = getTopLeftCoordinates(blockWidth * 16, blockHeight * 16, blockPosX * 16, blockPosY * 16)
 
         self.texture = pygame.image.load("sprites/textures/wall.png").convert()
-        self.image: pygame.Surface = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, None)
+        self.image: pygame.Surface = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, ColorRGB(25, 0, 0))
 
         self.rect = self.image.get_rect()
         self.hitbox = self.image.get_rect()
         self.rect.center = self.pos
         self.hitbox.center = self.pos
+
+
+class LockedWall(EnvirBase):
+    def __init__(self, id: int, blockPosX: int, blockPosY: int):
+        pass
 
 
 class Floor(EnvirBase):
@@ -497,6 +502,7 @@ class Room(AbstractBase):
 
     def __repr__(self):
         return f'Room({self.room})'
+
 
 class EnemyContainer(AbstractBase):
     def __init__(self, roomX: int, roomY: int, *sprites):
@@ -646,7 +652,7 @@ class InventoryMenu(AbstractBase):
             
         self.cycleMenu()
 
-                    
+
 class RightMenuArrow(ActorBase):
     def __init__(self, posX, posY):
         """A UI element that allows players to cycle through menu screens to the right.
@@ -876,8 +882,6 @@ def checkKeyRelease(isMouse, *inputs):
 running = True
 while running:
     anim_timer += 1
-
-    print(str(mainroom.player1))
 
     for a_player in all_players:
         if a_player.hp <= 0:

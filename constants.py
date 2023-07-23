@@ -1,6 +1,5 @@
 import pygame
 import math
-import random as rand
 
 # ---------------------------------- Aliases --------------------------------- #
 vec = pygame.math.Vector2
@@ -11,6 +10,36 @@ deg = math.degrees
 
 sin = math.sin
 cos = math.cos
+
+# ============================================================================ #
+#                                    Classes                                   #
+# ============================================================================ #
+class ColorRGB():
+    def __init__(self, r: int, g: int, b: int):
+        """A data type that represents a color given amounts of red, green, and blue.
+        
+        ### Arguments
+            - r (``int``): Red
+            - g (``int``): Green
+            - b (``int``): Blue
+        """        
+        super().__init__()
+        self.r, self.g, self.b = r, g, b
+
+    def __iter__(self):
+        for value in self.__dict__.values():
+            yield value
+
+    def __add__(self, otherColor):
+        newR = math.sqrt((self.r**2 + otherColor.r**2) / 2)
+        newG = math.sqrt((self.g**2 + otherColor.g**2) / 2)
+        newB = math.sqrt((self.b**2 + otherColor.b**2) / 2)
+
+        return ColorRGB(newR, newG, newB)
+    
+    def __repr__(self):
+        return f'ColorRGB({self.r}, {self.g}, {self.b})'
+    
 
 # ---------------------------------- Window ---------------------------------- #
 WINWIDTH = 1280
@@ -24,7 +53,7 @@ LETTERS = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 
 NUMBERS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 # ---------------------------------- Colors ---------------------------------- #
-BLACK = (0, 0, 0)
+BLACK = (0, 0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)

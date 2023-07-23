@@ -357,7 +357,7 @@ class EnvirBase(ActorBase):
     def __init__(self):
         super().__init__()
 
-    def tileTexture(self, blockWidth: int, blockHeight: int, texture: pygame.Surface, colorkey: tuple) -> pygame.Surface:
+    def tileTexture(self, blockWidth: int, blockHeight: int, texture: pygame.Surface, colorkey: ColorRGB) -> pygame.Surface:
         """Tiles a texture across an image
         
         ### Arguments
@@ -379,6 +379,6 @@ class EnvirBase(ActorBase):
                 tile_rect = pygame.Rect(x, y, textureWidth, textureHeight)
                 finalImage.blit(texture, tile_rect)
 
-        finalImage.set_colorkey(colorkey)
+        finalImage.set_colorkey(tuple(colorkey))
         return finalImage
 
