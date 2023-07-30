@@ -64,6 +64,20 @@ EAST = 'loc_east'
 NORTH = 'loc_north'
 SOUTH = 'loc_south'
 
+
+CENTER = 'loc_center'
+
+TOPLEFT = 'loc_topleft'
+TOPRIGHT = 'loc_topright'
+BOTTOMLEFT = 'loc_bottomleft'
+BOTTOMRIGHT = 'loc_bottomright'
+
+MIDTOP = 'loc_midtop'
+MIDBOTTOM = 'loc_midbottom'
+MIDLEFT = 'loc_midleft'
+MIDRIGHT = 'loc_midright'
+
+
 # ---------------------------------- Layers ---------------------------------- #
 LAYER = {
     'floor': 1,
@@ -85,8 +99,6 @@ LAYER = {
 # ------------------------------ Object Movement ----------------------------- #
 # The coefficient of friction for all objects with an acceleration parameter
 FRIC = -0.07
-
-
 
 # -------------------------------- Projectiles ------------------------------- #
 PROJ_STD = 'proj_StdBullet'

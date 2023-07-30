@@ -303,7 +303,7 @@ def wallSideCheck(wall: pygame.sprite.Sprite, proj: pygame.sprite.Sprite) -> str
 # ============================================================================ #
 #                                Returns Vector2                               #
 # ============================================================================ #
-def getTopLeftCoordinates(spriteWidth: int, spriteHeight: int, desired_x: float, desired_y: float) -> pygame.math.Vector2:
+def getTopLeftCoords(spriteWidth: int, spriteHeight: int, desired_x: float, desired_y: float) -> pygame.math.Vector2:
     """Returns the coordinates of the topleft corner of a sprite that is centered at its middle
 
     ### Arguments
@@ -314,7 +314,7 @@ def getTopLeftCoordinates(spriteWidth: int, spriteHeight: int, desired_x: float,
     ### Returns:
         ``pygame.math.Vector2``: The coordinates of the sprite's center, with its topleft corner in the desired x and y locations
     """    
-    return vec(desired_x + spriteWidth / 2, desired_y + spriteHeight / 2)
+    return vec(desired_x + spriteWidth // 2, desired_y + spriteHeight // 2)
 
 
 def getRandComponents(maxValue) -> pygame.math.Vector2:

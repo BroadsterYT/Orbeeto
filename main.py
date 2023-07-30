@@ -334,14 +334,14 @@ class Box(ActorBase):
 # ============================================================================ #
 #                             Wall & Floor Classes                             #
 # ============================================================================ #
-class Wall(EnvirBase):
+class Wall(TileBase):
     def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float):
         super().__init__()
         self.show(LAYER['wall_layer'])
         all_walls.add(self) 
 
         self.blockWidth, self.blockHeight = blockWidth, blockHeight
-        self.pos = getTopLeftCoordinates(blockWidth * 16, blockHeight * 16, blockPosX * 16, blockPosY * 16)
+        self.pos = getTopLeftCoords(blockWidth * 16, blockHeight * 16, blockPosX * 16, blockPosY * 16)
 
         self.texture = pygame.image.load("sprites/textures/wall.png").convert()
         self.image: pygame.Surface = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, ColorRGB(25, 0, 0))
@@ -352,18 +352,31 @@ class Wall(EnvirBase):
         self.hitbox.center = self.pos
 
 
-class LockedWall(EnvirBase):
-    def __init__(self, id: int, blockPosX: int, blockPosY: int):
-        pass
+class LockedWall(TileBase):
+    def __init__(self, id: int, blockPosX: int, blockPosY: int, blockWidth: int, blockHeight: int):
+        super().__init__()
+        all_walls.add(self)
+        self.id = id
+
+        self.pos = getTopLeftCoords(blockWidth * self.BLOCK, blockHeight * self.BLOCK, blockPosX * self.BLOCK, blockPosY * self.BLOCK)
+        
+        try:
+            self.switch = next(b for b in all_trinkets if b.id == self.id)
+
+        except StopIteration:
+            self.switch = None
+
+    def __repr__(self):
+        return f'LockedWall({self.id}, {self.pos})'
 
 
-class Floor(EnvirBase):
+class Floor(TileBase):
     def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float):
         super().__init__()
         self.show(LAYER['floor'])
         all_floors.add(self)
         self.blockWidth, self.blockHeight = blockWidth, blockHeight
-        self.pos = getTopLeftCoordinates(blockWidth * 16, blockHeight * 16, blockPosX * 16, blockPosY * 16)
+        self.pos = getTopLeftCoords(blockWidth * 16, blockHeight * 16, blockPosX * 16, blockPosY * 16)
 
         self.spritesheet = Spritesheet("sprites/textures/floor.png", 4)
         self.textures = self.spritesheet.get_images(16, 16, 4)

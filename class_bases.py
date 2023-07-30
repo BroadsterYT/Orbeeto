@@ -99,6 +99,18 @@ class ActorBase(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = self.rect.center)
     
     # ---------------------------------- Physics --------------------------------- #
+    def velMovement(self) -> None:
+        """Makes a sprite move according to its velocity (``self.vel``)
+        
+        ### Arguments
+            - deltaTime (``float``): The difference in time between frame updates
+        """
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
+
+        self.pos.x += self.vel.x
+        self.pos.y += self.vel.y
+
     def accelMovement(self) -> None:
         """Makes a sprite move according to its acceleration (``self.accel`` and ``self.cAccel``)
         
@@ -114,18 +126,6 @@ class ActorBase(pygame.sprite.Sprite):
         self.accel.y += self.vel.y * FRIC
         self.vel += self.accel
         self.pos += self.vel + self.cAccel * self.accel
-
-    def velMovement(self) -> None:
-        """Makes a sprite move according to its velocity (``self.vel``)
-        
-        ### Arguments
-            - deltaTime (``float``): The difference in time between frame updates
-        """
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
-        
-        self.pos.x += self.vel.x
-        self.pos.y += self.vel.y
 
     def collideCheck(self, *contactLists: list) -> None:
         """Check if the sprite comes into contact with another sprite from a specific group. 
@@ -353,9 +353,10 @@ class AbstractBase(pygame.sprite.AbstractGroup):
             super().add(sprite)
 
 
-class EnvirBase(ActorBase):
+class TileBase(ActorBase):
     def __init__(self):
         super().__init__()
+        self.BLOCK: int = 16
 
     def tileTexture(self, blockWidth: int, blockHeight: int, texture: pygame.Surface, colorkey: ColorRGB) -> pygame.Surface:
         """Tiles a texture across an image
