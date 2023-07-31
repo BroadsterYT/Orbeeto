@@ -74,12 +74,10 @@ class ActorBase(pygame.sprite.Sprite):
             - rectPosY (``int``): The y-axis position to spawn the rect and hitbox
             - rectWidth (``int``): The width of the rect
             - rectHeight (``int``): The height of the rect
-            - hitboxInfWidth (``int``, optional): The change in width of the hitbox with respect to the rect. Defaults to ``0`` (rect and hitbox have same width).
-            - hitboxInfHeight (``int``, optional): The change in height of the hitbox with respect to the rect. Defaults to ``0`` (rect and hitbox have same height).
             - setPos (``bool``, optional): Should the rect and hitbox be snapped to the position of the sprite?. Defaults to ``True``.
         """        
-        self.image = self.images[self.index]
-        self.original_image = self.original_images[self.index]
+        # self.image = self.images[self.index]
+        # self.original_image = self.original_images[self.index]
         
         self.rect = pygame.Rect(rectPosX, rectPosY, rectWidth, rectHeight)
         self.hitbox = pygame.Rect(rectPosX, rectPosY, hitboxWidth, hitboxHeight)

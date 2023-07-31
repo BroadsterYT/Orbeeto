@@ -216,7 +216,7 @@ def getTimeDiff(timeValue: float) -> float:
 
 
 # ------------------------------ Math Functions ------------------------------ #
-def cosInterp(a: float, b: float, weight: float) -> float:
+def cerp(a: float, b: float, weight: float) -> float:
     """Cosinusoidally interpolates between two values given a weight
 
     ### Arguments
@@ -303,18 +303,19 @@ def wallSideCheck(wall: pygame.sprite.Sprite, proj: pygame.sprite.Sprite) -> str
 # ============================================================================ #
 #                                Returns Vector2                               #
 # ============================================================================ #
-def getTopLeftCoords(spriteWidth: int, spriteHeight: int, desired_x: float, desired_y: float) -> pygame.math.Vector2:
+def getTopLeftCoords(spriteWidth: int, spriteHeight: int, desiredX: float, desiredY: float) -> pygame.math.Vector2:
     """Returns the coordinates of the topleft corner of a sprite that is centered at its middle
-
+    
     ### Arguments
-        - sprite (``pygame.sprite.Sprite``): The sprite to get the coordinates of
-        - desired_x (``float``): The x-value of the desired location of the sprite's topleft corner
-        - desired_y (``float``): The y-value of the desired location of the sprite's topleft corner
-
-    ### Returns:
-        ``pygame.math.Vector2``: The coordinates of the sprite's center, with its topleft corner in the desired x and y locations
+        - spriteWidth (``int``): _description_
+        - spriteHeight (``int``): _description_
+        - desiredX (``float``): _description_
+        - desiredY (``float``): _description_
+    
+    ### Returns
+        - ``pygame.math.Vector2``: _description_
     """    
-    return vec(desired_x + spriteWidth // 2, desired_y + spriteHeight // 2)
+    return vec(desiredX + spriteWidth // 2, desiredY + spriteHeight // 2)
 
 
 def getRandComponents(maxValue) -> pygame.math.Vector2:

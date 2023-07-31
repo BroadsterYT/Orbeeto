@@ -341,33 +341,85 @@ class Wall(TileBase):
         all_walls.add(self) 
 
         self.blockWidth, self.blockHeight = blockWidth, blockHeight
-        self.pos = getTopLeftCoords(blockWidth * 16, blockHeight * 16, blockPosX * 16, blockPosY * 16)
+        self.width, self.height = self.blockWidth * self.BLOCK, self.blockHeight * self.BLOCK
+        self.pos = getTopLeftCoords(self.width, self.height, blockPosX * self.BLOCK, blockPosY * self.BLOCK)
 
         self.texture = pygame.image.load("sprites/textures/wall.png").convert()
         self.image: pygame.Surface = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, ColorRGB(25, 0, 0))
 
-        self.rect = self.image.get_rect()
-        self.hitbox = self.image.get_rect()
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+        self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
 
 
 class LockedWall(TileBase):
-    def __init__(self, id: int, blockPosX: int, blockPosY: int, blockWidth: int, blockHeight: int):
-        super().__init__()
-        all_walls.add(self)
-        self.id = id
-
-        self.pos = getTopLeftCoords(blockWidth * self.BLOCK, blockHeight * self.BLOCK, blockPosX * self.BLOCK, blockPosY * self.BLOCK)
+    def __init__(self, idValue: int, blockPosX: int, blockPosY: int, blockWidth: int, blockHeight: int):
+        """A wall that will move/disappear when activated by a switch or button
         
-        try:
-            self.switch = next(b for b in all_trinkets if b.id == self.id)
+        ### Arguments
+            - idValue (``int``): _description_
+            - blockPosX (``int``): The x position where the wall should be placed (0 being the left edge and 80 being the right)
+            - blockPosY (``int``): The y position where the wall should be placed (0 being the top edge and 45 being the bottom)
+            - blockWidth (``int``): _description_
+            - blockHeight (``int``): _description_
+        """        
+        super().__init__()
+        self.show(LAYER['wall_layer'])
+        all_walls.add(self)
+        
+        self.idValue = idValue
+        self.switch: Button = self.__findSwitch()
+        
+        self.isAct = False
+        self.isDeact = False
+        self.canMove = True
+        self.lastChange = time.time()
 
+        self.blockWidth, self.blockHeight = blockWidth, blockHeight
+        self.width, self.height = self.blockWidth * self.BLOCK, self.blockHeight * self.BLOCK
+
+        self.startPos = getTopLeftCoords(self.width, self.height, blockPosX * self.BLOCK, blockPosY * self.BLOCK)
+        self.endPos = vec(500, 500)
+        self.pos = getTopLeftCoords(self.width, self.height, blockPosX * self.BLOCK, blockPosY * self.BLOCK)
+
+        self.spritesheet = Spritesheet("sprites/textures/wall.png", 1)
+        self.textures = self.spritesheet.get_images(16, 16, 1)
+        self.index = 0
+
+        self.texture = self.textures[self.index]
+        self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
+
+        self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
+
+    def __findSwitch(self) -> pygame.sprite.Sprite:
+        try:
+            switchMatch = next(s for s in all_trinkets if s.idValue == self.idValue)
+            return switchMatch
         except StopIteration:
-            self.switch = None
+            raise CustomError(f'Error: No switch with idValue of {self.idValue} found')
+
+    def __activate(self):
+        if not self.isAct and not self.isDeact:
+            if self.switch.getState():
+                self.lastChange = time.time()
+                self.isAct = True
+
+            elif not self.switch.getState():
+                self.lastChange = time.time()
+                self.isDeact = True
+
+        if self.isAct and not self.isDeact:
+            print('active')
+
+        if not self.isAct and self.isDeact:
+            print('deactive')
+
+    def update(self):
+        self.__activate()
+        # print(repr(self))
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
 
     def __repr__(self):
-        return f'LockedWall({self.id}, {self.pos})'
+        return f'LockedWall({self.idValue}, {self.pos}, {repr(self.switch)}, {self.isAct}, {self.isDeact})'
 
 
 class Floor(TileBase):
@@ -375,8 +427,10 @@ class Floor(TileBase):
         super().__init__()
         self.show(LAYER['floor'])
         all_floors.add(self)
+        
         self.blockWidth, self.blockHeight = blockWidth, blockHeight
-        self.pos = getTopLeftCoords(blockWidth * 16, blockHeight * 16, blockPosX * 16, blockPosY * 16)
+        self.width, self.height = self.blockWidth * self.BLOCK, self.blockHeight * self.BLOCK
+        self.pos = getTopLeftCoords(self.width, self.height, blockPosX * self.BLOCK, blockPosY * self.BLOCK)
 
         self.spritesheet = Spritesheet("sprites/textures/floor.png", 4)
         self.textures = self.spritesheet.get_images(16, 16, 4)
@@ -385,10 +439,7 @@ class Floor(TileBase):
         self.texture = self.textures[self.index]
         self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
 
-        self.rect = self.image.get_rect()
-        self.hitbox = self.image.get_rect()
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+        self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
     
     def update(self):
         if self.visible:
@@ -440,11 +491,12 @@ class Room(AbstractBase):
                 Floor(0, 0, 80, 45),
                 Box(0, 100, 200),
 
-                Button(0, 20, 20)
+                Button(0, 20, 20),
+                LockedWall(0, 24, 20, 2, 2)
             )
             
             try:
-                matchContainer = next(c for c in all_containers if c.room == self.room)
+                matchContainer: EnemyContainer = next(c for c in all_containers if c.room == self.room)
                 matchContainer.showEnemies()
 
             except StopIteration:
@@ -599,7 +651,7 @@ class InventoryMenu(AbstractBase):
             weight = getTimeDiff(self.lastCycle)
             if weight <= 1:
                 for sprite in self.sprites():
-                    sprite.pos.x = cosInterp(sprite.start_pos.x, sprite.start_pos.x - WINWIDTH, weight)
+                    sprite.pos.x = cerp(sprite.start_pos.x, sprite.start_pos.x - WINWIDTH, weight)
             else:
                 for sprite in self.sprites():
                     sprite.start_pos.x = sprite.pos.x
@@ -610,7 +662,7 @@ class InventoryMenu(AbstractBase):
             weight = getTimeDiff(self.lastCycle)
             if weight <= 1:
                 for sprite in self.sprites():
-                    sprite.pos.x = cosInterp(sprite.start_pos.x, sprite.start_pos.x + WINWIDTH, weight)
+                    sprite.pos.x = cerp(sprite.start_pos.x, sprite.start_pos.x + WINWIDTH, weight)
             else:
                 for sprite in self.sprites():
                     sprite.start_pos.x = sprite.pos.x
