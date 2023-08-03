@@ -4,7 +4,7 @@ from class_bases import *
 from portals import *
 from text import *
 from visuals import *
-from init import *
+# from init import *
 
 
 class BulletBase(ActorBase):
@@ -14,7 +14,9 @@ class BulletBase(ActorBase):
         super().__init__()
         self.ricCount = 1
 
-    def land(self):
+    def land(self, target: pygame.sprite.Sprite):
+        self.hit = target
+        self.sideHit = trueCollideSideCheck(self, target)
         self.ricCount -= 1
 
         if self.ricCount <= 0:
@@ -41,7 +43,7 @@ class BulletBase(ActorBase):
 
             if canHurt:
                 self.inflictDamage(spriteGroup, self.shotFrom, collidingSprite)
-                self.land()
+                self.land(collidingSprite)
 
             elif not canHurt:
                 if spriteGroup == all_portals:
@@ -53,11 +55,11 @@ class BulletBase(ActorBase):
                         return
                     
                     elif len(all_portals) < 2:
-                        self.land()
+                        self.land(collidingSprite)
                         return
 
                 else:
-                    self.land()
+                    self.land(collidingSprite)
 
     def inflictDamage(self, spriteGroup: pygame.sprite.Group, sender: ActorBase, receiver: ActorBase) -> None:
         """Executes the subtraction of ``hp`` after a sprite is struck by a projectile
@@ -142,51 +144,62 @@ class ProjExplode(ActorBase):
         """            
         super().__init__()
         self.show(LAYER['explosion_layer'])
-        self.proj = proj
-        
-        self.spritesheet = Spritesheet("sprites/bullets/bullets.png", 8)
-        self.index = 1
+        self.owner = proj
 
         if isinstance(proj, PlayerStdBullet) or isinstance(proj, EnemyStdBullet):
-            self.images = self.spritesheet.get_images(32, 32, 4)
-            self.original_images = self.spritesheet.get_images(32, 32, 4)
+            self.setImages('sprites/bullets/bullets.png', 32, 32, 8, 4, 0, 1)
 
         elif isinstance(proj, PortalBullet):
-            self.images = self.spritesheet.get_images(32, 32, 4)
-            self.original_images = self.spritesheet.get_images(32, 32, 4)
+            self.setImages('sprites/bullets/bullets.png', 32, 32, 8, 4, 0, 1)
 
         self.renderImages()
-        self.rect = self.proj.rect
+        self.rect = self.owner.rect
+        self.hitbox = self.owner.hitbox
+        
         self.randRotation = rand.randint(1, 360)
 
-        self.pos = self.proj.pos
+        if self.owner.sideHit == SOUTH:
+            self.pos.x = self.owner.pos.x
+            self.pos.y = self.owner.hit.pos.y + self.owner.hit.hitbox.height // 2
+
+        if self.owner.sideHit == EAST:
+            self.pos.x = self.owner.hit.pos.x + self.owner.hit.hitbox.width // 2
+            self.pos.y = self.owner.pos.y
+
+        if self.owner.sideHit == NORTH:
+            self.pos.x = self.owner.pos.x
+            self.pos.y = self.owner.hit.pos.y - self.owner.hit.hitbox.height // 2
+
+        if self.owner.sideHit == WEST:
+            self.pos.x = self.owner.hit.pos.x - self.owner.hit.hitbox.width // 2
+            self.pos.y = self.owner.pos.y
 
     def update(self):
-        global anim_timer
-        if isinstance(self.proj, PlayerStdBullet) or isinstance(self.proj, EnemyStdBullet):
-            if anim_timer % 5 == 0:
+        if isinstance(self.owner, PlayerStdBullet) or isinstance(self.owner, EnemyStdBullet):
+            if getTimeDiff(self.lastFrame) >= SPF:
                 if self.index > 3:
                     self.kill()
                 else:
-                    self.image = self.images[self.index]
-                    self.original_image = self.original_images[self.index]
+                    self.renderImages()
                     self.index += 1
+                self.lastFrame = time.time()
 
-        elif isinstance(self.proj, PortalBullet):
-            if anim_timer % 5 == 0:
+        elif isinstance(self.owner, PortalBullet):
+            if getTimeDiff(self.lastFrame) >= SPF:
                 if self.index > 3:
                     self.kill()
                 else:
-                    self.image = self.images[self.index]
-                    self.original_image = self.original_images[self.index]
+                    self.renderImages()
                     self.index += 1
+                self.lastFrame = time.time()
         
         # Give explosion its random rotation
         self.image = pygame.transform.rotate(self.original_image, self.randRotation)
-        self.rect = self.image.get_rect(center = self.rect.center)
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
 
     def __repr__(self):
-        return f'ProjExplode({self.proj}, {self.pos})'
+        return f'ProjExplode({self.owner}, {self.pos})'
 
 
 # ============================================================================ #
@@ -260,7 +273,7 @@ class PortalBullet(BulletBase):
 
             if canHurt:
                 self.inflictDamage(spriteGroup, self.shotFrom, collidingSprite)
-                self.land()
+                self.land(collidingSprite)
 
             elif not canHurt:
                 # If the projectile hits a portal
@@ -272,7 +285,7 @@ class PortalBullet(BulletBase):
                         return
                     
                     elif len(all_portals) < 2:
-                        self.land()
+                        self.land(collidingSprite)
                         return
 
                 elif spriteGroup == all_walls:
@@ -289,10 +302,10 @@ class PortalBullet(BulletBase):
                     if side == WEST:
                         all_portals.add(Portal(collidingSprite.pos.x - (collidingSprite.image.get_width() // 2), self.pos.y, side))
                         portalCountCheck()
-                    self.land()
+                    self.land(collidingSprite)
                 
                 else:
-                    self.land()
+                    self.land(collidingSprite)
 
     def bindProj(self):
         if self.canUpdate:
@@ -431,9 +444,10 @@ class GrappleBullet(BulletBase):
                     self.land(collidingSprite)
 
     def bindProj(self):
-        if can_update:
+        if self.canUpdate:
             if not self.isHooked:
                 self.projCollide(all_enemies, True)
+                self.projCollide(all_movable, False)
                 self.projCollide(all_portals, False)
                 self.projCollide(all_walls, False)
                 self.projCollide(all_drops, False)

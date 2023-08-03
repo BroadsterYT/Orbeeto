@@ -272,7 +272,73 @@ def collideSideCheck(object: pygame.sprite.Sprite, instig: pygame.sprite.Sprite)
             return NORTH
         else:
             return SOUTH
+        
+def trueCollideSideCheck(instig: pygame.sprite.Sprite, object: pygame.sprite.Sprite) -> str:
+        # Bottom center of sprite
+        pointA = vec(object.pos.x,
+                    object.pos.y + object.hitbox.height)
+        # Right center of sprite
+        pointB = vec(object.pos.x + object.hitbox.width,
+                    object.pos.y)
+        # Top center of sprite
+        pointC = vec(object.pos.x,
+                    object.pos.y - object.hitbox.height)
+        # Left center of sprite
+        pointD = vec(object.pos.x - object.hitbox.width,
+                    object.pos.y)
+        
+        lenPointA, lenPointB = getDistToCoords(instig.pos, pointA), getDistToCoords(instig.pos, pointB)
+        lenPointC, lenPointD = getDistToCoords(instig.pos, pointC), getDistToCoords(instig.pos, pointD)
 
+
+        def isClosestPoint(point: pygame.math.Vector2) -> pygame.math.Vector2:
+            if point == pointA:
+                if (lenPointA < lenPointB and
+                    lenPointA < lenPointC and
+                    lenPointA < lenPointD):
+                    return True
+                else:
+                    return False
+
+            elif point == pointB:
+                if (lenPointB < lenPointA and
+                    lenPointB < lenPointC and
+                    lenPointB < lenPointD):
+                    return True
+                else:
+                    return False
+
+            elif point == pointC:
+                if (lenPointC < lenPointA and
+                    lenPointC < lenPointB and
+                    lenPointC < lenPointD):
+                    return True
+                else:
+                    return False
+
+            elif point == pointD:
+                if (lenPointD < lenPointA and
+                    lenPointD < lenPointB and
+                    lenPointD < lenPointC):
+                    return True
+                else:
+                    return False
+
+            else:
+                raise CustomError("Error: Point arg does not match any defined point")
+
+
+        if isClosestPoint(pointB):
+            return EAST
+        
+        elif isClosestPoint(pointD):
+            return WEST
+        
+        elif isClosestPoint(pointC):
+            return NORTH
+        
+        elif isClosestPoint(pointA):
+            return SOUTH
 
 def wallSideCheck(wall: pygame.sprite.Sprite, proj: pygame.sprite.Sprite) -> str:
     """Checks for which side of a wall a projectile hit and returns that value
@@ -297,7 +363,7 @@ def wallSideCheck(wall: pygame.sprite.Sprite, proj: pygame.sprite.Sprite) -> str
             return EAST
         
     else:
-        return None
+        pass
 
 
 # ============================================================================ #

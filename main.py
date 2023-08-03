@@ -249,7 +249,7 @@ class Player(PlayerBase):
 
     def update(self):
         if self.canUpdate and self.visible:
-            self.collideCheck(all_enemies, all_movable, all_walls)
+            self.collideCheck(all_enemies, all_walls)
 
             self.movement()
             self.shoot()
@@ -292,12 +292,12 @@ class Player(PlayerBase):
 #                             Interactible Classes                             #
 # ============================================================================ #
 class Box(ActorBase):
-    def __init__(self, id, posX, posY):
+    def __init__(self, idValue, posX, posY):
         super().__init__()
         self.show(LAYER['movable_layer'])
         all_movable.add(self)
 
-        self.id = id
+        self.idValue = idValue
 
         self.pos = vec((posX, posY))
         self.cAccel = 0.4
@@ -318,7 +318,7 @@ class Box(ActorBase):
                         self.accel.y = self.cAccel
                     if collideSideCheck(self, a_player) == WEST:
                         self.accel.x = self.cAccel
-
+            
             self.accelMovement()
 
     def update(self):
@@ -341,8 +341,8 @@ class Wall(TileBase):
         all_walls.add(self) 
 
         self.blockWidth, self.blockHeight = blockWidth, blockHeight
-        self.width, self.height = self.blockWidth * self.BLOCK, self.blockHeight * self.BLOCK
-        self.pos = getTopLeftCoords(self.width, self.height, blockPosX * self.BLOCK, blockPosY * self.BLOCK)
+        self.width, self.height = self.blockWidth * self.tileSize, self.blockHeight * self.tileSize
+        self.pos = getTopLeftCoords(self.width, self.height, blockPosX * self.tileSize, blockPosY * self.tileSize)
 
         self.texture = pygame.image.load("sprites/textures/wall.png").convert()
         self.image: pygame.Surface = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, ColorRGB(25, 0, 0))
@@ -351,34 +351,34 @@ class Wall(TileBase):
 
 
 class LockedWall(TileBase):
-    def __init__(self, idValue: int, blockPosX: int, blockPosY: int, blockWidth: int, blockHeight: int):
-        """A wall that will move/disappear when activated by a switch or button
+    def __init__(self, idValue: int, sBlockPosX: int, sBlockPosY: int, eBlockPosX: int, eBlockPosY: int, blockWidth: int, blockHeight: int):
+        """A wall that will move when activated by a switch or button
         
         ### Arguments
-            - idValue (``int``): _description_
-            - blockPosX (``int``): The x position where the wall should be placed (0 being the left edge and 80 being the right)
-            - blockPosY (``int``): The y position where the wall should be placed (0 being the top edge and 45 being the bottom)
-            - blockWidth (``int``): _description_
-            - blockHeight (``int``): _description_
+            - idValue (``int``): The ID value of the wall. A button with the same ID value must be present in the same room!
+            - sBlockPosX (``int``): The x position where the wall should be placed in "tiles" (0 being the left edge and 80 being the right)
+            - sBlockPosY (``int``): The y position where the wall should be placed in "tiles" (0 being the top edge and 45 being the bottom)
+            - eBlockPosX (``int``): The x position where the wall should relocate after being activated (0 being the left edge and 80 being the right)
+            - eBlockPosY (``int``): The y position where the wall should relocate after being activated (0 being the top edge and 45 being the bottom)
+            - blockWidth (``int``): The width of the wall in "tiles"
+            - blockHeight (``int``): The height of the wall in "tiles"
         """        
         super().__init__()
         self.show(LAYER['wall_layer'])
         all_walls.add(self)
-        
         self.idValue = idValue
+
         self.switch: Button = self.__findSwitch()
-        
-        self.isAct = False
-        self.isDeact = False
-        self.canMove = True
+        self.lastSwitchState = self.switch.getState()
+        self.hasActivated = False
         self.lastChange = time.time()
 
         self.blockWidth, self.blockHeight = blockWidth, blockHeight
-        self.width, self.height = self.blockWidth * self.BLOCK, self.blockHeight * self.BLOCK
-
-        self.startPos = getTopLeftCoords(self.width, self.height, blockPosX * self.BLOCK, blockPosY * self.BLOCK)
-        self.endPos = vec(500, 500)
-        self.pos = getTopLeftCoords(self.width, self.height, blockPosX * self.BLOCK, blockPosY * self.BLOCK)
+        self.width, self.height = self.blockWidth * self.tileSize, self.blockHeight * self.tileSize
+        
+        self.pos = getTopLeftCoords(self.width, self.height, sBlockPosX * self.tileSize, sBlockPosY * self.tileSize)
+        self.startPos = getTopLeftCoords(self.width, self.height, sBlockPosX * self.tileSize, sBlockPosY * self.tileSize)
+        self.endPos = getTopLeftCoords(self.width, self.height, eBlockPosX * self.tileSize, eBlockPosY * self.tileSize)
 
         self.spritesheet = Spritesheet("sprites/textures/wall.png", 1)
         self.textures = self.spritesheet.get_images(16, 16, 1)
@@ -397,20 +397,18 @@ class LockedWall(TileBase):
             raise CustomError(f'Error: No switch with idValue of {self.idValue} found')
 
     def __activate(self):
-        if not self.isAct and not self.isDeact:
-            if self.switch.getState():
-                self.lastChange = time.time()
-                self.isAct = True
+        currentSwitchState = self.switch.getState()
+        if currentSwitchState != self.lastSwitchState:
+            # Button state has changed, update lastChange and reset position
+            self.lastChange = time.time()
+            self.lastSwitchState = currentSwitchState
 
-            elif not self.switch.getState():
-                self.lastChange = time.time()
-                self.isDeact = True
-
-        if self.isAct and not self.isDeact:
-            print('active')
-
-        if not self.isAct and self.isDeact:
-            print('deactive')
+        weight = getTimeDiff(self.lastChange) / 3
+        if not self.switch.getState() and self.hasActivated:
+            self.pos = cerp(self.pos, self.startPos, weight)
+        elif self.switch.getState():
+            self.hasActivated = True
+            self.pos = cerp(self.pos, self.endPos, weight)
 
     def update(self):
         self.__activate()
@@ -419,7 +417,7 @@ class LockedWall(TileBase):
         self.hitbox.center = self.pos
 
     def __repr__(self):
-        return f'LockedWall({self.idValue}, {self.pos}, {repr(self.switch)}, {self.isAct}, {self.isDeact})'
+        return f'LockedWall({self.idValue}, {self.pos}, {repr(self.switch)})'
 
 
 class Floor(TileBase):
@@ -429,8 +427,8 @@ class Floor(TileBase):
         all_floors.add(self)
         
         self.blockWidth, self.blockHeight = blockWidth, blockHeight
-        self.width, self.height = self.blockWidth * self.BLOCK, self.blockHeight * self.BLOCK
-        self.pos = getTopLeftCoords(self.width, self.height, blockPosX * self.BLOCK, blockPosY * self.BLOCK)
+        self.width, self.height = self.blockWidth * self.tileSize, self.blockHeight * self.tileSize
+        self.pos = getTopLeftCoords(self.width, self.height, blockPosX * self.tileSize, blockPosY * self.tileSize)
 
         self.spritesheet = Spritesheet("sprites/textures/floor.png", 4)
         self.textures = self.spritesheet.get_images(16, 16, 4)
@@ -477,7 +475,7 @@ class Room(AbstractBase):
         for sprite in self.sprites():
             sprite.kill()
 
-        container: EnemyContainer
+        container: EntityContainer
         for container in all_containers:
             container.hideEnemies()
         
@@ -488,23 +486,22 @@ class Room(AbstractBase):
                 Wall(0, 37, 8, 8),
                 Wall(72, 0, 8, 8),
                 Wall(72, 37, 8, 8),
-                Floor(0, 0, 80, 45),
                 Box(0, 100, 200),
-
-                Button(0, 20, 20),
-                LockedWall(0, 24, 20, 2, 2)
             )
             
             try:
-                matchContainer: EnemyContainer = next(c for c in all_containers if c.room == self.room)
-                matchContainer.showEnemies()
+                container: EntityContainer = next(c for c in all_containers if c.room == self.room)
+                container.showEnemies()
 
             except StopIteration:
                 all_containers.append(
-                    EnemyContainer(
+                    EntityContainer(
                         self.room.x, self.room.y,
                         StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
                         StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
+
+                        Button(0, 20, 20),
+                        LockedWall(0, 8, 0, 72, 0, 64, 8)
                     )
                 )
 
@@ -519,7 +516,7 @@ class Room(AbstractBase):
 
             except StopIteration:
                 all_containers.append(
-                    EnemyContainer(
+                    EntityContainer(
                         self.room.x, self.room.y,
                         StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
                         StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
@@ -539,7 +536,7 @@ class Room(AbstractBase):
 
             except StopIteration:
                 all_containers.append(
-                    EnemyContainer(
+                    EntityContainer(
                         self.room.x, self.room.y,
                         StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
                         StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
@@ -558,7 +555,7 @@ class Room(AbstractBase):
 
             except StopIteration:
                 all_containers.append(
-                    EnemyContainer(
+                    EntityContainer(
                         self.room.x, self.room.y,
                         StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
                         StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
@@ -569,7 +566,7 @@ class Room(AbstractBase):
         return f'Room({self.room})'
 
 
-class EnemyContainer(AbstractBase):
+class EntityContainer(AbstractBase):
     def __init__(self, roomX: int, roomY: int, *sprites):
         """A container for enemies. Contains data about all enemies in a room.
 

@@ -99,9 +99,6 @@ class ActorBase(pygame.sprite.Sprite):
     # ---------------------------------- Physics --------------------------------- #
     def velMovement(self) -> None:
         """Makes a sprite move according to its velocity (``self.vel``)
-        
-        ### Arguments
-            - deltaTime (``float``): The difference in time between frame updates
         """
         self.rect.center = self.pos
         self.hitbox.center = self.pos
@@ -196,7 +193,7 @@ class ActorBase(pygame.sprite.Sprite):
                         return False
 
                 else:
-                    CustomError("Error: Point arg does not match any defined point")
+                    raise CustomError("Error: Point arg does not match any defined point")
 
 
             # If hitting the right side
@@ -354,7 +351,7 @@ class AbstractBase(pygame.sprite.AbstractGroup):
 class TileBase(ActorBase):
     def __init__(self):
         super().__init__()
-        self.BLOCK: int = 16
+        self.tileSize: int = 16
 
     def tileTexture(self, blockWidth: int, blockHeight: int, texture: pygame.Surface, colorkey: ColorRGB) -> pygame.Surface:
         """Tiles a texture across an image
