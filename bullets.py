@@ -4,7 +4,6 @@ from class_bases import *
 from portals import *
 from text import *
 from visuals import *
-# from init import *
 
 
 class BulletBase(ActorBase):
@@ -158,6 +157,7 @@ class ProjExplode(ActorBase):
         
         self.randRotation = rand.randint(1, 360)
 
+        # Allows explosion to spawn on edge of object and not inside it
         if self.owner.sideHit == SOUTH:
             self.pos.x = self.owner.pos.x
             self.pos.y = self.owner.hit.pos.y + self.owner.hit.hitbox.height // 2
@@ -319,7 +319,6 @@ class PortalBullet(BulletBase):
             else:
                 self.kill()
 
-            self.projCollide(all_enemies, True)
             self.projCollide(all_walls, False)
             self.projCollide(all_portals, False)
 
@@ -588,3 +587,6 @@ class EnemyStdBullet(EnemyBulletBase):
     def update(self):
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
         self.bindProj()
+
+    def __repr__(self):
+        return f'EnemyStdBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.ricCount})'

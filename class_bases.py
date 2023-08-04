@@ -314,23 +314,6 @@ class ActorBase(pygame.sprite.Sprite):
                 self.pos.y = portalOut.pos.y + distOffset
                 self.vel = self.vel.rotate(180)
 
-    # ----------------------------------- Rooms ---------------------------------- #
-    def changeRoom(self, direction: str) -> None:
-        if direction == SOUTH:
-            self.pos.y -= WINHEIGHT
-        
-        elif direction == EAST:
-            self.pos.x -= WINWIDTH
-
-        elif direction == NORTH:
-            self.pos.y += WINHEIGHT
-
-        elif direction == WEST:
-            self.pos.x += WINWIDTH
-
-        else:
-            raise CustomError(f"Error: \"{direction}\" is not accepted by changeRoom")
-
 
 class AbstractBase(pygame.sprite.AbstractGroup):
     def __init__(self):

@@ -42,7 +42,7 @@ class HealthBar(StatBarBase):
         self.movement()
 
         if self.entity.hp > 0:
-            self.index = floor((16 * self.entity.hp) / self.entity.max_hp)
+            self.index = floor((16 * self.entity.hp) / self.entity.maxHp)
             self.image = self.images[self.index]
             self.original_image = self.original_images[self.index]
             self.rect = self.image.get_rect(center = self.rect.center)

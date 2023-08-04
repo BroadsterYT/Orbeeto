@@ -44,21 +44,21 @@ class PlayerBase(ActorBase):
         #-------------------- Game stats & UI --------------------#
         self.xp = 0
         self.level = 0
-        self.max_hp = 50
+        self.maxHp = 50
         self.hp = 50
-        self.max_attack = 10
-        self.attack = 10
-        self.max_defense = 10
+        self.maxAtk = 10
+        self.atk = 10
+        self.maxDef = 10
         self.defense = 15
         self.bulletVel = 12
-        self.gun_cooldown = 0.12
+        self.gunCooldown = 0.12
         self.hitTime_charge = 1200
         self.hitTime = 0
         
         self.lastHit = time.time()
         self.lastShot = time.time()
 
-        self.updateMaxStats()
+        self.updateLevel()
 
         self.menu = InventoryMenu(self)
         self.healthBar = HealthBar(self)
@@ -69,7 +69,6 @@ class PlayerBase(ActorBase):
             self.inventory.update({item: 0})
 
     def changeRoom(self, direction: str) -> None:
-        # hideCurrentEnemies()
         if direction == SOUTH:
             mainroom.room.y -= 1
             mainroom.layoutUpdate()
@@ -110,7 +109,7 @@ class PlayerBase(ActorBase):
         if self.pos.y >= WINHEIGHT:
             self.changeRoom(SOUTH)
 
-    def loadXpReq(self):
+    def loadXpReq(self) -> list:
         """Returns a list containing the amount of xp needed to reach each level
         
         ### Returns
@@ -134,13 +133,18 @@ class PlayerBase(ActorBase):
             xpRequired.append(total)
 
         del xpToReach
+        self.maxLevel = 249
         return xpRequired
 
     def updateMaxStats(self):
         """Updates all of the player's max stats."""        
-        self.max_hp = floor(50 * pow(1.009290219, self.level))
-        self.max_attack = floor(10 * pow(1.019580042, self.level))
-        self.max_defense = floor(15 * pow(1.016098331, self.level))
+        self.maxHp = floor(50 * pow(1.009290219, self.level))
+        self.maxAtk = floor(eerp(10, 1250, self.level / self.maxLevel))
+        self.maxDef = floor(15 * pow(1.016098331, self.level))
+
+        self.hp = self.maxHp
+        self.atk = self.maxAtk
+        self.defense = self.maxDef
 
     def updateLevel(self):
         """Updates the current level of the player."""        
@@ -209,7 +213,7 @@ class Player(PlayerBase):
         velX = self.bulletVel * -sin(angle_to_mouse)
         velY = self.bulletVel * -cos(angle_to_mouse)
 
-        if isInputHeld[1] and self.bulletType == PROJ_STD and getTimeDiff(self.lastShot) >= self.gun_cooldown:
+        if isInputHeld[1] and self.bulletType == PROJ_STD and getTimeDiff(self.lastShot) >= self.gunCooldown:
             OFFSET = vec((21, 30))
             all_projs.add(
                 PlayerStdBullet(self,
@@ -977,7 +981,7 @@ while running:
     # ------------------------------ Game Operation ------------------------------ #
     # Regenerate health for testing purposes
     for a_player in all_players:
-        if anim_timer % 5 == 0 and a_player.hp < a_player.max_hp and isInputHeld[K_x]:
+        if anim_timer % 5 == 0 and a_player.hp < a_player.maxHp and isInputHeld[K_x]:
             a_player.hp += 1
 
     # ------------------------------- Redraw Window ------------------------------ #
