@@ -90,7 +90,6 @@ class PlayerBase(ActorBase):
         elif direction == WEST:
             mainroom.room.x -= 1
             mainroom.layoutUpdate()
-
             self.pos.x += WINWIDTH
             groupChangeRooms(WEST, all_portals, all_drops)
 
@@ -138,9 +137,9 @@ class PlayerBase(ActorBase):
 
     def updateMaxStats(self):
         """Updates all of the player's max stats."""        
-        self.maxHp = floor(50 * pow(1.009290219, self.level))
+        self.maxHp = floor(eerp(50, 500, self.level / self.maxLevel))
         self.maxAtk = floor(eerp(10, 1250, self.level / self.maxLevel))
-        self.maxDef = floor(15 * pow(1.016098331, self.level))
+        self.maxDef = floor(eerp(15, 800, self.level / self.maxLevel))
 
         self.hp = self.maxHp
         self.atk = self.maxAtk
@@ -501,9 +500,6 @@ class Room(AbstractBase):
                 all_containers.append(
                     EntityContainer(
                         self.room.x, self.room.y,
-                        StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
-                        StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
-
                         Button(0, 20, 20),
                         LockedWall(0, 8, 0, 72, 0, 64, 8)
                     )
