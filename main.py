@@ -42,27 +42,31 @@ class PlayerBase(ActorBase):
         self.cAccel = 0.55
 
         #-------------------- Game stats & UI --------------------#
-        self.xp = 0
-        self.level = 0
-        self.maxHp = 50
-        self.hp = 50
-        self.maxAtk = 10
-        self.atk = 10
-        self.maxDef = 10
-        self.defense = 15
-        self.bulletVel = 12
-        self.gunCooldown = 0.12
-        self.hitTime_charge = 1200
-        self.hitTime = 0
+        self.xp: int = 0
+        self.level: int = 0
+        self.maxHp: int = 50
+        self.hp: int = self.maxHp
+        self.maxAtk: int = 10
+        self.atk: int = self.maxAtk
+        self.maxDef: int = 10
+        self.defense: int = self.maxDef
+
+        self.maxAmmo: int = 40
+        self.ammo: int = self.maxAmmo
+        self.bulletVel: float = 12.0
+        self.gunCooldown: float = 0.12
+        self.lastShot: float = time.time()
         
+        self.hitTimeCharge = 1200
+        self.hitTime = 0
         self.lastHit = time.time()
-        self.lastShot = time.time()
 
         self.updateLevel()
 
         self.menu = InventoryMenu(self)
         self.healthBar = HealthBar(self)
         self.dodgeBar = DodgeBar(self)
+        self.ammoBar = AmmoBar(self)
 
         self.inventory = {}
         for item in MAT.values():
@@ -207,26 +211,30 @@ class Player(PlayerBase):
 
     def shoot(self):
         """Shoots a bullet"""
-        angle_to_mouse = rad(getAngleToMouse(self))
+        angle = rad(getAngleToMouse(self))
 
-        velX = self.bulletVel * -sin(angle_to_mouse)
-        velY = self.bulletVel * -cos(angle_to_mouse)
+        velX = self.bulletVel * -sin(angle)
+        velY = self.bulletVel * -cos(angle)
 
-        if isInputHeld[1] and self.bulletType == PROJ_STD and getTimeDiff(self.lastShot) >= self.gunCooldown:
+        if (isInputHeld[1] and 
+            self.bulletType == PROJ_STD and 
+            getTimeDiff(self.lastShot) >= self.gunCooldown and
+            self.ammo > 0):
             OFFSET = vec((21, 30))
             all_projs.add(
                 PlayerStdBullet(self,
-                    self.pos.x - (OFFSET.x * cos(angle_to_mouse)) - (OFFSET.y * sin(angle_to_mouse)),
-                    self.pos.y + (OFFSET.x * sin(angle_to_mouse)) - (OFFSET.y * cos(angle_to_mouse)),
+                    self.pos.x - (OFFSET.x * cos(angle)) - (OFFSET.y * sin(angle)),
+                    self.pos.y + (OFFSET.x * sin(angle)) - (OFFSET.y * cos(angle)),
                     velX, velY
                 ),
                 
                 PlayerStdBullet(self,
-                    self.pos.x + (OFFSET.x * cos(angle_to_mouse)) - (OFFSET.y * sin(angle_to_mouse)),
-                    self.pos.y - (OFFSET.x * sin(angle_to_mouse)) - (OFFSET.y * cos(angle_to_mouse)),
+                    self.pos.x + (OFFSET.x * cos(angle)) - (OFFSET.y * sin(angle)),
+                    self.pos.y - (OFFSET.x * sin(angle)) - (OFFSET.y * cos(angle)),
                     velX, velY
                 )
             )
+            self.ammo -= 1
             self.lastShot = time.time()
 
         # Firing portals
@@ -258,6 +266,7 @@ class Player(PlayerBase):
             self.shoot()
             self.checkRoomChange()
 
+
             # Animation
             if getTimeDiff(self.lastFrame) > 0.05:
                 if isInputHeld[1]:
@@ -276,7 +285,7 @@ class Player(PlayerBase):
                     self.teleport(portal)
 
             # Dodge charge up
-            if self.hitTime < self.hitTime_charge:
+            if self.hitTime < self.hitTimeCharge:
                 self.hitTime += 1
 
         self.menu.update()
@@ -957,10 +966,10 @@ while running:
             sys.exit()
 
         isInputHeld = {
-            1: pygame.mouse.get_pressed()[0],
-            2: pygame.mouse.get_pressed()[1],
-            3: pygame.mouse.get_pressed()[2],
-
+            1: pygame.mouse.get_pressed(5)[0],
+            2: pygame.mouse.get_pressed(5)[1],
+            3: pygame.mouse.get_pressed(5)[2],
+ 
             K_a: keyPressed[K_a],
             K_w: keyPressed[K_w],
             K_s: keyPressed[K_s],
@@ -971,6 +980,11 @@ while running:
 
         checkKeyRelease(False, K_e, K_x)
         checkKeyRelease(True, 1, 2, 3)
+
+        if event.type == pygame.MOUSEWHEEL:
+            # Player ammo refill
+            if mainroom.player1.ammo < mainroom.player1.maxAmmo:
+                mainroom.player1.ammo += 1
 
     screen.fill((255, 250, 255))
 

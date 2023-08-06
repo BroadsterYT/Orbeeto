@@ -16,74 +16,82 @@ class StatBarBase(ActorBase):
 
 
 class HealthBar(StatBarBase):
-    def __init__(self, entity):
+    def __init__(self, owner):
         super().__init__()
         self.show(LAYER['statBar_layer'])
         all_stat_bars.add(self)
         
-        self.entity = entity
+        self.owner = owner
+        self.pos = vec(self.owner.pos.x, self.owner.pos.y + 42)
 
-        self.spritesheet = Spritesheet("sprites/stat_bars/health_bar.png", 1)
-        self.images = self.spritesheet.get_images(128, 16, 18)
-        self.original_images = self.spritesheet.get_images(128, 16, 18)
-        self.index = 17
-
-        self.image = self.images[self.index]
-        self.original_image = self.original_images[self.index]
-
-        self.rect = pygame.Rect(0, 0, 128, 16)
-        
-        self.pos = self.entity.pos
+        self.setImages('sprites/stat_bars/health_bar.png', 128, 16, 1, 17, 0, 16)
+        self.setRects(self.pos.x, self.pos.y, 128, 16, 128, 16)
 
     def movement(self):
-        self.rect.center = vec(self.entity.pos.x, self.entity.pos.y + 42)
+        self.pos = vec(self.owner.pos.x, self.owner.pos.y + 42)
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
 
     def update(self):
         self.movement()
 
-        if self.entity.hp > 0:
-            self.index = floor((16 * self.entity.hp) / self.entity.maxHp)
-            self.image = self.images[self.index]
-            self.original_image = self.original_images[self.index]
-            self.rect = self.image.get_rect(center = self.rect.center)
-
+        if self.owner.hp > 0:
+            self.index = floor((16 * self.owner.hp) / self.owner.maxHp)
+            self.renderImages()
         else:
-            self.index = 17
-            self.image = self.images[self.index]
             self.kill()
 
 
 class DodgeBar(StatBarBase):
-    def __init__(self, entity):
+    def __init__(self, owner):
         super().__init__()
-        all_sprites.add(self, layer = LAYER['statBar_layer'])
+        self.show(LAYER['statBar_layer'])
         all_stat_bars.add(self)
 
-        self.spritesheet = Spritesheet("sprites/stat_bars/dodge_bar.png", 1)
-        self.images = self.spritesheet.get_images(128, 16, 18)
-        self.original_images = self.spritesheet.get_images(128, 16, 18)
-        self.index = 17
+        self.owner = owner
+        self.pos = vec(self.owner.pos.x, self.owner.pos.y + 60)
 
-        self.image = self.images[self.index]
-        self.original_image = self.original_images[self.index]
-
-        self.rect = pygame.Rect(0, 0, 128, 16)
-        self.entity = entity
-        self.pos = self.entity.pos
+        self.setImages('sprites/stat_bars/dodge_bar.png', 128, 16, 1, 17, 0, 16)
+        self.setRects(self.pos.x, self.pos.y, 128, 16, 128, 16)
     
     def movement(self):
-        self.rect.center = vec(self.entity.pos.x, self.entity.pos.y + 60)
+        self.pos = vec(self.owner.pos.x, self.owner.pos.y + 60)
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
 
     def update(self):
         self.movement()
 
-        if self.entity.hp > 0:
-            if self.entity.hitTime < self.entity.hitTime_charge:
-                self.index = floor((17 * self.entity.hitTime) / self.entity.hitTime_charge)
-                self.image = self.images[self.index]
-                self.original_image = self.original_images[self.index]
-                self.rect = self.image.get_rect(center = self.rect.center)
+        if self.owner.hp > 0:
+            if self.owner.hitTime < self.owner.hitTimeCharge:
+                self.index = floor((16 * self.owner.hitTime) / self.owner.hitTimeCharge)
+                self.renderImages()
         else:
-            self.index = 17
-            self.image = self.images[self.index]
+            self.kill()
+
+
+class AmmoBar(StatBarBase):
+    def __init__(self, owner):
+        super().__init__()
+        self.show(LAYER['statBar_layer'])
+        all_stat_bars.add(self)
+
+        self.owner = owner
+        self.pos = vec(self.owner.pos.x, self.owner.pos.y + 78)
+
+        self.setImages('sprites/stat_bars/ammo_bar.png', 128, 16, 1, 17, 0, 16)
+        self.setRects(self.pos.x, self.pos.y, 128, 16, 128, 16)
+
+    def movement(self):
+        self.pos = vec(self.owner.pos.x, self.owner.pos.y + 78)
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
+
+    def update(self):
+        self.movement()
+
+        if self.owner.hp > 0:
+            self.index = floor((16 * self.owner.ammo) / self.owner.maxAmmo)
+            self.renderImages()
+        else:
             self.kill()
