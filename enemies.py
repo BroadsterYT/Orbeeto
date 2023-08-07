@@ -68,7 +68,7 @@ class StandardGrunt(EnemyBase):
 
         #---------------------- Game stats & UI ----------------------#
         self.maxHp = 15
-        initStats(self, 15, 10, 10, 10000, 0.4)
+        initStats(self, 15, 10, 10, 40, 0.4)
 
     def movement(self, canShoot: bool):
         if self.canUpdate and self.hp > 0:
