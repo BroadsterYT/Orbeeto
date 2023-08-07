@@ -41,7 +41,7 @@ class PlayerBase(ActorBase):
         self.pos = vec((WINWIDTH / 2, WINHEIGHT / 2))
         self.cAccel = 0.55
 
-        #-------------------- Game stats & UI --------------------#
+        # -------------------------------- Game Stats -------------------------------- #
         self.xp: int = 0
         self.level: int = 0
         self.maxLevel: int = 249
@@ -65,12 +65,13 @@ class PlayerBase(ActorBase):
 
         self.updateLevel()
 
-        self.menu = InventoryMenu(self)
-        
+        # --------------------------------- Stat Bars -------------------------------- #
         self.healthBar = HealthBar(self)
         self.dodgeBar = DodgeBar(self)
         self.ammoBar = AmmoBar(self)
 
+        self.menu = InventoryMenu(self)
+        
         self.inventory = {}
         for item in MAT.values():
             self.inventory.update({item: 0})
@@ -153,15 +154,10 @@ class PlayerBase(ActorBase):
         self.defense = self.maxDef
 
     def updateLevel(self):
-        """Updates the current level of the player."""        
-        xpRequired = self.loadXpReq()
-        for i in range(250):
-            if self.xp < xpRequired[i + 1]:
-                self.level = i
-                break
-            if self.xp > xpRequired[249]:
-                self.level = 249
-                break
+        if self.xp > 582803:
+            self.xp = 582803
+
+        self.level = math.floor((256 * self.xp) / (self.xp + 16384))
         
         self.updateMaxStats()
 
