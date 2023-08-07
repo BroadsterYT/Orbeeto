@@ -250,6 +250,7 @@ def eerp(a: float, b: float, weight: float):
 
     return trueA * pow(trueB, weight)
 
+
 # ============================================================================ #
 #                                  Returns int                                 #
 # ============================================================================ #
@@ -497,7 +498,7 @@ def textToImage(text: str, fontImg: str, charWidth: int, charHeight: int, charCo
     ### Returns
         - ``pygame.Surface``: _description_
     """    
-    spritesheet = Spritesheet(fontImg, 36)
+    spritesheet = Spritesheet(fontImg, 37)
     images = spritesheet.get_images(charWidth, charHeight, charCount)
     charList = []
 
@@ -508,6 +509,8 @@ def textToImage(text: str, fontImg: str, charWidth: int, charHeight: int, charCo
             charList.append(images[LETTERS[char]])
         elif char in NUMBERS:
             charList.append(images[int(char) + 26])
+        elif char in SYMBOLS:
+            charList.append(images[SYMBOLS[char] + 36])
 
     count = 0
     for char in charList:
@@ -672,7 +675,7 @@ def initStats(sprite: pygame.sprite.Sprite, hp: int, attack: int, defense: int, 
     sprite.atk = attack
     sprite.maxDef = defense
     sprite.defense = defense
-    sprite.xp_worth = xp
+    sprite.xpWorth = xp
     sprite.cAccel = cAccel
 
 

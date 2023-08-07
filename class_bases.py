@@ -377,4 +377,3 @@ class TileBase(ActorBase):
 
         finalImage.set_colorkey(tuple(colorkey))
         return finalImage
-

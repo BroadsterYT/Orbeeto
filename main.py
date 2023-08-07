@@ -44,6 +44,8 @@ class PlayerBase(ActorBase):
         #-------------------- Game stats & UI --------------------#
         self.xp: int = 0
         self.level: int = 0
+        self.maxLevel: int = 249
+        
         self.maxHp: int = 50
         self.hp: int = self.maxHp
         self.maxAtk: int = 10
@@ -64,6 +66,7 @@ class PlayerBase(ActorBase):
         self.updateLevel()
 
         self.menu = InventoryMenu(self)
+        
         self.healthBar = HealthBar(self)
         self.dodgeBar = DodgeBar(self)
         self.ammoBar = AmmoBar(self)
@@ -125,8 +128,9 @@ class PlayerBase(ActorBase):
             if a < 125:
                 value = math.floor(17.84 * a)
             else:
-                value = math.floor(pow(1.061726202, a))
+                value = math.floor(pow(1.061726202, a) + 445)
             xpToReach.append(value)
+        
         for b in range(250):
             countup = 0
             total = 0
@@ -136,16 +140,15 @@ class PlayerBase(ActorBase):
             xpRequired.append(total)
 
         del xpToReach
-        self.maxLevel = 249
         return xpRequired
 
     def updateMaxStats(self):
         """Updates all of the player's max stats."""        
-        self.maxHp = floor(eerp(50, 500, self.level / self.maxLevel))
+        self.maxHp = floor(eerp(50, 650, self.level / self.maxLevel))
         self.maxAtk = floor(eerp(10, 1250, self.level / self.maxLevel))
         self.maxDef = floor(eerp(15, 800, self.level / self.maxLevel))
+        self.maxAmmo = floor(eerp(40, 3000, self.level / self.maxLevel))
 
-        self.hp = self.maxHp
         self.atk = self.maxAtk
         self.defense = self.maxDef
 
@@ -953,6 +956,7 @@ def checkKeyRelease(isMouse, *inputs):
 running = True
 while running:
     anim_timer += 1
+    print(mainroom.player1)
 
     for a_player in all_players:
         if a_player.hp <= 0:

@@ -20,24 +20,24 @@ class EnemyBase(ActorBase):
         self.is_shooting = False
 
         #-------------------- In-game Stats --------------------#
-        self.max_hp = None
+        self.maxHp = None
         self.hp = None
-        self.max_attack = None
-        self.attack = None
-        self.max_defense = None
+        self.maxAtk = None
+        self.atk = None
+        self.maxDef = None
         self.defense = None
-        self.xp_worth = None
+        self.xpWorth = None
 
         self.healthBar = HealthBar(self)
 
     def awardXp(self):
         for a_player in all_players:
-            a_player.xp += self.xp_worth
+            a_player.xp += self.xpWorth
             a_player.updateLevel()
             a_player.updateMaxStats()
 
-    def dropItems(self, table_index):
-        drops = LTDROPS[table_index]
+    def dropItems(self, tableIndex):
+        drops = LTDROPS[tableIndex]
         row = rand.randint(0, 2)
         column = rand.randint(0, 2)
         
@@ -67,7 +67,8 @@ class StandardGrunt(EnemyBase):
         self.setRects(0, 0, 64, 64, 32, 32)
 
         #---------------------- Game stats & UI ----------------------#
-        initStats(self, 15, 10, 10, 25, 0.4)
+        self.maxHp = 15
+        initStats(self, 15, 10, 10, 10000, 0.4)
 
     def movement(self, canShoot: bool):
         if self.canUpdate and self.hp > 0:
@@ -131,10 +132,10 @@ class StandardGrunt(EnemyBase):
             self.kill()
 
     def __str__(self):
-        return f'StandardGrunt at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\nxp worth: {self.xp_worth}'
+        return f'StandardGrunt at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\nxp worth: {self.xpWorth}'
 
     def __repr__(self):
-        return f'StandardGrunt({self.pos}, {self.vel}, {self.accel}, {self.xp_worth})'
+        return f'StandardGrunt({self.pos}, {self.vel}, {self.accel}, {self.xpWorth})'
 
 
 class OctoGrunt(EnemyBase):
@@ -223,7 +224,7 @@ class OctoGrunt(EnemyBase):
             self.kill()
 
     def __str__(self):
-        return f'OctoGrunt at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\nxp worth: {self.xp_worth}\n'
+        return f'OctoGrunt at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\nxp worth: {self.xpWorth}\n'
     
     def __repr__(self):
-        return f'OctoGrunt({self.pos}, {self.vel}, {self.accel}, {self.xp_worth})'
+        return f'OctoGrunt({self.pos}, {self.vel}, {self.accel}, {self.xpWorth})'
