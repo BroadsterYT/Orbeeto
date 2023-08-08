@@ -852,7 +852,7 @@ def redrawGameWindow():
 # ============================================================================ #
 #                         Initialization for Main Loop                         #
 # ============================================================================ #
-# Load rooms
+# Load room
 mainroom = Room(0, 0)
 mainroom.layoutUpdate()
 

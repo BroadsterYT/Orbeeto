@@ -16,24 +16,22 @@ class DamageChar(ActorBase):
         super().__init__()
         self.show(LAYER['text_layer'])
         all_font_chars.add(self)
-        self.start_time = time.time()
-
+        
+        self.start = time.time()
         self.pos = vec((posX, posY))
-        self.vel = vec(0, -2)
 
         self.image = textToImage(str(damage), "sprites/ui/font.png", 9, 14, 36)
-        
-        self.rect = self.image.get_rect()
-        self.rect.center = self.pos
+        self.setRects(self.pos.x, self.pos.y, 9, 14, 9, 14)
 
     def movement(self):
-        self.pos.x += self.vel.x
-        self.pos.y += self.vel.y
+        self.accel = vec(0, 0)
+        if getTimeDiff(self.start) < 0.1:
+            self.accel = vec(0, -1)
 
-        self.rect.center = self.pos
+        self.accelMovement()
 
     def update(self):
         self.movement()
 
-        if getTimeDiff(self.start_time) > 0.75:
+        if getTimeDiff(self.start) > 0.6:
             self.kill()

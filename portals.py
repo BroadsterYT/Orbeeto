@@ -47,7 +47,6 @@ class Portal(PortalBase):
             self.kill()
 
     def update(self):
-        print(self)
         if self.facing == None:
             self.kill()
 
