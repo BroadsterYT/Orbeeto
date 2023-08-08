@@ -1,6 +1,7 @@
 import pygame
 
 from class_bases import *
+from trinkets import LockedWall
 
 
 class PortalBase(ActorBase):
@@ -10,7 +11,7 @@ class PortalBase(ActorBase):
 
 
 class Portal(PortalBase):
-    def __init__(self, posX: int, posY: int, facing: str = SOUTH):
+    def __init__(self, spawnedFrom: pygame.sprite.Sprite, posX: int, posY: int, facing: str = SOUTH):
         """A portal that can teleport any moving object
 
         ### Arguments
@@ -19,7 +20,11 @@ class Portal(PortalBase):
             - facing (``str``, optional): The direction the portal should face. Defaults to ``SOUTH``.
         """        
         super().__init__()
-        all_sprites.add(self, layer = LAYER['portal_layer'])
+        self.show(LAYER['portal_layer'])
+        all_portals.add(self)
+
+        self.on = spawnedFrom.hit
+        self.onStart = self.on.pos.copy()
         
         self.pos = vec((posX, posY))
         self.facing = facing
@@ -27,9 +32,9 @@ class Portal(PortalBase):
         self.setImages("sprites/portals/portals.png", 64, 64, 1, 1)
         self.setRects(self.pos.x, self.pos.y, 64, 64, 54, 54)
 
-        self.image, self.hitbox = self.getFace()
+        self.image, self.hitbox = self.__getFace()
 
-    def getFace(self) -> tuple:
+    def __getFace(self) -> tuple:
         if self.facing == SOUTH:
             return self.image, self.rect.inflate(0, -40)
         if self.facing == EAST:
@@ -42,14 +47,19 @@ class Portal(PortalBase):
             self.kill()
 
     def update(self):
+        print(self)
         if self.facing == None:
             self.kill()
+
+        if isinstance(self.on, LockedWall):
+            if self.on.pos != self.onStart:
+                self.kill()
         
         self.rect.center = self.pos
         self.hitbox.center = self.pos
 
     def __repr__(self):
-        return f'Portal({self.facing}, {self.pos})'
+        return f'Portal({self.on}, {self.facing}, {self.pos})'
 
 
 def portalCountCheck():

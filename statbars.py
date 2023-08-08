@@ -55,13 +55,13 @@ class BarNumbers(ActorBase):
 
     def renderImages(self):
         if isinstance(self.bar, HealthBar):
-            self.image = textToImage(str(self.owner.hp) + '/' + str(self.owner.maxHp), 'sprites/ui/font.png', 9, 14, 37)
+            self.image = textToImage(str(self.owner.hp) + '/' + str(self.owner.maxHp), 'sprites/ui/small_font.png', 5, 7, 37)
 
         elif isinstance(self.bar, DodgeBar):
-            self.image = textToImage(str(self.owner.hitTime) + '/' + str(self.owner.hitTimeCharge), 'sprites/ui/font.png', 9, 14, 37)
+            self.image = textToImage(str(self.owner.hitTime) + '/' + str(self.owner.hitTimeCharge), 'sprites/ui/small_font.png', 5, 7, 37)
 
         elif isinstance(self.bar, AmmoBar):
-            self.image = textToImage(str(self.owner.ammo) + '/' + str(self.owner.maxAmmo), 'sprites/ui/font.png', 9, 14, 37)
+            self.image = textToImage(str(self.owner.ammo) + '/' + str(self.owner.maxAmmo), 'sprites/ui/small_font.png', 5, 7, 37)
 
         else:
             raise TypeError()

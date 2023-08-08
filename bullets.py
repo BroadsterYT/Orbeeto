@@ -289,20 +289,21 @@ class PortalBullet(BulletBase):
                         return
 
                 elif spriteGroup == all_walls:
+                    self.land(collidingSprite)
+                    
                     side = wallSideCheck(collidingSprite, self)
                     if side == SOUTH:
-                        all_portals.add(Portal(self.pos.x, collidingSprite.pos.y + (collidingSprite.image.get_height() // 2), side))
+                        all_portals.add(Portal(self, self.pos.x, collidingSprite.pos.y + (collidingSprite.image.get_height() // 2), side))
                         portalCountCheck()
                     if side == NORTH:
-                        all_portals.add(Portal(self.pos.x, collidingSprite.pos.y - (collidingSprite.image.get_height() // 2), side))
+                        all_portals.add(Portal(self, self.pos.x, collidingSprite.pos.y - (collidingSprite.image.get_height() // 2), side))
                         portalCountCheck()
                     if side == EAST:
-                        all_portals.add(Portal(collidingSprite.pos.x + (collidingSprite.image.get_width() // 2), self.pos.y, side))
+                        all_portals.add(Portal(self, collidingSprite.pos.x + (collidingSprite.image.get_width() // 2), self.pos.y, side))
                         portalCountCheck()
                     if side == WEST:
-                        all_portals.add(Portal(collidingSprite.pos.x - (collidingSprite.image.get_width() // 2), self.pos.y, side))
+                        all_portals.add(Portal(self, collidingSprite.pos.x - (collidingSprite.image.get_width() // 2), self.pos.y, side))
                         portalCountCheck()
-                    self.land(collidingSprite)
                 
                 else:
                     self.land(collidingSprite)
