@@ -3,8 +3,9 @@ from pygame.locals import *
 
 pygame.init()
 
-import sys, math, time
-import random as rand
+import sys
+import math
+import time
 
 from math import sin, cos, radians, degrees, floor, pi
 from bullets import *
@@ -882,7 +883,6 @@ def checkKeyRelease(isMouse, *inputs):
 running = True
 while running:
     anim_timer += 1
-    print(mainroom.player1)
 
     for a_player in all_players:
         if a_player.hp <= 0:
