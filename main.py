@@ -37,34 +37,12 @@ class PlayerBase(ActorBase):
     def __init__(self):
         """The base class for all player objects. It contains parameters and methods to gain better control over player objects."""        
         super().__init__()
-        self.room = vec((0, 0))
 
         self.pos = vec((WINWIDTH / 2, WINHEIGHT / 2))
         self.cAccel = 0.55
 
         # -------------------------------- Game Stats -------------------------------- #
-        self.xp: int = 0
-        self.level: int = 0
-        self.maxLevel: int = 249
-        
-        self.maxHp: int = 50
-        self.hp: int = self.maxHp
-        self.maxAtk: int = 10
-        self.atk: int = self.maxAtk
-        self.maxDef: int = 10
-        self.defense: int = self.maxDef
-
-        self.maxAmmo: int = 40
-        self.ammo: int = self.maxAmmo
-        self.bulletVel: float = 12.0
-        self.gunCooldown: float = 0.12
-        self.lastShot: float = time.time()
-        
-        self.hitTimeCharge = 1200
-        self.hitTime = 0
-        self.lastHit = time.time()
-
-        self.updateLevel()
+        self.__setStats()
 
         # --------------------------------- Stat Bars -------------------------------- #
         self.healthBar = HealthBar(self)
@@ -117,39 +95,38 @@ class PlayerBase(ActorBase):
         if self.pos.y >= WINHEIGHT:
             self.changeRoom(SOUTH)
 
-    def loadXpReq(self) -> list:
-        """Returns a list containing the amount of xp needed to reach each level
-        
-        ### Returns
-            - ``list``: A list containing the amount of xp needed to reach each level
+    def __setStats(self) -> None:
+        """Initializes the starting stats of the player sprite
         """        
-        xpToReach = []
-        xpRequired = []
-
-        for a in range(250):
-            if a < 125:
-                value = math.floor(17.84 * a)
-            else:
-                value = math.floor(pow(1.061726202, a) + 445)
-            xpToReach.append(value)
+        self.xp: int = 0
+        self.level: int = 0
+        self.maxLevel: int = 249
         
-        for b in range(250):
-            countup = 0
-            total = 0
-            while countup <= b:
-                total = total + xpToReach[countup]
-                countup += 1
-            xpRequired.append(total)
+        self.maxHp: int = 50
+        self.hp: int = self.maxHp
+        self.maxAtk: int = 10
+        self.atk: int = self.maxAtk
+        self.maxDef: int = 10
+        self.defense: int = self.maxDef
 
-        del xpToReach
-        return xpRequired
+        self.maxAmmo: int = 40
+        self.ammo: int = self.maxAmmo
+        self.bulletVel: float = 12.0
+        self.gunCooldown: float = 0.12
+        self.lastShot: float = time.time()
+        
+        self.hitTimeCharge = 1200
+        self.hitTime = 0
+        self.lastHit = time.time()
+
+        self.updateLevel()
 
     def updateMaxStats(self):
         """Updates all of the player's max stats."""        
         self.maxHp = floor(eerp(50, 650, self.level / self.maxLevel))
         self.maxAtk = floor(eerp(10, 1250, self.level / self.maxLevel))
         self.maxDef = floor(eerp(15, 800, self.level / self.maxLevel))
-        self.maxAmmo = floor(eerp(40, 3000, self.level / self.maxLevel))
+        self.maxAmmo = floor(eerp(40, 1200, self.level / self.maxLevel))
 
         self.atk = self.maxAtk
         self.defense = self.maxDef
@@ -158,8 +135,7 @@ class PlayerBase(ActorBase):
         if self.xp > 582803:
             self.xp = 582803
 
-        self.level = math.floor((256 * self.xp) / (self.xp + 16384))
-        
+        self.level = floor((256 * self.xp) / (self.xp + 16384))
         self.updateMaxStats()
 
 
@@ -210,7 +186,8 @@ class Player(PlayerBase):
             self.accelMovement()
 
     def shoot(self):
-        """Shoots a bullet"""
+        """Shoots bullets
+        """
         angle = rad(getAngleToMouse(self))
 
         velX = self.bulletVel * -sin(angle)
@@ -220,6 +197,7 @@ class Player(PlayerBase):
             self.bulletType == PROJ_STD and 
             getTimeDiff(self.lastShot) >= self.gunCooldown and
             self.ammo > 0):
+
             OFFSET = vec((21, 30))
             all_projs.add(
                 PlayerStdBullet(self,
@@ -265,7 +243,6 @@ class Player(PlayerBase):
             self.movement()
             self.shoot()
             self.checkRoomChange()
-
 
             # Animation
             if getTimeDiff(self.lastFrame) > 0.05:
@@ -844,7 +821,8 @@ class MenuSlot(ActorBase):
 #                              Redraw Game Window                              #
 # ============================================================================ #
 def redrawGameWindow():
-    """Draws all entities every frame"""
+    """Draws all sprites every frame
+    """
     all_sprites.update()
     all_sprites.draw(screen)
     pygame.display.update()
@@ -863,7 +841,7 @@ def checkKeyRelease(isMouse, *inputs):
     
     ### Arguments
         - isMouse (``bool``): Are the inputs mouse buttons?
-        - inputs (``str``, multiple): The input(s) to check
+        - inputs (``str``): The input(s) to check
     """
     if isMouse == False:
         for key in inputs:
@@ -899,7 +877,7 @@ while running:
             1: pygame.mouse.get_pressed(5)[0],
             2: pygame.mouse.get_pressed(5)[1],
             3: pygame.mouse.get_pressed(5)[2],
- 
+
             K_a: keyPressed[K_a],
             K_w: keyPressed[K_w],
             K_s: keyPressed[K_s],

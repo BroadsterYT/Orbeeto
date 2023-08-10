@@ -18,12 +18,29 @@ class BulletBase(ActorBase):
         self.sideHit = trueCollideSideCheck(self, target)
         self.ricCount -= 1
 
-        if self.ricCount <= 0:
+        if self.ricCount <= 0 or self.hit in all_enemies:
             all_explosions.add(ProjExplode(self))
             self.kill()
+        
         else:
-            # Cause the bullet to ricochet
-            pass
+            velCopy = self.vel.copy()
+            if self.sideHit == SOUTH:
+                self.pos.y = self.hit.pos.y + self.hit.hitbox.height // 2 + self.hitbox.height // 2
+                self.vel.y = -self.vel.y
+
+            elif self.sideHit == EAST:
+                self.pos.x = self.hit.pos.x + self.hit.hitbox.width // 2 + self.hitbox.width // 2
+                self.vel.x = -self.vel.x
+
+            elif self.sideHit == NORTH:
+                self.pos.y = self.hit.pos.y - self.hit.hitbox.height // 2 - self.hitbox.height // 2
+                self.vel.y = -velCopy.y
+
+            elif self.sideHit == WEST:
+                self.pos.x = self.hit.pos.x - self.hit.hitbox.width // 2 - self.hitbox.width // 2
+                self.vel.x = -self.vel.x
+
+            self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
     
     def projCollide(self, spriteGroup, canHurt):
         """Destroys a given projectile upon a collision and renders an explosion
@@ -206,7 +223,7 @@ class ProjExplode(ActorBase):
 #                                Player Bullets                                #
 # ============================================================================ #
 class PlayerStdBullet(PlayerBulletBase):
-    def __init__(self, shotFrom, posX: int, posY: int, velX: int, velY: int):
+    def __init__(self, shotFrom, posX: int, posY: int, velX: int, velY: int, bounceCount: int = 1):
         """A projectile fired by a player that moves at a constant velocity
 
         ### Arguments
@@ -224,9 +241,10 @@ class PlayerStdBullet(PlayerBulletBase):
 
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
+        self.ricCount = bounceCount
 
         self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 1)
-        self.setRects(-24, -24, 8, 8, 6, 6)
+        self.setRects(self.pos.x, self.pos.y, 8, 8, 6, 6)
 
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
     
