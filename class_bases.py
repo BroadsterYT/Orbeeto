@@ -346,34 +346,3 @@ class AbstractBase(pygame.sprite.AbstractGroup):
         """         
         for sprite in sprites:
             super().add(sprite)
-
-
-class TileBase(ActorBase):
-    def __init__(self):
-        super().__init__()
-        self.tileSize: int = 16
-
-    def tileTexture(self, blockWidth: int, blockHeight: int, texture: pygame.Surface, colorkey: ColorRGB) -> pygame.Surface:
-        """Tiles a texture across an image
-        
-        ### Arguments
-            - blockWidth (``int``): The width of the final image in "blocks"
-            - blockHeight (``int``): The height of the final image in "blocks"
-            - texture (``pygame.Surface``): The texture that should be repeated across the final image
-            - colorkey (``tuple``): The color to set as the colorkey on the final image
-        
-        ### Returns
-            - ``pygame.Surface``: The final image with the repeated texture
-        """        
-        finalImage = pygame.Surface(vec(blockWidth * 16, blockHeight * 16))
-
-        imageWidth, imageHeight = finalImage.get_size()
-        textureWidth, textureHeight = texture.get_size()
-
-        for x in range(0, imageWidth, textureWidth):
-            for y in range(0, imageHeight, textureHeight):
-                tile_rect = pygame.Rect(x, y, textureWidth, textureHeight)
-                finalImage.blit(texture, tile_rect)
-
-        finalImage.set_colorkey(tuple(colorkey))
-        return finalImage

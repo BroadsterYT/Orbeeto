@@ -112,7 +112,7 @@ class StandardGrunt(EnemyBase):
             self.lastShot = time.time()
 
     def update(self):
-        if can_update and self.visible and self.hp > 0:
+        if self.canUpdate and self.visible and self.hp > 0:
             self.collideCheck(all_players, all_walls)
             self.movement(True)
             
@@ -143,15 +143,19 @@ class OctoGrunt(EnemyBase):
         super().__init__()
         self.show(LAYER['enemy_layer'])
         all_enemies.add(self)
+
         self.lastRelocate = time.time()
         self.lastShot = time.time()
+        
         self.pos = vec((posX, posY))
         self.rand_pos = vec(rand.randint(64, WINWIDTH - 64), rand.randint(64, WINHEIGHT - 64))
+        
         self.setImages("sprites/enemies/octogrunt.png", 64, 64, 1, 1, 0, 0)
         self.setRects(0, 0, 64, 64, 32, 32)
 
         #---------------------- Game stats & UI ----------------------#
-        initStats(self, 44, 10, 10, 45, 0.4)
+        self.maxHp = 44
+        initStats(self, 44, 10, 10, 90, 0.4)
     
     def movement(self, canShoot):
         if self.canUpdate and self.visible:
@@ -199,7 +203,7 @@ class OctoGrunt(EnemyBase):
             self.lastShot = time.time()
 
     def update(self):
-        if can_update and self.visible and self.hp > 0:
+        if self.canUpdate and self.visible and self.hp > 0:
             self.collideCheck(all_players, all_walls)
             self.movement(True)
 

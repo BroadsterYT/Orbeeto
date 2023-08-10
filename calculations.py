@@ -227,18 +227,27 @@ def cerp(a: float, b: float, weight: float) -> float:
     Returns:
         ``float``: The interpolated value
     """
-    trueWeight = weight
     if weight < 0:
-        trueWeight = 0
+        weight = 0
     if weight > 1:
-        trueWeight = 1
+        weight = 1
 
-    return ((a - b) / 2) * math.cos(math.pi * trueWeight) + ((a + b) / 2)
+    return ((a - b) / 2) * math.cos(math.pi * weight) + ((a + b) / 2)
 
 
-def eerp(a: float, b: float, weight: float):
-    if a == 0:
-        return ValueError('Error: Value of \"a\" cannot be 0')
+def eerp(a: float, b: float, weight: float) -> float:
+    """Exponentially interpolates between two values given a weight
+    
+    ### Arguments
+        - a (``float``): The starting value
+        - b (``float``): The ending value
+        - weight (``float``): The weight to interpolate by
+    
+    ### Returns
+        - ``float``: The interpolated value
+    """    
+    if (a < 0 and b > 0) or (a > 0 and b < 0):
+        return ValueError('Error: \"a\" and \"b\" cannot have opposite signs')
 
     trueB = pow(a / b, -1)
     trueA = a

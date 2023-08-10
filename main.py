@@ -4,19 +4,19 @@ from pygame.locals import *
 pygame.init()
 
 import sys
-import math
 import time
 
 from math import sin, cos, radians, degrees, floor, pi
+from init import *
+
 from bullets import *
-from class_bases import *
 from enemies import *
 from itemdrops import *
 from spritesheet import *
 from statbars import *
 from text import *
-
-from init import *
+from tiles import *
+from trinkets import *
 
 # Aliases
 spriteGroup = pygame.sprite.Group
@@ -54,6 +54,32 @@ class PlayerBase(ActorBase):
         self.inventory = {}
         for item in MAT.values():
             self.inventory.update({item: 0})
+
+    def __setStats(self) -> None:
+        """Initializes the starting stats of the player sprite
+        """        
+        self.xp: int = 0
+        self.level: int = 0
+        self.maxLevel: int = 249
+        
+        self.maxHp: int = 50
+        self.hp: int = self.maxHp
+        self.maxAtk: int = 10
+        self.atk: int = self.maxAtk
+        self.maxDef: int = 10
+        self.defense: int = self.maxDef
+
+        self.maxAmmo: int = 40
+        self.ammo: int = self.maxAmmo
+        self.bulletVel: float = 12.0
+        self.gunCooldown: float = 0.12
+        self.lastShot: float = time.time()
+        
+        self.hitTimeCharge = 1200
+        self.hitTime = 0
+        self.lastHit = time.time()
+
+        self.updateLevel()
 
     def changeRoom(self, direction: str) -> None:
         if direction == SOUTH:
@@ -94,32 +120,6 @@ class PlayerBase(ActorBase):
 
         if self.pos.y >= WINHEIGHT:
             self.changeRoom(SOUTH)
-
-    def __setStats(self) -> None:
-        """Initializes the starting stats of the player sprite
-        """        
-        self.xp: int = 0
-        self.level: int = 0
-        self.maxLevel: int = 249
-        
-        self.maxHp: int = 50
-        self.hp: int = self.maxHp
-        self.maxAtk: int = 10
-        self.atk: int = self.maxAtk
-        self.maxDef: int = 10
-        self.defense: int = self.maxDef
-
-        self.maxAmmo: int = 40
-        self.ammo: int = self.maxAmmo
-        self.bulletVel: float = 12.0
-        self.gunCooldown: float = 0.12
-        self.lastShot: float = time.time()
-        
-        self.hitTimeCharge = 1200
-        self.hitTime = 0
-        self.lastHit = time.time()
-
-        self.updateLevel()
 
     def updateMaxStats(self):
         """Updates all of the player's max stats."""        
@@ -278,100 +278,6 @@ class Player(PlayerBase):
 
 
 # ============================================================================ #
-#                             Interactible Classes                             #
-# ============================================================================ #
-class Box(ActorBase):
-    def __init__(self, idValue, posX, posY):
-        super().__init__()
-        self.show(LAYER['movable_layer'])
-        all_movable.add(self)
-
-        self.idValue = idValue
-
-        self.pos = vec((posX, posY))
-        self.cAccel = 0.4
-        
-        self.setImages("sprites/textures/box.png", 64, 64, 5, 1, 0, 0)
-        self.setRects(0, 0, 64, 64, 64, 64, True)
-
-    def movement(self):
-        self.accel = vec(0, 0)
-        if self.canUpdate and self.visible:
-            for a_player in all_players:
-                if self.hitbox.colliderect(a_player.rect):
-                    if collideSideCheck(self, a_player) == SOUTH:
-                        self.accel.y = -self.cAccel
-                    if collideSideCheck(self, a_player) == EAST:
-                        self.accel.x = -self.cAccel
-                    if collideSideCheck(self, a_player) == NORTH:
-                        self.accel.y = self.cAccel
-                    if collideSideCheck(self, a_player) == WEST:
-                        self.accel.x = self.cAccel
-            
-            self.accelMovement()
-
-    def update(self):
-        self.collideCheck(all_walls)
-        self.movement()
-
-        # Teleporting
-        for portal in all_portals:
-            if self.hitbox.colliderect(portal.hitbox) and len(all_portals) == 2:
-                self.teleport(portal)
-
-
-# ============================================================================ #
-#                             Wall & Floor Classes                             #
-# ============================================================================ #
-class Wall(TileBase):
-    def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float):
-        super().__init__()
-        self.show(LAYER['wall_layer'])
-        all_walls.add(self) 
-
-        self.blockWidth, self.blockHeight = blockWidth, blockHeight
-        self.width, self.height = self.blockWidth * self.tileSize, self.blockHeight * self.tileSize
-        self.pos = getTopLeftCoords(self.width, self.height, blockPosX * self.tileSize, blockPosY * self.tileSize)
-
-        self.texture = pygame.image.load("sprites/textures/wall.png").convert()
-        self.image: pygame.Surface = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, ColorRGB(25, 0, 0))
-
-        self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
-
-
-class Floor(TileBase):
-    def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float):
-        super().__init__()
-        self.show(LAYER['floor'])
-        all_floors.add(self)
-        
-        self.blockWidth, self.blockHeight = blockWidth, blockHeight
-        self.width, self.height = self.blockWidth * self.tileSize, self.blockHeight * self.tileSize
-        self.pos = getTopLeftCoords(self.width, self.height, blockPosX * self.tileSize, blockPosY * self.tileSize)
-
-        self.spritesheet = Spritesheet("sprites/textures/floor.png", 4)
-        self.textures = self.spritesheet.get_images(16, 16, 4)
-        self.index = 0
-
-        self.texture = self.textures[self.index]
-        self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
-
-        self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
-    
-    def update(self):
-        if self.visible:
-            if getTimeDiff(self.lastFrame) >= 0.235:
-                self.texture = self.textures[self.index]
-                self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
-
-                self.index += 1
-                if self.index > 3:
-                    self.index = 0
-                
-                self.lastFrame = time.time()
-
-
-# ============================================================================ #
 #                                  Room Class                                  #
 # ============================================================================ #
 class Room(AbstractBase):
@@ -434,7 +340,7 @@ class Room(AbstractBase):
                 all_containers.append(
                     EntityContainer(
                         self.room.x, self.room.y,
-                        StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
+                        OctoGrunt(WINWIDTH / 2, WINHEIGHT / 2),
                         StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
                     )
                 )

@@ -1,14 +1,50 @@
 import pygame
 
 from class_bases import *
+from tiles import TileBase
 
-class ButtonBase(ActorBase):
-    def __init__(self):
+
+class Box(ActorBase):
+    def __init__(self, idValue, posX, posY):
         super().__init__()
-        self.activated = False
+        self.show(LAYER['movable_layer'])
+        all_movable.add(self)
+
+        self.idValue = idValue
+
+        self.pos = vec((posX, posY))
+        self.cAccel = 0.35
+        
+        self.setImages("sprites/textures/box.png", 64, 64, 5, 1, 0, 0)
+        self.setRects(0, 0, 64, 64, 64, 64, True)
+
+    def movement(self):
+        self.accel = vec(0, 0)
+        if self.canUpdate and self.visible:
+            for a_player in all_players:
+                if self.hitbox.colliderect(a_player.rect):
+                    if collideSideCheck(self, a_player) == SOUTH:
+                        self.accel.y = -self.cAccel
+                    if collideSideCheck(self, a_player) == EAST:
+                        self.accel.x = -self.cAccel
+                    if collideSideCheck(self, a_player) == NORTH:
+                        self.accel.y = self.cAccel
+                    if collideSideCheck(self, a_player) == WEST:
+                        self.accel.x = self.cAccel
+            
+            self.accelMovement()
+
+    def update(self):
+        self.collideCheck(all_walls)
+        self.movement()
+
+        # Teleporting
+        for portal in all_portals:
+            if self.hitbox.colliderect(portal.hitbox) and len(all_portals) == 2:
+                self.teleport(portal)
 
 
-class Button(ButtonBase):
+class Button(ActorBase):
     def __init__(self, idValue: int, blockPosX: int, blockPosY: int):
         """A button that can be activated and deactivated
         
@@ -20,6 +56,8 @@ class Button(ButtonBase):
         super().__init__()
         self.show(LAYER['movable_layer'])
         all_trinkets.add(self)
+
+        self.activated = False
 
         self.idValue = idValue
         self.pos = vec((blockPosX * 16, blockPosY * 16))
@@ -64,7 +102,7 @@ class LockedWall(TileBase):
             - blockWidth (``int``): The width of the wall in "tiles"
             - blockHeight (``int``): The height of the wall in "tiles"
         """        
-        super().__init__()
+        super().__init__(sBlockPosX, sBlockPosY, blockWidth, blockHeight)
         self.show(LAYER['wall_layer'])
         all_walls.add(self)
         all_trinkets.add(self)
@@ -74,15 +112,12 @@ class LockedWall(TileBase):
         self.lastSwitchState = self.switch.getState()
         self.hasActivated = False
         self.lastChange = time.time()
-
-        self.blockWidth, self.blockHeight = blockWidth, blockHeight
-        self.width, self.height = self.blockWidth * self.tileSize, self.blockHeight * self.tileSize
         
         self.pos = getTopLeftCoords(self.width, self.height, sBlockPosX * self.tileSize, sBlockPosY * self.tileSize)
         self.startPos = getTopLeftCoords(self.width, self.height, sBlockPosX * self.tileSize, sBlockPosY * self.tileSize)
         self.endPos = getTopLeftCoords(self.width, self.height, eBlockPosX * self.tileSize, eBlockPosY * self.tileSize)
 
-        self.spritesheet = Spritesheet("sprites/textures/wall.png", 1)
+        self.spritesheet = Spritesheet('sprites/tiles/wall.png', 1)
         self.textures = self.spritesheet.get_images(16, 16, 1)
         self.index = 0
 
