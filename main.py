@@ -39,7 +39,7 @@ class PlayerBase(ActorBase):
         super().__init__()
 
         self.pos = vec((WINWIDTH / 2, WINHEIGHT / 2))
-        self.cAccel = 0.55
+        self.cAccel = 0.58
 
         # -------------------------------- Game Stats -------------------------------- #
         self.__setStats()
@@ -301,6 +301,7 @@ class Room(AbstractBase):
         super().__init__()
         all_rooms.append(self)
         self.room = vec((roomX, roomY))
+        self.size = vec((WINWIDTH, WINHEIGHT))
 
         self.player1: Player = Player()
 

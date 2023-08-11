@@ -99,6 +99,23 @@ class ActorBase(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = self.rect.center)
     
     # ---------------------------------- Physics --------------------------------- #
+    def movement(self):
+        """Defines all movement logic of the sprite
+        """
+        self.accel = vec(0, 0)
+        if self.canUpdate and self.visible:
+            self.accel = self.getAccel()
+            self.accelMovement()
+
+    def getAccel(self) -> pygame.math.Vector2:
+        """Returns the acceleration of the sprite given specific conditions. NOTE: This function should be overridden by any child class!
+        
+        ### Returns
+            - ``pygame.math.Vector2``: The acceleration of the sprite
+        """        
+        finalAccel = vec(0, 0)
+        return finalAccel
+
     def velMovement(self) -> None:
         """Makes a sprite move according to its velocity (``self.vel``)
         """

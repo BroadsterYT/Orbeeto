@@ -21,18 +21,23 @@ class Box(ActorBase):
     def movement(self):
         self.accel = vec(0, 0)
         if self.canUpdate and self.visible:
-            for a_player in all_players:
-                if self.hitbox.colliderect(a_player.rect):
-                    if collideSideCheck(self, a_player) == SOUTH:
-                        self.accel.y = -self.cAccel
-                    if collideSideCheck(self, a_player) == EAST:
-                        self.accel.x = -self.cAccel
-                    if collideSideCheck(self, a_player) == NORTH:
-                        self.accel.y = self.cAccel
-                    if collideSideCheck(self, a_player) == WEST:
-                        self.accel.x = self.cAccel
-            
+            self.accel = self.getAccel()
             self.accelMovement()
+    
+    def getAccel(self) -> pygame.math.Vector2:
+        finalAccel = vec(0, 0)
+        for a_player in all_players:
+            if self.hitbox.colliderect(a_player.hitbox):
+                if collideSideCheck(self, a_player) == SOUTH:
+                    finalAccel.y -= self.cAccel
+                if collideSideCheck(self, a_player) == EAST:
+                    finalAccel.x -= self.cAccel
+                if collideSideCheck(self, a_player) == NORTH:
+                    finalAccel.y += self.cAccel
+                if collideSideCheck(self, a_player) == WEST:
+                    finalAccel.x += self.cAccel
+        
+        return finalAccel
 
     def update(self):
         self.collideCheck(all_walls)
@@ -76,6 +81,15 @@ class Button(ActorBase):
     
     def getState(self):
         return self.__activeCheck()
+
+    def movement(self):
+        self.accel = vec(0, 0)
+        if self.canUpdate and self.visible:
+            self.accelMovement()
+
+    def getAccel(self) -> pygame.math.Vector2:
+        finalAccel = vec(0, 0)
+        return finalAccel
 
     def update(self):
         if self.__activeCheck():

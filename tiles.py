@@ -56,6 +56,9 @@ class Wall(TileBase):
 
         self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
 
+    def update(self):
+        pass
+
 
 class Floor(TileBase):
     def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float):
