@@ -159,31 +159,41 @@ class Player(PlayerBase):
     def movement(self):
         """When called once every frame, it allows the player to recive input from the user and move accordingly"""        
         self.accel = vec(0, 0)
-        if self.visible:
-            if self.grapple == None:
-                if isInputHeld[K_a]:
-                    self.accel.x = -self.cAccel
-                if isInputHeld[K_d]:
-                    self.accel.x = self.cAccel
-                if isInputHeld[K_s]:
-                    self.accel.y = self.cAccel
-                if isInputHeld[K_w]:
-                    self.accel.y = -self.cAccel
-
-            elif self.grapple != None:
-                if isInputHeld[K_a]:
-                    self.accel.x = -self.cAccel
-                if isInputHeld[K_d]:
-                    self.accel.x = self.cAccel
-                if isInputHeld[K_s]:
-                    self.accel.y = self.cAccel
-                if isInputHeld[K_w]:
-                    self.accel.y = -self.cAccel
-                
-                if self.grapple.returning and self.grapple.grappledTo in all_walls:
-                    self.accel = vec((self.cAccel * 3) * -sin(getAngleToSprite(self, self.grapple)), (self.cAccel * 3) * -cos(getAngleToSprite(self, self.grapple)))
-
+        if self.canUpdate and self.visible:
+            self.accel = self.getAccel()
             self.accelMovement()
+
+    def getAccel(self) -> pygame.math.Vector2:
+        """Returns the acceleration that the player should undergo given specific conditions
+        
+        ### Returns
+            - ``pygame.math.Vector2``: The acceleration value of the player
+        """        
+        finalAccel = vec(0, 0)
+        if self.grapple == None:
+            if isInputHeld[K_a]:
+                finalAccel.x -= self.cAccel
+            if isInputHeld[K_d]:
+                finalAccel.x += self.cAccel
+            if isInputHeld[K_s]:
+                finalAccel.y += self.cAccel
+            if isInputHeld[K_w]:
+                finalAccel.y -= self.cAccel
+
+        elif self.grapple != None:
+            if isInputHeld[K_a]:
+                finalAccel.x -= self.cAccel
+            if isInputHeld[K_d]:
+                finalAccel.x += self.cAccel
+            if isInputHeld[K_s]:
+                finalAccel.y += self.cAccel
+            if isInputHeld[K_w]:
+                finalAccel.y -= self.cAccel
+
+            if self.grapple.returning and self.grapple.grappledTo in all_walls:
+                finalAccel = vec((self.cAccel * 3) * -sin(getAngleToSprite(self, self.grapple)), (self.cAccel * 3) * -cos(getAngleToSprite(self, self.grapple)))
+
+        return finalAccel
 
     def shoot(self):
         """Shoots bullets

@@ -17,7 +17,7 @@ class EnemyBase(ActorBase):
 
         self.isGrappled = False
 
-        self.is_shooting = False
+        self.isShooting = False
 
         #-------------------- In-game Stats --------------------#
         self.maxHp = None
@@ -61,7 +61,7 @@ class StandardGrunt(EnemyBase):
         self.lastShot = time.time()
 
         self.pos = vec((posX, posY))
-        self.rand_pos = vec(rand.randint(64, WINWIDTH - 64), rand.randint(64, WINHEIGHT - 64))
+        self.randPos = vec(rand.randint(64, WINWIDTH - 64), rand.randint(64, WINHEIGHT - 64))
 
         self.setImages("sprites/enemies/standard_grunt.png", 64, 64, 5, 5, 0, 0)
         self.setRects(0, 0, 64, 64, 32, 32)
@@ -73,33 +73,39 @@ class StandardGrunt(EnemyBase):
     def movement(self, canShoot: bool):
         if self.canUpdate and self.hp > 0:
             if getTimeDiff(self.lastRelocate) > rand.uniform(2.5, 5.0):
-                self.rand_pos.x = rand.randint(self.image.get_width() + 64, WINWIDTH - self.image.get_width() - 64)
-                self.rand_pos.y = rand.randint(self.image.get_height() + 64, WINHEIGHT - self.image.get_height() - 64)
+                self.randPos.x = rand.randint(self.image.get_width() + 64, WINWIDTH - self.image.get_width() - 64)
+                self.randPos.y = rand.randint(self.image.get_height() + 64, WINHEIGHT - self.image.get_height() - 64)
                 self.lastRelocate = time.time()
 
-            if self.pos.x != (self.rand_pos.x) or self.pos.y != (self.rand_pos.y):
-                if self.pos.x < self.rand_pos.x - 32:
-                    self.accel.x = self.cAccel
-                elif self.pos.x > self.rand_pos.x + 32:
-                    self.accel.x = -self.cAccel
-                else:
-                    self.accel.x = 0
-
-                if self.pos.y < self.rand_pos.y - 32:
-                    self.accel.y = self.cAccel
-                elif self.pos.y > self.rand_pos.y + 32:
-                    self.accel.y = -self.cAccel
-                else:
-                    self.accel.y = 0
+            self.accel = self.getAccel()
             
             if canShoot:
                 self.shoot(getClosestPlayer(self), 6, rand.uniform(0.4, 0.9))
 
             self.accelMovement()
 
+    def getAccel(self) -> pygame.math.Vector2:
+        finalAccel = vec(0, 0)
+        if self.pos.x != self.randPos.x or self.pos.y != self.randPos.y:
+            if self.pos.x < self.randPos.x - self.hitbox.width // 2:
+                finalAccel.x += self.cAccel
+            elif self.pos.x > self.randPos.x + self.hitbox.width // 2:
+                finalAccel.x -= self.cAccel
+            else:
+                pass
+
+            if self.pos.y < self.randPos.y - self.hitbox.height // 2:
+                finalAccel.y += self.cAccel
+            elif self.pos.y > self.randPos.y + self.hitbox.height // 2:
+                finalAccel.y -= self.cAccel
+            else:
+                pass
+
+        return finalAccel
+
     def shoot(self, target, vel, shoot_time):
         if getTimeDiff(self.lastShot) > shoot_time:
-            self.is_shooting = True
+            self.isShooting = True
             try:
                 angle_to_target = getAngleToSprite(self, target)
             except:
@@ -118,11 +124,11 @@ class StandardGrunt(EnemyBase):
             
             # Animation
             if getTimeDiff(self.lastFrame) > ANIMTIME:
-                if self.is_shooting == True:
+                if self.isShooting == True:
                     self.index += 1
                     if self.index > 4:
                         self.index = 0
-                        self.is_shooting = False
+                        self.isShooting = False
                 self.lastFrame = time.time()
             self.rotateImage(getAngleToSprite(self, getClosestPlayer(self)))
 
@@ -148,7 +154,7 @@ class OctoGrunt(EnemyBase):
         self.lastShot = time.time()
         
         self.pos = vec((posX, posY))
-        self.rand_pos = vec(rand.randint(64, WINWIDTH - 64), rand.randint(64, WINHEIGHT - 64))
+        self.randPos = vec(rand.randint(64, WINWIDTH - 64), rand.randint(64, WINHEIGHT - 64))
         
         self.setImages("sprites/enemies/octogrunt.png", 64, 64, 1, 1, 0, 0)
         self.setRects(0, 0, 64, 64, 32, 32)
@@ -160,32 +166,39 @@ class OctoGrunt(EnemyBase):
     def movement(self, canShoot):
         if self.canUpdate and self.visible:
             if getTimeDiff(self.lastRelocate) > rand.uniform(2.5, 5.0):
-                self.rand_pos.x = rand.randint(0, WINWIDTH)
-                self.rand_pos.y = rand.randint(0, WINHEIGHT)
+                self.randPos.x = rand.randint(0, WINWIDTH)
+                self.randPos.y = rand.randint(0, WINHEIGHT)
                 self.lastRelocate = time.time()
             
-            if self.pos.x != self.rand_pos.x or self.pos.y != self.rand_pos.y:
-                if self.pos.x < self.rand_pos.x - 32:
-                    self.accel.x = self.cAccel
-                elif self.pos.x > self.rand_pos.x + 32:
-                    self.accel.x = -self.cAccel
-                else:
-                    self.accel.x = 0
-                if self.pos.y < self.rand_pos.y - 32:
-                    self.accel.y = self.cAccel
-                elif self.pos.y > self.rand_pos.y + 32:
-                    self.accel.y = -self.cAccel
-                else:
-                    self.accel.y = 0
+            self.accel = self.getAccel()
             
             if canShoot == True:
                 self.shoot(getClosestPlayer(self), 3, 1)
             
             self.accelMovement()
 
+    def getAccel(self) -> pygame.math.Vector2:
+        finalAccel = vec(0, 0)
+        if self.pos.x != self.randPos.x or self.pos.y != self.randPos.y:
+            if self.pos.x < self.randPos.x - self.hitbox.width:
+                finalAccel.x += self.cAccel
+            elif self.pos.x > self.randPos.x + self.hitbox.width:
+                finalAccel.x -= self.cAccel
+            else:
+                pass
+
+            if self.pos.y < self.randPos.y - self.hitbox.height:
+                finalAccel.y += self.cAccel
+            elif self.pos.y > self.randPos.y + self.hitbox.height:
+                finalAccel.y -= self.cAccel
+            else:
+                pass
+
+        return finalAccel
+
     def shoot(self, target, vel, shoot_time):
         if getTimeDiff(self.lastShot) > shoot_time:
-            self.is_shooting = True
+            self.isShooting = True
             angle_to_target = getAngleToSprite(self, target)
             vel_x = vel * -sin(rad(angle_to_target))
             vel_y = vel * -cos(rad(angle_to_target))
@@ -209,11 +222,11 @@ class OctoGrunt(EnemyBase):
 
             # Animation
             if getTimeDiff(self.lastFrame) > ANIMTIME:
-                if self.is_shooting:
+                if self.isShooting:
                     self.index += 0
                     if self.index > 4:
                         self.index = 0
-                    self.is_shooting = False
+                    self.isShooting = False
                 self.lastFrame = time.time()
             self.image = self.images[self.index]
             self.original_image = self.original_images[self.index]
