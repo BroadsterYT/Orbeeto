@@ -39,7 +39,7 @@ class ActorBase(pygame.sprite.Sprite):
         """        
         self.visible = True
         if hasattr(self, 'healthBar'):
-            self.healthBar.show(LAYER['statBar_layer'])
+            self.healthBar.show(LAYER['statbar'])
         all_sprites.add(self, layer = layerSend)
 
     # ----------------------------- Images and Rects ----------------------------- #
@@ -99,47 +99,33 @@ class ActorBase(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = self.rect.center)
     
     # ---------------------------------- Physics --------------------------------- #
-    def movement(self):
-        """Defines all movement logic of the sprite
-        """
-        self.accel = vec(0, 0)
-        if self.canUpdate and self.visible:
-            self.accel = self.getAccel()
-            self.accelMovement()
-
-    def getAccel(self) -> pygame.math.Vector2:
-        """Returns the acceleration of the sprite given specific conditions. NOTE: This function should be overridden by any child class!
-        
-        ### Returns
-            - ``pygame.math.Vector2``: The acceleration of the sprite
-        """        
-        finalAccel = vec(0, 0)
-        return finalAccel
-
-    def velMovement(self) -> None:
+    def velMovement(self, adjustCenterFirst: bool) -> None:
         """Makes a sprite move according to its velocity (``self.vel``)
         """
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+        if adjustCenterFirst:
+            self.rect.center = self.pos
+            self.hitbox.center = self.pos
 
-        self.pos.x += self.vel.x
-        self.pos.y += self.vel.y
+            self.pos.x += self.vel.x
+            self.pos.y += self.vel.y
+
+        else:
+            self.pos.x += self.vel.x
+            self.pos.y += self.vel.y
+            
+            self.rect.center = self.pos
+            self.hitbox.center = self.pos
 
     def accelMovement(self) -> None:
         """Makes a sprite move according to its acceleration (``self.accel`` and ``self.cAccel``)
-        
-        ``self.accel`` MUST BE (0, 0) BEFORE THIS FUCNTION IS CALLED
-        
-        ### Arguments
-            - deltaTime (``float``): The difference in time between frame updates
         """
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
-        
         self.accel.x += self.vel.x * FRIC
         self.accel.y += self.vel.y * FRIC
         self.vel += self.accel
         self.pos += self.vel + self.cAccel * self.accel
+
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
 
     def collideCheck(self, *contactLists: list) -> None:
         """Check if the sprite comes into contact with another sprite from a specific group. 
@@ -334,6 +320,14 @@ class ActorBase(pygame.sprite.Sprite):
                 self.vel = self.vel.rotate(180)
 
 # ----------------------------------- Rooms ---------------------------------- #
+    def getRoom(self) -> pygame.sprite.AbstractGroup:
+        """Returns the room object being used
+        
+        ### Returns
+            - ``pygame.sprite.AbstractGroup``: The room object group
+        """        
+        return all_rooms[0]
+
     def changeRoom(self, direction: str):
         if direction == SOUTH:
             self.pos.y -= WINHEIGHT

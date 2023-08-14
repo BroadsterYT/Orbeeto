@@ -33,12 +33,18 @@ pygame.display.set_caption('Orbeeto')
 # ============================================================================ #
 #                                 Player Class                                 #
 # ============================================================================ #
-class PlayerBase(ActorBase):
+class Player(ActorBase):
     def __init__(self):
-        """The base class for all player objects. It contains parameters and methods to gain better control over player objects."""        
+        """A player sprite that can move and shoot.
+        """        
         super().__init__()
+        all_players.add(self)
+        self.show(LAYER['player'])
 
-        self.pos = vec((WINWIDTH / 2, WINHEIGHT / 2))
+        self.setImages("sprites/orbeeto/orbeeto.png", 64, 64, 5, 5)
+        self.setRects(0, 0, 64, 64, 32, 32)
+
+        self.pos = vec((WINWIDTH // 2 - 32, WINHEIGHT // 2))
         self.cAccel = 0.58
 
         # -------------------------------- Game Stats -------------------------------- #
@@ -55,6 +61,12 @@ class PlayerBase(ActorBase):
         for item in MAT.values():
             self.inventory.update({item: 0})
 
+        self.bulletType = PROJ_STD
+        self.canPortal = False
+        self.canGrapple = True
+        self.grapple = None
+
+# ----------------------------------- Stats ---------------------------------- #
     def __setStats(self) -> None:
         """Initializes the starting stats of the player sprite
         """        
@@ -81,7 +93,30 @@ class PlayerBase(ActorBase):
 
         self.updateLevel()
 
+    def updateMaxStats(self):
+        """Updates all of the player's max stats."""        
+        self.maxHp = floor(eerp(50, 650, self.level / self.maxLevel))
+        self.maxAtk = floor(eerp(10, 1250, self.level / self.maxLevel))
+        self.maxDef = floor(eerp(15, 800, self.level / self.maxLevel))
+        self.maxAmmo = floor(eerp(40, 1200, self.level / self.maxLevel))
+
+        self.atk = self.maxAtk
+        self.defense = self.maxDef
+
+    def updateLevel(self):
+        if self.xp > 582803:
+            self.xp = 582803
+
+        self.level = floor((256 * self.xp) / (self.xp + 16384))
+        self.updateMaxStats()
+
+# ------------------------------- Room Changing ------------------------------ #
     def changeRoom(self, direction: str) -> None:
+        """Changes the player's current room
+        
+        ### Arguments
+            - direction (``str``): The direction of the new room the player is traveling to
+        """        
         if direction == SOUTH:
             mainroom.room.y -= 1
             mainroom.layoutUpdate()
@@ -121,47 +156,14 @@ class PlayerBase(ActorBase):
         if self.pos.y >= WINHEIGHT:
             self.changeRoom(SOUTH)
 
-    def updateMaxStats(self):
-        """Updates all of the player's max stats."""        
-        self.maxHp = floor(eerp(50, 650, self.level / self.maxLevel))
-        self.maxAtk = floor(eerp(10, 1250, self.level / self.maxLevel))
-        self.maxDef = floor(eerp(15, 800, self.level / self.maxLevel))
-        self.maxAmmo = floor(eerp(40, 1200, self.level / self.maxLevel))
-
-        self.atk = self.maxAtk
-        self.defense = self.maxDef
-
-    def updateLevel(self):
-        if self.xp > 582803:
-            self.xp = 582803
-
-        self.level = floor((256 * self.xp) / (self.xp + 16384))
-        self.updateMaxStats()
-
-
-class Player(PlayerBase):
-    def __init__(self):
-        """A player sprite that can move and shoot."""        
-        super().__init__()
-        all_players.add(self)
-        self.show(LAYER['player_layer'])
-
-        self.setImages("sprites/orbeeto/orbeeto.png", 64, 64, 5, 5)
-        self.setRects(0, 0, 64, 64, 32, 32)
-
-        self.bulletType = PROJ_STD
-        
-        self.canPortal = False
-        self.canGrapple = True
-
-        self.grapple = None
-
+# --------------------------------- Movement --------------------------------- #
     def movement(self):
-        """When called once every frame, it allows the player to recive input from the user and move accordingly"""        
-        self.accel = vec(0, 0)
+        """When called once every frame, it allows the player to recive input from the user and move accordingly
+        """        
         if self.canUpdate and self.visible:
             self.accel = self.getAccel()
             self.accelMovement()
+            self.pos = vec((WINWIDTH // 2 - 32, WINHEIGHT // 2))
 
     def getAccel(self) -> pygame.math.Vector2:
         """Returns the acceleration that the player should undergo given specific conditions
@@ -170,28 +172,28 @@ class Player(PlayerBase):
             - ``pygame.math.Vector2``: The acceleration value of the player
         """        
         finalAccel = vec(0, 0)
-        if self.grapple == None:
-            if isInputHeld[K_a]:
-                finalAccel.x -= self.cAccel
-            if isInputHeld[K_d]:
-                finalAccel.x += self.cAccel
-            if isInputHeld[K_s]:
-                finalAccel.y += self.cAccel
-            if isInputHeld[K_w]:
-                finalAccel.y -= self.cAccel
+        # if self.grapple == None:
+        #     if isInputHeld[K_a]:
+        #         finalAccel.x -= self.cAccel
+        #     if isInputHeld[K_d]:
+        #         finalAccel.x += self.cAccel
+        #     if isInputHeld[K_s]:
+        #         finalAccel.y += self.cAccel
+        #     if isInputHeld[K_w]:
+        #         finalAccel.y -= self.cAccel
 
-        elif self.grapple != None:
-            if isInputHeld[K_a]:
-                finalAccel.x -= self.cAccel
-            if isInputHeld[K_d]:
-                finalAccel.x += self.cAccel
-            if isInputHeld[K_s]:
-                finalAccel.y += self.cAccel
-            if isInputHeld[K_w]:
-                finalAccel.y -= self.cAccel
+        # elif self.grapple != None:
+        #     if isInputHeld[K_a]:
+        #         finalAccel.x -= self.cAccel
+        #     if isInputHeld[K_d]:
+        #         finalAccel.x += self.cAccel
+        #     if isInputHeld[K_s]:
+        #         finalAccel.y += self.cAccel
+        #     if isInputHeld[K_w]:
+        #         finalAccel.y -= self.cAccel
 
-            if self.grapple.returning and self.grapple.grappledTo in all_walls:
-                finalAccel = vec((self.cAccel * 3) * -sin(getAngleToSprite(self, self.grapple)), (self.cAccel * 3) * -cos(getAngleToSprite(self, self.grapple)))
+        #     if self.grapple.returning and self.grapple.grappledTo in all_walls:
+        #         finalAccel = vec((self.cAccel * 3) * -sin(getAngleToSprite(self, self.grapple)), (self.cAccel * 3) * -cos(getAngleToSprite(self, self.grapple)))
 
         return finalAccel
 
@@ -280,6 +282,7 @@ class Player(PlayerBase):
         if self.hp <= 0:
             self.kill()
 
+# ------------------------------- Magic Methods ------------------------------ #
     def __str__(self):
         return f'Player at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\ncurrent bullet: {self.bulletType}\nxp: {self.xp}\nlevel: {self.level}\n'
 
@@ -305,6 +308,39 @@ class Room(AbstractBase):
 
         self.player1: Player = Player()
 
+        # --------------------------------- Movement --------------------------------- #
+        self.pos = vec(0, 0)
+        self.vel = vec(0, 0)
+        self.accel = vec(0, 0)
+        self.cAccel = self.player1.cAccel
+
+    def accelMovement(self):
+        self.accel.x += self.vel.x * FRIC
+        self.accel.y += self.vel.y * FRIC
+        self.vel += self.accel
+        self.pos += self.vel + self.player1.cAccel * self.accel
+
+    def movement(self):
+        if self.canUpdate:
+            self.accel = self.getAccel()
+            self.accelMovement()
+
+        for sprite in self.sprites():
+            sprite.movement()
+
+    def getAccel(self) -> pygame.math.Vector2:
+        finalAccel = vec(0, 0)
+        if isInputHeld[K_a]:
+            finalAccel.x += self.player1.cAccel
+        if isInputHeld[K_w]:
+            finalAccel.y += self.player1.cAccel
+        if isInputHeld[K_s]:
+            finalAccel.y -= self.player1.cAccel
+        if isInputHeld[K_d]:
+            finalAccel.x -= self.player1.cAccel
+
+        return finalAccel
+
     def layoutUpdate(self):
         """Updates the layout of the room
         """        
@@ -318,11 +354,10 @@ class Room(AbstractBase):
         # ------------------------------- Room Layouts ------------------------------- #
         if self.room == vec(0, 0):
             self.add(
-                Wall(0, 0, 8, 8),
+                # Wall(0, 0, 8, 8),
                 Wall(0, 37, 8, 8),
                 Wall(72, 0, 8, 8),
                 Wall(72, 37, 8, 8),
-                Box(0, 100, 200),
             )
             
             try:
@@ -333,70 +368,14 @@ class Room(AbstractBase):
                 all_containers.append(
                     EntityContainer(
                         self.room.x, self.room.y,
-                        Button(0, 20, 20),
-                        LockedWall(0, 8, 0, 72, 0, 64, 8)
                     )
                 )
 
-        elif self.room == vec(-1, 0):
-            self.add(
-                Wall(0, 0, 8, 45)
-            )
-
-            try:
-                matchContainer = next(c for c in all_containers if c.room == self.room)
-                matchContainer.showEnemies()
-
-            except StopIteration:
-                all_containers.append(
-                    EntityContainer(
-                        self.room.x, self.room.y,
-                        OctoGrunt(WINWIDTH / 2, WINHEIGHT / 2),
-                        StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
-                    )
-                )
-
-        elif self.room == vec(0, 1):
-            self.add(
-                Wall(0, 0, 8, 45),
-                Wall(72, 0, 8, 45),
-            )
-
-            # Search for an enemy container for this room
-            try:
-                matchContainer = next(c for c in all_containers if c.room == self.room)
-                matchContainer.showEnemies()
-
-            except StopIteration:
-                all_containers.append(
-                    EntityContainer(
-                        self.room.x, self.room.y,
-                        StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
-                        StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
-                    )
-                )
-
-        elif self.room == vec(1, 0):
-            self.add(
-                Wall(0, 0, 40, 4),
-                Wall(0, 18.5, 40, 4),
-            )
-
-            try:
-                matchContainer = next(c for c in all_containers if c.room == self.room)
-                matchContainer.showEnemies()
-
-            except StopIteration:
-                all_containers.append(
-                    EntityContainer(
-                        self.room.x, self.room.y,
-                        StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
-                        StandardGrunt(WINWIDTH / 2, WINHEIGHT / 2),
-                    )
-                )
+    def update(self):
+        self.movement()
 
     def __repr__(self):
-        return f'Room({self.room})'
+        return f'Room({self.room}, {self.pos})'
 
 
 class EntityContainer(AbstractBase):
@@ -421,7 +400,7 @@ class EntityContainer(AbstractBase):
 
     def showEnemies(self):
         for sprite in self.sprites():
-            sprite.show(LAYER['enemy_layer'])
+            sprite.show(LAYER['enemy'])
 
 
 # ============================================================================ #
@@ -460,7 +439,7 @@ class InventoryMenu(AbstractBase):
     def show(self):
         """Makes all of the elements of the inventory menu visible"""        
         for sprite in self.sprites():
-            all_sprites.add(sprite, layer = LAYER['ui_layer_1'])
+            all_sprites.add(sprite, layer = LAYER['ui_1'])
 
     def cycleMenu(self):
         if (not self.cyclingLeft and 
@@ -529,8 +508,8 @@ class InventoryMenu(AbstractBase):
     def update(self):
         if keyReleased[K_e] % 2 != 0 and keyReleased[K_e] > 0:
             self.show()
-            self.rightArrow.show(LAYER['ui_layer_1'])
-            self.leftArrow.show(LAYER['ui_layer_1'])
+            self.rightArrow.show(LAYER['ui_1'])
+            self.leftArrow.show(LAYER['ui_1'])
             
             self.canUpdate = False
             for sprite in all_sprites:
@@ -740,6 +719,7 @@ class MenuSlot(ActorBase):
 def redrawGameWindow():
     """Draws all sprites every frame
     """
+    mainroom.update()
     all_sprites.update()
     all_sprites.draw(screen)
     pygame.display.update()
@@ -778,6 +758,8 @@ def checkKeyRelease(isMouse, *inputs):
 running = True
 while running:
     anim_timer += 1
+
+    print(repr(mainroom))
 
     for a_player in all_players:
         if a_player.hp <= 0:

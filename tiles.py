@@ -19,6 +19,9 @@ class TileBase(ActorBase):
         self.width, self.height = self.blockWidth * self.tileSize, self.blockHeight * self.tileSize
         self.pos = getTopLeftCoords(self.width, self.height, blockPosX * self.tileSize, blockPosY * self.tileSize)
 
+        room = self.getRoom()
+        self.cAccel = room.player1.cAccel
+
     def tileTexture(self, blockWidth: int, blockHeight: int, texture: pygame.Surface, colorkey: ColorRGB) -> pygame.Surface:
         """Tiles a texture across an image
         
@@ -44,20 +47,28 @@ class TileBase(ActorBase):
         finalImage.set_colorkey(tuple(colorkey))
         return finalImage
 
+    def movement(self):
+        room = self.getRoom()
+        self.cAccel = room.player1.cAccel
+
+        if self.canUpdate:
+            self.accel = self.getAccel()
+            self.accelMovement()
+
+    def getAccel(self) -> pygame.math.Vector2:
+        room = self.getRoom()
+        return room.getAccel()
 
 class Wall(TileBase):
     def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float):
         super().__init__(blockPosX, blockPosY, blockWidth, blockHeight)
-        self.show(LAYER['wall_layer'])
+        self.show(LAYER['wall'])
         all_walls.add(self) 
 
         self.texture = pygame.image.load("sprites/tiles/wall.png").convert()
         self.image: pygame.Surface = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, ColorRGB(25, 0, 0))
 
         self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
-
-    def update(self):
-        pass
 
 
 class Floor(TileBase):

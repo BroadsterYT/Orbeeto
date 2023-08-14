@@ -14,7 +14,7 @@ class DamageChar(ActorBase):
             - damage (``int``): _description_
         """        
         super().__init__()
-        self.show(LAYER['text_layer'])
+        self.show(LAYER['text'])
         all_font_chars.add(self)
         
         self.start = time.time()

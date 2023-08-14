@@ -12,7 +12,7 @@ from groups import all_stat_bars
 class StatBarBase(ActorBase):
     def __init__(self, owner, order: int):
         super().__init__()
-        self.show(LAYER['statBar_layer'])
+        self.show(LAYER['statbar'])
         all_stat_bars.add(self)
         self.owner = owner
 
@@ -42,7 +42,7 @@ class StatBarBase(ActorBase):
 class BarNumbers(ActorBase):
     def __init__(self, bar):
         super().__init__()
-        self.show(LAYER['statBar_layer'])
+        self.show(LAYER['statbar'])
         all_stat_bars.add(self)
         
         self.bar = bar

@@ -21,7 +21,7 @@ class ItemDrop(DropBase):
             - image_count (``int``): The number of frames to use
         """        
         super().__init__()
-        self.show(LAYER['drops_layer'])
+        self.show(LAYER['drops'])
         all_drops.add(self)
         self.droppedFrom = dropped_from
         self.mat = item_name

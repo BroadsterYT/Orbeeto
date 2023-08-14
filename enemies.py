@@ -54,7 +54,7 @@ class StandardGrunt(EnemyBase):
             - posY (``int``): The y-position to spawn at
         """         
         super().__init__()
-        self.show(LAYER['enemy_layer'])
+        self.show(LAYER['enemy'])
         all_enemies.add(self)
 
         self.lastRelocate = time.time()
@@ -147,7 +147,7 @@ class StandardGrunt(EnemyBase):
 class OctoGrunt(EnemyBase):
     def __init__(self, posX, posY):
         super().__init__()
-        self.show(LAYER['enemy_layer'])
+        self.show(LAYER['enemy'])
         all_enemies.add(self)
 
         self.lastRelocate = time.time()

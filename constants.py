@@ -82,19 +82,19 @@ MIDRIGHT = 'loc_midright'
 # ---------------------------------- Layers ---------------------------------- #
 LAYER = {
     'floor': 1,
-    'player_layer': 2,
-    'enemy_layer': 2,
-    'movable_layer': 2,
-    'drops_layer': 2,
-    'proj_layer': 2,
-    'explosion_layer': 2,
-    'wall_layer': 10,
-    'grapple': 11,
-    'portal_layer': 11,
-    'text_layer': 50,
-    'statBar_layer': 100,
+    'player': 2,
+    'enemy': 2,
+    'trinket': 2,
+    'drops': 2,
+    'proj': 2,
+    'explosion': 5,
+    'wall': 5,
+    'grapple': 6,
+    'portal': 6,
+    'text': 50,
+    'statbar': 100,
 
-    'ui_layer_1': 200
+    'ui_1': 200
 }
 
 # ------------------------------ Object Movement ----------------------------- #

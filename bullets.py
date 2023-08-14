@@ -12,16 +12,48 @@ class BulletBase(ActorBase):
         """        
         super().__init__()
         self.ricCount = 1
+        self.startTime = time.time()
+
+    def velMovement(self, adjustCenterFirst: bool):
+        room = self.getRoom()
+        if adjustCenterFirst:
+            self.rect.center = self.pos
+            self.hitbox.center = self.pos
+
+            self.pos.x += self.vel.x + room.vel.x
+            self.pos.y += self.vel.y + room.vel.y
+
+        else:
+            self.pos.x += self.vel.x + room.vel.x
+            self.pos.y += self.vel.y + room.vel.y
+            
+            self.rect.center = self.pos
+            self.hitbox.center = self.pos
 
     def land(self, target: pygame.sprite.Sprite):
         self.hit = target
         self.sideHit = trueCollideSideCheck(self, target)
         self.ricCount -= 1
 
+        # Bullet explodes
         if self.ricCount <= 0 or self.hit in all_enemies:
-            all_explosions.add(ProjExplode(self))
+            if self.sideHit == SOUTH:
+                boomPosX = self.pos.x
+                boomPosY = self.hit.pos.y + self.hit.hitbox.height // 2
+            if self.sideHit == EAST:
+                boomPosX = self.hit.pos.x + self.hit.hitbox.width // 2
+                boomPosY = self.pos.y
+            if self.sideHit == NORTH:
+                boomPosX = self.pos.x
+                boomPosY = self.hit.pos.y - self.hit.hitbox.height // 2
+            if self.sideHit == WEST:
+                boomPosX = self.hit.pos.x - self.hit.hitbox.width // 2
+                boomPosY = self.pos.y
+
+            all_explosions.add(ProjExplode(self, boomPosX, boomPosY))
             self.kill()
         
+        # Bullet ricochets
         else:
             velCopy = self.vel.copy()
             if self.sideHit == SOUTH:
@@ -105,62 +137,19 @@ class BulletBase(ActorBase):
                 receiver.lastHit = time.time()
 
 
-class PlayerBulletBase(BulletBase):
-    def __init__(self):
-        """The base class for all projectiles fired by players
-        """        
-        super().__init__()
-
-    def bindProj(self):
-        if self.canUpdate:
-            self.projCollide(all_enemies, True)
-            self.projCollide(all_walls, False)
-            self.projCollide(all_portals, False)
-            
-            if (
-                self.pos.x < WINWIDTH and 
-                self.pos.x > 0 and
-                self.pos.y < WINHEIGHT and 
-                self.pos.y > 0
-            ):
-                self.velMovement()
-            else:
-                self.kill()
-
-
-class EnemyBulletBase(BulletBase):
-    def __init__(self):
-        """The base class for all projectiles fired by enemies
-        """        
-        super().__init__()
-
-    def bindProj(self):
-        if self.canUpdate:
-            if (
-                self.pos.x < WINWIDTH and 
-                self.pos.x > 0 and
-                self.pos.y < WINHEIGHT and 
-                self.pos.y > 0
-            ):
-                self.velMovement()
-            else:
-                self.kill()
-
-            self.projCollide(all_players, True)
-            self.projCollide(all_walls, False)
-            self.projCollide(all_portals, False)
-
-
 class ProjExplode(ActorBase):
-    def __init__(self, proj: BulletBase):
+    def __init__(self, proj: BulletBase, posX: float, posY: float):
         """An explosion that is displayed on-screen when a projectile hits something
         
         ### Arguments
             - proj (``BulletBase``): The projectile that is exploding
         """            
         super().__init__()
-        self.show(LAYER['explosion_layer'])
+        self.show(LAYER['explosion'])
         self.owner = proj
+
+        self.pos = vec((posX, posY))
+        self.posOffset = vec(self.pos.x - self.owner.hit.pos.x, self.pos.y - self.owner.hit.pos.y)
 
         if isinstance(proj, PlayerStdBullet) or isinstance(proj, EnemyStdBullet):
             self.setImages('sprites/bullets/bullets.png', 32, 32, 8, 4, 0, 1)
@@ -169,31 +158,20 @@ class ProjExplode(ActorBase):
             self.setImages('sprites/bullets/bullets.png', 32, 32, 8, 4, 0, 1)
 
         self.renderImages()
-        self.rect = self.owner.rect
-        self.hitbox = self.owner.hitbox
-        
+        self.setRects(self.pos.x, self.pos.y, 32, 32, 32, 32)
         self.randRotation = rand.randint(1, 360)
 
-        # Allows explosion to spawn on edge of object and not inside it
-        if self.owner.sideHit == SOUTH:
-            self.pos.x = self.owner.pos.x
-            self.pos.y = self.owner.hit.pos.y + self.owner.hit.hitbox.height // 2
+    def movement(self):
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
 
-        if self.owner.sideHit == EAST:
-            self.pos.x = self.owner.hit.pos.x + self.owner.hit.hitbox.width // 2
-            self.pos.y = self.owner.pos.y
-
-        if self.owner.sideHit == NORTH:
-            self.pos.x = self.owner.pos.x
-            self.pos.y = self.owner.hit.pos.y - self.owner.hit.hitbox.height // 2
-
-        if self.owner.sideHit == WEST:
-            self.pos.x = self.owner.hit.pos.x - self.owner.hit.hitbox.width // 2
-            self.pos.y = self.owner.pos.y
+        self.pos = self.owner.hit.hitbox.center + self.posOffset
 
     def update(self):
+        self.movement()
+
         if isinstance(self.owner, PlayerStdBullet) or isinstance(self.owner, EnemyStdBullet):
-            if getTimeDiff(self.lastFrame) >= SPF:
+            if getTimeDiff(self.lastFrame) >= 0.3:
                 if self.index > 3:
                     self.kill()
                 else:
@@ -222,7 +200,7 @@ class ProjExplode(ActorBase):
 # ============================================================================ #
 #                                Player Bullets                                #
 # ============================================================================ #
-class PlayerStdBullet(PlayerBulletBase):
+class PlayerStdBullet(BulletBase):
     def __init__(self, shotFrom, posX: int, posY: int, velX: int, velY: int, bounceCount: int = 1):
         """A projectile fired by a player that moves at a constant velocity
 
@@ -234,7 +212,7 @@ class PlayerStdBullet(PlayerBulletBase):
             - velY (``int``): The y-axis component of the bullet's velocity
         """        
         super().__init__()
-        self.show(LAYER['proj_layer'])
+        self.show(LAYER['proj'])
         self.damage = PROJDMG[PROJ_STD]
 
         self.shotFrom = shotFrom
@@ -248,12 +226,16 @@ class PlayerStdBullet(PlayerBulletBase):
 
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
     
-    def movement(self):
-        self.pos.x += self.vel.x
-        self.pos.y += self.vel.y
-
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+    def bindProj(self):
+        if self.canUpdate:
+            self.projCollide(all_enemies, True)
+            self.projCollide(all_walls, False)
+            self.projCollide(all_portals, False)
+            
+            if getTimeDiff(self.startTime) <= 10:
+                self.velMovement(True)
+            else:
+                self.kill()
 
     def update(self):
         self.bindProj()
@@ -265,7 +247,7 @@ class PlayerStdBullet(PlayerBulletBase):
 class PortalBullet(BulletBase):
     def __init__(self, shotFrom, posX, posY, velX, velY): 
         super().__init__()
-        self.show(LAYER['proj_layer'])
+        self.show(LAYER['proj'])
         
         self.shotFrom = shotFrom
 
@@ -334,19 +316,12 @@ class PortalBullet(BulletBase):
                 self.pos.y < WINHEIGHT and 
                 self.pos.y > 0
             ):
-                self.movement()
+                self.velMovement(False)
             else:
                 self.kill()
 
             self.projCollide(all_walls, False)
             self.projCollide(all_portals, False)
-
-    def movement(self):
-        self.pos.x += self.vel.x
-        self.pos.y += self.vel.y
-
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
 
     def update(self):
         if getTimeDiff(self.lastFrame) > ANIMTIME:
@@ -579,10 +554,10 @@ class GrappleBullet(BulletBase):
 # ============================================================================ #
 #                                 Enemy Bullets                                #
 # ============================================================================ #
-class EnemyStdBullet(EnemyBulletBase):
+class EnemyStdBullet(BulletBase):
     def __init__(self, shotFrom, posX, posY, velX, velY):
         super().__init__()
-        self.show(LAYER['proj_layer'])
+        self.show(LAYER['proj'])
 
         self.shotFrom = shotFrom
 
@@ -596,6 +571,22 @@ class EnemyStdBullet(EnemyBulletBase):
 
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
     
+    def bindProj(self):
+        if self.canUpdate:
+            if (
+                self.pos.x < WINWIDTH and 
+                self.pos.x > 0 and
+                self.pos.y < WINHEIGHT and 
+                self.pos.y > 0
+            ):
+                self.velMovement()
+            else:
+                self.kill()
+
+            self.projCollide(all_players, True)
+            self.projCollide(all_walls, False)
+            self.projCollide(all_portals, False)
+
     def movement(self):
         self.pos.x += self.vel.x
         self.pos.y += self.vel.y

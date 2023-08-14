@@ -7,7 +7,7 @@ from tiles import TileBase
 class Box(ActorBase):
     def __init__(self, idValue, posX, posY):
         super().__init__()
-        self.show(LAYER['movable_layer'])
+        self.show(LAYER['trinket'])
         all_movable.add(self)
 
         self.idValue = idValue
@@ -59,7 +59,7 @@ class Button(ActorBase):
             - blockPosY (``int``): _description_
         """        
         super().__init__()
-        self.show(LAYER['movable_layer'])
+        self.show(LAYER['trinket'])
         all_trinkets.add(self)
 
         self.activated = False
@@ -117,7 +117,7 @@ class LockedWall(TileBase):
             - blockHeight (``int``): The height of the wall in "tiles"
         """        
         super().__init__(sBlockPosX, sBlockPosY, blockWidth, blockHeight)
-        self.show(LAYER['wall_layer'])
+        self.show(LAYER['wall'])
         all_walls.add(self)
         all_trinkets.add(self)
         self.idValue = idValue
