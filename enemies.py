@@ -89,17 +89,13 @@ class StandardGrunt(EnemyBase):
         if self.pos.x != self.randPos.x or self.pos.y != self.randPos.y:
             if self.pos.x < self.randPos.x - self.hitbox.width // 2:
                 finalAccel.x += self.cAccel
-            elif self.pos.x > self.randPos.x + self.hitbox.width // 2:
+            if self.pos.x > self.randPos.x + self.hitbox.width // 2:
                 finalAccel.x -= self.cAccel
-            else:
-                pass
 
             if self.pos.y < self.randPos.y - self.hitbox.height // 2:
                 finalAccel.y += self.cAccel
-            elif self.pos.y > self.randPos.y + self.hitbox.height // 2:
+            if self.pos.y > self.randPos.y + self.hitbox.height // 2:
                 finalAccel.y -= self.cAccel
-            else:
-                pass
 
         return finalAccel
 

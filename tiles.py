@@ -52,12 +52,9 @@ class TileBase(ActorBase):
         self.cAccel = room.player1.cAccel
 
         if self.canUpdate:
-            self.accel = self.getAccel()
-            self.accelMovement()
+            self.vel = room.vel
+            self.velMovement(True)
 
-    def getAccel(self) -> pygame.math.Vector2:
-        room = self.getRoom()
-        return room.getAccel()
 
 class Wall(TileBase):
     def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float):
@@ -70,6 +67,9 @@ class Wall(TileBase):
 
         self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
 
+    def update(self):
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
 
 class Floor(TileBase):
     def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float):

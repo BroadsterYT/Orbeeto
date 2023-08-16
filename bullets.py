@@ -1,4 +1,5 @@
 import pygame
+import os
 
 from class_bases import *
 from portals import *
@@ -55,21 +56,23 @@ class BulletBase(ActorBase):
         
         # Bullet ricochets
         else:
-            velCopy = self.vel.copy()
+            room = self.getRoom()
+            roomVel = room.vel.copy()
+
             if self.sideHit == SOUTH:
-                self.pos.y = self.hit.pos.y + self.hit.hitbox.height // 2 + self.hitbox.height // 2
+                self.pos.y = self.hit.pos.y + self.hit.hitbox.height // 2 + self.hitbox.height // 2 + abs(roomVel.y) + 1
                 self.vel.y = -self.vel.y
 
             elif self.sideHit == EAST:
-                self.pos.x = self.hit.pos.x + self.hit.hitbox.width // 2 + self.hitbox.width // 2
+                self.pos.x = self.hit.pos.x + self.hit.hitbox.width // 2 + self.hitbox.width // 2 + abs(roomVel.x) + 1
                 self.vel.x = -self.vel.x
 
             elif self.sideHit == NORTH:
-                self.pos.y = self.hit.pos.y - self.hit.hitbox.height // 2 - self.hitbox.height // 2
-                self.vel.y = -velCopy.y
+                self.pos.y = self.hit.pos.y - self.hit.hitbox.height // 2 - self.hitbox.height // 2 - abs(roomVel.y) - 1
+                self.vel.y = -self.vel.y
 
             elif self.sideHit == WEST:
-                self.pos.x = self.hit.pos.x - self.hit.hitbox.width // 2 - self.hitbox.width // 2
+                self.pos.x = self.hit.pos.x - self.hit.hitbox.width // 2 - self.hitbox.width // 2 - abs(roomVel.x) - 1
                 self.vel.x = -self.vel.x
 
             self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
@@ -171,7 +174,7 @@ class ProjExplode(ActorBase):
         self.movement()
 
         if isinstance(self.owner, PlayerStdBullet) or isinstance(self.owner, EnemyStdBullet):
-            if getTimeDiff(self.lastFrame) >= 0.3:
+            if getTimeDiff(self.lastFrame) >= SPF:
                 if self.index > 3:
                     self.kill()
                 else:
@@ -263,7 +266,7 @@ class PortalBullet(BulletBase):
         # Rotate sprite to trajectory
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
 
-    def projCollide(self, spriteGroup, canHurt):
+    def projCollide(self, spriteGroup, canHurt: bool):
         for collidingSprite in spriteGroup:
             if not self.hitbox.colliderect(collidingSprite.hitbox):
                 continue
@@ -282,31 +285,33 @@ class PortalBullet(BulletBase):
                         for portal in all_portals:
                             if self.hitbox.colliderect(portal.hitbox):
                                 self.teleport(portal)
-                        return
-                    
-                    elif len(all_portals) < 2:
-                        self.land(collidingSprite)
-                        return
 
                 elif spriteGroup == all_walls:
                     self.land(collidingSprite)
-                    
-                    side = wallSideCheck(collidingSprite, self)
-                    if side == SOUTH:
-                        all_portals.add(Portal(self, self.pos.x, collidingSprite.pos.y + (collidingSprite.image.get_height() // 2), side))
-                        portalCountCheck()
-                    if side == NORTH:
-                        all_portals.add(Portal(self, self.pos.x, collidingSprite.pos.y - (collidingSprite.image.get_height() // 2), side))
-                        portalCountCheck()
-                    if side == EAST:
-                        all_portals.add(Portal(self, collidingSprite.pos.x + (collidingSprite.image.get_width() // 2), self.pos.y, side))
-                        portalCountCheck()
-                    if side == WEST:
-                        all_portals.add(Portal(self, collidingSprite.pos.x - (collidingSprite.image.get_width() // 2), self.pos.y, side))
-                        portalCountCheck()
+                    self.__spawnPortal(collidingSprite)
                 
                 else:
                     self.land(collidingSprite)
+
+    def __spawnPortal(self, surface: ActorBase):
+        """Spawns a portal on the surface that the portal bullet hit.
+        
+        ### Arguments
+            - wall (``ActorBase``): The sprite that the portal bullet hit
+        """        
+        side = wallSideCheck(surface, self)
+        if side == SOUTH:
+            all_portals.add(Portal(self, self.pos.x, surface.pos.y + surface.hitbox.height // 2, side))
+            portalCountCheck()
+        if side == NORTH:
+            all_portals.add(Portal(self, self.pos.x, surface.pos.y - surface.hitbox.height // 2, side))
+            portalCountCheck()
+        if side == EAST:
+            all_portals.add(Portal(self, surface.pos.x + surface.hitbox.width // 2, self.pos.y, side))
+            portalCountCheck()
+        if side == WEST:
+            all_portals.add(Portal(self, surface.pos.x - surface.hitbox.width // 2, self.pos.y, side))
+            portalCountCheck()
 
     def bindProj(self):
         if self.canUpdate:
@@ -600,3 +605,7 @@ class EnemyStdBullet(BulletBase):
 
     def __repr__(self):
         return f'EnemyStdBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.ricCount})'
+    
+
+if __name__ == '__main__':
+    os.system('python main.py')

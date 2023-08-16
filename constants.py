@@ -88,7 +88,7 @@ LAYER = {
     'drops': 2,
     'proj': 2,
     'explosion': 5,
-    'wall': 5,
+    'wall': 1,
     'grapple': 6,
     'portal': 6,
     'text': 50,
