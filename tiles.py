@@ -1,4 +1,5 @@
 import pygame
+import os
 
 from class_bases import *
 
@@ -49,11 +50,21 @@ class TileBase(ActorBase):
 
     def movement(self):
         room = self.getRoom()
-        self.cAccel = room.player1.cAccel
-
         if self.canUpdate:
-            self.vel = room.vel
-            self.velMovement(True)
+            # if room.isScrollingX and room.isScrollingY:
+                self.vel = room.vel
+                self.velMovement(True)
+
+            # elif room.isScrollingX and not room.isScrollingY:
+            #     self.vel.x = room.vel.x
+            #     self.velMovement(True)
+
+            # elif not room.isScrollingX and room.isScrollingY:
+            #     self.vel.y = room.vel.y
+            #     self.velMovement(True)
+
+            # elif not room.isScrollingX and not room.isScrollingY:
+            #     pass
 
 
 class Wall(TileBase):
@@ -68,8 +79,7 @@ class Wall(TileBase):
         self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
 
     def update(self):
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+        pass
 
 class Floor(TileBase):
     def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float):
@@ -97,3 +107,34 @@ class Floor(TileBase):
                     self.index = 0
                 
                 self.lastFrame = time.time()
+
+
+class RoomBorder(TileBase):
+    def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float):
+        super().__init__(blockPosX, blockPosY, blockWidth, blockHeight)
+        self.show(LAYER['floor'])
+
+        self.spritesheet = Spritesheet('sprites/tiles/floor.png', 4)
+        self.textures = self.spritesheet.get_images(16, 16, 4)
+        self.index = 0
+
+        self.texture = self.textures[self.index]
+        self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
+
+        self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
+
+    def update(self):
+        if self.visible:
+            if getTimeDiff(self.lastFrame) >= 0.235:
+                self.texture = self.textures[self.index]
+                self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
+
+                self.index += 1
+                if self.index > 3:
+                    self.index = 0
+                
+                self.lastFrame = time.time()
+
+
+if __name__ == '__main__':
+    os.system('python main.py')

@@ -5,6 +5,7 @@ pygame.init()
 
 import sys
 import time
+import itertools
 
 from math import sin, cos, radians, degrees, floor, pi
 from init import *
@@ -45,7 +46,8 @@ class Player(ActorBase):
         self.setImages("sprites/orbeeto/orbeeto.png", 64, 64, 5, 5)
         self.setRects(0, 0, 64, 64, 32, 32)
 
-        self.pos = vec((WINWIDTH // 2, WINHEIGHT // 2))
+        self.pos = vec((608, 500))
+        self.center = vec(608, WINHEIGHT // 2)
         self.cAccel = 0.58
 
         # -------------------------------- Game Stats -------------------------------- #
@@ -149,6 +151,8 @@ class Player(ActorBase):
         killGroups(all_projs, all_explosions)
 
     def checkRoomChange(self):
+        """Checks if the player should change rooms
+        """        
         if self.pos.x <= 0:
             self.changeRoom(WEST)
 
@@ -176,30 +180,33 @@ class Player(ActorBase):
             - ``pygame.math.Vector2``: The acceleration value of the player
         """        
         finalAccel = vec(0, 0)
-        # if self.grapple == None:
-        #     if isInputHeld[K_a]:
-        #         finalAccel.x -= self.cAccel
-        #     if isInputHeld[K_d]:
-        #         finalAccel.x += self.cAccel
-        #     if isInputHeld[K_s]:
-        #         finalAccel.y += self.cAccel
-        #     if isInputHeld[K_w]:
-        #         finalAccel.y -= self.cAccel
-
-        # elif self.grapple != None:
-        #     if isInputHeld[K_a]:
-        #         finalAccel.x -= self.cAccel
-        #     if isInputHeld[K_d]:
-        #         finalAccel.x += self.cAccel
-        #     if isInputHeld[K_s]:
-        #         finalAccel.y += self.cAccel
-        #     if isInputHeld[K_w]:
-        #         finalAccel.y -= self.cAccel
-
-        #     if self.grapple.returning and self.grapple.grappledTo in all_walls:
-        #         finalAccel = vec((self.cAccel * 3) * -sin(getAngleToSprite(self, self.grapple)), (self.cAccel * 3) * -cos(getAngleToSprite(self, self.grapple)))
-
-        return finalAccel
+        if self.room.isScrollingX and self.room.isScrollingY:
+            return finalAccel
+        
+        elif self.room.isScrollingX and not self.room.isScrollingY:
+            if isInputHeld[K_w]:
+                finalAccel.y -= self.cAccel
+            if isInputHeld[K_s]:
+                finalAccel.y += self.cAccel
+            return finalAccel
+        
+        elif not self.room.isScrollingX and self.room.isScrollingY:
+            if isInputHeld[K_a]:
+                finalAccel.x -= self.cAccel
+            if isInputHeld[K_d]:
+                finalAccel.x += self.cAccel
+            return finalAccel
+        
+        elif not self.room.isScrollingX and not self.room.isScrollingY:
+            if isInputHeld[K_a]:
+                finalAccel.x -= self.cAccel
+            if isInputHeld[K_w]:
+                finalAccel.y -= self.cAccel
+            if isInputHeld[K_s]:
+                finalAccel.y += self.cAccel
+            if isInputHeld[K_d]:
+                finalAccel.x += self.cAccel
+            return finalAccel
 
     def shoot(self):
         """Shoots bullets
@@ -283,6 +290,8 @@ class Player(ActorBase):
                 self.hitTime += 1
 
         self.menu.update()
+
+        pygame.draw.rect(screen, RED, self.hitbox, 3)
         
         if self.hp <= 0:
             self.kill()
@@ -311,7 +320,7 @@ class Room(AbstractBase):
         self.room = vec((roomX, roomY))
         self.size = vec((WINWIDTH, WINHEIGHT))
         
-        self.isScrollingX = True
+        self.isScrollingX = False
         self.isScrollingY = True
 
         self.player1: Player = Player()
@@ -327,15 +336,23 @@ class Room(AbstractBase):
         self.cAccel = self.player1.cAccel
 
     def accelMovement(self):
+        """Calculates the room's acceleration, velocity, and position
+        """        
         self.accel.x += self.vel.x * FRIC
         self.accel.y += self.vel.y * FRIC
         self.vel += self.accel
         self.pos += self.vel + self.player1.cAccel * self.accel
 
     def movement(self):
+        """Moves the room if the room is currently capable of scrolling with the player"""        
         if self.canUpdate:
             self.accel = self.getAccel()
             self.accelMovement()
+
+            if not (not self.isScrollingX and not self.isScrollingY):
+                self.__spriteCollideCheck(self.player1, all_walls)
+                for sprite in all_trinkets:
+                    self.__spriteCollideCheck(sprite, all_players, all_walls)
 
             # ------------------ Teleporting player when room scrolling ------------------ #
             for portal in all_portals:
@@ -343,146 +360,451 @@ class Room(AbstractBase):
                     portalIn: Portal = portal
                     portalOut: Portal = getOtherPortal(portalIn)
 
-                    width = (portalOut.hitbox.width + self.player1.hitbox.width) // 2
-                    height = (portalOut.hitbox.height + self.player1.hitbox.height) // 2
-
-                    self.__teleportPlayer(portalIn, portalOut, width, height)
+                    if len(all_portals) == 2:
+                        self.__teleportPlayer(portalIn, portalOut)
 
             self.__recenterPlayer()
 
             for sprite in self.sprites():
                 sprite.movement()
 
-    def __recenterPlayer(self):
+    def __recenterPlayer(self) -> None:
         """Adjusts all sprites in the room so that the player is at the center
-        """        
-        if not self.recentering:
-            if self.player1.pos != vec(608, WINHEIGHT // 2):
-                self.posCopy = self.player1.pos.copy()
-                self.offset = vec(self.posCopy.x - 608, self.posCopy.y - WINHEIGHT // 2)
-                for sprite in self.sprites():
-                    sprite.posCopy = sprite.pos.copy()
+        """
+        if self.isScrollingX and self.isScrollingY:
+            if not self.recentering:
+                if self.player1.pos != vec(608, WINHEIGHT // 2):
+                    self.posCopy = self.player1.pos.copy()
+                    self.offset = vec(self.posCopy.x - 608, self.posCopy.y - WINHEIGHT // 2)
+                    for group in (self.sprites(), all_trinkets):
+                        for sprite in group:
+                            sprite.posCopy = sprite.pos.copy()
 
-                self.lastRecenter = time.time()
-                self.recentering = True
+                    self.lastRecenter = time.time()
+                    self.recentering = True
 
-        if self.recentering:
-            weight = getTimeDiff(self.lastRecenter)
-            if weight <= 0.25:
-                self.player1.pos = cerp(self.posCopy, vec(608, WINHEIGHT // 2), weight * 4)
-                for sprite in self.sprites():
-                    sprite.pos = cerp(sprite.posCopy, sprite.posCopy - self.offset, weight * 4)
-            else:
-                self.player1.pos = vec(608, WINHEIGHT // 2)
-                self.recentering = False
+            if self.recentering:
+                weight = getTimeDiff(self.lastRecenter)
+                if weight <= 0.25:
+                    self.player1.pos = cerp(self.posCopy, vec(608, WINHEIGHT // 2), weight * 4)
+                    for group in (self.sprites(), all_trinkets):
+                        for sprite in group:
+                            sprite.pos = cerp(sprite.posCopy, sprite.posCopy - self.offset, weight * 4)
+                else:
+                    self.player1.pos = vec(608, WINHEIGHT // 2)
+                    self.recentering = False
+        
+        elif self.isScrollingX and not self.isScrollingY:
+            if not self.recentering:
+                if self.player1.pos.x != 608:
+                    self.posCopy = self.player1.pos.copy()
+                    self.offset = vec(self.posCopy.x - 608, self.posCopy.y - WINHEIGHT // 2)
+                    for group in (self.sprites(), all_trinkets):
+                        for sprite in group:
+                            sprite.posCopy = sprite.pos.copy()
 
-    def __teleportPlayer(self, portalIn: Portal, portalOut: Portal, width: float, height: float):
+                    self.lastRecenter = time.time()
+                    self.recentering = True
+
+            if self.recentering:
+                weight = getTimeDiff(self.lastRecenter)
+                if weight <= 0.25:
+                    self.player1.pos.x = cerp(self.posCopy.x, 608, weight * 4)
+                    for group in (self.sprites(), all_trinkets):
+                        for sprite in group:
+                            sprite.pos.x = cerp(sprite.posCopy.x, sprite.posCopy.x - self.offset.x, weight * 4)
+                else:
+                    self.player1.pos.x = 608
+                    self.recentering = False
+
+        elif not self.isScrollingX and self.isScrollingY:
+            if not self.recentering:
+                if self.player1.pos.y != WINHEIGHT // 2:
+                    self.posCopy = self.player1.pos.copy()
+                    self.offset = vec(self.posCopy.x - 608, self.posCopy.y - WINHEIGHT // 2)
+                    for group in (self.sprites(), all_trinkets):
+                        for sprite in group:
+                            sprite.posCopy = sprite.pos.copy()
+
+                    self.lastRecenter = time.time()
+                    self.recentering = True
+
+            if self.recentering:
+                weight = getTimeDiff(self.lastRecenter)
+                if weight <= 0.25:
+                    self.player1.pos.y = cerp(self.posCopy.y, WINHEIGHT // 2, weight * 4)
+                    for group in (self.sprites(), all_trinkets):
+                        for sprite in group:
+                            sprite.pos.y = cerp(sprite.posCopy.y, sprite.posCopy.y - self.offset.y, weight * 4)
+                else:
+                    self.player1.pos.y = WINHEIGHT // 2
+                    self.recentering = False
+
+        elif not self.isScrollingX and not self.isScrollingY:
+            pass
+
+    def __teleportPlayer(self, portalIn: Portal, portalOut: Portal):
         """Teleports the player when the room is scrolling.
         
         ### Arguments
             - portalIn (``Portal``): The portal the player is entering
             - portalOut (``Portal``): The portal the player is exiting
-            - width (``float``): Half the sum of ``portalOut``'s width and the player's width
-            - height (``float``): Half the sum of ``portalOut``'s height and the player's height
-        """        
-        if portalIn.facing == SOUTH:
-            distOffset = copy.copy(self.player1.pos.x) - copy.copy(portalIn.pos.x)
-            if portalOut.facing == SOUTH:
-                self.player1.pos.x = portalOut.pos.x - distOffset
-                self.player1.pos.y = portalOut.pos.y + height
-                self.vel = self.vel.rotate(180)
+        """
+        width = (portalOut.hitbox.width + self.player1.hitbox.width) // 2
+        height = (portalOut.hitbox.height + self.player1.hitbox.height) // 2
 
-            if portalOut.facing == EAST:
-                self.player1.pos.x = portalOut.pos.x + width
-                self.player1.pos.y = portalOut.pos.y - distOffset
-                self.vel = self.vel.rotate(90)
+        if self.isScrollingX and self.isScrollingY:
+            if portalIn.facing == SOUTH:
+                distOffset = copy.copy(self.player1.pos.x) - copy.copy(portalIn.pos.x)
+                if portalOut.facing == SOUTH:
+                    self.player1.pos.x = portalOut.pos.x - distOffset
+                    self.player1.pos.y = portalOut.pos.y + height
+                    self.vel = self.vel.rotate(180)
 
-            if portalOut.facing == NORTH:
-                self.player1.pos.x = portalOut.pos.x + distOffset
-                self.player1.pos.y = portalOut.pos.y - height
+                if portalOut.facing == EAST:
+                    self.player1.pos.x = portalOut.pos.x + width
+                    self.player1.pos.y = portalOut.pos.y - distOffset
+                    self.vel = self.vel.rotate(90)
 
-            if portalOut.facing == WEST:
-                self.player1.pos.x = portalOut.pos.x - width
-                self.player1.pos.y = portalOut.pos.y + distOffset
-                self.vel = self.vel.rotate(270)
+                if portalOut.facing == NORTH:
+                    self.player1.pos.x = portalOut.pos.x + distOffset
+                    self.player1.pos.y = portalOut.pos.y - height
 
-        if portalIn.facing == EAST:
-            distOffset = copy.copy(self.player1.pos.y) - copy.copy(portalIn.pos.y)
-            if portalOut.facing == SOUTH:
-                self.player1.pos.x = portalOut.pos.x - distOffset
-                self.player1.pos.y = portalOut.pos.y + height
-                self.vel = self.vel.rotate(270)
+                if portalOut.facing == WEST:
+                    self.player1.pos.x = portalOut.pos.x - width
+                    self.player1.pos.y = portalOut.pos.y + distOffset
+                    self.vel = self.vel.rotate(270)
 
-            if portalOut.facing == EAST:
-                self.player1.pos.x = portalOut.pos.x + width
-                self.player1.pos.y = portalOut.pos.y - distOffset
-                self.vel = self.vel.rotate(180)
+            if portalIn.facing == EAST:
+                distOffset = copy.copy(self.player1.pos.y) - copy.copy(portalIn.pos.y)
+                if portalOut.facing == SOUTH:
+                    self.player1.pos.x = portalOut.pos.x - distOffset
+                    self.player1.pos.y = portalOut.pos.y + height
+                    self.vel = self.vel.rotate(270)
 
-            if portalOut.facing == NORTH:
-                self.player1.pos.x = portalOut.pos.x + distOffset
-                self.player1.pos.y = portalOut.pos.y - height
-                self.vel = self.vel.rotate(90)
+                if portalOut.facing == EAST:
+                    self.player1.pos.x = portalOut.pos.x + width
+                    self.player1.pos.y = portalOut.pos.y - distOffset
+                    self.vel = self.vel.rotate(180)
 
-            if portalOut.facing == WEST:
-                self.player1.pos.x = portalOut.pos.x - width
-                self.player1.pos.y = portalOut.pos.y + distOffset
+                if portalOut.facing == NORTH:
+                    self.player1.pos.x = portalOut.pos.x + distOffset
+                    self.player1.pos.y = portalOut.pos.y - height
+                    self.vel = self.vel.rotate(90)
 
-        if portalIn.facing == NORTH:
-            distOffset = copy.copy(self.player1.pos.x) - copy.copy(portalIn.pos.x)
-            if portalOut.facing == SOUTH:
-                self.player1.pos.x = portalOut.pos.x + distOffset
-                self.player1.pos.y = portalOut.pos.y + height
+                if portalOut.facing == WEST:
+                    self.player1.pos.x = portalOut.pos.x - width
+                    self.player1.pos.y = portalOut.pos.y + distOffset
 
-            if portalOut.facing == EAST:
-                self.player1.pos.x = portalOut.pos.x + width
-                self.player1.pos.y = portalOut.pos.y + distOffset
-                self.vel = self.vel.rotate(270)
+            if portalIn.facing == NORTH:
+                distOffset = copy.copy(self.player1.pos.x) - copy.copy(portalIn.pos.x)
+                if portalOut.facing == SOUTH:
+                    self.player1.pos.x = portalOut.pos.x + distOffset
+                    self.player1.pos.y = portalOut.pos.y + height
 
-            if portalOut.facing == NORTH:
-                self.player1.pos.x = portalOut.pos.x - distOffset
-                self.player1.pos.y = portalOut.pos.y - height
-                self.vel = self.vel.rotate(180)
+                if portalOut.facing == EAST:
+                    self.player1.pos.x = portalOut.pos.x + width
+                    self.player1.pos.y = portalOut.pos.y + distOffset
+                    self.vel = self.vel.rotate(270)
 
-            if portalOut.facing == WEST:
-                self.player1.pos.x = portalOut.pos.x - width
-                self.player1.pos.y = portalOut.pos.y - distOffset
-                self.vel = self.vel.rotate(90)
+                if portalOut.facing == NORTH:
+                    self.player1.pos.x = portalOut.pos.x - distOffset
+                    self.player1.pos.y = portalOut.pos.y - height
+                    self.vel = self.vel.rotate(180)
 
-        if portalIn.facing == WEST:
-            distOffset = copy.copy(self.player1.pos.y) - copy.copy(portalIn.pos.y)
-            if portalOut.facing == SOUTH:
-                self.player1.pos.x = portalOut.pos.x + distOffset
-                self.player1.pos.y = portalOut.pos.y + height
-                self.vel = self.vel.rotate(90)
+                if portalOut.facing == WEST:
+                    self.player1.pos.x = portalOut.pos.x - width
+                    self.player1.pos.y = portalOut.pos.y - distOffset
+                    self.vel = self.vel.rotate(90)
 
-            if portalOut.facing == EAST:
-                self.player1.pos.x = portalOut.pos.x + width
-                self.player1.pos.y = portalOut.pos.y + distOffset
+            if portalIn.facing == WEST:
+                distOffset = copy.copy(self.player1.pos.y) - copy.copy(portalIn.pos.y)
+                if portalOut.facing == SOUTH:
+                    self.player1.pos.x = portalOut.pos.x + distOffset
+                    self.player1.pos.y = portalOut.pos.y + height
+                    self.vel = self.vel.rotate(90)
 
-            if portalOut.facing == NORTH:
-                self.player1.pos.x = portalOut.pos.x - distOffset
-                self.player1.pos.y = portalOut.pos.y - height
-                self.vel = self.vel.rotate(270)
+                if portalOut.facing == EAST:
+                    self.player1.pos.x = portalOut.pos.x + width
+                    self.player1.pos.y = portalOut.pos.y + distOffset
 
-            if portalOut.facing == WEST:
-                self.player1.pos.x = portalOut.pos.x - width
-                self.player1.pos.y = portalOut.pos.y - distOffset
-                self.vel = self.vel.rotate(180)
+                if portalOut.facing == NORTH:
+                    self.player1.pos.x = portalOut.pos.x - distOffset
+                    self.player1.pos.y = portalOut.pos.y - height
+                    self.vel = self.vel.rotate(270)
+
+                if portalOut.facing == WEST:
+                    self.player1.pos.x = portalOut.pos.x - width
+                    self.player1.pos.y = portalOut.pos.y - distOffset
+                    self.vel = self.vel.rotate(180)
+
+        elif self.isScrollingX and not self.isScrollingY:
+            if portalIn.facing == SOUTH:
+                distOffset = copy.copy(self.player1.pos.x) - copy.copy(portalIn.pos.x)
+                if portalOut.facing == SOUTH:
+                    self.player1.pos.x = portalOut.pos.x - distOffset
+                    self.player1.pos.y = portalOut.pos.y + height
+                    self.player1.vel = self.player1.vel.rotate(180)
+
+                if portalOut.facing == EAST:
+                    self.player1.pos.x = portalOut.pos.x + width
+                    self.player1.pos.y = portalOut.pos.y - distOffset
+                    self.vel.x = self.player1.vel.y
+                    self.player1.vel.y = self.player1.vel.x
+
+                if portalOut.facing == NORTH:
+                    self.player1.pos.x = portalOut.pos.x + distOffset
+                    self.player1.pos.y = portalOut.pos.y - height
+
+                if portalOut.facing == WEST:
+                    self.player1.pos.x = portalOut.pos.x - width
+                    self.player1.pos.y = portalOut.pos.y + distOffset
+                    self.vel.x = -self.player1.vel.y
+                    self.player1.vel.y = -self.player1.vel.x
+
+            if portalIn.facing == EAST:
+                distOffset = copy.copy(self.player1.pos.y) - copy.copy(portalIn.pos.y)
+                if portalOut.facing == SOUTH:
+                    self.player1.pos.x = portalOut.pos.x - distOffset
+                    self.player1.pos.y = portalOut.pos.y + height
+                    self.player1.vel.y = self.vel.x
+
+                if portalOut.facing == EAST:
+                    self.player1.pos.x = portalOut.pos.x + width
+                    self.player1.pos.y = portalOut.pos.y - distOffset
+                    self.vel.x = -self.vel.x
+
+                if portalOut.facing == NORTH:
+                    self.player1.pos.x = portalOut.pos.x + distOffset
+                    self.player1.pos.y = portalOut.pos.y - height
+                    self.player1.vel.y = -self.vel.x
+
+                if portalOut.facing == WEST:
+                    self.player1.pos.x = portalOut.pos.x - width
+                    self.player1.pos.y = portalOut.pos.y + distOffset
+
+            if portalIn.facing == NORTH:
+                distOffset = copy.copy(self.player1.pos.x) - copy.copy(portalIn.pos.x)
+                if portalOut.facing == SOUTH:
+                    self.player1.pos.x = portalOut.pos.x + distOffset
+                    self.player1.pos.y = portalOut.pos.y + height
+
+                if portalOut.facing == EAST:
+                    self.player1.pos.x = portalOut.pos.x + width
+                    self.player1.pos.y = portalOut.pos.y + distOffset
+                    self.vel.x = -self.player1.vel.y
+                    self.player1.vel.y = -self.player1.vel.x
+
+                if portalOut.facing == NORTH:
+                    self.player1.pos.x = portalOut.pos.x - distOffset
+                    self.player1.pos.y = portalOut.pos.y - height
+                    self.player1.vel = self.player1.vel.rotate(180)
+
+                if portalOut.facing == WEST:
+                    self.player1.pos.x = portalOut.pos.x - width
+                    self.player1.pos.y = portalOut.pos.y - distOffset
+                    self.vel.x = self.player1.vel.y
+                    self.player1.vel.y = self.player1.vel.x
+
+            if portalIn.facing == WEST:
+                distOffset = copy.copy(self.player1.pos.y) - copy.copy(portalIn.pos.y)
+                if portalOut.facing == SOUTH:
+                    self.player1.pos.x = portalOut.pos.x + distOffset
+                    self.player1.pos.y = portalOut.pos.y + height
+                    self.player1.vel = -self.vel.rotate(90)
+
+                if portalOut.facing == EAST:
+                    self.player1.pos.x = portalOut.pos.x + width
+                    self.player1.pos.y = portalOut.pos.y + distOffset
+
+                if portalOut.facing == NORTH:
+                    self.player1.pos.x = portalOut.pos.x - distOffset
+                    self.player1.pos.y = portalOut.pos.y - height
+                    self.player1.vel = -self.vel.rotate(270)
+
+                if portalOut.facing == WEST:
+                    self.player1.pos.x = portalOut.pos.x - width
+                    self.player1.pos.y = portalOut.pos.y - distOffset
+                    self.vel = self.vel.rotate(180)
+
+        elif not self.isScrollingX and self.isScrollingY:
+            if portalIn.facing == SOUTH:
+                distOffset = copy.copy(self.player1.pos.x) - copy.copy(portalIn.pos.x)
+                if portalOut.facing == SOUTH:
+                    self.player1.pos.x = portalOut.pos.x - distOffset
+                    self.player1.pos.y = portalOut.pos.y + height
+                    self.vel = self.vel.rotate(180)
+
+                if portalOut.facing == EAST:
+                    self.player1.pos.x = portalOut.pos.x + width
+                    self.player1.pos.y = portalOut.pos.y - distOffset
+                    self.player1.vel.x = self.vel.y
+                    self.vel.y = self.player1.vel.x
+
+                if portalOut.facing == NORTH:
+                    self.player1.pos.x = portalOut.pos.x + distOffset
+                    self.player1.pos.y = portalOut.pos.y - height
+
+                if portalOut.facing == WEST:
+                    self.player1.pos.x = portalOut.pos.x - width
+                    self.player1.pos.y = portalOut.pos.y + distOffset
+                    self.player1.vel.x = -self.vel.y
+                    self.vel.y = -self.player1.vel.x
+
+            if portalIn.facing == EAST:
+                distOffset = copy.copy(self.player1.pos.y) - copy.copy(portalIn.pos.y)
+                if portalOut.facing == SOUTH:
+                    self.player1.pos.x = portalOut.pos.x - distOffset
+                    self.player1.pos.y = portalOut.pos.y + height
+                    self.vel.y = self.player1.vel.x
+
+                if portalOut.facing == EAST:
+                    self.player1.pos.x = portalOut.pos.x + width
+                    self.player1.pos.y = portalOut.pos.y - distOffset
+                    self.player1.vel = self.player1.vel.rotate(180)
+                    self.vel.y = -self.vel.y
+
+                if portalOut.facing == NORTH:
+                    self.player1.pos.x = portalOut.pos.x + distOffset
+                    self.player1.pos.y = portalOut.pos.y - height
+                    # self.vel = self.vel.rotate(90)
+
+                if portalOut.facing == WEST:
+                    self.player1.pos.x = portalOut.pos.x - width
+                    self.player1.pos.y = portalOut.pos.y + distOffset
+
+            if portalIn.facing == NORTH:
+                distOffset = copy.copy(self.player1.pos.x) - copy.copy(portalIn.pos.x)
+                if portalOut.facing == SOUTH:
+                    self.player1.pos.x = portalOut.pos.x + distOffset
+                    self.player1.pos.y = portalOut.pos.y + height
+
+                if portalOut.facing == EAST:
+                    self.player1.pos.x = portalOut.pos.x + width
+                    self.player1.pos.y = portalOut.pos.y + distOffset
+                    # self.vel = self.vel.rotate(270)
+
+                if portalOut.facing == NORTH:
+                    self.player1.pos.x = portalOut.pos.x - distOffset
+                    self.player1.pos.y = portalOut.pos.y - height
+                    # self.vel = self.vel.rotate(180)
+
+                if portalOut.facing == WEST:
+                    self.player1.pos.x = portalOut.pos.x - width
+                    self.player1.pos.y = portalOut.pos.y - distOffset
+                    # self.vel = self.vel.rotate(90)
+
+            if portalIn.facing == WEST:
+                distOffset = copy.copy(self.player1.pos.y) - copy.copy(portalIn.pos.y)
+                if portalOut.facing == SOUTH:
+                    self.player1.pos.x = portalOut.pos.x + distOffset
+                    self.player1.pos.y = portalOut.pos.y + height
+                    # self.vel = self.vel.rotate(90)
+
+                if portalOut.facing == EAST:
+                    self.player1.pos.x = portalOut.pos.x + width
+                    self.player1.pos.y = portalOut.pos.y + distOffset
+
+                if portalOut.facing == NORTH:
+                    self.player1.pos.x = portalOut.pos.x - distOffset
+                    self.player1.pos.y = portalOut.pos.y - height
+                    # self.vel = self.vel.rotate(270)
+
+                if portalOut.facing == WEST:
+                    self.player1.pos.x = portalOut.pos.x - width
+                    self.player1.pos.y = portalOut.pos.y - distOffset
+                    # self.vel = self.vel.rotate(180)
+
+        elif not self.isScrollingX and not self.isScrollingY:
+            pass
+
+    def __spriteCollideCheck(self, instig: ActorBase, *contactList: AbstractBase):
+        """Collide check for when the room is scrolling
+        
+        ### Arguments
+            - instig (``ActorBase``): The sprite instigating the collision
+            - contactList (``AbstractBase``): The sprite group(s) to check for a collision with
+        """
+        for list in contactList:
+            for sprite in list:
+                if sprite.visible and isinstance(instig, Player):
+                    self.__playerBlockFromSide(instig, sprite)
+                elif sprite.visible:
+                    self.__spriteBlockFromSide(instig, sprite)
+
+    def __playerBlockFromSide(self, instig: Player, sprite: ActorBase):
+        if instig.hitbox.colliderect(sprite.hitbox):
+            width = (instig.hitbox.width + sprite.hitbox.width) // 2
+            height = (instig.hitbox.height + sprite.hitbox.height) // 2
+
+            if collideSideCheck(instig, sprite) == SOUTH and (instig.vel.y < 0 or sprite.vel.y > 0) and instig.pos.y <= sprite.pos.y + height:
+                self.vel.y = 0
+                if not self.isScrollingX and self.isScrollingY:
+                    instig.pos.y = sprite.pos.y + height
+
+            if collideSideCheck(instig, sprite) == EAST and (instig.vel.x < 0 or sprite.vel.x > 0) and instig.pos.x <= sprite.pos.x + width:
+                self.vel.x = 0
+
+            if collideSideCheck(instig, sprite) == NORTH and (instig.vel.y > 0 or sprite.vel.y < 0) and instig.pos.y >= sprite.pos.y - height:
+                self.vel.y = 0
+                if not self.isScrollingX and self.isScrollingY:
+                    instig.pos.y = sprite.pos.y - height
+
+            if collideSideCheck(instig, sprite) == WEST and (instig.vel.x > 0 or sprite.vel.x < 0) and instig.pos.x >= sprite.pos.x - width:
+                self.vel.x = 0
+
+    def __spriteBlockFromSide(self, instig: ActorBase, sprite: ActorBase):
+        if instig.hitbox.colliderect(sprite.hitbox):
+            width = (instig.hitbox.width + sprite.hitbox.width) // 2
+            height = (instig.hitbox.height + sprite.hitbox.height) // 2
+
+            if collideSideCheck(instig, sprite) == SOUTH and (instig.vel.y < 0 or sprite.vel.y > 0) and instig.pos.y <= sprite.pos.y + height:
+                instig.vel.y = 0
+                instig.pos.y = sprite.pos.y + height
+
+            if collideSideCheck(instig, sprite) == EAST and (instig.vel.x < 0 or sprite.vel.x > 0) and instig.pos.x <= sprite.pos.x + width:
+                instig.vel.x = 0
+                instig.pos.x = sprite.pos.x + width
+
+            if collideSideCheck(instig, sprite) == NORTH and (instig.vel.y > 0 or sprite.vel.y < 0) and instig.pos.y >= sprite.pos.y - height:
+                instig.vel.y = 0
+                instig.pos.y = sprite.pos.y - height
+
+            if collideSideCheck(instig, sprite) == WEST and (instig.vel.x > 0 or sprite.vel.x < 0) and instig.pos.x >= sprite.pos.x - width:
+                instig.vel.x = 0
+                instig.pos.x = sprite.pos.x - width
 
     def getAccel(self) -> pygame.math.Vector2:
         finalAccel = vec(0, 0)
-        if isInputHeld[K_a]:
-            finalAccel.x += self.player1.cAccel
-        if isInputHeld[K_w]:
-            finalAccel.y += self.player1.cAccel
-        if isInputHeld[K_s]:
-            finalAccel.y -= self.player1.cAccel
-        if isInputHeld[K_d]:
-            finalAccel.x -= self.player1.cAccel
-
-        return finalAccel
+        if self.isScrollingX and self.isScrollingY:
+            if isInputHeld[K_a]:
+                finalAccel.x += self.player1.cAccel
+            if isInputHeld[K_w]:
+                finalAccel.y += self.player1.cAccel
+            if isInputHeld[K_s]:
+                finalAccel.y -= self.player1.cAccel
+            if isInputHeld[K_d]:
+                finalAccel.x -= self.player1.cAccel
+            return finalAccel
         
-    def layoutUpdate(self):
+        elif self.isScrollingX and not self.isScrollingY:
+            if isInputHeld[K_a]:
+                finalAccel.x += self.player1.cAccel
+            if isInputHeld[K_d]:
+                finalAccel.x -= self.player1.cAccel
+            return finalAccel
+        
+        elif not self.isScrollingX and self.isScrollingY:
+            if isInputHeld[K_w]:
+                finalAccel.y += self.player1.cAccel
+            if isInputHeld[K_s]:
+                finalAccel.y -= self.player1.cAccel
+            return finalAccel
+        
+        elif not self.isScrollingX and not self.isScrollingY:
+            return finalAccel
+
+    def layoutUpdate(self) -> None:
         """Updates the layout of the room
         """        
         for sprite in self.sprites():
@@ -496,7 +818,7 @@ class Room(AbstractBase):
         if self.room == vec(0, 0):
             self.add(
                 # Wall(0, 0, 8, 8),
-                Wall(0, 37, 8, 8),
+                Wall(0, 37, 40, 8),
                 Wall(72, 0, 8, 8),
                 Wall(72, 37, 8, 8),
             )
@@ -509,6 +831,7 @@ class Room(AbstractBase):
                 all_containers.append(
                     EntityContainer(
                         self.room.x, self.room.y,
+                        # Box(0, 500, 500)
                     )
                 )
 
@@ -516,7 +839,7 @@ class Room(AbstractBase):
         self.movement()
 
     def __repr__(self):
-        return f'Room({self.room}, {self.pos})'
+        return f'Room({self.room}, {self.pos}, {self.vel}, {self.accel})'
 
 
 class EntityContainer(AbstractBase):

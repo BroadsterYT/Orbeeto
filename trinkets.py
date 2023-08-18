@@ -1,4 +1,5 @@
 import pygame
+import os
 
 from class_bases import *
 from tiles import TileBase
@@ -9,23 +10,26 @@ class Box(ActorBase):
         super().__init__()
         self.show(LAYER['trinket'])
         all_movable.add(self)
+        all_trinkets.add(self)
 
         self.idValue = idValue
 
         self.pos = vec((posX, posY))
-        self.cAccel = 0.35
         
         self.setImages("sprites/textures/box.png", 64, 64, 5, 1, 0, 0)
         self.setRects(0, 0, 64, 64, 64, 64, True)
 
     def movement(self):
-        self.accel = vec(0, 0)
-        if self.canUpdate and self.visible:
-            self.accel = self.getAccel()
-            self.accelMovement()
+        room = self.getRoom()
+        # self.cAccel = room.player1.cAccel
+        if self.canUpdate:
+            if room.isScrollingX and room.isScrollingY:
+                self.vel = room.vel
+                self.velMovement(True)
     
     def getAccel(self) -> pygame.math.Vector2:
         finalAccel = vec(0, 0)
+
         for a_player in all_players:
             if self.hitbox.colliderect(a_player.hitbox):
                 if collideSideCheck(self, a_player) == SOUTH:
@@ -40,7 +44,6 @@ class Box(ActorBase):
         return finalAccel
 
     def update(self):
-        self.collideCheck(all_walls)
         self.movement()
 
         # Teleporting
@@ -168,3 +171,7 @@ class LockedWall(TileBase):
 
     def __repr__(self):
         return f'LockedWall({self.idValue}, {self.pos}, {self.switch})'
+    
+
+if __name__ == '__main__':
+    os.system('python main.py')

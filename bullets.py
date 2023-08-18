@@ -33,7 +33,7 @@ class BulletBase(ActorBase):
 
     def land(self, target: pygame.sprite.Sprite):
         self.hit = target
-        self.sideHit = trueCollideSideCheck(self, target)
+        self.sideHit = collideSideCheck(self, target)
         self.ricCount -= 1
 
         # Bullet explodes

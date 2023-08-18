@@ -37,20 +37,10 @@ class StatBarBase(ActorBase):
         self.number = BarNumbers(self)
 
     def movement(self):
-        if self.pos != vec(self.owner.pos.x, self.owner.pos.y + 42 + self.order * 18):
-            if self.pos.x < self.owner.pos.x:
-                self.accel.x = self.cAccel
-            elif self.pos.x > self.owner.pos.x:
-                self.accel.x = -self.cAccel
-
-            if self.pos.y < self.owner.pos.y + (42 + self.order * 18):
-                self.accel.y = self.cAccel
-            elif self.pos.y > self.owner.pos.y + (42 + self.order * 18):
-                self.accel.y = -self.cAccel
+        self.pos = vec(self.owner.pos.x, self.owner.pos.y + 42 + self.order * 18)
         
         self.rect.center = self.pos
         self.hitbox.center = self.pos
-        self.accelMovement()
 
 
 class BarNumbers(ActorBase):

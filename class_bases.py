@@ -137,99 +137,42 @@ class ActorBase(pygame.sprite.Sprite):
             - contactLists (``list``): The sprite group(s) to check for a collision with
         """
         for list in contactLists:
-            sprite: ActorBase
             for sprite in list:
-                if hasattr(sprite, 'visible'):
-                    if sprite.visible:
-                        self.blockFromSide(sprite)
-                    elif not sprite.visible:
-                        pass
-                else:
+                if sprite.visible:
                     self.blockFromSide(sprite)
 
     def blockFromSide(self, sprite: pygame.sprite.Sprite) -> None:
         if self.hitbox.colliderect(sprite.hitbox):
-            # Bottom center of sprite
-            pointA = vec(sprite.pos.x,
-                        sprite.pos.y + sprite.hitbox.height)
-            # Right center of sprite
-            pointB = vec(sprite.pos.x + sprite.hitbox.width,
-                        sprite.pos.y)
-            # Top center of sprite
-            pointC = vec(sprite.pos.x,
-                        sprite.pos.y - sprite.hitbox.height)
-            # Left center of sprite
-            pointD = vec(sprite.pos.x - sprite.hitbox.width,
-                        sprite.pos.y)
+            width = (self.hitbox.width + sprite.hitbox.width) // 2
+            height = (self.hitbox.height + sprite.hitbox.height) // 2
             
-            lenPointA, lenPointB = getDistToCoords(self.pos, pointA), getDistToCoords(self.pos, pointB)
-            lenPointC, lenPointD = getDistToCoords(self.pos, pointC), getDistToCoords(self.pos, pointD)
-            
-
-            def isClosestPoint(point: pygame.math.Vector2) -> pygame.math.Vector2:
-                if point == pointA:
-                    if (lenPointA < lenPointB and
-                        lenPointA < lenPointC and
-                        lenPointA < lenPointD):
-                        return True
-                    else:
-                        return False
-
-                elif point == pointB:
-                    if (lenPointB < lenPointA and
-                        lenPointB < lenPointC and
-                        lenPointB < lenPointD):
-                        return True
-                    else:
-                        return False
-
-                elif point == pointC:
-                    if (lenPointC < lenPointA and
-                        lenPointC < lenPointB and
-                        lenPointC < lenPointD):
-                        return True
-                    else:
-                        return False
-
-                elif point == pointD:
-                    if (lenPointD < lenPointA and
-                        lenPointD < lenPointB and
-                        lenPointD < lenPointC):
-                        return True
-                    else:
-                        return False
-
-                else:
-                    raise CustomError("Error: Point arg does not match any defined point")
-
-
             # If hitting the right side
-            if (isClosestPoint(pointB) and
+            if (collideSideCheck(self, sprite) == EAST and
                 self.vel.x < 0 and
-                self.pos.x <= sprite.pos.x + (sprite.hitbox.width + self.hitbox.width) // 2):
+                self.pos.x <= sprite.pos.x + width):
                 self.vel.x = 0
-                self.pos.x = sprite.pos.x + (sprite.hitbox.width + self.hitbox.width) // 2
+                self.pos.x = sprite.pos.x + width
 
             # Hitting bottom side
-            if (isClosestPoint(pointA) and
+            if (collideSideCheck(self, sprite) == SOUTH and
                 self.vel.y < 0 and
-                self.pos.y <= sprite.pos.y + (sprite.hitbox.height + self.hitbox.height) // 2):
+                self.pos.y <= sprite.pos.y + height):
                 self.vel.y = 0
-                self.pos.y = sprite.pos.y + (sprite.hitbox.height + self.hitbox.height) // 2
+                self.pos.y = sprite.pos.y + height
 
             # Hitting left side
-            if (isClosestPoint(pointD) and
+            if (collideSideCheck(self, sprite) == WEST and
                 self.vel.x > 0 and
-                self.pos.x >= sprite.pos.x - (sprite.hitbox.width + self.hitbox.width) // 2):
+                self.pos.x >= sprite.pos.x - width):
                 self.vel.x = 0
-                self.pos.x = sprite.pos.x - sprite.hitbox.width // 2 - self.hitbox.width // 2
+                self.pos.x = sprite.pos.x - width
 
             # Hitting top side
-            if (isClosestPoint(pointC) and
+            if (collideSideCheck(self, sprite) == NORTH and
                 self.vel.y > 0 and
-                self.pos.y >= sprite.pos.y - (sprite.hitbox.width + self.hitbox.width) // 2):
+                self.pos.y >= sprite.pos.y - height):
                 self.vel.y = 0
-                self.pos.y = sprite.pos.y - sprite.hitbox.height // 2 - self.hitbox.height // 2
+                self.pos.y = sprite.pos.y - height
 
     def teleport(self, portalIn) -> None:
         """Teleports a sprite from one portal to another

@@ -1,4 +1,5 @@
 import pygame
+import os
 
 from class_bases import *
 
@@ -15,6 +16,7 @@ class Portal(ActorBase):
         super().__init__()
         self.show(LAYER['portal'])
         all_portals.add(self)
+        room = self.getRoom(); room.add(self)
 
         self.pos = vec((posX, posY))
         self.facing = facing
@@ -41,13 +43,13 @@ class Portal(ActorBase):
 
     def movement(self):
         # Setting position to offset of where bullet landed
-        self.pos = self.landedOn.pos + self.posOffset
-
         self.rect.center = self.pos
         self.hitbox.center = self.pos
 
+        self.pos = self.landedOn.pos + self.posOffset
+
     def update(self):
-        self.movement()
+        # self.movement()
 
         if self.facing == None:
             self.kill()
@@ -66,3 +68,7 @@ def portalCountCheck():
             all_portals.remove(oldest_portal)
             if len(portalTemp) > 1:
                 all_portals.add(portalTemp[1:])
+
+
+if __name__ == '__main__':
+    os.system('python main.py')

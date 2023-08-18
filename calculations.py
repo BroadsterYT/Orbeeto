@@ -285,20 +285,7 @@ def calculateDamage(sender: pygame.sprite.Sprite, receiver: pygame.sprite.Sprite
 # ============================================================================ #
 #                                Returns string                                #
 # ============================================================================ #
-def collideSideCheck(object: pygame.sprite.Sprite, instig: pygame.sprite.Sprite) -> str:
-    if instig.pos.y < (object.pos.y + (0.5 * object.hitbox.height) + 1) and instig.pos.y > (object.pos.y - (0.5 * object.hitbox.height) - 1):
-        if instig.pos.x > object.pos.x:
-            return EAST
-        else:
-            return WEST
-    if instig.pos.x > (object.pos.x - (0.5 * object.hitbox.width) - 1) and instig.pos.x < (object.pos.x + (0.5 * object.hitbox.width) + 1):
-        if instig.pos.y < object.pos.y:
-            return NORTH
-        else:
-            return SOUTH
-        
-
-def trueCollideSideCheck(instig: pygame.sprite.Sprite, object: pygame.sprite.Sprite) -> str:
+def collideSideCheck(instig: pygame.sprite.Sprite, object: pygame.sprite.Sprite) -> str:
     # Bottom center of sprite
     pointA = vec(object.pos.x,
                 object.pos.y + object.hitbox.height)
