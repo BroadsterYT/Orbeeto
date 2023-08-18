@@ -667,7 +667,8 @@ class Room(AbstractBase):
                 if portalOut.facing == NORTH:
                     self.player1.pos.x = portalOut.pos.x + distOffset
                     self.player1.pos.y = portalOut.pos.y - height
-                    # self.vel = self.vel.rotate(90)
+                    self.player1.vel.x = -self.player1.vel.x
+                    self.vel.y = self.player1.vel.x
 
                 if portalOut.facing == WEST:
                     self.player1.pos.x = portalOut.pos.x - width
@@ -682,24 +683,26 @@ class Room(AbstractBase):
                 if portalOut.facing == EAST:
                     self.player1.pos.x = portalOut.pos.x + width
                     self.player1.pos.y = portalOut.pos.y + distOffset
-                    # self.vel = self.vel.rotate(270)
+                    self.player1.vel.x = -self.vel.y
+                    self.vel.y = 0
 
                 if portalOut.facing == NORTH:
                     self.player1.pos.x = portalOut.pos.x - distOffset
                     self.player1.pos.y = portalOut.pos.y - height
-                    # self.vel = self.vel.rotate(180)
+                    self.vel = self.vel.rotate(180)
 
                 if portalOut.facing == WEST:
                     self.player1.pos.x = portalOut.pos.x - width
                     self.player1.pos.y = portalOut.pos.y - distOffset
-                    # self.vel = self.vel.rotate(90)
+                    self.player1.vel.x = self.vel.y
+                    self.vel.y = 0
 
             if portalIn.facing == WEST:
                 distOffset = copy.copy(self.player1.pos.y) - copy.copy(portalIn.pos.y)
                 if portalOut.facing == SOUTH:
                     self.player1.pos.x = portalOut.pos.x + distOffset
                     self.player1.pos.y = portalOut.pos.y + height
-                    # self.vel = self.vel.rotate(90)
+                    self.vel.y = self.player1.vel.x
 
                 if portalOut.facing == EAST:
                     self.player1.pos.x = portalOut.pos.x + width
@@ -708,12 +711,13 @@ class Room(AbstractBase):
                 if portalOut.facing == NORTH:
                     self.player1.pos.x = portalOut.pos.x - distOffset
                     self.player1.pos.y = portalOut.pos.y - height
-                    # self.vel = self.vel.rotate(270)
+                    self.vel.y = self.player1.vel.x
 
                 if portalOut.facing == WEST:
                     self.player1.pos.x = portalOut.pos.x - width
                     self.player1.pos.y = portalOut.pos.y - distOffset
-                    # self.vel = self.vel.rotate(180)
+                    self.player1.vel.x = -self.player1.vel.x
+                    self.vel.y = -self.vel.y
 
         elif not self.isScrollingX and not self.isScrollingY:
             pass
