@@ -51,20 +51,8 @@ class TileBase(ActorBase):
     def movement(self):
         room = self.getRoom()
         if self.canUpdate:
-            # if room.isScrollingX and room.isScrollingY:
-                self.vel = room.vel
-                self.velMovement(True)
-
-            # elif room.isScrollingX and not room.isScrollingY:
-            #     self.vel.x = room.vel.x
-            #     self.velMovement(True)
-
-            # elif not room.isScrollingX and room.isScrollingY:
-            #     self.vel.y = room.vel.y
-            #     self.velMovement(True)
-
-            # elif not room.isScrollingX and not room.isScrollingY:
-            #     pass
+            self.vel = room.vel
+            self.velMovement(True)
 
 
 class Wall(TileBase):
@@ -110,30 +98,18 @@ class Floor(TileBase):
 
 
 class RoomBorder(TileBase):
-    def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float):
+    def __init__(self, blockPosX, blockPosY, blockWidth, blockHeight):
         super().__init__(blockPosX, blockPosY, blockWidth, blockHeight)
-        self.show(LAYER['floor'])
+        self.show(LAYER['wall'])
+        all_borders.add(self) 
 
-        self.spritesheet = Spritesheet('sprites/tiles/floor.png', 4)
-        self.textures = self.spritesheet.get_images(16, 16, 4)
-        self.index = 0
-
-        self.texture = self.textures[self.index]
-        self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
+        self.texture = pygame.image.load("sprites/tiles/wall.png").convert()
+        self.image: pygame.Surface = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, ColorRGB(25, 0, 0))
 
         self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
 
     def update(self):
-        if self.visible:
-            if getTimeDiff(self.lastFrame) >= 0.235:
-                self.texture = self.textures[self.index]
-                self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
-
-                self.index += 1
-                if self.index > 3:
-                    self.index = 0
-                
-                self.lastFrame = time.time()
+        pass
 
 
 if __name__ == '__main__':

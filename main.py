@@ -46,7 +46,7 @@ class Player(ActorBase):
         self.setImages("sprites/orbeeto/orbeeto.png", 64, 64, 5, 5)
         self.setRects(0, 0, 64, 64, 32, 32)
 
-        self.pos = vec((608, 500))
+        self.pos = vec((608, WINHEIGHT // 2))
         self.center = vec(608, WINHEIGHT // 2)
         self.cAccel = 0.58
 
@@ -318,10 +318,13 @@ class Room(AbstractBase):
         super().__init__()
         all_rooms.append(self)
         self.room = vec((roomX, roomY))
-        self.size = vec((WINWIDTH, WINHEIGHT))
+        self.size = vec((1280, 720))
         
-        self.isScrollingX = False
+        self.isScrollingX = True
         self.isScrollingY = True
+
+        self.canSwitchX = True
+        self.canSwitchY = True
 
         self.player1: Player = Player()
         self.posCopy = self.player1.pos.copy()
@@ -399,6 +402,7 @@ class Room(AbstractBase):
                 if self.player1.pos.x != 608:
                     self.posCopy = self.player1.pos.copy()
                     self.offset = vec(self.posCopy.x - 608, self.posCopy.y - WINHEIGHT // 2)
+
                     for group in (self.sprites(), all_trinkets):
                         for sprite in group:
                             sprite.posCopy = sprite.pos.copy()
@@ -748,6 +752,8 @@ class Room(AbstractBase):
 
             if collideSideCheck(instig, sprite) == EAST and (instig.vel.x < 0 or sprite.vel.x > 0) and instig.pos.x <= sprite.pos.x + width:
                 self.vel.x = 0
+                if self.isScrollingX and not self.isScrollingY:
+                    instig.pos.x = sprite.pos.x + width
 
             if collideSideCheck(instig, sprite) == NORTH and (instig.vel.y > 0 or sprite.vel.y < 0) and instig.pos.y >= sprite.pos.y - height:
                 self.vel.y = 0
@@ -756,6 +762,8 @@ class Room(AbstractBase):
 
             if collideSideCheck(instig, sprite) == WEST and (instig.vel.x > 0 or sprite.vel.x < 0) and instig.pos.x >= sprite.pos.x - width:
                 self.vel.x = 0
+                if self.isScrollingX and not self.isScrollingY:
+                    instig.pos.x = sprite.pos.x - width
 
     def __spriteBlockFromSide(self, instig: ActorBase, sprite: ActorBase):
         if instig.hitbox.colliderect(sprite.hitbox):
@@ -778,9 +786,16 @@ class Room(AbstractBase):
                 instig.vel.x = 0
                 instig.pos.x = sprite.pos.x - width
 
+    def __setRoomBorders(self):
+        self.borderSouth = RoomBorder(0, self.size.y // 16, self.size.x // 16, 1)
+        self.borderNorth = RoomBorder(0, 0, self.size.x // 16, 1)
+
+        self.add(self.borderSouth, self.borderNorth)
+
     def getAccel(self) -> pygame.math.Vector2:
         finalAccel = vec(0, 0)
         if self.isScrollingX and self.isScrollingY:
+            finalAccel = vec(0, 0)
             if isInputHeld[K_a]:
                 finalAccel.x += self.player1.cAccel
             if isInputHeld[K_w]:
@@ -792,6 +807,7 @@ class Room(AbstractBase):
             return finalAccel
         
         elif self.isScrollingX and not self.isScrollingY:
+            finalAccel = vec(0, 0)
             if isInputHeld[K_a]:
                 finalAccel.x += self.player1.cAccel
             if isInputHeld[K_d]:
@@ -799,6 +815,7 @@ class Room(AbstractBase):
             return finalAccel
         
         elif not self.isScrollingX and self.isScrollingY:
+            finalAccel = vec(0, 0)
             if isInputHeld[K_w]:
                 finalAccel.y += self.player1.cAccel
             if isInputHeld[K_s]:
@@ -806,6 +823,7 @@ class Room(AbstractBase):
             return finalAccel
         
         elif not self.isScrollingX and not self.isScrollingY:
+            finalAccel = vec(0, 0)
             return finalAccel
 
     def layoutUpdate(self) -> None:
@@ -820,8 +838,12 @@ class Room(AbstractBase):
         
         # ------------------------------- Room Layouts ------------------------------- #
         if self.room == vec(0, 0):
+            self.isScrollingX = True
+            self.isScrollingY = True
+            
+            self.__setRoomBorders()
             self.add(
-                # Wall(0, 0, 8, 8),
+                Wall(0, 0, 8, 8),
                 Wall(0, 37, 40, 8),
                 Wall(72, 0, 8, 8),
                 Wall(72, 37, 8, 8),
