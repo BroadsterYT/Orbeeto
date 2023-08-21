@@ -332,6 +332,13 @@ class Room(AbstractBase):
         self.lastRecenter = time.time()
         self.recentering = False
 
+        self.recenteringX = False
+        self.recenteringY = False
+        self.lastRecenterX = time.time()
+        self.lastRecenterY = time.time()
+        self.offsetX = self.player1.pos.x - 608
+        self.offsetY = self.player1.pos.y - WINHEIGHT // 2
+
         # --------------------------------- Movement --------------------------------- #
         self.pos = vec(0, 0)
         self.vel = vec(0, 0)
@@ -366,86 +373,59 @@ class Room(AbstractBase):
                     if len(all_portals) == 2:
                         self.__teleportPlayer(portalIn, portalOut)
 
-            self.__recenterPlayer()
+            self.__recenterPlayerX()
+            self.__recenterPlayerY()
 
             for sprite in self.sprites():
                 sprite.movement()
 
-    def __recenterPlayer(self) -> None:
-        """Adjusts all sprites in the room so that the player is at the center
-        """
-        if self.isScrollingX and self.isScrollingY:
-            if not self.recentering:
-                if self.player1.pos != vec(608, WINHEIGHT // 2):
-                    self.posCopy = self.player1.pos.copy()
-                    self.offset = vec(self.posCopy.x - 608, self.posCopy.y - WINHEIGHT // 2)
-                    for group in (self.sprites(), all_trinkets):
-                        for sprite in group:
-                            sprite.posCopy = sprite.pos.copy()
-
-                    self.lastRecenter = time.time()
-                    self.recentering = True
-
-            if self.recentering:
-                weight = getTimeDiff(self.lastRecenter)
-                if weight <= 0.25:
-                    self.player1.pos = cerp(self.posCopy, vec(608, WINHEIGHT // 2), weight * 4)
-                    for group in (self.sprites(), all_trinkets):
-                        for sprite in group:
-                            sprite.pos = cerp(sprite.posCopy, sprite.posCopy - self.offset, weight * 4)
-                else:
-                    self.player1.pos = vec(608, WINHEIGHT // 2)
-                    self.recentering = False
-        
-        elif self.isScrollingX and not self.isScrollingY:
-            if not self.recentering:
+    def __recenterPlayerX(self) -> None:
+        if self.isScrollingX:
+            if not self.recenteringX:
                 if self.player1.pos.x != 608:
                     self.posCopy = self.player1.pos.copy()
-                    self.offset = vec(self.posCopy.x - 608, self.posCopy.y - WINHEIGHT // 2)
-
+                    self.offsetX = self.posCopy.x - 608
                     for group in (self.sprites(), all_trinkets):
                         for sprite in group:
                             sprite.posCopy = sprite.pos.copy()
 
-                    self.lastRecenter = time.time()
-                    self.recentering = True
+                    self.lastRecenterX = time.time()
+                    self.recenteringX = True
 
-            if self.recentering:
-                weight = getTimeDiff(self.lastRecenter)
+            if self.recenteringX:
+                weight = getTimeDiff(self.lastRecenterX)
                 if weight <= 0.25:
                     self.player1.pos.x = cerp(self.posCopy.x, 608, weight * 4)
                     for group in (self.sprites(), all_trinkets):
                         for sprite in group:
-                            sprite.pos.x = cerp(sprite.posCopy.x, sprite.posCopy.x - self.offset.x, weight * 4)
+                            sprite.pos.x = cerp(sprite.posCopy.x, sprite.posCopy.x - self.offsetX, weight * 4)
                 else:
                     self.player1.pos.x = 608
-                    self.recentering = False
+                    self.recenteringX = False
 
-        elif not self.isScrollingX and self.isScrollingY:
-            if not self.recentering:
+    def __recenterPlayerY(self) -> None:
+        if self.isScrollingY:
+            if not self.recenteringY:
                 if self.player1.pos.y != WINHEIGHT // 2:
                     self.posCopy = self.player1.pos.copy()
-                    self.offset = vec(self.posCopy.x - 608, self.posCopy.y - WINHEIGHT // 2)
+                    self.offsetY = self.posCopy.y - WINHEIGHT // 2
                     for group in (self.sprites(), all_trinkets):
                         for sprite in group:
                             sprite.posCopy = sprite.pos.copy()
 
-                    self.lastRecenter = time.time()
-                    self.recentering = True
+                    self.lastRecenterY = time.time()
+                    self.recenteringY = True
 
-            if self.recentering:
-                weight = getTimeDiff(self.lastRecenter)
+            if self.recenteringY:
+                weight = getTimeDiff(self.lastRecenterY)
                 if weight <= 0.25:
                     self.player1.pos.y = cerp(self.posCopy.y, WINHEIGHT // 2, weight * 4)
                     for group in (self.sprites(), all_trinkets):
                         for sprite in group:
-                            sprite.pos.y = cerp(sprite.posCopy.y, sprite.posCopy.y - self.offset.y, weight * 4)
+                            sprite.pos.y = cerp(sprite.posCopy.y, sprite.posCopy.y - self.offsetY, weight * 4)
                 else:
                     self.player1.pos.y = WINHEIGHT // 2
-                    self.recentering = False
-
-        elif not self.isScrollingX and not self.isScrollingY:
-            pass
+                    self.recenteringY = False
 
     def __teleportPlayer(self, portalIn: Portal, portalOut: Portal):
         """Teleports the player when the room is scrolling.
@@ -746,24 +726,28 @@ class Room(AbstractBase):
             height = (instig.hitbox.height + sprite.hitbox.height) // 2
 
             if collideSideCheck(instig, sprite) == SOUTH and (instig.vel.y < 0 or sprite.vel.y > 0) and instig.pos.y <= sprite.pos.y + height:
+                self.accel.y = 0
                 self.vel.y = 0
-                if not self.isScrollingX and self.isScrollingY:
-                    instig.pos.y = sprite.pos.y + height
+                # if not self.isScrollingX and self.isScrollingY:
+                instig.pos.y = sprite.pos.y + height
 
             if collideSideCheck(instig, sprite) == EAST and (instig.vel.x < 0 or sprite.vel.x > 0) and instig.pos.x <= sprite.pos.x + width:
+                self.accel.x = 0
                 self.vel.x = 0
-                if self.isScrollingX and not self.isScrollingY:
-                    instig.pos.x = sprite.pos.x + width
+                # if self.isScrollingX and not self.isScrollingY:
+                instig.pos.x = sprite.pos.x + width
 
             if collideSideCheck(instig, sprite) == NORTH and (instig.vel.y > 0 or sprite.vel.y < 0) and instig.pos.y >= sprite.pos.y - height:
+                self.accel.y = 0
                 self.vel.y = 0
-                if not self.isScrollingX and self.isScrollingY:
-                    instig.pos.y = sprite.pos.y - height
+                # if not self.isScrollingX and self.isScrollingY:
+                instig.pos.y = sprite.pos.y - height
 
             if collideSideCheck(instig, sprite) == WEST and (instig.vel.x > 0 or sprite.vel.x < 0) and instig.pos.x >= sprite.pos.x - width:
+                self.accel.x = 0
                 self.vel.x = 0
-                if self.isScrollingX and not self.isScrollingY:
-                    instig.pos.x = sprite.pos.x - width
+                # if self.isScrollingX and not self.isScrollingY:
+                instig.pos.x = sprite.pos.x - width
 
     def __spriteBlockFromSide(self, instig: ActorBase, sprite: ActorBase):
         if instig.hitbox.colliderect(sprite.hitbox):
@@ -839,7 +823,7 @@ class Room(AbstractBase):
         # ------------------------------- Room Layouts ------------------------------- #
         if self.room == vec(0, 0):
             self.isScrollingX = True
-            self.isScrollingY = True
+            self.isScrollingY = False
             
             self.__setRoomBorders()
             self.add(
@@ -857,7 +841,7 @@ class Room(AbstractBase):
                 all_containers.append(
                     EntityContainer(
                         self.room.x, self.room.y,
-                        # Box(0, 500, 500)
+                        Box(0, 500, 500)
                     )
                 )
 

@@ -43,10 +43,10 @@ class Portal(ActorBase):
 
     def movement(self):
         # Setting position to offset of where bullet landed
+        self.pos = self.landedOn.pos + self.posOffset
+        
         self.rect.center = self.pos
         self.hitbox.center = self.pos
-
-        self.pos = self.landedOn.pos + self.posOffset
 
     def update(self):
         # self.movement()

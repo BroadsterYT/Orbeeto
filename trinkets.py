@@ -15,21 +15,21 @@ class Box(ActorBase):
         self.idValue = idValue
 
         self.pos = vec((posX, posY))
+        self.cAccel = -1
         
         self.setImages("sprites/textures/box.png", 64, 64, 5, 1, 0, 0)
         self.setRects(0, 0, 64, 64, 64, 64, True)
 
     def movement(self):
         room = self.getRoom()
-        # self.cAccel = room.player1.cAccel
         if self.canUpdate:
-            if room.isScrollingX and room.isScrollingY:
-                self.vel = room.vel
-                self.velMovement(True)
+            self.accel = room.accel.copy()
+            self.vel = room.vel.copy()
+            self.accelMovement()
     
     def getAccel(self) -> pygame.math.Vector2:
+        room = self.getRoom()
         finalAccel = vec(0, 0)
-
         for a_player in all_players:
             if self.hitbox.colliderect(a_player.hitbox):
                 if collideSideCheck(self, a_player) == SOUTH:
