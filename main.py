@@ -823,7 +823,7 @@ class Room(AbstractBase):
         # ------------------------------- Room Layouts ------------------------------- #
         if self.room == vec(0, 0):
             self.isScrollingX = True
-            self.isScrollingY = False
+            self.isScrollingY = True
             
             self.__setRoomBorders()
             self.add(
