@@ -148,28 +148,28 @@ class ActorBase(pygame.sprite.Sprite):
             
             # If hitting the right side
             if (collideSideCheck(self, sprite) == EAST and
-                self.vel.x < 0 and
+                # self.vel.x < 0 and
                 self.pos.x <= sprite.pos.x + width):
                 self.vel.x = 0
                 self.pos.x = sprite.pos.x + width
 
             # Hitting bottom side
             if (collideSideCheck(self, sprite) == SOUTH and
-                self.vel.y < 0 and
+                # self.vel.y < 0 and
                 self.pos.y <= sprite.pos.y + height):
                 self.vel.y = 0
                 self.pos.y = sprite.pos.y + height
 
             # Hitting left side
             if (collideSideCheck(self, sprite) == WEST and
-                self.vel.x > 0 and
+                # self.vel.x > 0 and
                 self.pos.x >= sprite.pos.x - width):
                 self.vel.x = 0
                 self.pos.x = sprite.pos.x - width
 
             # Hitting top side
             if (collideSideCheck(self, sprite) == NORTH and
-                self.vel.y > 0 and
+                # self.vel.y > 0 and
                 self.pos.y >= sprite.pos.y - height):
                 self.vel.y = 0
                 self.pos.y = sprite.pos.y - height

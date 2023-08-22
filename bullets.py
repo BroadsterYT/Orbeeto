@@ -584,7 +584,7 @@ class EnemyStdBullet(BulletBase):
                 self.pos.y < WINHEIGHT and 
                 self.pos.y > 0
             ):
-                self.velMovement()
+                self.velMovement(True)
             else:
                 self.kill()
 

@@ -84,7 +84,7 @@ LAYER = {
     'floor': 1,
     'player': 2,
     'enemy': 2,
-    'trinket': 7,
+    'trinket': 4,
     'drops': 2,
     'proj': 2,
     'explosion': 5,

@@ -362,7 +362,7 @@ class Room(AbstractBase):
             if not (not self.isScrollingX and not self.isScrollingY):
                 self.__spriteCollideCheck(self.player1, all_walls)
                 for sprite in all_trinkets:
-                    self.__spriteCollideCheck(sprite, all_players, all_walls)
+                    pass
 
             # ------------------ Teleporting player when room scrolling ------------------ #
             for portal in all_portals:
@@ -391,7 +391,7 @@ class Room(AbstractBase):
 
                     self.lastRecenterX = time.time()
                     self.recenteringX = True
-
+  
             if self.recenteringX:
                 weight = getTimeDiff(self.lastRecenterX)
                 if weight <= 0.25:
@@ -729,7 +729,7 @@ class Room(AbstractBase):
                 self.accel.y = 0
                 self.vel.y = 0
                 # if not self.isScrollingX and self.isScrollingY:
-                instig.pos.y = sprite.pos.y + height
+                instig.pos.y = sprite.pos.y + height + 50
 
             if collideSideCheck(instig, sprite) == EAST and (instig.vel.x < 0 or sprite.vel.x > 0) and instig.pos.x <= sprite.pos.x + width:
                 self.accel.x = 0
@@ -754,19 +754,19 @@ class Room(AbstractBase):
             width = (instig.hitbox.width + sprite.hitbox.width) // 2
             height = (instig.hitbox.height + sprite.hitbox.height) // 2
 
-            if collideSideCheck(instig, sprite) == SOUTH and (instig.vel.y < 0 or sprite.vel.y > 0) and instig.pos.y <= sprite.pos.y + height:
+            if collideSideCheck(instig, sprite) == SOUTH and instig.pos.y <= sprite.pos.y + height and (instig.vel.y < 0 or sprite.vel.y > 0):
                 instig.vel.y = 0
                 instig.pos.y = sprite.pos.y + height
 
-            if collideSideCheck(instig, sprite) == EAST and (instig.vel.x < 0 or sprite.vel.x > 0) and instig.pos.x <= sprite.pos.x + width:
+            if collideSideCheck(instig, sprite) == EAST and instig.pos.x <= sprite.pos.x + width and (instig.vel.x < 0 or sprite.vel.x > 0):
                 instig.vel.x = 0
                 instig.pos.x = sprite.pos.x + width
 
-            if collideSideCheck(instig, sprite) == NORTH and (instig.vel.y > 0 or sprite.vel.y < 0) and instig.pos.y >= sprite.pos.y - height:
+            if collideSideCheck(instig, sprite) == NORTH and instig.pos.y >= sprite.pos.y - height and (instig.vel.y > 0 or sprite.vel.y < 0):
                 instig.vel.y = 0
                 instig.pos.y = sprite.pos.y - height
 
-            if collideSideCheck(instig, sprite) == WEST and (instig.vel.x > 0 or sprite.vel.x < 0) and instig.pos.x >= sprite.pos.x - width:
+            if collideSideCheck(instig, sprite) == WEST and instig.pos.x >= sprite.pos.x - width and (instig.vel.x > 0 or sprite.vel.x < 0):
                 instig.vel.x = 0
                 instig.pos.x = sprite.pos.x - width
 
@@ -841,7 +841,8 @@ class Room(AbstractBase):
                 all_containers.append(
                     EntityContainer(
                         self.room.x, self.room.y,
-                        Box(0, 500, 500)
+                        Box(0, 500, 500),
+                        StandardGrunt(500, 500)
                     )
                 )
 
