@@ -5,7 +5,6 @@ pygame.init()
 
 import sys
 import time
-import itertools
 
 from math import sin, cos, radians, degrees, floor, pi
 from init import *
@@ -170,6 +169,9 @@ class Player(ActorBase):
         """When called once every frame, it allows the player to recive input from the user and move accordingly
         """        
         if self.canUpdate and self.visible:
+            if not self.room.isScrollingX and not self.room.isScrollingY:
+                self.collideCheck(all_walls)
+
             self.accel = self.getAccel()
             self.accelMovement()
 
@@ -259,10 +261,18 @@ class Player(ActorBase):
         #         self.grapple.returning = True
         #     self.canGrapple = True
 
+        if keyReleased[2] % 2 != 0 and self.canGrapple:
+            if self.grapple != None:
+                self.grapple.kill()
+            self.grapple = NewGrappleBullet(self, self.pos.x, self.pos.y, velX, velY)
+            self.canGrapple = False
+
+        if keyReleased[2] % 2 == 0 and not self.canGrapple:
+            self.grapple.kill()
+            self.canGrapple = True
+
     def update(self):
         if self.canUpdate and self.visible:
-            self.collideCheck(all_enemies, all_walls)
-
             self.movement()
             self.shoot()
             self.checkRoomChange()
@@ -729,7 +739,7 @@ class Room(AbstractBase):
                 self.accel.y = 0
                 self.vel.y = 0
                 # if not self.isScrollingX and self.isScrollingY:
-                instig.pos.y = sprite.pos.y + height + 50
+                instig.pos.y = sprite.pos.y + height
 
             if collideSideCheck(instig, sprite) == EAST and (instig.vel.x < 0 or sprite.vel.x > 0) and instig.pos.x <= sprite.pos.x + width:
                 self.accel.x = 0
@@ -823,7 +833,7 @@ class Room(AbstractBase):
         # ------------------------------- Room Layouts ------------------------------- #
         if self.room == vec(0, 0):
             self.isScrollingX = True
-            self.isScrollingY = True
+            self.isScrollingY = False
             
             self.__setRoomBorders()
             self.add(
@@ -1095,16 +1105,14 @@ class LeftMenuArrow(ActorBase):
 
 
 class MenuSlot(ActorBase):
-    def __init__(self, owner: Player, posX: float, posY: float, item_held: str):
+    def __init__(self, owner: Player, posX: float, posY: float, itemHeld: str):
         """A menu slot that shows the collected amount of a specific item
         
         ### Arguments
             - owner (``player``): The owner of the inventory to whom the menu slot belongs to
             - posX (``float``): The x-position to spawn at
             - posY (``float``): The y-position to spawn at
-            - item_held (``str``): The item the menu slot will hold. Items are chosen from ``MATERIALS`` dictionary.
-            - num_frames (``int``): The number of animation frames the item has
-            - frame_offset (``int``): Where the first frame of the animation begins. (0 = first image of sprite sheet)
+            - itemHeld (``str``): The item the menu slot will hold. Items are chosen from ``MATERIALS`` dictionary.
         """
         super().__init__()
         all_slots.add(self)
@@ -1112,7 +1120,7 @@ class MenuSlot(ActorBase):
 
         self.pos = vec((posX, posY))
         self.start_pos = vec((posX, posY))
-        self.holding = item_held
+        self.holding = itemHeld
         self.count = 0
 
         self.menusheet = Spritesheet("sprites/ui/menu_item_slot.png", 1)

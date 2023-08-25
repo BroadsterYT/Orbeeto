@@ -17,7 +17,7 @@ class Box(ActorBase):
         self.pos = vec((posX, posY))
 
         room = self.getRoom()
-        self.cAccel = room.player1.cAccel
+        self.cAccel = 0.8
         
         self.setImages("sprites/textures/box.png", 64, 64, 5, 1, 0, 0)
         self.setRects(0, 0, 64, 64, 64, 64, True)
@@ -25,6 +25,7 @@ class Box(ActorBase):
     def movement(self):
         if self.canUpdate:
             self.collideCheck(all_walls)
+
             self.accel = self.getAccel()
             self.accelMovement()
     
@@ -37,13 +38,13 @@ class Box(ActorBase):
         for a_player in all_players:
             if self.hitbox.colliderect(a_player.hitbox):
                 if collideSideCheck(self, a_player) == SOUTH:
-                    finalAccel.y += 0.8
+                    finalAccel.y += self.cAccel
                 if collideSideCheck(self, a_player) == EAST:
-                    finalAccel.x += 0.8
+                    finalAccel.x += self.cAccel
                 if collideSideCheck(self, a_player) == NORTH:
-                    finalAccel.y -= 0.8
+                    finalAccel.y -= self.cAccel
                 if collideSideCheck(self, a_player) == WEST:
-                    finalAccel.x -= 0.8
+                    finalAccel.x -= self.cAccel
         
         return finalAccel
 

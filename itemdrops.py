@@ -11,22 +11,20 @@ class DropBase(ActorBase):
 
 
 class ItemDrop(DropBase):
-    def __init__(self, dropped_from, item_name):
+    def __init__(self, droppedFrom, itemName):
         """An item or material dropped by an enemey that is able to be collected
         
         ### Arguments
-            - dropped_from (``pygame.sprite.Sprite``): The enemy that the item was dropped from
-            - item_name (``str``): The item to drop
-            - item_frame_start (``int``): The index of the first frame to display from the item drop spritesheet (0 = the first image).
-            - image_count (``int``): The number of frames to use
+            - droppedFrom (``pygame.sprite.Sprite``): The enemy that the item was dropped from
+            - itemName (``str``): The item to drop
         """        
         super().__init__()
         self.show(LAYER['drops'])
         all_drops.add(self)
-        self.droppedFrom = dropped_from
-        self.mat = item_name
+        self.droppedFrom = droppedFrom
+        self.mat = itemName
 
-        self.start_time = time.time()
+        self.startTime = time.time()
         self.pos = vec(self.droppedFrom.pos.x, self.droppedFrom.pos.y)
         self.randAccel = getRandComponents(self.cAccel)
         
@@ -49,17 +47,27 @@ class ItemDrop(DropBase):
     def movement(self):
         self.accel = vec(0, 0)
         if self.canUpdate and self.visible:
-            time_since_start = getTimeDiff(self.start_time)
-            if time_since_start <= 0.1:
-                self.accel.x = self.randAccel.x
-                self.accel.y = self.randAccel.y
+            existTime = getTimeDiff(self.startTime)
+            self.accel = self.getAccel()
             
-            if time_since_start <= 10:
+            if existTime <= 10:
                 self.original_image = self.original_images[self.index]
-                self.image = pygame.transform.rotate(self.original_image, int(degrees(sin(self.period_mult * pi * time_since_start) * (1 / time_since_start))))
+                self.image = pygame.transform.rotate(self.original_image, int(degrees(sin(self.period_mult * pi * existTime) * (1 / existTime))))
                 self.rect = self.image.get_rect(center = self.rect.center)
             
             self.accelMovement()
+
+    def getAccel(self) -> pygame.math.Vector2:
+        room = self.getRoom()
+        finalAccel = vec(0, 0)
+
+        finalAccel += room.getAccel()
+
+        existTime = getTimeDiff(self.startTime)
+        if existTime <= 0.1:
+            finalAccel += self.randAccel
+
+        return finalAccel
 
     def update(self):
         self.collideCheck(all_walls)

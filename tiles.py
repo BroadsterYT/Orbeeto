@@ -49,7 +49,6 @@ class TileBase(ActorBase):
         return finalImage
 
     def movement(self):
-        room = self.getRoom()
         if self.canUpdate:
             self.accel = self.getAccel()
             self.accelMovement()

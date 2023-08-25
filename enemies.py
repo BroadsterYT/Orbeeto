@@ -15,8 +15,6 @@ class EnemyBase(ActorBase):
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
 
-        self.isGrappled = False
-
         self.isShooting = False
 
         #-------------------- In-game Stats --------------------#
@@ -85,7 +83,11 @@ class StandardGrunt(EnemyBase):
             self.accelMovement()
 
     def getAccel(self) -> pygame.math.Vector2:
+        room = self.getRoom()
         finalAccel = vec(0, 0)
+
+        finalAccel += room.getAccel()
+
         if self.pos.x != self.randPos.x or self.pos.y != self.randPos.y:
             if self.pos.x < self.randPos.x - self.hitbox.width // 2:
                 finalAccel.x += self.cAccel
@@ -99,18 +101,18 @@ class StandardGrunt(EnemyBase):
 
         return finalAccel
 
-    def shoot(self, target, vel, shoot_time):
-        if getTimeDiff(self.lastShot) > shoot_time:
+    def shoot(self, target, vel, shootTime):
+        if getTimeDiff(self.lastShot) > shootTime:
             self.isShooting = True
             try:
-                angle_to_target = getAngleToSprite(self, target)
+                angle = getAngleToSprite(self, target)
             except:
-                angle_to_target = 0
+                angle = 0
 
-            vel_x = vel * -sin(rad(angle_to_target))
-            vel_y = vel * -cos(rad(angle_to_target))
+            vel_x = vel * -sin(rad(angle))
+            vel_y = vel * -cos(rad(angle))
 
-            all_projs.add(EnemyStdBullet(self, self.pos.x - (21 * cos(rad(angle_to_target))) - (30 * sin(rad(angle_to_target))), self.pos.y + (21 * sin(rad(angle_to_target))) - (30 * cos(rad(angle_to_target))), vel_x, vel_y))
+            all_projs.add(EnemyStdBullet(self, self.pos.x - (21 * cos(rad(angle))) - (30 * sin(rad(angle))), self.pos.y + (21 * sin(rad(angle))) - (30 * cos(rad(angle))), vel_x, vel_y))
             self.lastShot = time.time()
 
     def update(self):
