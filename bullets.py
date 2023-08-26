@@ -569,7 +569,7 @@ class NewGrappleBullet(BulletBase):
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
         self.accel = vec(0, 0)
-        self.cAccel = 0.7
+        self.cAccel = 1.5
 
         self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 2, 9)
         self.setRects(0, 0, 32, 32, 16, 16)
@@ -607,6 +607,18 @@ class NewGrappleBullet(BulletBase):
                 else:
                     self.land(collidingSprite)
 
+    def sendBack(self):
+        angle = getAngleToSprite(self, self.shotFrom)
+        room = self.getRoom()
+        roomAccel = room.getAccel()
+        self.accel.x = self.cAccel * -sin(rad(angle)) + roomAccel.x
+        self.accel.y = self.cAccel * -cos(rad(angle)) + roomAccel.y
+
+        if self.hitbox.colliderect(self.shotFrom.rect):
+            self.kill()
+        
+        self.accelMovement()
+
     def movement(self):
         if not self.returning:
             if not self.isHooked:
@@ -623,6 +635,9 @@ class NewGrappleBullet(BulletBase):
                 
                 else:
                     self.pos = self.pos
+        
+        elif self.returning:
+            self.sendBack()
 
         self.rect.center = self.pos
         self.hitbox.center = self.pos

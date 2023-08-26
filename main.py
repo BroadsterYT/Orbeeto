@@ -268,7 +268,7 @@ class Player(ActorBase):
             self.canGrapple = False
 
         if keyReleased[2] % 2 == 0 and not self.canGrapple:
-            self.grapple.kill()
+            self.grapple.returning = True
             self.canGrapple = True
 
     def update(self):
