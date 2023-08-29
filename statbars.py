@@ -42,6 +42,9 @@ class StatBarBase(ActorBase):
         self.rect.center = self.pos
         self.hitbox.center = self.pos
 
+    def kill(self):
+        self.number.kill()
+        super().kill()
 
 class BarNumbers(ActorBase):
     def __init__(self, bar):

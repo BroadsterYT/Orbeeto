@@ -66,13 +66,28 @@ class Wall(TileBase):
         self.show(LAYER['wall'])
         all_walls.add(self) 
 
-        self.texture = pygame.image.load("sprites/tiles/wall.png").convert()
-        self.image: pygame.Surface = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, ColorRGB(25, 0, 0))
+        self.spritesheet = Spritesheet('sprites/tiles/wall.png', 2)
+        self.textures = self.spritesheet.getImages(16, 16, 2, 0)
+        self.index = 0
+
+        self.texture = self.textures[self.index]
+        self.image: pygame.Surface = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
 
         self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
 
     def update(self):
+        # if self.visible:
+        #     if getTimeDiff(self.lastFrame) >= 0.235:
+        #         self.texture = self.textures[self.index]
+        #         self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
+
+        #         self.index += 1
+        #         if self.index > 1:
+        #             self.index = 0
+                
+        #         self.lastFrame = time.time()
         pass
+
 
 class Floor(TileBase):
     def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float):
@@ -81,7 +96,7 @@ class Floor(TileBase):
         all_floors.add(self)
 
         self.spritesheet = Spritesheet('sprites/tiles/floor.png', 4)
-        self.textures = self.spritesheet.get_images(16, 16, 4)
+        self.textures = self.spritesheet.getImages(16, 16, 4)
         self.index = 0
 
         self.texture = self.textures[self.index]

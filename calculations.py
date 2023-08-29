@@ -1,6 +1,7 @@
 import pygame
 import math
 import time
+import os
 
 import random as rand
 
@@ -288,15 +289,15 @@ def calculateDamage(sender: pygame.sprite.Sprite, receiver: pygame.sprite.Sprite
 def collideSideCheck(instig: pygame.sprite.Sprite, object: pygame.sprite.Sprite) -> str:
     # Bottom center of sprite
     pointA = vec(object.pos.x,
-                object.pos.y + object.hitbox.height)
+                object.pos.y + object.hitbox.height // 2)
     # Right center of sprite
-    pointB = vec(object.pos.x + object.hitbox.width,
+    pointB = vec(object.pos.x + object.hitbox.width // 2,
                 object.pos.y)
     # Top center of sprite
     pointC = vec(object.pos.x,
-                object.pos.y - object.hitbox.height)
+                object.pos.y - object.hitbox.height // 2)
     # Left center of sprite
-    pointD = vec(object.pos.x - object.hitbox.width,
+    pointD = vec(object.pos.x - object.hitbox.width // 2,
                 object.pos.y)
     
     lenPointA, lenPointB = getDistToCoords(instig.pos, pointA), getDistToCoords(instig.pos, pointB)
@@ -351,6 +352,109 @@ def collideSideCheck(instig: pygame.sprite.Sprite, object: pygame.sprite.Sprite)
     
     elif isClosestPoint(pointA):
         return SOUTH
+
+
+def triangleCollide(instig, sprite) -> str:
+    # Bottom right corner
+    pointA = vec(sprite.pos.x + sprite.hitbox.width // 2,
+                 sprite.pos.y + sprite.hitbox.height // 2)
+    
+    # Top right corner
+    pointB = vec(sprite.pos.x + sprite.hitbox.width // 2,
+                 sprite.pos.y - sprite.hitbox.height // 2)
+    
+    # Top left corner
+    pointC = vec(sprite.pos.x - sprite.hitbox.width // 2,
+                 sprite.pos.y - sprite.hitbox.height // 2)
+    
+    # Bottom left corner
+    pointD = vec(sprite.pos.x - sprite.hitbox.width // 2,
+                 sprite.pos.y + sprite.hitbox.height // 2)
+    
+    lenPointA = getDistToCoords(instig.pos, pointA)
+    lenPointB = getDistToCoords(instig.pos, pointB)
+    lenPointC = getDistToCoords(instig.pos, pointC)
+    lenPointD = getDistToCoords(instig.pos, pointD)
+
+    angleA = rad(getAngleToCFromC(instig.pos, pointA) + 90)
+    angleB = rad(getAngleToCFromC(instig.pos, pointB) + 90)
+    angleC = rad(getAngleToCFromC(instig.pos, pointC) + 90)
+    angleD = rad(getAngleToCFromC(instig.pos, pointD) + 90)
+
+    heightAP = abs(lenPointA * sin(angleA))
+    heightBP = abs(lenPointB * cos(angleB))
+    heightCP = abs(lenPointC * sin(angleC))
+    heightDP = abs(lenPointD * cos(angleD))
+
+
+    def isClosestSide(height: float):
+        if height == heightAP:
+            if (heightAP < heightBP and
+                heightAP < heightCP and
+                heightAP < heightDP):
+                return True
+            else:
+                return False
+            
+        elif height == heightBP:
+            if (heightBP < heightAP and
+                heightBP < heightCP and
+                heightBP < heightDP):
+                return True
+            else:
+                return False
+            
+        elif height == heightCP:
+            if (heightCP < heightAP and
+                heightCP < heightBP and
+                heightCP < heightDP):
+                return True
+            else:
+                return False
+            
+        elif height == heightDP:
+            if (heightDP < heightAP and
+                heightDP < heightBP and
+                heightDP < heightCP):
+                return True
+            else:
+                return False
+            
+        else:
+            raise ValueError('Error: height value is not a valid input')
+
+
+    if isClosestSide(heightAP):
+        if instig.pos.x >= pointB.x:
+            return EAST
+        if instig.pos.x <= pointD.x:
+            return WEST
+        
+        return SOUTH
+    
+    elif isClosestSide(heightBP):
+        if instig.pos.y >= pointA.y:
+            return SOUTH
+        if instig.pos.y <= pointC.y:
+            return NORTH
+        
+        return EAST
+    
+    elif isClosestSide(heightCP):
+        if instig.pos.x >= pointB.x:
+            return EAST
+        if instig.pos.x <= pointD.x:
+            return WEST
+        
+        return NORTH
+    
+    elif isClosestSide(heightDP):
+        if instig.pos.y >= pointA.y:
+            return SOUTH
+        if instig.pos.y <= pointC.y:
+            return NORTH
+        
+        return WEST
 
 
 def wallSideCheck(wall: pygame.sprite.Sprite, proj: pygame.sprite.Sprite) -> str:
@@ -495,7 +599,7 @@ def textToImage(text: str, fontImg: str, charWidth: int, charHeight: int, charCo
         - ``pygame.Surface``: _description_
     """    
     spritesheet = Spritesheet(fontImg, 37)
-    images = spritesheet.get_images(charWidth, charHeight, charCount)
+    images = spritesheet.getImages(charWidth, charHeight, charCount)
     charList = []
 
     finalImage = pygame.Surface(vec(len(text) * charWidth, charHeight))
@@ -725,4 +829,4 @@ class CustomError(Exception):
 
 
 if __name__ == '__main__':
-    pass
+    os.system('python main.py')

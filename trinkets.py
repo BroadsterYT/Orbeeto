@@ -10,7 +10,6 @@ class Box(ActorBase):
         super().__init__()
         self.show(LAYER['trinket'])
         all_movable.add(self)
-        all_trinkets.add(self)
 
         self.idValue = idValue
 
@@ -49,8 +48,6 @@ class Box(ActorBase):
         return finalAccel
 
     def update(self):
-        self.movement()
-
         # Teleporting
         for portal in all_portals:
             if self.hitbox.colliderect(portal.hitbox) and len(all_portals) == 2:
@@ -140,7 +137,7 @@ class LockedWall(TileBase):
         self.endPos = getTopLeftCoords(self.width, self.height, eBlockPosX * self.tileSize, eBlockPosY * self.tileSize)
 
         self.spritesheet = Spritesheet('sprites/tiles/wall.png', 1)
-        self.textures = self.spritesheet.get_images(16, 16, 1)
+        self.textures = self.spritesheet.getImages(16, 16, 1)
         self.index = 0
 
         self.texture = self.textures[self.index]

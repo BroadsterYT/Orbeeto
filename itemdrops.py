@@ -1,4 +1,5 @@
 import pygame
+import os
 from math import degrees, pi
 
 from class_bases import *
@@ -21,6 +22,7 @@ class ItemDrop(DropBase):
         super().__init__()
         self.show(LAYER['drops'])
         all_drops.add(self)
+        
         self.droppedFrom = droppedFrom
         self.mat = itemName
 
@@ -32,11 +34,11 @@ class ItemDrop(DropBase):
         self.index = 0
 
         if self.mat == MAT[0]:
-            self.original_images = self.spritesheet.get_images(32, 32, 1, 0)
-            self.images = self.spritesheet.get_images(32, 32, 1, 0)
+            self.origImages = self.spritesheet.getImages(32, 32, 1, 0)
+            self.images = self.spritesheet.getImages(32, 32, 1, 0)
         elif self.mat == MAT[1]:
-            self.original_images = self.spritesheet.get_images(32, 32, 1, 1)
-            self.images = self.spritesheet.get_images(32, 32, 1, 1)
+            self.origImages = self.spritesheet.getImages(32, 32, 1, 1)
+            self.images = self.spritesheet.getImages(32, 32, 1, 1)
 
         self.image = self.images[self.index]
         self.rect = pygame.Rect(0, 0, 32, 32)
@@ -46,13 +48,13 @@ class ItemDrop(DropBase):
 
     def movement(self):
         self.accel = vec(0, 0)
-        if self.canUpdate and self.visible:
+        if self.canUpdate:
             existTime = getTimeDiff(self.startTime)
             self.accel = self.getAccel()
             
             if existTime <= 10:
-                self.original_image = self.original_images[self.index]
-                self.image = pygame.transform.rotate(self.original_image, int(degrees(sin(self.period_mult * pi * existTime) * (1 / existTime))))
+                self.origImage = self.origImages[self.index]
+                self.image = pygame.transform.rotate(self.origImage, int(degrees(sin(self.period_mult * pi * existTime) * (1 / existTime))))
                 self.rect = self.image.get_rect(center = self.rect.center)
             
             self.accelMovement()
@@ -70,11 +72,15 @@ class ItemDrop(DropBase):
         return finalAccel
 
     def update(self):
-        self.collideCheck(all_walls)
         self.movement()
+        self.collideCheck(all_walls)
 
         for a_player in all_players:
             if self.hitbox.colliderect(a_player):
                 a_player.inventory[self.mat] += 1
                 a_player.menu.updateMenuSlots()
                 self.kill()
+
+
+if __name__ == '__main__':
+    os.system('python main.py')

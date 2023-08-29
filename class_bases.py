@@ -18,8 +18,9 @@ class ActorBase(pygame.sprite.Sprite):
         self.lastFrame = time.time()
 
         self.pos = vec((0, 0))
-        self.posCopy = self.pos.copy()
+        self.posCopy = self.pos.copy() # For adjusting sprites within the scrolling rooms
         self.vel = vec(0, 0)
+        self.cVel = vec(0, 0) # Only for bullets; otherwise this will stay (0, 0)
         self.accel = vec(0, 0)
         self.cAccel = 0.3
 
@@ -31,6 +32,7 @@ class ActorBase(pygame.sprite.Sprite):
         self.visible = False
         if hasattr(self, 'healthBar'):
             self.healthBar.hide()
+            self.healthBar.number.hide()
         all_sprites.remove(self)
 
     def show(self, layerSend) -> None:
@@ -58,15 +60,15 @@ class ActorBase(pygame.sprite.Sprite):
             - index (``int``, optional): The index of the sprite's animation to start from. Defaults to ``0`` (the first image).
         """        
         self.spritesheet = Spritesheet(imageFile, spritesPerRow)
-        self.images = self.spritesheet.get_images(frameWidth, frameHeight, imageCount, imageOffset)
-        self.original_images = self.spritesheet.get_images(frameWidth, frameHeight, imageCount, imageOffset)
+        self.images = self.spritesheet.getImages(frameWidth, frameHeight, imageCount, imageOffset)
+        self.origImages = self.spritesheet.getImages(frameWidth, frameHeight, imageCount, imageOffset)
         self.index = index
 
         self.renderImages()
 
     def renderImages(self):
         self.image = self.images[self.index]
-        self.original_image = self.original_images[self.index]
+        self.origImage = self.origImages[self.index]
 
     def setRects(self, rectPosX: int, rectPosY: int, rectWidth: int, rectHeight: int, hitboxWidth: int, hitboxHeight: int, setPos: bool = True):
         """Defines the rect and hitbox of a sprite
@@ -81,7 +83,7 @@ class ActorBase(pygame.sprite.Sprite):
             - setPos (``bool``, optional): Should the rect and hitbox be snapped to the position of the sprite?. Defaults to ``True``.
         """        
         # self.image = self.images[self.index]
-        # self.original_image = self.original_images[self.index]
+        # self.origImage = self.origImages[self.index]
         
         self.rect = pygame.Rect(rectPosX, rectPosY, rectWidth, rectHeight)
         self.hitbox = pygame.Rect(rectPosX, rectPosY, hitboxWidth, hitboxHeight)
@@ -96,8 +98,8 @@ class ActorBase(pygame.sprite.Sprite):
         ### Parameters
             - angle (``float``): The angle to rotate the sprite's image by
         """        
-        self.original_image = self.original_images[self.index]
-        self.image = pygame.transform.rotate(self.original_image, int(angle))
+        self.origImage = self.origImages[self.index]
+        self.image = pygame.transform.rotate(self.origImage, int(angle))
         self.rect = self.image.get_rect(center = self.rect.center)
     
     # ---------------------------------- Physics --------------------------------- #
@@ -147,30 +149,22 @@ class ActorBase(pygame.sprite.Sprite):
             height = (self.hitbox.height + sprite.hitbox.height) // 2
             
             # If hitting the right side
-            if (collideSideCheck(self, sprite) == EAST and
-                # self.vel.x < 0 and
-                self.pos.x <= sprite.pos.x + width):
+            if triangleCollide(self, sprite) == EAST:
                 self.vel.x = 0
                 self.pos.x = sprite.pos.x + width
 
             # Hitting bottom side
-            if (collideSideCheck(self, sprite) == SOUTH and
-                # self.vel.y < 0 and
-                self.pos.y <= sprite.pos.y + height):
+            if triangleCollide(self, sprite) == SOUTH:
                 self.vel.y = 0
                 self.pos.y = sprite.pos.y + height
 
             # Hitting left side
-            if (collideSideCheck(self, sprite) == WEST and
-                # self.vel.x > 0 and
-                self.pos.x >= sprite.pos.x - width):
+            if triangleCollide(self, sprite) == WEST:
                 self.vel.x = 0
                 self.pos.x = sprite.pos.x - width
 
             # Hitting top side
-            if (collideSideCheck(self, sprite) == NORTH and
-                # self.vel.y > 0 and
-                self.pos.y >= sprite.pos.y - height):
+            if triangleCollide(self, sprite) == NORTH:
                 self.vel.y = 0
                 self.pos.y = sprite.pos.y - height
 
@@ -184,7 +178,7 @@ class ActorBase(pygame.sprite.Sprite):
         width = (portalOut.hitbox.width + self.hitbox.width) // 2
         height = (portalOut.hitbox.height + self.hitbox.height) // 2
         
-        # Makes sure that sprites dont repeatedly get thrown back into the portals b/c of room acceleration
+        # Makes sure that sprites dont repeatedly get thrown back into the portals b/c of room velocity
         room = self.getRoom()
         velAdjust: vec = room.vel.copy()
 
@@ -193,11 +187,13 @@ class ActorBase(pygame.sprite.Sprite):
             if portalOut.facing == SOUTH:
                 self.pos.x = portalOut.pos.x - distOffset
                 self.pos.y = portalOut.pos.y + height + abs(velAdjust.y)
+                self.cVel = self.cVel.rotate(180)
                 self.vel = self.vel.rotate(180)
             
             if portalOut.facing == EAST:
                 self.pos.x = portalOut.pos.x + width + abs(velAdjust.x)
                 self.pos.y = portalOut.pos.y - distOffset
+                self.cVel = self.cVel.rotate(90)
                 self.vel = self.vel.rotate(90)
             
             if portalOut.facing == NORTH:
@@ -208,22 +204,26 @@ class ActorBase(pygame.sprite.Sprite):
                 self.pos.x = portalOut.pos.x - width - abs(velAdjust.x)
                 self.pos.y = portalOut.pos.y + distOffset
                 self.vel = self.vel.rotate(270)
+                self.cVel = self.cVel.rotate(270)
 
         if portalIn.facing == EAST:
             distOffset = copy.copy(self.pos.y) - copy.copy(portalIn.pos.y)
             if portalOut.facing == SOUTH:
                 self.pos.x = portalOut.pos.x - distOffset
                 self.pos.y = portalOut.pos.y + height + abs(velAdjust.y)
+                self.cVel = self.cVel.rotate(270)
                 self.vel = self.vel.rotate(270)
                 
             if portalOut.facing == EAST:
                 self.pos.x = portalOut.pos.x + width + abs(velAdjust.x)
                 self.pos.y = portalOut.pos.y - distOffset
+                self.cVel = self.cVel.rotate(180)
                 self.vel = self.vel.rotate(180)
 
             if portalOut.facing == NORTH:
                 self.pos.x = portalOut.pos.x + distOffset
                 self.pos.y = portalOut.pos.y - height - abs(velAdjust.y)
+                self.cVel = self.cVel.rotate(90)
                 self.vel = self.vel.rotate(90)
 
             if portalOut.facing == WEST:
@@ -239,16 +239,19 @@ class ActorBase(pygame.sprite.Sprite):
             if portalOut.facing == EAST:
                 self.pos.x = portalOut.pos.x + width + abs(velAdjust.x)
                 self.pos.y = portalOut.pos.y + distOffset
+                self.cVel = self.cVel.rotate(270)
                 self.vel = self.vel.rotate(270)
             
             if portalOut.facing == NORTH:
                 self.pos.x = portalOut.pos.x - distOffset
                 self.pos.y = portalOut.pos.y - height - abs(velAdjust.y)
+                self.cVel = self.cVel.rotate(180)
                 self.vel = self.vel.rotate(180)
             
             if portalOut.facing == WEST:
                 self.pos.x = portalOut.pos.x - width - abs(velAdjust.x)
                 self.pos.y = portalOut.pos.y - distOffset
+                self.cVel = self.cVel.rotate(90)
                 self.vel = self.vel.rotate(90)
 
         if portalIn.facing == WEST:
@@ -256,6 +259,7 @@ class ActorBase(pygame.sprite.Sprite):
             if portalOut.facing == SOUTH:
                 self.pos.x = portalOut.pos.x + distOffset
                 self.pos.y = portalOut.pos.y + height + abs(velAdjust.y)
+                self.cVel = self.cVel.rotate(90)
                 self.vel = self.vel.rotate(90)
             
             if portalOut.facing == EAST:
@@ -265,11 +269,13 @@ class ActorBase(pygame.sprite.Sprite):
             if portalOut.facing == NORTH:
                 self.pos.x = portalOut.pos.x - distOffset
                 self.pos.y = portalOut.pos.y - height - abs(velAdjust.y)
+                self.cVel = self.cVel.rotate(270)
                 self.vel = self.vel.rotate(270)
             
             if portalOut.facing == WEST:
                 self.pos.x = portalOut.pos.x - width - abs(velAdjust.x)
                 self.pos.y = portalOut.pos.y - distOffset
+                self.cVel = self.cVel.rotate(180)
                 self.vel = self.vel.rotate(180)
 
 # ----------------------------------- Rooms ---------------------------------- #

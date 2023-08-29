@@ -68,7 +68,7 @@ class StandardGrunt(EnemyBase):
         self.maxHp = 15
         initStats(self, 15, 10, 10, 40, 0.4)
 
-    def movement(self, canShoot: bool):
+    def movement(self, canShoot: bool = True):
         if self.canUpdate and self.hp > 0:
             if getTimeDiff(self.lastRelocate) > rand.uniform(2.5, 5.0):
                 self.randPos.x = rand.randint(self.image.get_width() + 64, WINWIDTH - self.image.get_width() - 64)
@@ -115,11 +115,15 @@ class StandardGrunt(EnemyBase):
             all_projs.add(EnemyStdBullet(self, self.pos.x - (21 * cos(rad(angle))) - (30 * sin(rad(angle))), self.pos.y + (21 * sin(rad(angle))) - (30 * cos(rad(angle))), vel_x, vel_y))
             self.lastShot = time.time()
 
+    def kill(self):
+        self.healthBar.kill()
+        super().kill()
+
     def update(self):
         if self.canUpdate and self.visible and self.hp > 0:
             self.collideCheck(all_players, all_walls)
-            self.movement(True)
-            
+            # self.movement()
+
             # Animation
             if getTimeDiff(self.lastFrame) > ANIMTIME:
                 if self.isShooting == True:
@@ -227,10 +231,10 @@ class OctoGrunt(EnemyBase):
                     self.isShooting = False
                 self.lastFrame = time.time()
             self.image = self.images[self.index]
-            self.original_image = self.original_images[self.index]
+            self.origImage = self.origImages[self.index]
             
             # Animation rotation
-            self.image = pygame.transform.rotate(self.original_image, int(getAngleToSprite(self, getClosestPlayer(self))))
+            self.image = pygame.transform.rotate(self.origImage, int(getAngleToSprite(self, getClosestPlayer(self))))
             self.rect = self.image.get_rect(center = self.pos)
         
         if self.hp <= 0:

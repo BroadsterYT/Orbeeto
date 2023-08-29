@@ -15,9 +15,15 @@ class BulletBase(ActorBase):
         self.ricCount = 1
         self.startTime = time.time()
 
+    def getVel(self) -> pygame.math.Vector2:
+        room = self.getRoom()
+        finalVel = self.cVel + room.vel
+
+        return finalVel
+
     def land(self, target: pygame.sprite.Sprite):
         self.hit = target
-        self.sideHit = collideSideCheck(self, target)
+        self.sideHit = triangleCollide(self, self.hit)
         self.ricCount -= 1
 
         # Bullet explodes
@@ -188,7 +194,7 @@ class ProjExplode(ActorBase):
                 self.lastFrame = time.time()
         
         # Give explosion its random rotation
-        self.image = pygame.transform.rotate(self.original_image, self.randRotation)
+        self.image = pygame.transform.rotate(self.origImage, self.randRotation)
         self.rect.center = self.pos
         self.hitbox.center = self.pos
 
@@ -218,6 +224,7 @@ class PlayerStdBullet(BulletBase):
 
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
+        self.cVel = self.vel
         self.ricCount = bounceCount
 
         self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 1)
@@ -225,19 +232,20 @@ class PlayerStdBullet(BulletBase):
 
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
     
-    def bindProj(self):
+    def movement(self):
         if self.canUpdate:
             self.projCollide(all_enemies, True)
             self.projCollide(all_walls, False)
             self.projCollide(all_portals, False)
-            
+
             if getTimeDiff(self.startTime) <= 10:
+                self.vel = self.getVel()
                 self.velMovement(True)
             else:
                 self.kill()
 
     def update(self):
-        self.bindProj()
+        self.movement()
 
     def __repr__(self):
         return f'PlayerStdBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.ricCount})'
@@ -252,6 +260,7 @@ class PortalBullet(BulletBase):
 
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
+        self.cVel = self.vel
 
         self.hitbox_adjust = vec(0, 0)
         self.damage = PROJDMG[PROJ_PORTAL]
@@ -309,20 +318,16 @@ class PortalBullet(BulletBase):
             all_portals.add(Portal(self, surface.pos.x - surface.hitbox.width // 2, self.pos.y, side))
             portalCountCheck()
 
-    def bindProj(self):
+    def movement(self):
         if self.canUpdate:
-            if (
-                self.pos.x < WINWIDTH and 
-                self.pos.x > 0 and
-                self.pos.y < WINHEIGHT and 
-                self.pos.y > 0
-            ):
+            self.projCollide(all_walls, False)
+            self.projCollide(all_portals, False)
+
+            if getTimeDiff(self.startTime) <= 10:
+                self.vel = self.getVel()
                 self.velMovement(False)
             else:
                 self.kill()
-
-            self.projCollide(all_walls, False)
-            self.projCollide(all_portals, False)
 
     def update(self):
         if getTimeDiff(self.lastFrame) > ANIMTIME:
@@ -332,224 +337,10 @@ class PortalBullet(BulletBase):
             self.lastFrame = time.time()
         
         self.rotateImage(int(getVecAngle(self.vel.x, self.vel.y)))
-        self.bindProj()
+        self.movement()
 
     def __repr__(self):
         return f'PortalBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.ricCount})'
-
-
-class GrappleBullet(BulletBase):
-    def __init__(self, shotFrom, posX, posY, velX, velY):
-        super().__init__()
-        self.show(LAYER['grapple'])
-        all_projs.add(self)
-
-        self.shotFrom = shotFrom
-        self.damage = PROJDMG[PROJ_GRAPPLE]
-
-        self.isHooked = False
-        self.grappledTo: pygame.sprite.Sprite = None
-        
-        self.returning = False
-        self.hasExitedPortal = False
-
-        self.chain1: Beam = Beam(self.shotFrom, self)
-        self.chain2: Beam = None
-
-        self.canTp = True
-        self.tpPoints = []
-
-        self.enterPoint: InvisObj = None; self.enterPointFace = None
-        self.exitPoint: InvisObj = None; self.exitPointFace = None
-
-        self.pos = vec((posX, posY))
-        self.vel = vec(velX, velY)
-        self.accel = vec(0, 0)
-        self.cAccel = 0.7
-
-        self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 2, 9)
-        self.setRects(0, 0, 32, 32, 16, 16)
-        self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
-
-    def land(self, grappledTo):
-        self.isHooked = True
-        self.grappledTo = grappledTo
-        if self.grappledTo != None:
-            self.grappledTo.isGrappled = True
-
-    def shatter(self):
-        """Destroys the grappling hook"""   
-        self.shotFrom.grapple = None
-        self.returning = False
-
-        self.chain1.kill()
-        if isinstance(self.chain2, Beam):
-            self.chain2.kill()
-
-        if isinstance(self.enterPoint, InvisObj):
-            self.enterPoint.kill()
-        if isinstance(self.exitPoint, InvisObj):
-            self.exitPoint.kill()
-
-        self.kill()
-
-    def projCollide(self, spriteGroup, canHurt):
-        for collidingSprite in spriteGroup:
-            if not self.hitbox.colliderect(collidingSprite.hitbox):
-                continue
-            
-            if not collidingSprite.visible:
-                continue
-
-            if canHurt:
-                self.inflictDamage(spriteGroup, self.shotFrom, collidingSprite)
-                self.land(collidingSprite)
-
-            elif not canHurt:
-                if spriteGroup == all_portals:
-                    if len(all_portals) == 2 and self.canTp:
-                        self.tpPoints.append(copy.copy(self.pos))
-                        for portal in all_portals:
-                            if self.hitbox.colliderect(portal.hitbox):
-                                self.teleport(portal)
-                                self.tpPoints.append(copy.copy(self.pos))
-                                self.canTp = False
-                                
-                                # Creating invisible objects at teleport points so grapple can return through portals
-                                otherPortal: Portal = getOtherPortal(portal)
-                                self.enterPointFace = portal.facing
-                                self.exitPointFace = otherPortal.facing
-
-                                ret1Pos: pygame.math.Vector2 = copy.copy(self.tpPoints[0])
-                                ret2Pos: pygame.math.Vector2 = copy.copy(self.tpPoints[1])
-                                self.enterPoint = InvisObj(ret1Pos.x, ret1Pos.y, 8, 8)
-                                self.exitPoint = InvisObj(ret2Pos.x, ret2Pos.y, 8, 8)
-                                
-                                # Correcting chains
-                                self.chain1.kill()
-                                self.chain1: Beam = Beam(self.shotFrom, self.enterPoint)
-                                self.chain2: Beam = Beam(otherPortal, self)
-                        return
-                    
-                elif not self.canTp and spriteGroup == all_portals:
-                    pass
-
-                else:
-                    self.land(collidingSprite)
-
-    def bindProj(self):
-        if self.canUpdate:
-            if not self.isHooked:
-                self.projCollide(all_enemies, True)
-                self.projCollide(all_movable, False)
-                self.projCollide(all_portals, False)
-                self.projCollide(all_walls, False)
-                self.projCollide(all_drops, False)
-
-            self.movement()
-            if (
-                self.pos.x > WINWIDTH or 
-                self.pos.x < 0 or
-                self.pos.y > WINHEIGHT or 
-                self.pos.y < 0
-            ):
-                self.land(None)
-
-    def sendBack(self):
-        """Sends the grappling hook back to the player"""
-        if len(self.tpPoints) == 0:  
-            angle = getAngleToSprite(self, self.shotFrom)
-            self.accel.x = self.cAccel * -sin(rad(angle))
-            self.accel.y = self.cAccel * -cos(rad(angle))
-
-            if self.hitbox.colliderect(self.shotFrom.rect):
-                self.shatter()
-
-        if len(self.tpPoints) > 0:
-            if not self.hasExitedPortal:
-                angle = getAngleToSprite(self, self.exitPoint)
-                self.accel.x = self.cAccel * -sin(rad(angle))
-                self.accel.y = self.cAccel * -cos(rad(angle))
-
-                if self.hitbox.colliderect(self.exitPoint.hitbox):
-                    self.pos = self.enterPoint.pos
-                    self.vel = getTpVel(self.exitPointFace, self.enterPointFace, self)
-                    self.hasExitedPortal = True
-                    self.chain2.kill()
-            
-            elif self.hasExitedPortal:
-                angle = getAngleToSprite(self, self.shotFrom)
-                self.accel.x = self.cAccel * -sin(rad(angle))
-                self.accel.y = self.cAccel * -cos(rad(angle))
-                if self.hitbox.colliderect(self.shotFrom.rect):
-                    self.shatter()
-
-        self.accelMovement()
-
-    def movement(self):
-        if not self.returning:
-            if not self.isHooked:
-                self.pos.x += self.vel.x
-                self.pos.y += self.vel.y
-
-            else:
-                if self.grappledTo != None and self.grappledTo not in all_walls:
-                    self.pos.x = self.grappledTo.pos.x
-                    self.pos.y = self.grappledTo.pos.y
-                
-                elif self.grappledTo != None and self.grappledTo in all_walls:
-                    side = wallSideCheck(self.grappledTo, self)
-                    if side == SOUTH:
-                        self.pos.x = self.pos.x
-                        self.pos.y = self.grappledTo.pos.y + (self.grappledTo.rect.height // 2)
-                    if side == NORTH:
-                        self.pos.x = self.pos.x
-                        self.pos.y = self.grappledTo.pos.y - (self.grappledTo.rect.height // 2)
-                    if side == EAST:
-                        self.pos.x = self.grappledTo.pos.x + (self.grappledTo.rect.width // 2)
-                        self.pos.y = self.pos.y
-                    if side == WEST:
-                        self.pos.x = self.grappledTo.pos.x - (self.grappledTo.rect.width // 2)
-                        self.pos.y = self.pos.y
-                
-                else:
-                    self.pos = self.pos
-
-        if self.returning:
-            if self.grappledTo == None:
-                self.sendBack()
-            
-            # Grapple will move if attached to an enemy or item
-            if self.grappledTo != None and self.grappledTo not in all_walls:
-                self.sendBack()
-                self.grappledTo.pos.x = self.pos.x
-                self.grappledTo.pos.y = self.pos.y
-
-            if self.grappledTo != None and self.grappledTo in all_walls:
-                if self.shotFrom.hitbox.colliderect(self.hitbox):
-                    self.shatter()
-                for wall in all_walls:
-                    if self.shotFrom.hitbox.colliderect(wall.hitbox):
-                        self.shatter()
-
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
-
-    def update(self):
-        if not self.isHooked and not self.returning:
-            self.index = 0
-            self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
-        else:
-            self.index = 1
-            self.rotateImage(getAngleToSprite(self, self.shotFrom) + 180)
-        
-        self.bindProj()
-
-    def __str__(self):
-        return f'GrappleBullet at {self.pos}\nshot from: {self.shotFrom}\nvel: {self.vel}\naccel: {self.accel}\nis hooked: {self.isHooked}'
-
-    def __repr__(self):
-        return f'GrappleBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.accel}, {self.isHooked}, {self.isGrappled}, {self.grappledTo}, {self.returning})'
 
 
 class NewGrappleBullet(BulletBase):
@@ -596,12 +387,11 @@ class NewGrappleBullet(BulletBase):
 
             elif not canHurt:
                 if spriteGroup == all_portals:
-                    if len(all_portals) == 2 and self.canTp:
-                        self.tpPoints.append(copy.copy(self.pos))
+                    if len(all_portals) == 2:
                         for portal in all_portals:
                             if self.hitbox.colliderect(portal.hitbox):
                                 self.teleport(portal)
-    
+                                self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
                         return
 
                 else:
@@ -618,6 +408,10 @@ class NewGrappleBullet(BulletBase):
             self.kill()
         
         self.accelMovement()
+
+        if self.grappledTo != None and self.grappledTo not in all_portals:
+            if self.grappledTo not in all_walls:
+                self.grappledTo.pos = self.pos
 
     def movement(self):
         if not self.returning:
@@ -669,6 +463,7 @@ class EnemyStdBullet(BulletBase):
 
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
+        self.cVel = self.vel
 
         self.damage = PROJDMG[PROJ_STD]
 
@@ -677,31 +472,22 @@ class EnemyStdBullet(BulletBase):
 
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
     
+    def movement(self):
+        if getTimeDiff(self.startTime) <= 10:
+            self.vel = self.getVel()
+            self.velMovement(True)
+        else:
+            self.kill()
+
     def bindProj(self):
         if self.canUpdate:
-            if (
-                self.pos.x < WINWIDTH and 
-                self.pos.x > 0 and
-                self.pos.y < WINHEIGHT and 
-                self.pos.y > 0
-            ):
-                self.velMovement(True)
-            else:
-                self.kill()
-
             self.projCollide(all_players, True)
             self.projCollide(all_walls, False)
             self.projCollide(all_portals, False)
 
-    def movement(self):
-        self.pos.x += self.vel.x
-        self.pos.y += self.vel.y
-
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+            self.movement()
 
     def update(self):
-        self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
         self.bindProj()
 
     def __repr__(self):
