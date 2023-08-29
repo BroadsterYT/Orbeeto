@@ -57,7 +57,7 @@ class Beam(ActorBase):
             - ``pygame.Surface``: The image of the beam
         """        
         self.spritesheet = Spritesheet("sprites/textures/beams.png", 1)
-        baseImages = self.spritesheet.get_images(12, 12, 1, frameOffset)
+        baseImages = self.spritesheet.getImages(12, 12, 1, frameOffset)
         baseImage: pygame.Surface = baseImages[self.index]
 
         finalImage = pygame.Surface(vec(baseImage.get_width(), int(self.length)))

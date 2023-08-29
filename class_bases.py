@@ -1,4 +1,5 @@
 import pygame
+import os
 import time
 import copy
 
@@ -17,7 +18,9 @@ class ActorBase(pygame.sprite.Sprite):
         self.lastFrame = time.time()
 
         self.pos = vec((0, 0))
+        self.posCopy = self.pos.copy() # For adjusting sprites within the scrolling rooms
         self.vel = vec(0, 0)
+        self.cVel = vec(0, 0) # Only for bullets; otherwise this will stay (0, 0)
         self.accel = vec(0, 0)
         self.cAccel = 0.3
 
@@ -29,6 +32,7 @@ class ActorBase(pygame.sprite.Sprite):
         self.visible = False
         if hasattr(self, 'healthBar'):
             self.healthBar.hide()
+            self.healthBar.number.hide()
         all_sprites.remove(self)
 
     def show(self, layerSend) -> None:
@@ -39,7 +43,7 @@ class ActorBase(pygame.sprite.Sprite):
         """        
         self.visible = True
         if hasattr(self, 'healthBar'):
-            self.healthBar.show(LAYER['statBar_layer'])
+            self.healthBar.show(LAYER['statbar'])
         all_sprites.add(self, layer = layerSend)
 
     # ----------------------------- Images and Rects ----------------------------- #
@@ -56,15 +60,15 @@ class ActorBase(pygame.sprite.Sprite):
             - index (``int``, optional): The index of the sprite's animation to start from. Defaults to ``0`` (the first image).
         """        
         self.spritesheet = Spritesheet(imageFile, spritesPerRow)
-        self.images = self.spritesheet.get_images(frameWidth, frameHeight, imageCount, imageOffset)
-        self.original_images = self.spritesheet.get_images(frameWidth, frameHeight, imageCount, imageOffset)
+        self.images = self.spritesheet.getImages(frameWidth, frameHeight, imageCount, imageOffset)
+        self.origImages = self.spritesheet.getImages(frameWidth, frameHeight, imageCount, imageOffset)
         self.index = index
 
         self.renderImages()
 
     def renderImages(self):
         self.image = self.images[self.index]
-        self.original_image = self.original_images[self.index]
+        self.origImage = self.origImages[self.index]
 
     def setRects(self, rectPosX: int, rectPosY: int, rectWidth: int, rectHeight: int, hitboxWidth: int, hitboxHeight: int, setPos: bool = True):
         """Defines the rect and hitbox of a sprite
@@ -79,7 +83,7 @@ class ActorBase(pygame.sprite.Sprite):
             - setPos (``bool``, optional): Should the rect and hitbox be snapped to the position of the sprite?. Defaults to ``True``.
         """        
         # self.image = self.images[self.index]
-        # self.original_image = self.original_images[self.index]
+        # self.origImage = self.origImages[self.index]
         
         self.rect = pygame.Rect(rectPosX, rectPosY, rectWidth, rectHeight)
         self.hitbox = pygame.Rect(rectPosX, rectPosY, hitboxWidth, hitboxHeight)
@@ -94,52 +98,38 @@ class ActorBase(pygame.sprite.Sprite):
         ### Parameters
             - angle (``float``): The angle to rotate the sprite's image by
         """        
-        self.original_image = self.original_images[self.index]
-        self.image = pygame.transform.rotate(self.original_image, int(angle))
+        self.origImage = self.origImages[self.index]
+        self.image = pygame.transform.rotate(self.origImage, int(angle))
         self.rect = self.image.get_rect(center = self.rect.center)
     
     # ---------------------------------- Physics --------------------------------- #
-    def movement(self):
-        """Defines all movement logic of the sprite
-        """
-        self.accel = vec(0, 0)
-        if self.canUpdate and self.visible:
-            self.accel = self.getAccel()
-            self.accelMovement()
-
-    def getAccel(self) -> pygame.math.Vector2:
-        """Returns the acceleration of the sprite given specific conditions. NOTE: This function should be overridden by any child class!
-        
-        ### Returns
-            - ``pygame.math.Vector2``: The acceleration of the sprite
-        """        
-        finalAccel = vec(0, 0)
-        return finalAccel
-
-    def velMovement(self) -> None:
+    def velMovement(self, adjustCenterFirst: bool) -> None:
         """Makes a sprite move according to its velocity (``self.vel``)
         """
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+        if adjustCenterFirst:
+            self.rect.center = self.pos
+            self.hitbox.center = self.pos
 
-        self.pos.x += self.vel.x
-        self.pos.y += self.vel.y
+            self.pos.x += self.vel.x
+            self.pos.y += self.vel.y
+
+        else:
+            self.pos.x += self.vel.x
+            self.pos.y += self.vel.y
+            
+            self.rect.center = self.pos
+            self.hitbox.center = self.pos
 
     def accelMovement(self) -> None:
         """Makes a sprite move according to its acceleration (``self.accel`` and ``self.cAccel``)
-        
-        ``self.accel`` MUST BE (0, 0) BEFORE THIS FUCNTION IS CALLED
-        
-        ### Arguments
-            - deltaTime (``float``): The difference in time between frame updates
         """
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
-        
         self.accel.x += self.vel.x * FRIC
         self.accel.y += self.vel.y * FRIC
         self.vel += self.accel
         self.pos += self.vel + self.cAccel * self.accel
+
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
 
     def collideCheck(self, *contactLists: list) -> None:
         """Check if the sprite comes into contact with another sprite from a specific group. 
@@ -149,191 +139,154 @@ class ActorBase(pygame.sprite.Sprite):
             - contactLists (``list``): The sprite group(s) to check for a collision with
         """
         for list in contactLists:
-            sprite: ActorBase
             for sprite in list:
-                if hasattr(sprite, 'visible'):
-                    if sprite.visible:
-                        self.blockFromSide(sprite)
-                    elif not sprite.visible:
-                        pass
-                else:
+                if sprite.visible:
                     self.blockFromSide(sprite)
 
     def blockFromSide(self, sprite: pygame.sprite.Sprite) -> None:
         if self.hitbox.colliderect(sprite.hitbox):
-            # Bottom center of sprite
-            pointA = vec(sprite.pos.x,
-                        sprite.pos.y + sprite.hitbox.height)
-            # Right center of sprite
-            pointB = vec(sprite.pos.x + sprite.hitbox.width,
-                        sprite.pos.y)
-            # Top center of sprite
-            pointC = vec(sprite.pos.x,
-                        sprite.pos.y - sprite.hitbox.height)
-            # Left center of sprite
-            pointD = vec(sprite.pos.x - sprite.hitbox.width,
-                        sprite.pos.y)
+            width = (self.hitbox.width + sprite.hitbox.width) // 2
+            height = (self.hitbox.height + sprite.hitbox.height) // 2
             
-            lenPointA, lenPointB = getDistToCoords(self.pos, pointA), getDistToCoords(self.pos, pointB)
-            lenPointC, lenPointD = getDistToCoords(self.pos, pointC), getDistToCoords(self.pos, pointD)
-            
-
-            def isClosestPoint(point: pygame.math.Vector2) -> pygame.math.Vector2:
-                if point == pointA:
-                    if (lenPointA < lenPointB and
-                        lenPointA < lenPointC and
-                        lenPointA < lenPointD):
-                        return True
-                    else:
-                        return False
-
-                elif point == pointB:
-                    if (lenPointB < lenPointA and
-                        lenPointB < lenPointC and
-                        lenPointB < lenPointD):
-                        return True
-                    else:
-                        return False
-
-                elif point == pointC:
-                    if (lenPointC < lenPointA and
-                        lenPointC < lenPointB and
-                        lenPointC < lenPointD):
-                        return True
-                    else:
-                        return False
-
-                elif point == pointD:
-                    if (lenPointD < lenPointA and
-                        lenPointD < lenPointB and
-                        lenPointD < lenPointC):
-                        return True
-                    else:
-                        return False
-
-                else:
-                    raise CustomError("Error: Point arg does not match any defined point")
-
-
             # If hitting the right side
-            if (isClosestPoint(pointB) and
-                self.vel.x < 0 and
-                self.pos.x <= sprite.pos.x + (sprite.hitbox.width + self.hitbox.width) // 2):
+            if triangleCollide(self, sprite) == EAST:
                 self.vel.x = 0
-                self.pos.x = sprite.pos.x + (sprite.hitbox.width + self.hitbox.width) // 2
+                self.pos.x = sprite.pos.x + width
 
             # Hitting bottom side
-            if (isClosestPoint(pointA) and
-                self.vel.y < 0 and
-                self.pos.y <= sprite.pos.y + (sprite.hitbox.height + self.hitbox.height) // 2):
+            if triangleCollide(self, sprite) == SOUTH:
                 self.vel.y = 0
-                self.pos.y = sprite.pos.y + (sprite.hitbox.height + self.hitbox.height) // 2
+                self.pos.y = sprite.pos.y + height
 
             # Hitting left side
-            if (isClosestPoint(pointD) and
-                self.vel.x > 0 and
-                self.pos.x >= sprite.pos.x - (sprite.hitbox.width + self.hitbox.width) // 2):
+            if triangleCollide(self, sprite) == WEST:
                 self.vel.x = 0
-                self.pos.x = sprite.pos.x - sprite.hitbox.width // 2 - self.hitbox.width // 2
+                self.pos.x = sprite.pos.x - width
 
             # Hitting top side
-            if (isClosestPoint(pointC) and
-                self.vel.y > 0 and
-                self.pos.y >= sprite.pos.y - (sprite.hitbox.width + self.hitbox.width) // 2):
+            if triangleCollide(self, sprite) == NORTH:
                 self.vel.y = 0
-                self.pos.y = sprite.pos.y - sprite.hitbox.height // 2 - self.hitbox.height // 2
+                self.pos.y = sprite.pos.y - height
 
     def teleport(self, portalIn) -> None:
+        """Teleports a sprite from one portal to another
+        
+        ### Arguments
+            - portalIn (``Portal``): The portal the sprite is entering
+        """        
         portalOut: ActorBase = getOtherPortal(portalIn)
-
         width = (portalOut.hitbox.width + self.hitbox.width) // 2
         height = (portalOut.hitbox.height + self.hitbox.height) // 2
+        
+        # Makes sure that sprites dont repeatedly get thrown back into the portals b/c of room velocity
+        room = self.getRoom()
+        velAdjust: vec = room.vel.copy()
 
         if portalIn.facing == SOUTH:
             distOffset = copy.copy(self.pos.x) - copy.copy(portalIn.pos.x)
             if portalOut.facing == SOUTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y + height
+                self.pos.x = portalOut.pos.x - distOffset
+                self.pos.y = portalOut.pos.y + height + abs(velAdjust.y)
+                self.cVel = self.cVel.rotate(180)
                 self.vel = self.vel.rotate(180)
             
             if portalOut.facing == EAST:
-                self.pos.x = portalOut.pos.x + width
-                self.pos.y = portalOut.pos.y + distOffset
+                self.pos.x = portalOut.pos.x + width + abs(velAdjust.x)
+                self.pos.y = portalOut.pos.y - distOffset
+                self.cVel = self.cVel.rotate(90)
                 self.vel = self.vel.rotate(90)
             
             if portalOut.facing == NORTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y - height
+                self.pos.x = portalOut.pos.x + distOffset 
+                self.pos.y = portalOut.pos.y - height - abs(velAdjust.y)
             
             if portalOut.facing == WEST:
-                self.pos.x = portalOut.pos.x - width
+                self.pos.x = portalOut.pos.x - width - abs(velAdjust.x)
                 self.pos.y = portalOut.pos.y + distOffset
                 self.vel = self.vel.rotate(270)
+                self.cVel = self.cVel.rotate(270)
 
         if portalIn.facing == EAST:
             distOffset = copy.copy(self.pos.y) - copy.copy(portalIn.pos.y)
             if portalOut.facing == SOUTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y + height
+                self.pos.x = portalOut.pos.x - distOffset
+                self.pos.y = portalOut.pos.y + height + abs(velAdjust.y)
+                self.cVel = self.cVel.rotate(270)
                 self.vel = self.vel.rotate(270)
                 
             if portalOut.facing == EAST:
-                self.pos.x = portalOut.pos.x + width
-                self.pos.y = portalOut.pos.y + distOffset
+                self.pos.x = portalOut.pos.x + width + abs(velAdjust.x)
+                self.pos.y = portalOut.pos.y - distOffset
+                self.cVel = self.cVel.rotate(180)
                 self.vel = self.vel.rotate(180)
 
             if portalOut.facing == NORTH:
                 self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y - height
+                self.pos.y = portalOut.pos.y - height - abs(velAdjust.y)
+                self.cVel = self.cVel.rotate(90)
                 self.vel = self.vel.rotate(90)
 
             if portalOut.facing == WEST:
-                self.pos.x = portalOut.pos.x - width
+                self.pos.x = portalOut.pos.x - width - abs(velAdjust.x)
                 self.pos.y = portalOut.pos.y + distOffset
 
         if portalIn.facing == NORTH:
             distOffset = copy.copy(self.pos.x) - copy.copy(portalIn.pos.x)
             if portalOut.facing == SOUTH:
                 self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y + height
+                self.pos.y = portalOut.pos.y + height + abs(velAdjust.y)
             
             if portalOut.facing == EAST:
-                self.pos.x = portalOut.pos.x + width
+                self.pos.x = portalOut.pos.x + width + abs(velAdjust.x)
                 self.pos.y = portalOut.pos.y + distOffset
+                self.cVel = self.cVel.rotate(270)
                 self.vel = self.vel.rotate(270)
             
             if portalOut.facing == NORTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y - height
+                self.pos.x = portalOut.pos.x - distOffset
+                self.pos.y = portalOut.pos.y - height - abs(velAdjust.y)
+                self.cVel = self.cVel.rotate(180)
                 self.vel = self.vel.rotate(180)
             
             if portalOut.facing == WEST:
-                self.pos.x = portalOut.pos.x - width
-                self.pos.y = portalOut.pos.y + distOffset
+                self.pos.x = portalOut.pos.x - width - abs(velAdjust.x)
+                self.pos.y = portalOut.pos.y - distOffset
+                self.cVel = self.cVel.rotate(90)
                 self.vel = self.vel.rotate(90)
 
         if portalIn.facing == WEST:
             distOffset = copy.copy(self.pos.y) - copy.copy(portalIn.pos.y)
             if portalOut.facing == SOUTH:
                 self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y + height
+                self.pos.y = portalOut.pos.y + height + abs(velAdjust.y)
+                self.cVel = self.cVel.rotate(90)
                 self.vel = self.vel.rotate(90)
             
             if portalOut.facing == EAST:
-                self.pos.x = portalOut.pos.x + width
+                self.pos.x = portalOut.pos.x + width + abs(velAdjust.x)
                 self.pos.y = portalOut.pos.y + distOffset
             
             if portalOut.facing == NORTH:
-                self.pos.x = portalOut.pos.x + distOffset
-                self.pos.y = portalOut.pos.y - height
+                self.pos.x = portalOut.pos.x - distOffset
+                self.pos.y = portalOut.pos.y - height - abs(velAdjust.y)
+                self.cVel = self.cVel.rotate(270)
                 self.vel = self.vel.rotate(270)
             
             if portalOut.facing == WEST:
-                self.pos.x = portalOut.pos.x - width
-                self.pos.y = portalOut.pos.y + distOffset
+                self.pos.x = portalOut.pos.x - width - abs(velAdjust.x)
+                self.pos.y = portalOut.pos.y - distOffset
+                self.cVel = self.cVel.rotate(180)
                 self.vel = self.vel.rotate(180)
 
 # ----------------------------------- Rooms ---------------------------------- #
+    def getRoom(self) -> pygame.sprite.AbstractGroup:
+        """Returns the room object being used
+        
+        ### Returns
+            - ``pygame.sprite.AbstractGroup``: The room object group
+        """        
+        return all_rooms[0]
+
     def changeRoom(self, direction: str):
         if direction == SOUTH:
             self.pos.y -= WINHEIGHT
@@ -365,3 +318,7 @@ class AbstractBase(pygame.sprite.AbstractGroup):
         """         
         for sprite in sprites:
             super().add(sprite)
+
+
+if __name__ == '__main__':
+    os.system('python main.py')

@@ -15,8 +15,6 @@ class EnemyBase(ActorBase):
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
 
-        self.isGrappled = False
-
         self.isShooting = False
 
         #-------------------- In-game Stats --------------------#
@@ -54,7 +52,7 @@ class StandardGrunt(EnemyBase):
             - posY (``int``): The y-position to spawn at
         """         
         super().__init__()
-        self.show(LAYER['enemy_layer'])
+        self.show(LAYER['enemy'])
         all_enemies.add(self)
 
         self.lastRelocate = time.time()
@@ -70,7 +68,7 @@ class StandardGrunt(EnemyBase):
         self.maxHp = 15
         initStats(self, 15, 10, 10, 40, 0.4)
 
-    def movement(self, canShoot: bool):
+    def movement(self, canShoot: bool = True):
         if self.canUpdate and self.hp > 0:
             if getTimeDiff(self.lastRelocate) > rand.uniform(2.5, 5.0):
                 self.randPos.x = rand.randint(self.image.get_width() + 64, WINWIDTH - self.image.get_width() - 64)
@@ -85,43 +83,47 @@ class StandardGrunt(EnemyBase):
             self.accelMovement()
 
     def getAccel(self) -> pygame.math.Vector2:
+        room = self.getRoom()
         finalAccel = vec(0, 0)
+
+        finalAccel += room.getAccel()
+
         if self.pos.x != self.randPos.x or self.pos.y != self.randPos.y:
             if self.pos.x < self.randPos.x - self.hitbox.width // 2:
                 finalAccel.x += self.cAccel
-            elif self.pos.x > self.randPos.x + self.hitbox.width // 2:
+            if self.pos.x > self.randPos.x + self.hitbox.width // 2:
                 finalAccel.x -= self.cAccel
-            else:
-                pass
 
             if self.pos.y < self.randPos.y - self.hitbox.height // 2:
                 finalAccel.y += self.cAccel
-            elif self.pos.y > self.randPos.y + self.hitbox.height // 2:
+            if self.pos.y > self.randPos.y + self.hitbox.height // 2:
                 finalAccel.y -= self.cAccel
-            else:
-                pass
 
         return finalAccel
 
-    def shoot(self, target, vel, shoot_time):
-        if getTimeDiff(self.lastShot) > shoot_time:
+    def shoot(self, target, vel, shootTime):
+        if getTimeDiff(self.lastShot) > shootTime:
             self.isShooting = True
             try:
-                angle_to_target = getAngleToSprite(self, target)
+                angle = getAngleToSprite(self, target)
             except:
-                angle_to_target = 0
+                angle = 0
 
-            vel_x = vel * -sin(rad(angle_to_target))
-            vel_y = vel * -cos(rad(angle_to_target))
+            vel_x = vel * -sin(rad(angle))
+            vel_y = vel * -cos(rad(angle))
 
-            all_projs.add(EnemyStdBullet(self, self.pos.x - (21 * cos(rad(angle_to_target))) - (30 * sin(rad(angle_to_target))), self.pos.y + (21 * sin(rad(angle_to_target))) - (30 * cos(rad(angle_to_target))), vel_x, vel_y))
+            all_projs.add(EnemyStdBullet(self, self.pos.x - (21 * cos(rad(angle))) - (30 * sin(rad(angle))), self.pos.y + (21 * sin(rad(angle))) - (30 * cos(rad(angle))), vel_x, vel_y))
             self.lastShot = time.time()
+
+    def kill(self):
+        self.healthBar.kill()
+        super().kill()
 
     def update(self):
         if self.canUpdate and self.visible and self.hp > 0:
             self.collideCheck(all_players, all_walls)
-            self.movement(True)
-            
+            # self.movement()
+
             # Animation
             if getTimeDiff(self.lastFrame) > ANIMTIME:
                 if self.isShooting == True:
@@ -147,7 +149,7 @@ class StandardGrunt(EnemyBase):
 class OctoGrunt(EnemyBase):
     def __init__(self, posX, posY):
         super().__init__()
-        self.show(LAYER['enemy_layer'])
+        self.show(LAYER['enemy'])
         all_enemies.add(self)
 
         self.lastRelocate = time.time()
@@ -229,10 +231,10 @@ class OctoGrunt(EnemyBase):
                     self.isShooting = False
                 self.lastFrame = time.time()
             self.image = self.images[self.index]
-            self.original_image = self.original_images[self.index]
+            self.origImage = self.origImages[self.index]
             
             # Animation rotation
-            self.image = pygame.transform.rotate(self.original_image, int(getAngleToSprite(self, getClosestPlayer(self))))
+            self.image = pygame.transform.rotate(self.origImage, int(getAngleToSprite(self, getClosestPlayer(self))))
             self.rect = self.image.get_rect(center = self.pos)
         
         if self.hp <= 0:

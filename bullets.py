@@ -1,4 +1,5 @@
 import pygame
+import os
 
 from class_bases import *
 from portals import *
@@ -12,32 +13,56 @@ class BulletBase(ActorBase):
         """        
         super().__init__()
         self.ricCount = 1
+        self.startTime = time.time()
+
+    def getVel(self) -> pygame.math.Vector2:
+        room = self.getRoom()
+        finalVel = self.cVel + room.vel
+
+        return finalVel
 
     def land(self, target: pygame.sprite.Sprite):
         self.hit = target
-        self.sideHit = trueCollideSideCheck(self, target)
+        self.sideHit = triangleCollide(self, self.hit)
         self.ricCount -= 1
 
+        # Bullet explodes
         if self.ricCount <= 0 or self.hit in all_enemies:
-            all_explosions.add(ProjExplode(self))
+            if self.sideHit == SOUTH:
+                boomPosX = self.pos.x
+                boomPosY = self.hit.pos.y + self.hit.hitbox.height // 2
+            if self.sideHit == EAST:
+                boomPosX = self.hit.pos.x + self.hit.hitbox.width // 2
+                boomPosY = self.pos.y
+            if self.sideHit == NORTH:
+                boomPosX = self.pos.x
+                boomPosY = self.hit.pos.y - self.hit.hitbox.height // 2
+            if self.sideHit == WEST:
+                boomPosX = self.hit.pos.x - self.hit.hitbox.width // 2
+                boomPosY = self.pos.y
+
+            all_explosions.add(ProjExplode(self, boomPosX, boomPosY))
             self.kill()
         
+        # Bullet ricochets
         else:
-            velCopy = self.vel.copy()
+            room = self.getRoom()
+            roomVel = room.vel.copy()
+
             if self.sideHit == SOUTH:
-                self.pos.y = self.hit.pos.y + self.hit.hitbox.height // 2 + self.hitbox.height // 2
+                self.pos.y = self.hit.pos.y + self.hit.hitbox.height // 2 + self.hitbox.height // 2 + abs(roomVel.y) + 1
                 self.vel.y = -self.vel.y
 
             elif self.sideHit == EAST:
-                self.pos.x = self.hit.pos.x + self.hit.hitbox.width // 2 + self.hitbox.width // 2
+                self.pos.x = self.hit.pos.x + self.hit.hitbox.width // 2 + self.hitbox.width // 2 + abs(roomVel.x) + 1
                 self.vel.x = -self.vel.x
 
             elif self.sideHit == NORTH:
-                self.pos.y = self.hit.pos.y - self.hit.hitbox.height // 2 - self.hitbox.height // 2
-                self.vel.y = -velCopy.y
+                self.pos.y = self.hit.pos.y - self.hit.hitbox.height // 2 - self.hitbox.height // 2 - abs(roomVel.y) - 1
+                self.vel.y = -self.vel.y
 
             elif self.sideHit == WEST:
-                self.pos.x = self.hit.pos.x - self.hit.hitbox.width // 2 - self.hitbox.width // 2
+                self.pos.x = self.hit.pos.x - self.hit.hitbox.width // 2 - self.hitbox.width // 2 - abs(roomVel.x) - 1
                 self.vel.x = -self.vel.x
 
             self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
@@ -105,62 +130,19 @@ class BulletBase(ActorBase):
                 receiver.lastHit = time.time()
 
 
-class PlayerBulletBase(BulletBase):
-    def __init__(self):
-        """The base class for all projectiles fired by players
-        """        
-        super().__init__()
-
-    def bindProj(self):
-        if self.canUpdate:
-            self.projCollide(all_enemies, True)
-            self.projCollide(all_walls, False)
-            self.projCollide(all_portals, False)
-            
-            if (
-                self.pos.x < WINWIDTH and 
-                self.pos.x > 0 and
-                self.pos.y < WINHEIGHT and 
-                self.pos.y > 0
-            ):
-                self.velMovement()
-            else:
-                self.kill()
-
-
-class EnemyBulletBase(BulletBase):
-    def __init__(self):
-        """The base class for all projectiles fired by enemies
-        """        
-        super().__init__()
-
-    def bindProj(self):
-        if self.canUpdate:
-            if (
-                self.pos.x < WINWIDTH and 
-                self.pos.x > 0 and
-                self.pos.y < WINHEIGHT and 
-                self.pos.y > 0
-            ):
-                self.velMovement()
-            else:
-                self.kill()
-
-            self.projCollide(all_players, True)
-            self.projCollide(all_walls, False)
-            self.projCollide(all_portals, False)
-
-
 class ProjExplode(ActorBase):
-    def __init__(self, proj: BulletBase):
+    def __init__(self, proj: BulletBase, posX: float, posY: float):
         """An explosion that is displayed on-screen when a projectile hits something
         
         ### Arguments
             - proj (``BulletBase``): The projectile that is exploding
         """            
         super().__init__()
-        self.show(LAYER['explosion_layer'])
+        self.show(LAYER['explosion'])
         self.owner = proj
+
+        self.pos = vec((posX, posY))
+        self.posOffset = vec(self.pos.x - self.owner.hit.pos.x, self.pos.y - self.owner.hit.pos.y)
 
         if isinstance(proj, PlayerStdBullet) or isinstance(proj, EnemyStdBullet):
             self.setImages('sprites/bullets/bullets.png', 32, 32, 8, 4, 0, 1)
@@ -168,30 +150,22 @@ class ProjExplode(ActorBase):
         elif isinstance(proj, PortalBullet):
             self.setImages('sprites/bullets/bullets.png', 32, 32, 8, 4, 0, 1)
 
+        elif isinstance(proj, NewGrappleBullet):
+            self.setImages('sprites/bullets/bullets.png', 32, 32, 8, 4, 0, 1)
+
         self.renderImages()
-        self.rect = self.owner.rect
-        self.hitbox = self.owner.hitbox
-        
+        self.setRects(self.pos.x, self.pos.y, 32, 32, 32, 32)
         self.randRotation = rand.randint(1, 360)
 
-        # Allows explosion to spawn on edge of object and not inside it
-        if self.owner.sideHit == SOUTH:
-            self.pos.x = self.owner.pos.x
-            self.pos.y = self.owner.hit.pos.y + self.owner.hit.hitbox.height // 2
+    def movement(self):
+        self.rect.center = self.pos
+        self.hitbox.center = self.pos
 
-        if self.owner.sideHit == EAST:
-            self.pos.x = self.owner.hit.pos.x + self.owner.hit.hitbox.width // 2
-            self.pos.y = self.owner.pos.y
-
-        if self.owner.sideHit == NORTH:
-            self.pos.x = self.owner.pos.x
-            self.pos.y = self.owner.hit.pos.y - self.owner.hit.hitbox.height // 2
-
-        if self.owner.sideHit == WEST:
-            self.pos.x = self.owner.hit.pos.x - self.owner.hit.hitbox.width // 2
-            self.pos.y = self.owner.pos.y
+        self.pos = self.owner.hit.hitbox.center + self.posOffset
 
     def update(self):
+        self.movement()
+
         if isinstance(self.owner, PlayerStdBullet) or isinstance(self.owner, EnemyStdBullet):
             if getTimeDiff(self.lastFrame) >= SPF:
                 if self.index > 3:
@@ -209,9 +183,18 @@ class ProjExplode(ActorBase):
                     self.renderImages()
                     self.index += 1
                 self.lastFrame = time.time()
+
+        elif isinstance(self.owner, NewGrappleBullet):
+            if getTimeDiff(self.lastFrame) >= SPF:
+                if self.index > 3:
+                    self.kill()
+                else:
+                    self.renderImages()
+                    self.index += 1
+                self.lastFrame = time.time()
         
         # Give explosion its random rotation
-        self.image = pygame.transform.rotate(self.original_image, self.randRotation)
+        self.image = pygame.transform.rotate(self.origImage, self.randRotation)
         self.rect.center = self.pos
         self.hitbox.center = self.pos
 
@@ -222,7 +205,7 @@ class ProjExplode(ActorBase):
 # ============================================================================ #
 #                                Player Bullets                                #
 # ============================================================================ #
-class PlayerStdBullet(PlayerBulletBase):
+class PlayerStdBullet(BulletBase):
     def __init__(self, shotFrom, posX: int, posY: int, velX: int, velY: int, bounceCount: int = 1):
         """A projectile fired by a player that moves at a constant velocity
 
@@ -234,13 +217,14 @@ class PlayerStdBullet(PlayerBulletBase):
             - velY (``int``): The y-axis component of the bullet's velocity
         """        
         super().__init__()
-        self.show(LAYER['proj_layer'])
+        self.show(LAYER['proj'])
         self.damage = PROJDMG[PROJ_STD]
 
         self.shotFrom = shotFrom
 
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
+        self.cVel = self.vel
         self.ricCount = bounceCount
 
         self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 1)
@@ -249,14 +233,19 @@ class PlayerStdBullet(PlayerBulletBase):
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
     
     def movement(self):
-        self.pos.x += self.vel.x
-        self.pos.y += self.vel.y
+        if self.canUpdate:
+            self.projCollide(all_enemies, True)
+            self.projCollide(all_walls, False)
+            self.projCollide(all_portals, False)
 
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+            if getTimeDiff(self.startTime) <= 10:
+                self.vel = self.getVel()
+                self.velMovement(True)
+            else:
+                self.kill()
 
     def update(self):
-        self.bindProj()
+        self.movement()
 
     def __repr__(self):
         return f'PlayerStdBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.ricCount})'
@@ -265,12 +254,13 @@ class PlayerStdBullet(PlayerBulletBase):
 class PortalBullet(BulletBase):
     def __init__(self, shotFrom, posX, posY, velX, velY): 
         super().__init__()
-        self.show(LAYER['proj_layer'])
+        self.show(LAYER['proj'])
         
         self.shotFrom = shotFrom
 
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
+        self.cVel = self.vel
 
         self.hitbox_adjust = vec(0, 0)
         self.damage = PROJDMG[PROJ_PORTAL]
@@ -281,7 +271,7 @@ class PortalBullet(BulletBase):
         # Rotate sprite to trajectory
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
 
-    def projCollide(self, spriteGroup, canHurt):
+    def projCollide(self, spriteGroup, canHurt: bool):
         for collidingSprite in spriteGroup:
             if not self.hitbox.colliderect(collidingSprite.hitbox):
                 continue
@@ -300,53 +290,44 @@ class PortalBullet(BulletBase):
                         for portal in all_portals:
                             if self.hitbox.colliderect(portal.hitbox):
                                 self.teleport(portal)
-                        return
-                    
-                    elif len(all_portals) < 2:
-                        self.land(collidingSprite)
-                        return
 
                 elif spriteGroup == all_walls:
                     self.land(collidingSprite)
-                    
-                    side = wallSideCheck(collidingSprite, self)
-                    if side == SOUTH:
-                        all_portals.add(Portal(self, self.pos.x, collidingSprite.pos.y + (collidingSprite.image.get_height() // 2), side))
-                        portalCountCheck()
-                    if side == NORTH:
-                        all_portals.add(Portal(self, self.pos.x, collidingSprite.pos.y - (collidingSprite.image.get_height() // 2), side))
-                        portalCountCheck()
-                    if side == EAST:
-                        all_portals.add(Portal(self, collidingSprite.pos.x + (collidingSprite.image.get_width() // 2), self.pos.y, side))
-                        portalCountCheck()
-                    if side == WEST:
-                        all_portals.add(Portal(self, collidingSprite.pos.x - (collidingSprite.image.get_width() // 2), self.pos.y, side))
-                        portalCountCheck()
+                    self.__spawnPortal(collidingSprite)
                 
                 else:
                     self.land(collidingSprite)
 
-    def bindProj(self):
-        if self.canUpdate:
-            if (
-                self.pos.x < WINWIDTH and 
-                self.pos.x > 0 and
-                self.pos.y < WINHEIGHT and 
-                self.pos.y > 0
-            ):
-                self.movement()
-            else:
-                self.kill()
+    def __spawnPortal(self, surface: ActorBase):
+        """Spawns a portal on the surface that the portal bullet hit.
+        
+        ### Arguments
+            - wall (``ActorBase``): The sprite that the portal bullet hit
+        """        
+        side = wallSideCheck(surface, self)
+        if side == SOUTH:
+            all_portals.add(Portal(self, self.pos.x, surface.pos.y + surface.hitbox.height // 2, side))
+            portalCountCheck()
+        if side == NORTH:
+            all_portals.add(Portal(self, self.pos.x, surface.pos.y - surface.hitbox.height // 2, side))
+            portalCountCheck()
+        if side == EAST:
+            all_portals.add(Portal(self, surface.pos.x + surface.hitbox.width // 2, self.pos.y, side))
+            portalCountCheck()
+        if side == WEST:
+            all_portals.add(Portal(self, surface.pos.x - surface.hitbox.width // 2, self.pos.y, side))
+            portalCountCheck()
 
+    def movement(self):
+        if self.canUpdate:
             self.projCollide(all_walls, False)
             self.projCollide(all_portals, False)
 
-    def movement(self):
-        self.pos.x += self.vel.x
-        self.pos.y += self.vel.y
-
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+            if getTimeDiff(self.startTime) <= 10:
+                self.vel = self.getVel()
+                self.velMovement(False)
+            else:
+                self.kill()
 
     def update(self):
         if getTimeDiff(self.lastFrame) > ANIMTIME:
@@ -356,40 +337,30 @@ class PortalBullet(BulletBase):
             self.lastFrame = time.time()
         
         self.rotateImage(int(getVecAngle(self.vel.x, self.vel.y)))
-        self.bindProj()
+        self.movement()
 
     def __repr__(self):
         return f'PortalBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.ricCount})'
 
 
-class GrappleBullet(BulletBase):
-    def __init__(self, shotFrom, posX, posY, velX, velY):
+class NewGrappleBullet(BulletBase):
+    def __init__(self, shotFrom, posX: float, posY: float, velX: float, velY: float):
         super().__init__()
         self.show(LAYER['grapple'])
-        all_projs.add(self)
-
-        self.shotFrom = shotFrom
         self.damage = PROJDMG[PROJ_GRAPPLE]
+        
+        self.shotFrom = shotFrom
 
         self.isHooked = False
-        self.grappledTo: pygame.sprite.Sprite = None
+        self.grappledTo = None
+        self.posOffset = vec(0, 0)
         
         self.returning = False
-        self.hasExitedPortal = False
-
-        self.chain1: Beam = Beam(self.shotFrom, self)
-        self.chain2: Beam = None
-
-        self.canTp = True
-        self.tpPoints = []
-
-        self.enterPoint: InvisObj = None; self.enterPointFace = None
-        self.exitPoint: InvisObj = None; self.exitPointFace = None
 
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
         self.accel = vec(0, 0)
-        self.cAccel = 0.7
+        self.cAccel = 1.5
 
         self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 2, 9)
         self.setRects(0, 0, 32, 32, 16, 16)
@@ -400,22 +371,7 @@ class GrappleBullet(BulletBase):
         self.grappledTo = grappledTo
         if self.grappledTo != None:
             self.grappledTo.isGrappled = True
-
-    def shatter(self):
-        """Destroys the grappling hook"""   
-        self.shotFrom.grapple = None
-        self.returning = False
-
-        self.chain1.kill()
-        if isinstance(self.chain2, Beam):
-            self.chain2.kill()
-
-        if isinstance(self.enterPoint, InvisObj):
-            self.enterPoint.kill()
-        if isinstance(self.exitPoint, InvisObj):
-            self.exitPoint.kill()
-
-        self.kill()
+            self.posOffset = vec(self.pos.x - self.grappledTo.pos.x, self.pos.y - self.grappledTo.pos.y)
 
     def projCollide(self, spriteGroup, canHurt):
         for collidingSprite in spriteGroup:
@@ -431,84 +387,31 @@ class GrappleBullet(BulletBase):
 
             elif not canHurt:
                 if spriteGroup == all_portals:
-                    if len(all_portals) == 2 and self.canTp:
-                        self.tpPoints.append(copy.copy(self.pos))
+                    if len(all_portals) == 2:
                         for portal in all_portals:
                             if self.hitbox.colliderect(portal.hitbox):
                                 self.teleport(portal)
-                                self.tpPoints.append(copy.copy(self.pos))
-                                self.canTp = False
-                                
-                                # Creating invisible objects at teleport points so grapple can return through portals
-                                otherPortal: Portal = getOtherPortal(portal)
-                                self.enterPointFace = portal.facing
-                                self.exitPointFace = otherPortal.facing
-
-                                ret1Pos: pygame.math.Vector2 = copy.copy(self.tpPoints[0])
-                                ret2Pos: pygame.math.Vector2 = copy.copy(self.tpPoints[1])
-                                self.enterPoint = InvisObj(ret1Pos.x, ret1Pos.y, 8, 8)
-                                self.exitPoint = InvisObj(ret2Pos.x, ret2Pos.y, 8, 8)
-                                
-                                # Correcting chains
-                                self.chain1.kill()
-                                self.chain1: Beam = Beam(self.shotFrom, self.enterPoint)
-                                self.chain2: Beam = Beam(otherPortal, self)
+                                self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
                         return
-                    
-                elif not self.canTp and spriteGroup == all_portals:
-                    pass
 
                 else:
                     self.land(collidingSprite)
 
-    def bindProj(self):
-        if self.canUpdate:
-            if not self.isHooked:
-                self.projCollide(all_enemies, True)
-                self.projCollide(all_movable, False)
-                self.projCollide(all_portals, False)
-                self.projCollide(all_walls, False)
-                self.projCollide(all_drops, False)
-
-            self.movement()
-            if (
-                self.pos.x > WINWIDTH or 
-                self.pos.x < 0 or
-                self.pos.y > WINHEIGHT or 
-                self.pos.y < 0
-            ):
-                self.land(None)
-
     def sendBack(self):
-        """Sends the grappling hook back to the player"""
-        if len(self.tpPoints) == 0:  
-            angle = getAngleToSprite(self, self.shotFrom)
-            self.accel.x = self.cAccel * -sin(rad(angle))
-            self.accel.y = self.cAccel * -cos(rad(angle))
+        angle = getAngleToSprite(self, self.shotFrom)
+        room = self.getRoom()
+        roomAccel = room.getAccel()
+        self.accel.x = self.cAccel * -sin(rad(angle)) + roomAccel.x
+        self.accel.y = self.cAccel * -cos(rad(angle)) + roomAccel.y
 
-            if self.hitbox.colliderect(self.shotFrom.rect):
-                self.shatter()
-
-        if len(self.tpPoints) > 0:
-            if not self.hasExitedPortal:
-                angle = getAngleToSprite(self, self.exitPoint)
-                self.accel.x = self.cAccel * -sin(rad(angle))
-                self.accel.y = self.cAccel * -cos(rad(angle))
-
-                if self.hitbox.colliderect(self.exitPoint.hitbox):
-                    self.pos = self.enterPoint.pos
-                    self.vel = getTpVel(self.exitPointFace, self.enterPointFace, self)
-                    self.hasExitedPortal = True
-                    self.chain2.kill()
-            
-            elif self.hasExitedPortal:
-                angle = getAngleToSprite(self, self.shotFrom)
-                self.accel.x = self.cAccel * -sin(rad(angle))
-                self.accel.y = self.cAccel * -cos(rad(angle))
-                if self.hitbox.colliderect(self.shotFrom.rect):
-                    self.shatter()
-
+        if self.hitbox.colliderect(self.shotFrom.rect):
+            self.kill()
+        
         self.accelMovement()
+
+        if self.grappledTo != None and self.grappledTo not in all_portals:
+            if self.grappledTo not in all_walls:
+                self.grappledTo.pos = self.pos
 
     def movement(self):
         if not self.returning:
@@ -522,72 +425,45 @@ class GrappleBullet(BulletBase):
                     self.pos.y = self.grappledTo.pos.y
                 
                 elif self.grappledTo != None and self.grappledTo in all_walls:
-                    side = wallSideCheck(self.grappledTo, self)
-                    if side == SOUTH:
-                        self.pos.x = self.pos.x
-                        self.pos.y = self.grappledTo.pos.y + (self.grappledTo.rect.height // 2)
-                    if side == NORTH:
-                        self.pos.x = self.pos.x
-                        self.pos.y = self.grappledTo.pos.y - (self.grappledTo.rect.height // 2)
-                    if side == EAST:
-                        self.pos.x = self.grappledTo.pos.x + (self.grappledTo.rect.width // 2)
-                        self.pos.y = self.pos.y
-                    if side == WEST:
-                        self.pos.x = self.grappledTo.pos.x - (self.grappledTo.rect.width // 2)
-                        self.pos.y = self.pos.y
+                    self.pos = self.grappledTo.pos + self.posOffset
                 
                 else:
                     self.pos = self.pos
-
-        if self.returning:
-            if self.grappledTo == None:
-                self.sendBack()
-            
-            # Grapple will move if attached to an enemy or item
-            if self.grappledTo != None and self.grappledTo not in all_walls:
-                self.sendBack()
-                self.grappledTo.pos.x = self.pos.x
-                self.grappledTo.pos.y = self.pos.y
-
-            if self.grappledTo != None and self.grappledTo in all_walls:
-                if self.shotFrom.hitbox.colliderect(self.hitbox):
-                    self.shatter()
-                for wall in all_walls:
-                    if self.shotFrom.hitbox.colliderect(wall.hitbox):
-                        self.shatter()
+        
+        elif self.returning:
+            self.sendBack()
 
         self.rect.center = self.pos
         self.hitbox.center = self.pos
 
+    def bindProj(self):
+        if self.canUpdate:
+            if not self.isHooked:
+                self.projCollide(all_enemies, True)
+                self.projCollide(all_movable, False)
+                self.projCollide(all_portals, False)
+                self.projCollide(all_walls, False)
+                self.projCollide(all_drops, False)
+
+            self.movement()
+
     def update(self):
-        if not self.isHooked and not self.returning:
-            self.index = 0
-            self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
-        else:
-            self.index = 1
-            self.rotateImage(getAngleToSprite(self, self.shotFrom) + 180)
-        
         self.bindProj()
-
-    def __str__(self):
-        return f'GrappleBullet at {self.pos}\nshot from: {self.shotFrom}\nvel: {self.vel}\naccel: {self.accel}\nis hooked: {self.isHooked}'
-
-    def __repr__(self):
-        return f'GrappleBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.accel}, {self.isHooked}, {self.isGrappled}, {self.grappledTo}, {self.returning})'
 
 
 # ============================================================================ #
 #                                 Enemy Bullets                                #
 # ============================================================================ #
-class EnemyStdBullet(EnemyBulletBase):
+class EnemyStdBullet(BulletBase):
     def __init__(self, shotFrom, posX, posY, velX, velY):
         super().__init__()
-        self.show(LAYER['proj_layer'])
+        self.show(LAYER['proj'])
 
         self.shotFrom = shotFrom
 
         self.pos = vec((posX, posY))
         self.vel = vec(velX, velY)
+        self.cVel = self.vel
 
         self.damage = PROJDMG[PROJ_STD]
 
@@ -597,15 +473,26 @@ class EnemyStdBullet(EnemyBulletBase):
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
     
     def movement(self):
-        self.pos.x += self.vel.x
-        self.pos.y += self.vel.y
+        if getTimeDiff(self.startTime) <= 10:
+            self.vel = self.getVel()
+            self.velMovement(True)
+        else:
+            self.kill()
 
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+    def bindProj(self):
+        if self.canUpdate:
+            self.projCollide(all_players, True)
+            self.projCollide(all_walls, False)
+            self.projCollide(all_portals, False)
+
+            self.movement()
 
     def update(self):
-        self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
         self.bindProj()
 
     def __repr__(self):
         return f'EnemyStdBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.ricCount})'
+    
+
+if __name__ == '__main__':
+    os.system('python main.py')

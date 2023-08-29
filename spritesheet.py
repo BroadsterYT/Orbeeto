@@ -7,7 +7,7 @@ class Spritesheet(object):
         self.spritesheet = pygame.image.load(fileName).convert()
         self.columns = spritesPerRow
 
-    def get_images(self, width: int, height: int, imageCount: int, imageOffset: int = 0):
+    def getImages(self, width: int, height: int, imageCount: int, imageOffset: int = 0):
         imageList = []
         offset = vec(imageOffset % self.columns, imageOffset // self.columns)
         for i in range(0, imageCount):

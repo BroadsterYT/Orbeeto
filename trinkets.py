@@ -1,4 +1,5 @@
 import pygame
+import os
 
 from class_bases import *
 from tiles import TileBase
@@ -7,42 +8,46 @@ from tiles import TileBase
 class Box(ActorBase):
     def __init__(self, idValue, posX, posY):
         super().__init__()
-        self.show(LAYER['movable_layer'])
+        self.show(LAYER['trinket'])
         all_movable.add(self)
 
         self.idValue = idValue
 
         self.pos = vec((posX, posY))
-        self.cAccel = 0.35
+
+        room = self.getRoom()
+        self.cAccel = 0.8
         
         self.setImages("sprites/textures/box.png", 64, 64, 5, 1, 0, 0)
         self.setRects(0, 0, 64, 64, 64, 64, True)
 
     def movement(self):
-        self.accel = vec(0, 0)
-        if self.canUpdate and self.visible:
+        if self.canUpdate:
+            self.collideCheck(all_walls)
+
             self.accel = self.getAccel()
             self.accelMovement()
     
     def getAccel(self) -> pygame.math.Vector2:
+        room = self.getRoom()
         finalAccel = vec(0, 0)
+
+        finalAccel += room.getAccel()
+
         for a_player in all_players:
             if self.hitbox.colliderect(a_player.hitbox):
                 if collideSideCheck(self, a_player) == SOUTH:
-                    finalAccel.y -= self.cAccel
-                if collideSideCheck(self, a_player) == EAST:
-                    finalAccel.x -= self.cAccel
-                if collideSideCheck(self, a_player) == NORTH:
                     finalAccel.y += self.cAccel
-                if collideSideCheck(self, a_player) == WEST:
+                if collideSideCheck(self, a_player) == EAST:
                     finalAccel.x += self.cAccel
+                if collideSideCheck(self, a_player) == NORTH:
+                    finalAccel.y -= self.cAccel
+                if collideSideCheck(self, a_player) == WEST:
+                    finalAccel.x -= self.cAccel
         
         return finalAccel
 
     def update(self):
-        self.collideCheck(all_walls)
-        self.movement()
-
         # Teleporting
         for portal in all_portals:
             if self.hitbox.colliderect(portal.hitbox) and len(all_portals) == 2:
@@ -59,7 +64,7 @@ class Button(ActorBase):
             - blockPosY (``int``): _description_
         """        
         super().__init__()
-        self.show(LAYER['movable_layer'])
+        self.show(LAYER['trinket'])
         all_trinkets.add(self)
 
         self.activated = False
@@ -117,7 +122,7 @@ class LockedWall(TileBase):
             - blockHeight (``int``): The height of the wall in "tiles"
         """        
         super().__init__(sBlockPosX, sBlockPosY, blockWidth, blockHeight)
-        self.show(LAYER['wall_layer'])
+        self.show(LAYER['wall'])
         all_walls.add(self)
         all_trinkets.add(self)
         self.idValue = idValue
@@ -132,7 +137,7 @@ class LockedWall(TileBase):
         self.endPos = getTopLeftCoords(self.width, self.height, eBlockPosX * self.tileSize, eBlockPosY * self.tileSize)
 
         self.spritesheet = Spritesheet('sprites/tiles/wall.png', 1)
-        self.textures = self.spritesheet.get_images(16, 16, 1)
+        self.textures = self.spritesheet.getImages(16, 16, 1)
         self.index = 0
 
         self.texture = self.textures[self.index]
@@ -168,3 +173,7 @@ class LockedWall(TileBase):
 
     def __repr__(self):
         return f'LockedWall({self.idValue}, {self.pos}, {self.switch})'
+    
+
+if __name__ == '__main__':
+    os.system('python main.py')
