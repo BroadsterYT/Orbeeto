@@ -318,16 +318,22 @@ class Room(AbstractBase):
         all_rooms.append(self)
         self.room = vec((roomX, roomY))
         self.size = vec((1280, 720))
-        
+
+        self.player1: Player = Player()
+        self.posCopy = self.player1.pos.copy()
+        self.offset = vec(self.player1.pos.x - 608, self.player1.pos.y - WINHEIGHT // 2)
+
+        self.borderSouth = RoomBorder(0, self.size.y // 16, self.size.x // 16, 1)
+        self.borderEast = RoomBorder(WINWIDTH // 16, 0, 1, self.size.y // 16)
+        self.borderNorth = RoomBorder(0, -1, self.size.x // 16, 1)
+        self.borderWest = RoomBorder(-1, 0, 1, self.size.y // 16)
+        self.add(self.borderSouth, self.borderEast, self.borderNorth, self.borderWest)
+
         self.isScrollingX = True
         self.isScrollingY = True
 
         self.canSwitchX = True
         self.canSwitchY = True
-
-        self.player1: Player = Player()
-        self.posCopy = self.player1.pos.copy()
-        self.offset = vec(self.player1.pos.x - 608, self.player1.pos.y - WINHEIGHT // 2)
 
         self.recenteringX = False
         self.recenteringY = False
@@ -889,6 +895,40 @@ class Room(AbstractBase):
         self.add(self.borderSouth, self.borderEast, self.borderNorth, self.borderWest)
         print('borders created')
 
+    def __initRoom(self, roomSizeX, roomSizeY, canScrollX, canScrollY):
+        self.size = vec((roomSizeX, roomSizeY))
+
+        lenSouth = getDistToCoords(vec(0, self.player1.pos.y), vec(0, self.borderSouth.pos.y))
+        lenEast = getDistToCoords(vec(self.player1.pos.x, 0), vec(self.borderEast.pos.x, 0))
+        lenNorth = getDistToCoords(vec(0, self.player1.pos.y), vec(0, self.borderNorth.pos.y))
+        lenWest = getDistToCoords(vec(self.player1.pos.x, 0), vec(self.borderWest.pos.x, 0))
+
+        self.__setRoomBorders()
+        self.player1.vel = vec(0, 0)
+
+        if (lenSouth < lenEast and
+            lenSouth < lenNorth and
+            lenSouth < lenWest):
+            self.player1.pos.y = self.borderNorth.pos.y + self.borderNorth.hitbox.height // 2 + self.player1.hitbox.height // 2
+        
+        elif (lenEast < lenSouth and
+              lenEast < lenNorth and
+              lenEast < lenWest):
+            self.player1.pos.x = self.borderWest.pos.x + self.borderWest.hitbox.width // 2 + self.player1.hitbox.width // 2
+        
+        elif (lenNorth < lenSouth and
+              lenNorth < lenEast and
+              lenNorth < lenWest):
+            self.player1.pos.y = self.borderSouth.pos.y - self.borderSouth.hitbox.height // 2 - self.player1.hitbox.height // 2
+        
+        elif (lenWest < lenSouth and
+              lenWest < lenEast and
+              lenWest< lenNorth):
+            self.player1.pos.x = self.borderEast.pos.x - self.borderEast.hitbox.width // 2 - self.player1.hitbox.width // 2
+
+        self.isScrollingX = canScrollX
+        self.isScrollingY = canScrollY
+
     def layoutUpdate(self) -> None:
         """Updates the layout of the room"""        
         for sprite in self.sprites():
@@ -900,12 +940,8 @@ class Room(AbstractBase):
         
         # ------------------------------- Room Layouts ------------------------------- #
         if self.room == vec(0, 0):
-            self.size = vec((1280, 720))
-
-            self.isScrollingX = False
-            self.isScrollingY = False
+            self.__initRoom(WINWIDTH, WINHEIGHT, True, True)
             
-            self.__setRoomBorders()
             self.add(
                 Wall(0, 0, 8, 8),
                 Wall(0, 37, 8, 8),
@@ -926,16 +962,9 @@ class Room(AbstractBase):
                     )
                 )
 
-
         if self.room == vec(0, 1):
-            self.size = vec((1280, 720))
-            self.player1.vel = vec(0, 0)
-            self.player1.pos = vec(self.player1.pos.x, 600)
+            self.__initRoom(WINWIDTH, WINHEIGHT, True, True)
 
-            self.isScrollingX = True
-            self.isScrollingY = True
-            
-            self.__setRoomBorders()
             self.add(
                 Wall(72, 0, 8, 8),
                 Wall(72, 37, 8, 8),
