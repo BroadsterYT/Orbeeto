@@ -35,8 +35,7 @@ pygame.display.set_caption('Orbeeto')
 # ============================================================================ #
 class Player(ActorBase):
     def __init__(self):
-        """A player sprite that can move and shoot.
-        """        
+        """A player sprite that can move and shoot."""        
         super().__init__()
         all_players.add(self)
         self.show(LAYER['player'])
@@ -118,40 +117,31 @@ class Player(ActorBase):
         
         ### Arguments
             - direction (``str``): The direction of the new room the player is traveling to
-        """        
+        
+        ### Raises
+            - ``ValueError``: Raised if the direction is not `NORTH`, `SOUTH`, `EAST`, or `WEST`
+        """         
         if direction == SOUTH:
             mainroom.room.y -= 1
             mainroom.layoutUpdate()
-            # # self.pos.y -= WINHEIGHT
-            # groupChangeRooms(SOUTH, all_portals, all_drops)
-            pass
 
         elif direction == EAST:
             mainroom.room.x += 1
             mainroom.layoutUpdate()
-            # # self.pos.x -= WINWIDTH
-            # groupChangeRooms(EAST, all_portals, all_drops)
-            pass
 
         elif direction == NORTH:
             mainroom.room.y += 1
             mainroom.layoutUpdate()
-            # self.pos.y += WINHEIGHT
-            # groupChangeRooms(NORTH, all_portals, all_drops)
-            pass
         
         elif direction == WEST:
             mainroom.room.x -= 1
             mainroom.layoutUpdate()
-            # self.pos.x += WINWIDTH
-            # groupChangeRooms(WEST, all_portals, all_drops)
-            pass
 
-        killGroups(all_projs, all_explosions)
+        else:
+            raise ValueError(f'Error: {direction} is not a valid room-changing direction.')
 
-    def checkRoomChange(self):
-        """Checks if the player should change rooms
-        """        
+    def checkRoomChange(self) -> None:
+        """Checks if the player should change rooms"""        
         if self.hitbox.colliderect(self.room.borderSouth.hitbox):
             self.changeRoom(SOUTH)
         
@@ -211,32 +201,35 @@ class Player(ActorBase):
             return finalAccel
 
     def shoot(self):
-        """Shoots bullets
-        """
+        """Shoots bullets"""
         angle = rad(getAngleToMouse(self))
 
         velX = self.bulletVel * -sin(angle)
         velY = self.bulletVel * -cos(angle)
 
-        if (isInputHeld[1] and 
-            self.bulletType == PROJ_STD and 
-            getTimeDiff(self.lastShot) >= self.gunCooldown and
-            self.ammo > 0):
+        OFFSET = vec((21, 30))
 
-            OFFSET = vec((21, 30))
-            all_projs.add(
-                PlayerStdBullet(self,
-                    self.pos.x - (OFFSET.x * cos(angle)) - (OFFSET.y * sin(angle)),
-                    self.pos.y + (OFFSET.x * sin(angle)) - (OFFSET.y * cos(angle)),
-                    velX, velY,
-                ),
-                
-                PlayerStdBullet(self,
-                    self.pos.x + (OFFSET.x * cos(angle)) - (OFFSET.y * sin(angle)),
-                    self.pos.y - (OFFSET.x * sin(angle)) - (OFFSET.y * cos(angle)),
-                    velX, velY,
+        if (isInputHeld[1] and
+            self.ammo > 0 and
+            getTimeDiff(self.lastShot) >= self.gunCooldown):
+            if self.bulletType == PROJ_STD:
+                all_projs.add(
+                    PlayerStdBullet(self,
+                        self.pos.x - (OFFSET.x * cos(angle)) - (OFFSET.y * sin(angle)),
+                        self.pos.y + (OFFSET.x * sin(angle)) - (OFFSET.y * cos(angle)),
+                        velX, velY,
+                    ),
+                    
+                    PlayerStdBullet(self,
+                        self.pos.x + (OFFSET.x * cos(angle)) - (OFFSET.y * sin(angle)),
+                        self.pos.y - (OFFSET.x * sin(angle)) - (OFFSET.y * cos(angle)),
+                        velX, velY,
+                    )
                 )
-            )
+
+            else:
+                raise ValueError(f'Error: {self.bulletType} is not a valid bullet type.')
+            
             self.ammo -= 1
             self.lastShot = time.time()
 
@@ -300,7 +293,7 @@ class Player(ActorBase):
         return f'Player at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\ncurrent bullet: {self.bulletType}\nxp: {self.xp}\nlevel: {self.level}\n'
 
     def __repr__(self):
-        return f'Player({self.pos}, {self.vel}, {self.accel}, {self.cAccel}, {self.bulletType}, {self.xp}, {self.level})'
+        return f'Player({self.pos}, {self.vel}, {self.accel}, {self.bulletType}, {self.xp}, {self.level})'
 
 
 # ============================================================================ #
@@ -349,9 +342,8 @@ class Room(AbstractBase):
         self.cAccel = self.player1.cAccel
 
     # ------------------------------- Room Movement ------------------------------ #
-    def accelMovement(self):
-        """Calculates the room's acceleration, velocity, and position
-        """        
+    def accelMovement(self) -> None:
+        """Calculates the room's acceleration, velocity, and position"""        
         self.accel.x += self.vel.x * FRIC
         self.accel.y += self.vel.y * FRIC
         self.vel += self.accel
@@ -426,7 +418,6 @@ class Room(AbstractBase):
 
                     self.lastRecenterX = time.time()
                     self.recenteringX = True
-                    print('recentering x')
   
             if self.recenteringX:
                 weight = getTimeDiff(self.lastRecenterX)
@@ -449,7 +440,6 @@ class Room(AbstractBase):
 
                     self.lastRecenterY = time.time()
                     self.recenteringY = True
-                    print('recentering y')
 
             if self.recenteringY:
                 weight = getTimeDiff(self.lastRecenterY)
@@ -888,15 +878,27 @@ class Room(AbstractBase):
     # -------------------------------- Room Layout ------------------------------- #
     def __setRoomBorders(self):
         self.borderSouth = RoomBorder(0, self.size.y // 16, self.size.x // 16, 1)
-        self.borderEast = RoomBorder(WINWIDTH // 16, 0, 1, self.size.y // 16)
+        self.borderEast = RoomBorder(self.size.x // 16, 0, 1, self.size.y // 16)
         self.borderNorth = RoomBorder(0, -1, self.size.x // 16, 1)
         self.borderWest = RoomBorder(-1, 0, 1, self.size.y // 16)
-
         self.add(self.borderSouth, self.borderEast, self.borderNorth, self.borderWest)
-        print('borders created')
 
-    def __initRoom(self, roomSizeX, roomSizeY, canScrollX, canScrollY):
+    def __initRoom(self, roomSizeX: int, roomSizeY: int, canScrollX: bool, canScrollY: bool) -> None:
+        """Initializes what a room's properties will be. This function must be called once for every `self.room` iteration.
+        
+        ### Arguments
+            - roomSizeX (``int``): The width of the room (in pixels).
+            - roomSizeY (``int``): The height of the room (in pixels).
+            - canScrollX (``bool``): Should the room scroll with the player along the x-axis?
+            - canScrollY (``bool``): Should the room scroll with the player along the y-axis?
+        """        
+        # self.vel = vec(0, 0)
+        self.player1.vel = vec(0, 0)
+
         self.size = vec((roomSizeX, roomSizeY))
+
+        self.isScrollingX = canScrollX
+        self.isScrollingY = canScrollY
 
         lenSouth = getDistToCoords(vec(0, self.player1.pos.y), vec(0, self.borderSouth.pos.y))
         lenEast = getDistToCoords(vec(self.player1.pos.x, 0), vec(self.borderEast.pos.x, 0))
@@ -904,30 +906,30 @@ class Room(AbstractBase):
         lenWest = getDistToCoords(vec(self.player1.pos.x, 0), vec(self.borderWest.pos.x, 0))
 
         self.__setRoomBorders()
-        self.player1.vel = vec(0, 0)
 
         if (lenSouth < lenEast and
             lenSouth < lenNorth and
             lenSouth < lenWest):
+            self.player1.pos.x = self.borderNorth.pos.x
             self.player1.pos.y = self.borderNorth.pos.y + self.borderNorth.hitbox.height // 2 + self.player1.hitbox.height // 2
         
-        elif (lenEast < lenSouth and
+        if (lenEast < lenSouth and
               lenEast < lenNorth and
               lenEast < lenWest):
             self.player1.pos.x = self.borderWest.pos.x + self.borderWest.hitbox.width // 2 + self.player1.hitbox.width // 2
+            self.player1.pos.y = self.borderWest.pos.y
         
-        elif (lenNorth < lenSouth and
+        if (lenNorth < lenSouth and
               lenNorth < lenEast and
               lenNorth < lenWest):
+            self.player1.pos.x = self.borderSouth.pos.x
             self.player1.pos.y = self.borderSouth.pos.y - self.borderSouth.hitbox.height // 2 - self.player1.hitbox.height // 2
         
-        elif (lenWest < lenSouth and
+        if (lenWest < lenSouth and
               lenWest < lenEast and
               lenWest< lenNorth):
             self.player1.pos.x = self.borderEast.pos.x - self.borderEast.hitbox.width // 2 - self.player1.hitbox.width // 2
-
-        self.isScrollingX = canScrollX
-        self.isScrollingY = canScrollY
+            self.player1.pos.y = self.borderEast.pos.y
 
     def layoutUpdate(self) -> None:
         """Updates the layout of the room"""        
@@ -958,16 +960,14 @@ class Room(AbstractBase):
                     EntityContainer(
                         self.room.x, self.room.y,
                         Box(0, 500, 500),
-                        StandardGrunt(500, 500)
                     )
                 )
 
         if self.room == vec(0, 1):
-            self.__initRoom(WINWIDTH, WINHEIGHT, True, True)
+            self.__initRoom(WINWIDTH // 2, WINHEIGHT // 2, True, True)
 
             self.add(
-                Wall(72, 0, 8, 8),
-                Wall(72, 37, 8, 8),
+                Wall(0, 0, 4, 4)
             )
             
             try:
@@ -978,14 +978,11 @@ class Room(AbstractBase):
                 all_containers.append(
                     EntityContainer(
                         self.room.x, self.room.y,
-                        Box(0, 500, 500),
-                        StandardGrunt(500, 500)
                     )
                 )
 
     def update(self):
         self.movement()
-        # print(len(self.sprites()))
 
     def __repr__(self):
         return f'Room({self.room}, {self.pos}, {self.vel}, {self.accel})'

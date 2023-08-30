@@ -14,15 +14,13 @@ class Box(ActorBase):
         self.idValue = idValue
 
         self.pos = vec((posX, posY))
-
-        room = self.getRoom()
         self.cAccel = 0.8
         
         self.setImages("sprites/textures/box.png", 64, 64, 5, 1, 0, 0)
         self.setRects(0, 0, 64, 64, 64, 64, True)
 
     def movement(self):
-        if self.canUpdate:
+        if self.canUpdate and self.visible:
             self.collideCheck(all_walls)
 
             self.accel = self.getAccel()
@@ -53,6 +51,10 @@ class Box(ActorBase):
             if self.hitbox.colliderect(portal.hitbox) and len(all_portals) == 2:
                 self.teleport(portal)
 
+        print(self)
+
+    def __repr__(self):
+        return f'Box({self.idValue}, {self.pos})'
 
 class Button(ActorBase):
     def __init__(self, idValue: int, blockPosX: int, blockPosY: int):
