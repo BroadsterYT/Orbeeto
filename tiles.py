@@ -20,8 +20,7 @@ class TileBase(ActorBase):
         self.width, self.height = self.blockWidth * self.tileSize, self.blockHeight * self.tileSize
         self.pos = getTopLeftCoords(self.width, self.height, blockPosX * self.tileSize, blockPosY * self.tileSize)
 
-        room = self.getRoom()
-        self.cAccel = room.player1.cAccel
+        self.cAccel = 0.58
 
     def tileTexture(self, blockWidth: int, blockHeight: int, texture: pygame.Surface, colorkey: ColorRGB) -> pygame.Surface:
         """Tiles a texture across an image
@@ -66,7 +65,7 @@ class Wall(TileBase):
         self.show(LAYER['wall'])
         all_walls.add(self) 
 
-        self.spritesheet = Spritesheet('sprites/tiles/wall.png', 2)
+        self.spritesheet = Spritesheet('sprites/tiles/wall.png', 6)
         self.textures = self.spritesheet.getImages(16, 16, 2, 0)
         self.index = 0
 
@@ -105,16 +104,17 @@ class Floor(TileBase):
         self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
     
     def update(self):
-        if self.visible:
-            if getTimeDiff(self.lastFrame) >= 0.235:
-                self.texture = self.textures[self.index]
-                self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
+        # if self.visible:
+        #     if getTimeDiff(self.lastFrame) >= 0.235:
+        #         self.texture = self.textures[self.index]
+        #         self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
 
-                self.index += 1
-                if self.index > 3:
-                    self.index = 0
+        #         self.index += 1
+        #         if self.index > 3:
+        #             self.index = 0
                 
-                self.lastFrame = time.time()
+        #         self.lastFrame = time.time()
+        pass
 
 
 class RoomBorder(TileBase):

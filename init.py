@@ -6,8 +6,9 @@ from constants import *
 from calculations import *
 from groups import *
 
+
 #------------------------------ Initialize globals ------------------------------#
-can_update = True
+# can_update = True
 
 anim_timer: int = 0
 

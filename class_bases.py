@@ -19,6 +19,9 @@ class ActorBase(pygame.sprite.Sprite):
 
         self.pos = vec((0, 0))
         self.posCopy = self.pos.copy() # For adjusting sprites within the scrolling rooms
+        
+        self.roomPos = vec(0, 0)
+        
         self.vel = vec(0, 0)
         self.cVel = vec(0, 0) # Only for bullets; otherwise this will stay (0, 0)
         self.accel = vec(0, 0)
@@ -102,11 +105,14 @@ class ActorBase(pygame.sprite.Sprite):
         self.image = pygame.transform.rotate(self.origImage, int(angle))
         self.rect = self.image.get_rect(center = self.rect.center)
     
-    # ---------------------------------- Physics --------------------------------- #
-    def velMovement(self, adjustCenterFirst: bool) -> None:
+    # ---------------------------------- Physics --------------------------------- # 
+    def velMovement(self, adjustCentersFirst: bool) -> None:
         """Makes a sprite move according to its velocity (``self.vel``)
-        """
-        if adjustCenterFirst:
+        
+        ### Arguments
+            - adjustCentersFirst (``bool``): Should the sprite's rect and hitbox be snapped to its position before or after the velocity calculation?
+        """        
+        if adjustCentersFirst:
             self.rect.center = self.pos
             self.hitbox.center = self.pos
 
@@ -122,7 +128,7 @@ class ActorBase(pygame.sprite.Sprite):
 
     def accelMovement(self) -> None:
         """Makes a sprite move according to its acceleration (``self.accel`` and ``self.cAccel``)
-        """
+        """        
         self.accel.x += self.vel.x * FRIC
         self.accel.y += self.vel.y * FRIC
         self.vel += self.accel

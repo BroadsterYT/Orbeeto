@@ -4,17 +4,18 @@ import os
 from class_bases import *
 from tiles import TileBase
 
-
 class Box(ActorBase):
     def __init__(self, idValue, posX, posY):
         super().__init__()
         self.show(LAYER['trinket'])
         all_movable.add(self)
-
         self.idValue = idValue
 
         self.pos = vec((posX, posY))
-        self.cAccel = 0.8
+        self.cAccel = 0.58
+
+        room = self.getRoom()
+        self.roomPos = vec((self.pos.x - room.pos.x, self.pos.y - room.pos.y))
         
         self.setImages("sprites/textures/box.png", 64, 64, 5, 1, 0, 0)
         self.setRects(0, 0, 64, 64, 64, 64, True)
@@ -23,13 +24,15 @@ class Box(ActorBase):
         if self.canUpdate and self.visible:
             self.collideCheck(all_walls)
 
+            room = self.getRoom()
+            self.roomPos = vec((self.pos.x - room.pos.x, self.pos.y - room.pos.y))
+
             self.accel = self.getAccel()
             self.accelMovement()
-    
+
     def getAccel(self) -> pygame.math.Vector2:
         room = self.getRoom()
         finalAccel = vec(0, 0)
-
         finalAccel += room.getAccel()
 
         for a_player in all_players:
@@ -51,10 +54,11 @@ class Box(ActorBase):
             if self.hitbox.colliderect(portal.hitbox) and len(all_portals) == 2:
                 self.teleport(portal)
 
-        print(self)
+        print(self.roomPos)
 
     def __repr__(self):
-        return f'Box({self.idValue}, {self.pos})'
+        return f'Box({self.idValue}, {self.pos}, {self.vel}, {self.accel})'
+
 
 class Button(ActorBase):
     def __init__(self, idValue: int, blockPosX: int, blockPosY: int):
@@ -68,11 +72,15 @@ class Button(ActorBase):
         super().__init__()
         self.show(LAYER['trinket'])
         all_trinkets.add(self)
-
+        self.idValue = idValue
+        
         self.activated = False
 
-        self.idValue = idValue
         self.pos = vec((blockPosX * 16, blockPosY * 16))
+        self.cAccel = 0.58
+
+        room = self.getRoom()
+        self.roomPos = vec((self.pos.x - room.pos.x, self.pos.y - room.pos.y))
 
         self.setImages('sprites/trinkets/button.png', 64, 64, 2, 2)
         self.setRects(self.pos.x, self.pos.y, 64, 64, 64, 64)
@@ -90,12 +98,17 @@ class Button(ActorBase):
         return self.__activeCheck()
 
     def movement(self):
-        self.accel = vec(0, 0)
         if self.canUpdate and self.visible:
+            room = self.getRoom()
+            self.roomPos = vec((self.pos.x - room.pos.x, self.pos.y - room.pos.y))
+
+            self.accel = self.getAccel()
             self.accelMovement()
 
     def getAccel(self) -> pygame.math.Vector2:
+        room = self.getRoom()
         finalAccel = vec(0, 0)
+        finalAccel += room.getAccel()
         return finalAccel
 
     def update(self):
