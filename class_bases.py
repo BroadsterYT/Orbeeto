@@ -20,7 +20,7 @@ class ActorBase(pygame.sprite.Sprite):
         self.pos = vec((0, 0))
         self.posCopy = self.pos.copy() # For adjusting sprites within the scrolling rooms
         
-        self.roomPos = vec(0, 0)
+        self.roomPos = vec(0, 0) # For maintaining position within a moving room
         
         self.vel = vec(0, 0)
         self.cVel = vec(0, 0) # Only for bullets; otherwise this will stay (0, 0)
@@ -106,6 +106,12 @@ class ActorBase(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = self.rect.center)
     
     # ---------------------------------- Physics --------------------------------- # 
+    def setRoomPos(self):
+        """Calculates the position of the sprite within its current room and assigns that value to `self.roomPos`
+        """        
+        room = self.getRoom()
+        self.roomPos = vec((self.pos.x - room.pos.x, self.pos.y - room.pos.y))
+
     def velMovement(self, adjustCentersFirst: bool) -> None:
         """Makes a sprite move according to its velocity (``self.vel``)
         

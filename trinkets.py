@@ -24,8 +24,7 @@ class Box(ActorBase):
         if self.canUpdate and self.visible:
             self.collideCheck(all_walls)
 
-            room = self.getRoom()
-            self.roomPos = vec((self.pos.x - room.pos.x, self.pos.y - room.pos.y))
+            self.setRoomPos()
 
             self.accel = self.getAccel()
             self.accelMovement()
@@ -38,13 +37,13 @@ class Box(ActorBase):
         for a_player in all_players:
             if self.hitbox.colliderect(a_player.hitbox):
                 if collideSideCheck(self, a_player) == SOUTH:
-                    finalAccel.y += self.cAccel
+                    finalAccel.y += 0.8
                 if collideSideCheck(self, a_player) == EAST:
-                    finalAccel.x += self.cAccel
+                    finalAccel.x += 0.8
                 if collideSideCheck(self, a_player) == NORTH:
-                    finalAccel.y -= self.cAccel
+                    finalAccel.y -= 0.8
                 if collideSideCheck(self, a_player) == WEST:
-                    finalAccel.x -= self.cAccel
+                    finalAccel.x -= 0.8
         
         return finalAccel
 
@@ -53,8 +52,6 @@ class Box(ActorBase):
         for portal in all_portals:
             if self.hitbox.colliderect(portal.hitbox) and len(all_portals) == 2:
                 self.teleport(portal)
-
-        print(self.roomPos)
 
     def __repr__(self):
         return f'Box({self.idValue}, {self.pos}, {self.vel}, {self.accel})'
@@ -79,8 +76,7 @@ class Button(ActorBase):
         self.pos = vec((blockPosX * 16, blockPosY * 16))
         self.cAccel = 0.58
 
-        room = self.getRoom()
-        self.roomPos = vec((self.pos.x - room.pos.x, self.pos.y - room.pos.y))
+        self.setRoomPos()
 
         self.setImages('sprites/trinkets/button.png', 64, 64, 2, 2)
         self.setRects(self.pos.x, self.pos.y, 64, 64, 64, 64)
@@ -99,8 +95,7 @@ class Button(ActorBase):
 
     def movement(self):
         if self.canUpdate and self.visible:
-            room = self.getRoom()
-            self.roomPos = vec((self.pos.x - room.pos.x, self.pos.y - room.pos.y))
+            self.setRoomPos()
 
             self.accel = self.getAccel()
             self.accelMovement()
@@ -188,7 +183,7 @@ class LockedWall(TileBase):
 
     def __repr__(self):
         return f'LockedWall({self.idValue}, {self.pos}, {self.switch})'
-    
+
 
 if __name__ == '__main__':
     os.system('python main.py')

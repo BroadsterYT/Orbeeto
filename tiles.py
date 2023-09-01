@@ -47,6 +47,25 @@ class TileBase(ActorBase):
         finalImage.set_colorkey(tuple(colorkey))
         return finalImage
 
+    def fancyTileTexture(self, blockWidth: int, blockHeight: int, textures: list, colorkey: ColorRGB, style: int):
+        finalImage = pygame.Surface(vec(blockWidth * 16, blockHeight * 16))
+
+        imageWidth, imageHeight = finalImage.get_size()
+        textureWidth, textureHeight = 16, 16
+
+        if style == 0:
+            for x in range(0, imageWidth, textureWidth):
+                for y in range(0, imageHeight, textureHeight):
+                    if x == 0 or y == 0:
+                        tileRect = pygame.Rect(x, y, textureWidth, textureHeight)
+                        finalImage.blit(textures[1], tileRect)
+                    else:
+                        tileRect = pygame.Rect(x, y, textureWidth, textureHeight)
+                        finalImage.blit(textures[0], tileRect)
+
+        finalImage.set_colorkey(tuple(colorkey))
+        return finalImage
+
     def movement(self):
         if self.canUpdate:
             self.accel = self.getAccel()
@@ -60,17 +79,17 @@ class TileBase(ActorBase):
 
 
 class Wall(TileBase):
-    def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float):
+    def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float, imageRow: int = 0):
         super().__init__(blockPosX, blockPosY, blockWidth, blockHeight)
         self.show(LAYER['wall'])
         all_walls.add(self) 
 
-        self.spritesheet = Spritesheet('sprites/tiles/wall.png', 6)
-        self.textures = self.spritesheet.getImages(16, 16, 2, 0)
+        self.spritesheet = Spritesheet('sprites/tiles/wall.png', 16)
+        self.textures = self.spritesheet.getImages(16, 16, 6, imageRow * 16)
         self.index = 0
 
         self.texture = self.textures[self.index]
-        self.image: pygame.Surface = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
+        self.image: pygame.Surface = self.fancyTileTexture(self.blockWidth, self.blockHeight, self.textures, BLACK, 0)
 
         self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
 
