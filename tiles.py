@@ -53,10 +53,29 @@ class TileBase(ActorBase):
         imageWidth, imageHeight = finalImage.get_size()
         textureWidth, textureHeight = 16, 16
 
+        # No borders
         if style == 0:
             for x in range(0, imageWidth, textureWidth):
                 for y in range(0, imageHeight, textureHeight):
-                    if x == 0 or y == 0:
+                    tileRect = pygame.Rect(x, y, textureWidth, textureHeight)
+                    finalImage.blit(textures[0], tileRect)
+
+        # Bottom and right
+        elif style == 1:
+            for x in range(0, imageWidth, textureWidth):
+                for y in range(0, imageHeight, textureHeight):
+                    if x == imageWidth - textureWidth or y == imageHeight - textureHeight:
+                        tileRect = pygame.Rect(x, y, textureWidth, textureHeight)
+                        finalImage.blit(textures[1], tileRect)
+                    else:
+                        tileRect = pygame.Rect(x, y, textureWidth, textureHeight)
+                        finalImage.blit(textures[0], tileRect)
+
+        # Top and right
+        elif style == 2:
+            for x in range(0, imageWidth, textureWidth):
+                for y in range(0, imageHeight, textureHeight):
+                    if x == imageWidth - textureWidth or y == 0:
                         tileRect = pygame.Rect(x, y, textureWidth, textureHeight)
                         finalImage.blit(textures[1], tileRect)
                     else:
@@ -79,31 +98,21 @@ class TileBase(ActorBase):
 
 
 class Wall(TileBase):
-    def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float, imageRow: int = 0):
+    def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float, imageRow: int = 0, style: int = 0):
         super().__init__(blockPosX, blockPosY, blockWidth, blockHeight)
         self.show(LAYER['wall'])
         all_walls.add(self) 
 
         self.spritesheet = Spritesheet('sprites/tiles/wall.png', 16)
-        self.textures = self.spritesheet.getImages(16, 16, 6, imageRow * 16)
+        self.textures = self.spritesheet.getImages(16, 16, 16, imageRow * 16)
         self.index = 0
 
         self.texture = self.textures[self.index]
-        self.image: pygame.Surface = self.fancyTileTexture(self.blockWidth, self.blockHeight, self.textures, BLACK, 0)
+        self.image: pygame.Surface = self.fancyTileTexture(self.blockWidth, self.blockHeight, self.textures, BLACK, style)
 
         self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
 
     def update(self):
-        # if self.visible:
-        #     if getTimeDiff(self.lastFrame) >= 0.235:
-        #         self.texture = self.textures[self.index]
-        #         self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
-
-        #         self.index += 1
-        #         if self.index > 1:
-        #             self.index = 0
-                
-        #         self.lastFrame = time.time()
         pass
 
 

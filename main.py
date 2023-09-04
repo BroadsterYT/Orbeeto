@@ -223,13 +223,13 @@ class Player(ActorBase):
                     PlayerStdBullet(self,
                         self.pos.x - (OFFSET.x * cos(angle)) - (OFFSET.y * sin(angle)),
                         self.pos.y + (OFFSET.x * sin(angle)) - (OFFSET.y * cos(angle)),
-                        velX, velY,
+                        velX, velY, 1
                     ),
                     
                     PlayerStdBullet(self,
                         self.pos.x + (OFFSET.x * cos(angle)) - (OFFSET.y * sin(angle)),
                         self.pos.y - (OFFSET.x * sin(angle)) - (OFFSET.y * cos(angle)),
-                        velX, velY,
+                        velX, velY, 1
                     )
                 )
 

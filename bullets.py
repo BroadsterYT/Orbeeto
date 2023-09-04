@@ -47,23 +47,31 @@ class BulletBase(ActorBase):
         # Bullet ricochets
         else:
             room = self.getRoom()
-            roomVel = room.vel.copy()
+            roomVel = room.vel
 
             if self.sideHit == SOUTH:
-                self.pos.y = self.hit.pos.y + self.hit.hitbox.height // 2 + self.hitbox.height // 2 + abs(roomVel.y) + 1
+                self.pos.y = self.hit.pos.y + self.hit.hitbox.height // 2 + self.hitbox.height // 2 + abs(roomVel.y)
+                self.cVel.y = -self.cVel.y
                 self.vel.y = -self.vel.y
+                print(SOUTH)
 
             elif self.sideHit == EAST:
-                self.pos.x = self.hit.pos.x + self.hit.hitbox.width // 2 + self.hitbox.width // 2 + abs(roomVel.x) + 1
+                self.pos.x = self.hit.pos.x + self.hit.hitbox.width // 2 + self.hitbox.width // 2 + abs(roomVel.x)
+                self.cVel.x = -self.cVel.x
                 self.vel.x = -self.vel.x
+                print(EAST)
 
             elif self.sideHit == NORTH:
-                self.pos.y = self.hit.pos.y - self.hit.hitbox.height // 2 - self.hitbox.height // 2 - abs(roomVel.y) - 1
+                self.pos.y = self.hit.pos.y - self.hit.hitbox.height // 2 - self.hitbox.height // 2 - abs(roomVel.y)
+                self.cVel.y = -self.cVel.y
                 self.vel.y = -self.vel.y
+                print(NORTH)
 
             elif self.sideHit == WEST:
-                self.pos.x = self.hit.pos.x - self.hit.hitbox.width // 2 - self.hitbox.width // 2 - abs(roomVel.x) - 1
+                self.pos.x = self.hit.pos.x - self.hit.hitbox.width // 2 - self.hitbox.width // 2 - abs(roomVel.x)
+                self.cVel.x = -self.cVel.x
                 self.vel.x = -self.vel.x
+                print(WEST)
 
             self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
     
