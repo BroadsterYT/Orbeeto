@@ -87,6 +87,8 @@ class Player(ActorBase):
         self.bulletVel: float = 12.0
         self.gunCooldown: float = 0.12
         self.lastShot: float = time.time()
+
+        self.grappleSpeed: float = 2.0
         
         self.hitTimeCharge = 1200
         self.hitTime = 0
@@ -100,6 +102,8 @@ class Player(ActorBase):
         self.maxAtk = floor(eerp(10, 1250, self.level / self.maxLevel))
         self.maxDef = floor(eerp(15, 800, self.level / self.maxLevel))
         self.maxAmmo = floor(eerp(40, 1200, self.level / self.maxLevel))
+
+        self.grappleSpeed = floor(eerp(2.0, 4.0, self.level / self.maxLevel))
 
         self.atk = self.maxAtk
         self.defense = self.maxDef
@@ -162,8 +166,7 @@ class Player(ActorBase):
 
 # --------------------------------- Movement --------------------------------- #
     def movement(self):
-        """When called once every frame, it allows the player to recive input from the user and move accordingly
-        """        
+        """When called once every frame, it allows the player to recive input from the user and move accordingly"""        
         if self.canUpdate and self.visible:
             if not self.room.isScrollingX and not self.room.isScrollingY:
                 self.collideCheck(all_walls)
@@ -178,38 +181,60 @@ class Player(ActorBase):
             - ``pygame.math.Vector2``: The acceleration value of the player
         """        
         finalAccel = vec(0, 0)
-        if self.room.isScrollingX and self.room.isScrollingY:
-            return finalAccel
+        if not self.room.isScrollingX:
+            finalAccel.x += self.__getXAxisOutput()
+
+        if not self.room.isScrollingY:
+            finalAccel.y += self.__getYAxisOutput()
+
+        return finalAccel
+    
+    def __getXAxisOutput(self) -> float:
+        output: float = 0.0
+        if isInputHeld[K_a]:
+            output -= self.cAccel
+        if isInputHeld[K_d]:
+            output += self.cAccel
+
+        if self.isSwinging():
+            angle = getAngleToSprite(self, self.grapple)
+            output += self.grappleSpeed * -sin(rad(angle))
+
+        return output
+
+    def __getYAxisOutput(self) -> float:
+        output: float = 0.0
+        if isInputHeld[K_w]:
+            output -= self.cAccel
+        if isInputHeld[K_s]:
+            output += self.cAccel
+
+        if self.isSwinging():
+            angle = getAngleToSprite(self, self.grapple)
+            output += self.grappleSpeed * -cos(rad(angle))
         
-        elif self.room.isScrollingX and not self.room.isScrollingY:
-            if isInputHeld[K_w]:
-                finalAccel.y -= self.cAccel
-            if isInputHeld[K_s]:
-                finalAccel.y += self.cAccel
-            return finalAccel
+        return output
+
+    def isSwinging(self) -> bool:
+        """Determines if the player should be accelerating towards the grappling hook.
         
-        elif not self.room.isScrollingX and self.room.isScrollingY:
-            if isInputHeld[K_a]:
-                finalAccel.x -= self.cAccel
-            if isInputHeld[K_d]:
-                finalAccel.x += self.cAccel
-            return finalAccel
-        
-        elif not self.room.isScrollingX and not self.room.isScrollingY:
-            if isInputHeld[K_a]:
-                finalAccel.x -= self.cAccel
-            if isInputHeld[K_w]:
-                finalAccel.y -= self.cAccel
-            if isInputHeld[K_s]:
-                finalAccel.y += self.cAccel
-            if isInputHeld[K_d]:
-                finalAccel.x += self.cAccel
-            return finalAccel
+        ### Returns
+            - ``bool``: Whether or not the player is swinging
+        """
+        output = False
+        if self.grapple == None:
+            return output
+        elif not self.grapple.returning:
+            return output
+        elif self.grapple.grappledTo not in all_walls:
+            return output
+        else:
+            output = True
+            return output
 
     def shoot(self):
         """Shoots bullets"""
         angle = rad(getAngleToMouse(self))
-
         velX = self.bulletVel * -sin(angle)
         velY = self.bulletVel * -cos(angle)
 
@@ -239,7 +264,7 @@ class Player(ActorBase):
             self.ammo -= 1
             self.lastShot = time.time()
 
-        # Firing portals
+        # ------------------------------ Firing Portals ------------------------------ #
         if keyReleased[3] % 2 == 0 and self.canPortal and self.canGrapple:
             all_projs.add(PortalBullet(self, self.pos.x, self.pos.y, velX * 0.75, velY * 0.75))
             self.canPortal = False
@@ -248,10 +273,10 @@ class Player(ActorBase):
             all_projs.add(PortalBullet(self, self.pos.x, self.pos.y, velX * 0.75, velY * 0.75))
             self.canPortal = True
 
-        # Grappling Hook
+        # --------------------------- Firing Grappling Hook -------------------------- #
         if keyReleased[2] % 2 != 0 and self.canGrapple:
             if self.grapple != None:
-                self.grapple.kill()
+                self.grapple.shatter()
             self.grapple = NewGrappleBullet(self, self.pos.x, self.pos.y, velX, velY)
             self.canGrapple = False
 
@@ -365,19 +390,49 @@ class Room(AbstractBase):
     def getAccel(self) -> pygame.math.Vector2:
         finalAccel = vec(0, 0)
         if self.isScrollingX:
-            if isInputHeld[K_a]:
-                finalAccel.x += self.player1.cAccel
-            if isInputHeld[K_d]:
-                finalAccel.x -= self.player1.cAccel
+            finalAccel.x += self.__getXAxisOutput()
         
         if self.isScrollingY:
-            if isInputHeld[K_w]:
-                finalAccel.y += self.player1.cAccel
-            if isInputHeld[K_s]:
-                finalAccel.y -= self.player1.cAccel
+            finalAccel.y += self.__getYAxisOutput()
 
         return finalAccel
 
+    def __getXAxisOutput(self) -> float:
+        """Determines the amount of acceleration the room's x-axis component should have
+        
+        ### Returns
+            - ``float``: The room's acceleration's x-axis component
+        """        
+        output: float = 0.0
+        if isInputHeld[K_a]:
+            output += self.player1.cAccel
+        if isInputHeld[K_d]:
+            output -= self.player1.cAccel
+
+        if self.player1.isSwinging():
+            angle = getAngleToSprite(self.player1, self.player1.grapple)
+            output += self.player1.grappleSpeed * sin(rad(angle))
+        
+        return output
+
+    def __getYAxisOutput(self) -> float:
+        """Determines the amount of acceleration the room's y-axis component should have
+        
+        ### Returns
+            - ``float``: The room's acceleration's y-axis component
+        """        
+        output: float = 0.0
+        if isInputHeld[K_w]:
+            output += self.player1.cAccel
+        if isInputHeld[K_s]:
+            output -= self.player1.cAccel
+
+        if self.player1.isSwinging():
+            angle = getAngleToSprite(self.player1, self.player1.grapple)
+            output += self.player1.grappleSpeed * cos(rad(angle))
+
+        return output
+    
     def movement(self):
         """Moves the room if the room is currently capable of scrolling with the player"""   
         if self.canUpdate:
@@ -970,7 +1025,7 @@ class Room(AbstractBase):
                 )
 
         if self.room == vec(0, 1):
-            self.__initRoom(WINWIDTH, WINHEIGHT, True, False)
+            self.__initRoom(WINWIDTH, WINHEIGHT, False, True)
             self.add(
                 Wall(8, 0, 4, 4),
                 Wall(40, 8, 8, 8)

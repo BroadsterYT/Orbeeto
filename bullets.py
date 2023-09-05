@@ -381,6 +381,12 @@ class NewGrappleBullet(BulletBase):
             self.grappledTo.isGrappled = True
             self.posOffset = vec(self.pos.x - self.grappledTo.pos.x, self.pos.y - self.grappledTo.pos.y)
 
+    def shatter(self):
+        """Completely destroys the grappling hook"""        
+        self.returning = False
+        self.shotFrom.grapple = None
+        self.kill()
+
     def projCollide(self, spriteGroup, canHurt):
         for collidingSprite in spriteGroup:
             if not self.hitbox.colliderect(collidingSprite.hitbox):
@@ -406,20 +412,30 @@ class NewGrappleBullet(BulletBase):
                     self.land(collidingSprite)
 
     def sendBack(self):
-        angle = getAngleToSprite(self, self.shotFrom)
-        room = self.getRoom()
-        roomAccel = room.getAccel()
-        self.accel.x = self.cAccel * -sin(rad(angle)) + roomAccel.x
-        self.accel.y = self.cAccel * -cos(rad(angle)) + roomAccel.y
+        if self.grappledTo not in all_walls:
+            # Hook returns to player
+            angle = getAngleToSprite(self, self.shotFrom)
+            room = self.getRoom()
+            roomAccel = room.getAccel()
+            self.accel.x = self.cAccel * -sin(rad(angle)) + roomAccel.x
+            self.accel.y = self.cAccel * -cos(rad(angle)) + roomAccel.y
 
-        if self.hitbox.colliderect(self.shotFrom.rect):
-            self.kill()
-        
-        self.accelMovement()
+            # Hook disappears once it returns
+            if self.hitbox.colliderect(self.shotFrom.hitbox):
+                self.shatter()
+            
+            self.accelMovement()
 
-        if self.grappledTo != None and self.grappledTo not in all_portals:
-            if self.grappledTo not in all_walls:
-                self.grappledTo.pos = self.pos
+            # Hook follows whatever it has grabbed
+            if self.grappledTo != None and self.grappledTo not in all_portals:
+                if self.grappledTo not in all_walls:
+                    self.grappledTo.pos = self.pos
+
+        # Player should accelerate to the hook
+        else:
+            self.pos = self.grappledTo.pos + self.posOffset
+            if self.hitbox.colliderect(self.shotFrom.hitbox):
+                self.shatter()
 
     def movement(self):
         if not self.returning:
@@ -427,7 +443,7 @@ class NewGrappleBullet(BulletBase):
                 self.pos.x += self.vel.x
                 self.pos.y += self.vel.y
 
-            else:
+            elif self.isHooked:
                 if self.grappledTo != None and self.grappledTo not in all_walls:
                     self.pos.x = self.grappledTo.pos.x
                     self.pos.y = self.grappledTo.pos.y
@@ -445,7 +461,7 @@ class NewGrappleBullet(BulletBase):
         self.hitbox.center = self.pos
 
     def bindProj(self):
-        if self.canUpdate:
+        if self.canUpdate and self.visible:
             if not self.isHooked:
                 self.projCollide(all_enemies, True)
                 self.projCollide(all_movable, False)
