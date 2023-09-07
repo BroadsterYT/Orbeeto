@@ -370,6 +370,9 @@ class NewGrappleBullet(BulletBase):
         self.accel = vec(0, 0)
         self.cAccel = 1.5
 
+        self.chain = Beam(self, self.shotFrom)
+        self.portalList = []
+
         self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 2, 9)
         self.setRects(0, 0, 32, 32, 16, 16)
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
@@ -385,6 +388,12 @@ class NewGrappleBullet(BulletBase):
         """Completely destroys the grappling hook"""        
         self.returning = False
         self.shotFrom.grapple = None
+        if self.grappledTo != None:
+            self.grappledTo.isGrappled = False
+
+        self.portalList = []
+
+        self.chain.kill()
         self.kill()
 
     def projCollide(self, spriteGroup, canHurt):
@@ -404,6 +413,7 @@ class NewGrappleBullet(BulletBase):
                     if len(all_portals) == 2:
                         for portal in all_portals:
                             if self.hitbox.colliderect(portal.hitbox):
+                                self.portalList.append(portal); self.portalList.append(getOtherPortal(portal))
                                 self.teleport(portal)
                                 self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
                         return
@@ -413,16 +423,28 @@ class NewGrappleBullet(BulletBase):
 
     def sendBack(self):
         if self.grappledTo not in all_walls:
-            # Hook returns to player
-            angle = getAngleToSprite(self, self.shotFrom)
-            room = self.getRoom()
-            roomAccel = room.getAccel()
-            self.accel.x = self.cAccel * -sin(rad(angle)) + roomAccel.x
-            self.accel.y = self.cAccel * -cos(rad(angle)) + roomAccel.y
+            # Hook returns to portal it entered
+            if len(self.portalList) > 1:
+                angle = getAngleToSprite(self, self.portalList[1])
+                room = self.getRoom()
+                roomAccel = room.getAccel()
+                self.accel.x = self.cAccel * -sin(rad(angle)) + roomAccel.x
+                self.accel.y = self.cAccel * -cos(rad(angle)) + roomAccel.y
 
-            # Hook disappears once it returns
-            if self.hitbox.colliderect(self.shotFrom.hitbox):
-                self.shatter()
+                if self.hitbox.colliderect(self.portalList[1]):
+                    self.portalList = []
+            
+            # Hook returns to player
+            else:
+                angle = getAngleToSprite(self, self.shotFrom)
+                room = self.getRoom()
+                roomAccel = room.getAccel()
+                self.accel.x = self.cAccel * -sin(rad(angle)) + roomAccel.x
+                self.accel.y = self.cAccel * -cos(rad(angle)) + roomAccel.y
+
+                # Hook disappears once it returns
+                if self.hitbox.colliderect(self.shotFrom.hitbox):
+                    self.shatter()
             
             self.accelMovement()
 
@@ -519,4 +541,4 @@ class EnemyStdBullet(BulletBase):
     
 
 if __name__ == '__main__':
-    os.system('python main.py')
+    os.system('main.py')
