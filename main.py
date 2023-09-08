@@ -531,263 +531,202 @@ class Room(AbstractBase):
         width = (portalOut.hitbox.width + self.player1.hitbox.width) // 2
         height = (portalOut.hitbox.height + self.player1.hitbox.height) // 2
 
+        dirIn = portalIn.facing
+        dirOut = portalOut.facing
+        dirList = {SOUTH: 180, EAST: 90, NORTH: 0, WEST: 270}
 
-        def alignPlayer(tpOffset: float, direction: str) -> None:
+        def alignPlayer(offset: float, direction: str) -> None:
             if direction == SOUTH:
-                self.player1.pos.x = portalOut.pos.x - tpOffset
+                self.player1.pos.x = portalOut.pos.x - offset
                 self.player1.pos.y = portalOut.pos.y + height
 
             elif direction == EAST:
                 self.player1.pos.x = portalOut.pos.x + width
-                self.player1.pos.y = portalOut.pos.y - tpOffset
+                self.player1.pos.y = portalOut.pos.y - offset
                 
             elif direction == NORTH:
-                self.player1.pos.x = portalOut.pos.x + tpOffset
+                self.player1.pos.x = portalOut.pos.x + offset
                 self.player1.pos.y = portalOut.pos.y - height
 
             elif direction == WEST:
                 self.player1.pos.x = portalOut.pos.x - width
-                self.player1.pos.y = portalOut.pos.y + tpOffset
+                self.player1.pos.y = portalOut.pos.y + offset
 
+        def rotateVel() -> None:
+            """Sets the player at the proper position after teleporting and rotates his/her velocity."""            
+            if self.isScrollingX and self.isScrollingY:
+                alignPlayer(distOffset, dirOut)
+                self.__spritesRotateTrajectory(dirList[dirOut])
 
         if self.isScrollingX and self.isScrollingY:
-            if portalIn.facing == SOUTH:
+            if dirIn == SOUTH:
                 distOffset = copy.copy(self.player1.pos.x) - copy.copy(portalIn.pos.x)
-                if portalOut.facing == SOUTH:
-                    alignPlayer(distOffset, SOUTH)
-                    self.__spritesRotateTrajectory(180)
+                rotateVel()
 
-                if portalOut.facing == EAST:
-                    alignPlayer(distOffset, EAST)
-                    self.__spritesRotateTrajectory(90)
-
-                if portalOut.facing == NORTH:
-                    alignPlayer(distOffset, NORTH)
-
-                if portalOut.facing == WEST:
-                    alignPlayer(distOffset, WEST)
-                    self.__spritesRotateTrajectory(270)
-
-            if portalIn.facing == EAST:
+            elif dirIn == EAST:
                 distOffset = copy.copy(self.player1.pos.y) - copy.copy(portalIn.pos.y)
-                if portalOut.facing == SOUTH:
-                    alignPlayer(distOffset, SOUTH)
-                    self.__spritesRotateTrajectory(270)
+                dirList.update({EAST: 180, NORTH: 90, WEST: 0, SOUTH: 270})
+                rotateVel()
 
-                if portalOut.facing == EAST:
-                    alignPlayer(distOffset, EAST)
-                    self.__spritesRotateTrajectory(180)
-
-                if portalOut.facing == NORTH:
-                    alignPlayer(distOffset, NORTH)
-                    self.__spritesRotateTrajectory(90)
-
-                if portalOut.facing == WEST:
-                    alignPlayer(distOffset, WEST)
-
-            if portalIn.facing == NORTH:
+            elif dirIn == NORTH:
                 distOffset = copy.copy(self.player1.pos.x) - copy.copy(portalIn.pos.x)
-                if portalOut.facing == SOUTH:
-                    alignPlayer(distOffset, SOUTH)
+                dirList.update({NORTH: 180, WEST: 90, SOUTH: 0, EAST: 270})
+                rotateVel()
 
-                if portalOut.facing == EAST:
-                    alignPlayer(distOffset, EAST)
-                    self.__spritesRotateTrajectory(270)
-
-                if portalOut.facing == NORTH:
-                    alignPlayer(distOffset, NORTH)
-                    self.__spritesRotateTrajectory(180)
-
-                if portalOut.facing == WEST:
-                    alignPlayer(distOffset, WEST)
-                    self.__spritesRotateTrajectory(90)
-
-            if portalIn.facing == WEST:
+            elif dirIn == WEST:
                 distOffset = copy.copy(self.player1.pos.y) - copy.copy(portalIn.pos.y)
-                if portalOut.facing == SOUTH:
-                    alignPlayer(distOffset, SOUTH)
-                    self.__spritesRotateTrajectory(90)
-
-                if portalOut.facing == EAST:
-                    alignPlayer(distOffset, EAST)
-
-                if portalOut.facing == NORTH:
-                    alignPlayer(distOffset, NORTH)
-                    self.__spritesRotateTrajectory(270)
-
-                if portalOut.facing == WEST:
-                    alignPlayer(distOffset, WEST)
-                    self.__spritesRotateTrajectory(180)
+                dirList.update({WEST: 180, SOUTH: 90, EAST: 0, NORTH: 270})
+                rotateVel()
 
         elif self.isScrollingX and not self.isScrollingY:
-            if portalIn.facing == SOUTH:
+            if dirIn == SOUTH:
                 distOffset = copy.copy(self.player1.pos.x) - copy.copy(portalIn.pos.x)
-                if portalOut.facing == SOUTH:
+                if dirOut == SOUTH:
                     alignPlayer(distOffset, SOUTH)
                     self.player1.vel = self.player1.vel.rotate(180)
 
-                if portalOut.facing == EAST:
+                if dirOut == EAST:
                     alignPlayer(distOffset, EAST)
-                    self.__translateTrajectory(True, True, False)
+                    self.__translateTrajectory(True, 270)
                     self.player1.vel.y = 0
 
-                if portalOut.facing == NORTH:
+                if dirOut == NORTH:
                     alignPlayer(distOffset, NORTH)
 
-                if portalOut.facing == WEST:
+                if dirOut == WEST:
                     alignPlayer(distOffset, WEST)
-                    self.__translateTrajectory(True, True, True)
+                    self.__translateTrajectory(True, 90)
                     self.player1.vel.y = 0
 
-            if portalIn.facing == EAST:
+            if dirIn == EAST:
                 distOffset = copy.copy(self.player1.pos.y) - copy.copy(portalIn.pos.y)
-                if portalOut.facing == SOUTH:
+                if dirOut == SOUTH:
                     alignPlayer(distOffset, SOUTH)
-                    self.player1.vel.y = self.vel.x
+                    self.__translateTrajectory(False, 90)
 
-                if portalOut.facing == EAST:
+                if dirOut == EAST:
                     alignPlayer(distOffset, EAST)
-                    self.vel.x = -self.vel.x
                     self.__spritesRotateTrajectory(180)
 
-                if portalOut.facing == NORTH:
+                if dirOut == NORTH:
                     alignPlayer(distOffset, NORTH)
-                    self.__translateTrajectory(False, False, True)
+                    self.__translateTrajectory(False, 270)
 
-                if portalOut.facing == WEST:
+                if dirOut == WEST:
                     alignPlayer(distOffset, WEST)
 
-            if portalIn.facing == NORTH:
+            if dirIn == NORTH:
                 distOffset = copy.copy(self.player1.pos.x) - copy.copy(portalIn.pos.x)
-                if portalOut.facing == SOUTH:
+                if dirOut == SOUTH:
                     alignPlayer(distOffset, SOUTH)
 
-                if portalOut.facing == EAST:
+                if dirOut == EAST:
                     alignPlayer(distOffset, EAST)
-                    self.__translateTrajectory(True, True, True)
+                    self.__translateTrajectory(True, 90)
                     self.player1.vel.y = 0
 
-                if portalOut.facing == NORTH:
+                if dirOut == NORTH:
                     alignPlayer(distOffset, NORTH)
                     self.player1.vel = self.player1.vel.rotate(180)
 
-                if portalOut.facing == WEST:
+                if dirOut == WEST:
                     alignPlayer(distOffset, WEST)
-                    self.vel.x = self.player1.vel.y
-                    self.player1.vel.y = self.player1.vel.x
+                    self.__translateTrajectory(True, 270)
+                    self.player1.vel.y = 0
 
-            if portalIn.facing == WEST:
+            if dirIn == WEST:
                 distOffset = copy.copy(self.player1.pos.y) - copy.copy(portalIn.pos.y)
-                if portalOut.facing == SOUTH:
+                if dirOut == SOUTH:
                     alignPlayer(distOffset, SOUTH)
-                    self.player1.vel = -self.vel.rotate(90)
+                    self.__translateTrajectory(False, 270)
 
-                if portalOut.facing == EAST:
+                if dirOut == EAST:
                     alignPlayer(distOffset, EAST)
 
-                if portalOut.facing == NORTH:
+                if dirOut == NORTH:
                     alignPlayer(distOffset, NORTH)
-                    self.player1.vel = -self.vel.rotate(270)
+                    self.__translateTrajectory(False, 90)
 
-                if portalOut.facing == WEST:
+                if dirOut == WEST:
                     alignPlayer(distOffset, WEST)
-                    self.vel = self.vel.rotate(180)
+                    self.__spritesRotateTrajectory(180)
 
         elif not self.isScrollingX and self.isScrollingY:
-            if portalIn.facing == SOUTH:
+            if dirIn == SOUTH:
                 distOffset = copy.copy(self.player1.pos.x) - copy.copy(portalIn.pos.x)
-                if portalOut.facing == SOUTH:
-                    self.player1.pos.x = portalOut.pos.x - distOffset
-                    self.player1.pos.y = portalOut.pos.y + height
+                if dirOut == SOUTH:
+                    alignPlayer(distOffset, dirOut)
                     self.__spritesRotateTrajectory(180)
 
-                if portalOut.facing == EAST:
-                    self.player1.pos.x = portalOut.pos.x + width
-                    self.player1.pos.y = portalOut.pos.y - distOffset
-                    self.__translateTrajectory(False, True, False)
-                    self.player1.vel.y = 0
-
-                if portalOut.facing == NORTH:
-                    self.player1.pos.x = portalOut.pos.x + distOffset
-                    self.player1.pos.y = portalOut.pos.y - height
-
-                if portalOut.facing == WEST:
-                    self.player1.pos.x = portalOut.pos.x - width
-                    self.player1.pos.y = portalOut.pos.y + distOffset
-                    self.__translateTrajectory(False, True, True)
-                    self.player1.vel.y = 0
-
-            if portalIn.facing == EAST:
-                distOffset = copy.copy(self.player1.pos.y) - copy.copy(portalIn.pos.y)
-                if portalOut.facing == SOUTH:
-                    self.player1.pos.x = portalOut.pos.x - distOffset
-                    self.player1.pos.y = portalOut.pos.y + height
-                    self.__translateTrajectory(True, False, False)
-                    self.player1.vel.x = 0
-
-                if portalOut.facing == EAST:
-                    self.player1.pos.x = portalOut.pos.x + width
-                    self.player1.pos.y = portalOut.pos.y - distOffset
-                    self.player1.vel = self.player1.vel.rotate(180)
-                    self.vel.y = -self.vel.y
-
-                if portalOut.facing == NORTH:
-                    self.player1.pos.x = portalOut.pos.x + distOffset
-                    self.player1.pos.y = portalOut.pos.y - height
-                    self.__translateTrajectory(True, False, True)
-                    self.player1.vel.x = 0
-
-                if portalOut.facing == WEST:
-                    self.player1.pos.x = portalOut.pos.x - width
-                    self.player1.pos.y = portalOut.pos.y + distOffset
-
-            if portalIn.facing == NORTH:
-                distOffset = copy.copy(self.player1.pos.x) - copy.copy(portalIn.pos.x)
-                if portalOut.facing == SOUTH:
-                    self.player1.pos.x = portalOut.pos.x + distOffset
-                    self.player1.pos.y = portalOut.pos.y + height
-
-                if portalOut.facing == EAST:
-                    self.player1.pos.x = portalOut.pos.x + width
-                    self.player1.pos.y = portalOut.pos.y + distOffset
-                    self.__translateTrajectory(False, True, True)
+                if dirOut == EAST:
+                    alignPlayer(distOffset, dirOut)
+                    self.__translateTrajectory(False, 270)
                     self.vel.y = 0
 
-                if portalOut.facing == NORTH:
-                    self.player1.pos.x = portalOut.pos.x - distOffset
-                    self.player1.pos.y = portalOut.pos.y - height
+                if dirOut == NORTH:
+                    alignPlayer(distOffset, dirOut)
+
+                if dirOut == WEST:
+                    alignPlayer(distOffset, dirOut)
+                    self.__translateTrajectory(False, 90)
+                    self.vel.y = 0
+
+            if dirIn == EAST:
+                distOffset = copy.copy(self.player1.pos.y) - copy.copy(portalIn.pos.y)
+                if dirOut == SOUTH:
+                    alignPlayer(distOffset, dirOut)
+                    self.__translateTrajectory(True, 90)
+                    self.player1.vel.x = 0
+
+                if dirOut == EAST:
+                    alignPlayer(distOffset, dirOut)
+                    self.player1.vel = self.player1.vel.rotate(180)
+
+                if dirOut == NORTH:
+                    alignPlayer(distOffset, dirOut)
+                    self.__translateTrajectory(True, 270)
+                    self.player1.vel.x = 0
+
+                if dirOut == WEST:
+                    alignPlayer(distOffset, dirOut)
+
+            if dirIn == NORTH:
+                distOffset = copy.copy(self.player1.pos.x) - copy.copy(portalIn.pos.x)
+                if dirOut == SOUTH:
+                    alignPlayer(distOffset, dirOut)
+
+                if dirOut == EAST:
+                    alignPlayer(distOffset, dirOut)
+                    self.__translateTrajectory(False, 90)
+                    self.vel.y = 0
+
+                if dirOut == NORTH:
+                    alignPlayer(distOffset, dirOut)
                     self.__spritesRotateTrajectory(180)
 
-                if portalOut.facing == WEST:
-                    self.player1.pos.x = portalOut.pos.x - width
-                    self.player1.pos.y = portalOut.pos.y - distOffset
-                    # self.player1.vel.x = self.vel.y
-                    # self.vel.y = 0
-                    self.__translateTrajectory(False, True, False)
+                if dirOut == WEST:
+                    alignPlayer(distOffset, dirOut)
+                    self.__translateTrajectory(False, 270)
+                    self.vel.y = 0
 
-            if portalIn.facing == WEST:
+            if dirIn == WEST:
                 distOffset = copy.copy(self.player1.pos.y) - copy.copy(portalIn.pos.y)
-                if portalOut.facing == SOUTH:
-                    self.player1.pos.x = portalOut.pos.x + distOffset
-                    self.player1.pos.y = portalOut.pos.y + height
-                    self.__translateTrajectory(True, False, True)
+                if dirOut == SOUTH:
+                    alignPlayer(distOffset, dirOut)
+                    self.__translateTrajectory(True, 270)
                     self.player1.vel.x = 0
 
-                if portalOut.facing == EAST:
-                    self.player1.pos.x = portalOut.pos.x + width
-                    self.player1.pos.y = portalOut.pos.y + distOffset
+                if dirOut == EAST:
+                    alignPlayer(distOffset, dirOut)
 
-                if portalOut.facing == NORTH:
-                    self.player1.pos.x = portalOut.pos.x - distOffset
-                    self.player1.pos.y = portalOut.pos.y - height
-                    self.__translateTrajectory(True, False, False)
+                if dirOut == NORTH:
+                    alignPlayer(distOffset, dirOut)
+                    self.__translateTrajectory(True, 90)
                     self.player1.vel.x = 0
 
-                if portalOut.facing == WEST:
-                    self.player1.pos.x = portalOut.pos.x - width
-                    self.player1.pos.y = portalOut.pos.y - distOffset
+                if dirOut == WEST:
+                    alignPlayer(distOffset, dirOut)
                     self.player1.vel = self.player1.vel.rotate(180)
-                    self.vel.y = -self.vel.y
 
     def __spritesRotateTrajectory(self, angle: float) -> None:
         """Rotates the velocities and accelerations of all the sprites within the room's sprites
@@ -803,7 +742,7 @@ class Room(AbstractBase):
             sprite.accel = sprite.accel.rotate(angle)
             sprite.vel = sprite.vel.rotate(angle)
 
-    def __translateTrajectory(self, isPlayerToRoom: bool, isXToY: bool, isOutputNegative: bool = False) -> None:
+    def __translateTrajectory(self, isPlayerToRoom: bool, angle: float) -> None:
         """Translates the velocity of the room's sprites to the player, or vice versa.
         
         ### Arguments
@@ -812,38 +751,11 @@ class Room(AbstractBase):
             - isOutputNegative (``bool``): Should the translation be negative (`True`), or remain positive (`False`)?
         """        
         if isPlayerToRoom:
-            if isXToY:
-                if isOutputNegative:
-                    for sprite in self.__getSpritesToRecenter():
-                        sprite.vel.x = -self.player1.vel.y
-
-                elif not isOutputNegative:
-                    for sprite in self.__getSpritesToRecenter():
-                        sprite.vel.x = self.player1.vel.y
-
-            elif not isXToY:
-                if isOutputNegative:
-                    for sprite in self.__getSpritesToRecenter():
-                        sprite.vel.y = -self.player1.vel.x
-
-                elif not isOutputNegative:
-                    for sprite in self.__getSpritesToRecenter():
-                        sprite.vel.y = self.player1.vel.x
+            for sprite in self.__getSpritesToRecenter():
+                sprite.vel = self.player1.vel.rotate(angle)
 
         elif not isPlayerToRoom:
-            if isXToY:
-                if isOutputNegative:
-                    self.player1.vel.x = -self.vel.y
-
-                elif not isOutputNegative:
-                    self.player1.vel.x = self.vel.y
-
-            elif not isXToY:
-                if isOutputNegative:
-                    self.player1.vel.y = -self.vel.x
-
-                elif not isOutputNegative:
-                    self.player1.vel.y = self.vel.x
+            self.player1.vel = self.vel.rotate(angle)
 
     # ----------------------------- Sprite Collisions ---------------------------- #
     def __spriteCollideCheck(self, instig: ActorBase, *contactList: AbstractBase):
@@ -962,6 +874,8 @@ class Room(AbstractBase):
 
         else:
             print('no value')
+
+        killGroups(all_projs)
 
     def __getRoomChangeTrajectory(self, prevRoomScrollX: bool, prevRoomScrollY: bool, newRoomScrollX: bool, newRoomScrollY: bool, playerVel: pygame.math.Vector2) -> None:
         if prevRoomScrollX:
