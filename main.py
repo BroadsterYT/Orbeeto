@@ -875,8 +875,6 @@ class Room(AbstractBase):
         else:
             print('no value')
 
-        killGroups(all_projs)
-
     def __getRoomChangeTrajectory(self, prevRoomScrollX: bool, prevRoomScrollY: bool, newRoomScrollX: bool, newRoomScrollY: bool, playerVel: pygame.math.Vector2) -> None:
         if prevRoomScrollX:
             if not newRoomScrollX:
