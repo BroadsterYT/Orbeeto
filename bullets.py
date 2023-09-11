@@ -155,6 +155,9 @@ class ProjExplode(ActorBase):
         if isinstance(proj, PlayerStdBullet) or isinstance(proj, EnemyStdBullet):
             self.setImages('sprites/bullets/bullets.png', 32, 32, 8, 4, 0, 1)
 
+        elif isinstance(proj, PlayerLaserBullet):
+            self.setImages('sprites/bullets/bullets.png', 32, 32, 8, 4, 4, 1)
+
         elif isinstance(proj, PortalBullet):
             self.setImages('sprites/bullets/bullets.png', 32, 32, 8, 4, 0, 1)
 
@@ -175,6 +178,15 @@ class ProjExplode(ActorBase):
         self.movement()
 
         if isinstance(self.owner, PlayerStdBullet) or isinstance(self.owner, EnemyStdBullet):
+            if getTimeDiff(self.lastFrame) >= SPF:
+                if self.index > 3:
+                    self.kill()
+                else:
+                    self.renderImages()
+                    self.index += 1
+                self.lastFrame = time.time()
+
+        elif isinstance(self.owner, PlayerLaserBullet):
             if getTimeDiff(self.lastFrame) >= SPF:
                 if self.index > 3:
                     self.kill()
@@ -259,6 +271,41 @@ class PlayerStdBullet(BulletBase):
         return f'PlayerStdBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.ricCount})'
 
 
+class PlayerLaserBullet(BulletBase):
+    def __init__(self, shotFrom, posX: float, posY: float, velX: float, velY: float, bounceCount: int = 1):
+        super().__init__()
+        self.show(LAYER['proj'])
+        self.damage = PROJDMG[PROJ_LASER]
+
+        self.shotFrom = shotFrom
+
+        self.pos = vec((posX, posY))
+        self.vel = vec(velX, velY)
+        self.cVel = self.vel
+        self.ricCount = bounceCount
+
+        self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 1, 4)
+        self.setRects(self.pos.x, self.pos.y, 8, 8, 10, 10)
+
+        self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
+
+    def movement(self):
+        if self.canUpdate:
+            self.projCollide(all_enemies, True)
+            self.projCollide(all_walls, False)
+            self.projCollide(all_portals, False)
+
+            if getTimeDiff(self.startTime) <= 10:
+                self.vel = self.getVel()
+                self.velMovement(True)
+            else:
+                self.kill()
+
+    def update(self):
+        self.movement()
+
+
+# ------------------------------ Utility Bullets ----------------------------- #
 class PortalBullet(BulletBase):
     def __init__(self, shotFrom, posX, posY, velX, velY): 
         super().__init__()
@@ -273,7 +320,7 @@ class PortalBullet(BulletBase):
         self.hitbox_adjust = vec(0, 0)
         self.damage = PROJDMG[PROJ_PORTAL]
 
-        self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 5, 4)
+        self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 5, 8)
         self.setRects(-24, -24, 8, 8, 8, 8)
 
         # Rotate sprite to trajectory
@@ -373,7 +420,7 @@ class NewGrappleBullet(BulletBase):
         self.chain = Beam(self, self.shotFrom)
         self.portalList = []
 
-        self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 2, 9)
+        self.setImages("sprites/bullets/bullets.png", 32, 32, 8, 2, 16)
         self.setRects(0, 0, 32, 32, 16, 16)
         self.rotateImage(getVecAngle(self.vel.x, self.vel.y))
 

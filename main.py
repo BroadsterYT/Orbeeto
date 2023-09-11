@@ -62,7 +62,7 @@ class Player(ActorBase):
         for item in MAT.values():
             self.inventory.update({item: 0})
 
-        self.bulletType = PROJ_STD
+        self.bulletType = PROJ_LASER
         self.canPortal = False
         self.canGrapple = True
         self.grapple = None
@@ -258,8 +258,20 @@ class Player(ActorBase):
                     )
                 )
 
-            else:
-                raise ValueError(f'Error: {self.bulletType} is not a valid bullet type.')
+            elif self.bulletType == PROJ_LASER:
+                all_projs.add(
+                    PlayerLaserBullet(self,
+                        self.pos.x - (OFFSET.x * cos(angle)) - (OFFSET.y * sin(angle)),
+                        self.pos.y + (OFFSET.x * sin(angle)) - (OFFSET.y * cos(angle)),
+                        velX * 2, velY * 2, 1
+                    ),
+                    
+                    PlayerLaserBullet(self,
+                        self.pos.x + (OFFSET.x * cos(angle)) - (OFFSET.y * sin(angle)),
+                        self.pos.y - (OFFSET.x * sin(angle)) - (OFFSET.y * cos(angle)),
+                        velX * 2, velY * 2, 1
+                    )
+                )
             
             self.ammo -= 1
             self.lastShot = time.time()
@@ -824,6 +836,12 @@ class Room(AbstractBase):
 
     # -------------------------------- Room Layout ------------------------------- # 
     def __setRoomBorders(self, roomWidth: int, roomHeight: int):
+        """Sets the borders of the room.
+        
+        ### Arguments
+            - roomWidth (``int``): The width of the room (in pixels)
+            - roomHeight (``int``): The height of the room (in pixels)
+        """        
         self.borderSouth = RoomBorder(0, roomHeight // 16, roomWidth // 16, 1)
         self.borderEast = RoomBorder(roomWidth // 16, 0, 1, roomHeight // 16)
         self.borderNorth = RoomBorder(0, -1, roomWidth // 16, 1)
@@ -922,7 +940,8 @@ class Room(AbstractBase):
                 all_containers.append(
                     EntityContainer(
                         self.room.x, self.room.y,
-                        Box(0, WINWIDTH // 2, WINHEIGHT // 2)
+                        Box(0, WINWIDTH // 2, WINHEIGHT // 2),
+                        StandardGrunt(200, 200)
                     )
                 )
 
@@ -1332,8 +1351,7 @@ class MenuSlot(ActorBase):
 #                              Redraw Game Window                              #
 # ============================================================================ #
 def redrawGameWindow():
-    """Draws all sprites every frame
-    """
+    """Draws all sprites every frame"""
     mainroom.update()
     all_sprites.update()
     all_sprites.draw(screen)

@@ -103,6 +103,7 @@ FRIC = -0.07
 
 # -------------------------------- Projectiles ------------------------------- #
 PROJ_STD = 'proj_StdBullet'
+PROJ_LASER = 'proj_Laser'
 
 PROJ_PORTAL = 'proj_PortalBullet'
 PROJ_GRAPPLE = 'proj_GrappleHook'
@@ -110,6 +111,7 @@ PROJ_GRAPPLE = 'proj_GrappleHook'
 # A dictionary that stores all damage constants of all projectile types
 PROJDMG = {
     PROJ_STD: 1,
+    PROJ_LASER: 5, 
     
     PROJ_PORTAL: 20,
     PROJ_GRAPPLE: 0,

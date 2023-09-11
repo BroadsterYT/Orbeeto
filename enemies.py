@@ -28,6 +28,15 @@ class EnemyBase(ActorBase):
 
         self.healthBar = HealthBar(self)
 
+    def setStats(self, hp: int, attack: int, defense: int, xp: int):
+        self.maxHp = hp
+        self.hp = hp
+        self.maxAtk = attack
+        self.atk = attack
+        self.maxDef = defense
+        self.defense = defense
+        self.xpWorth = xp
+
     def awardXp(self):
         for a_player in all_players:
             a_player.xp += self.xpWorth
@@ -114,10 +123,6 @@ class StandardGrunt(EnemyBase):
 
             all_projs.add(EnemyStdBullet(self, self.pos.x - (21 * cos(rad(angle))) - (30 * sin(rad(angle))), self.pos.y + (21 * sin(rad(angle))) - (30 * cos(rad(angle))), vel_x, vel_y))
             self.lastShot = time.time()
-
-    def kill(self):
-        self.healthBar.kill()
-        super().kill()
 
     def update(self):
         if self.canUpdate and self.visible and self.hp > 0:

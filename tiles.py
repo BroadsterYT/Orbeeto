@@ -151,9 +151,7 @@ class RoomBorder(TileBase):
         self.show(LAYER['wall'])
         all_borders.add(self) 
 
-        self.texture = pygame.image.load("sprites/tiles/wall.png").convert()
-        self.image: pygame.Surface = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, ColorRGB(25, 0, 0))
-
+        self.image = pygame.Surface(vec(blockWidth * 16, blockHeight * 16))
         self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
 
     def update(self):
