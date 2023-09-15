@@ -92,8 +92,7 @@ class ActorBase(pygame.sprite.Sprite):
         self.hitbox = pygame.Rect(rectPosX, rectPosY, hitboxWidth, hitboxHeight)
 
         if setPos:
-            self.rect.center = self.pos
-            self.hitbox.center = self.pos
+            self.centerRects()
 
     def rotateImage(self, angle: float):
         """Rotates the sprite's image by a specific angle
@@ -106,6 +105,10 @@ class ActorBase(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = self.rect.center)
     
     # ---------------------------------- Physics --------------------------------- # 
+    def centerRects(self):
+        self.rect.center = self.pos
+        self.hitbox.pos = self.pos
+
     def setRoomPos(self):
         """Calculates the position of the sprite within its current room and assigns that value to `self.roomPos`
         """        
@@ -119,29 +122,23 @@ class ActorBase(pygame.sprite.Sprite):
             - adjustCentersFirst (``bool``): Should the sprite's rect and hitbox be snapped to its position before or after the velocity calculation?
         """        
         if adjustCentersFirst:
-            self.rect.center = self.pos
-            self.hitbox.center = self.pos
-
+            self.centerRects()
             self.pos.x += self.vel.x
             self.pos.y += self.vel.y
 
         else:
             self.pos.x += self.vel.x
             self.pos.y += self.vel.y
-            
-            self.rect.center = self.pos
-            self.hitbox.center = self.pos
+            self.centerRects()
 
     def accelMovement(self) -> None:
-        """Makes a sprite move according to its acceleration (``self.accel`` and ``self.cAccel``)
-        """        
+        """Makes a sprite move according to its acceleration (``self.accel`` and ``self.cAccel``)"""        
         self.accel.x += self.vel.x * FRIC
         self.accel.y += self.vel.y * FRIC
         self.vel += self.accel
         self.pos += self.vel + self.cAccel * self.accel
 
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+        self.centerRects()
 
     def collideCheck(self, *contactLists: list) -> None:
         """Check if the sprite comes into contact with another sprite from a specific group. 
@@ -188,6 +185,7 @@ class ActorBase(pygame.sprite.Sprite):
         dirIn = portalIn.facing
         dirOut = portalOut.facing
 
+
         def alignSprite(offset: float, direction: str) -> None:
             """Places the sprite in the correct spot after teleporting.
             
@@ -211,10 +209,12 @@ class ActorBase(pygame.sprite.Sprite):
                 self.pos.x = portalOut.pos.x - width - abs(velAdjust.x)
                 self.pos.y = portalOut.pos.y + offset
         
+
         def rotateVel() -> None:
             alignSprite(distOffset, dirOut)
             self.cVel = self.cVel.rotate(dirList[dirOut])
             self.vel = self.vel.rotate(dirList[dirOut])
+
 
         # Makes sure that sprites dont repeatedly get thrown back into the portals b/c of room velocity
         room = self.getRoom()

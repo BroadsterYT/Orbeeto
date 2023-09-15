@@ -169,9 +169,7 @@ class ProjExplode(ActorBase):
         self.randRotation = rand.randint(1, 360)
 
     def movement(self):
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
-
+        self.centerRects()
         self.pos = self.owner.hit.hitbox.center + self.posOffset
 
     def update(self):
@@ -215,8 +213,7 @@ class ProjExplode(ActorBase):
         
         # Give explosion its random rotation
         self.image = pygame.transform.rotate(self.origImage, self.randRotation)
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+        self.centerRects()
 
     def __repr__(self):
         return f'ProjExplode({self.owner}, {self.pos})'
@@ -526,8 +523,7 @@ class NewGrappleBullet(BulletBase):
         elif self.returning:
             self.sendBack()
 
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+        self.centerRects()
 
     def bindProj(self):
         if self.canUpdate and self.visible:

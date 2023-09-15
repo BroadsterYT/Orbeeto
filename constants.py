@@ -65,20 +65,6 @@ EAST = 'loc_east'
 NORTH = 'loc_north'
 SOUTH = 'loc_south'
 
-
-CENTER = 'loc_center'
-
-TOPLEFT = 'loc_topleft'
-TOPRIGHT = 'loc_topright'
-BOTTOMLEFT = 'loc_bottomleft'
-BOTTOMRIGHT = 'loc_bottomright'
-
-MIDTOP = 'loc_midtop'
-MIDBOTTOM = 'loc_midbottom'
-MIDLEFT = 'loc_midleft'
-MIDRIGHT = 'loc_midright'
-
-
 # ---------------------------------- Layers ---------------------------------- #
 LAYER = {
     'floor': 1,
@@ -116,13 +102,6 @@ PROJDMG = {
     PROJ_PORTAL: 20,
     PROJ_GRAPPLE: 0,
 }
-
-# ============================================================================ #
-#                                  Enemy Names                                 #
-# ============================================================================ #
-
-STANDARDGRUNT = 'enemy_standardGrunt'
-OCTOGRUNT = 'enemy_octogrunt'
 
 # ============================================================================ #
 #                                  Loot Tables                                 #

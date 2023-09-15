@@ -178,8 +178,7 @@ class LockedWall(TileBase):
 
     def update(self):
         self.__activate()
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+        self.centerRects()
 
     def __repr__(self):
         return f'LockedWall({self.idValue}, {self.pos}, {self.switch})'

@@ -1288,8 +1288,7 @@ class MenuSlot(ActorBase):
         self.rect = self.image.get_rect()
         self.hitbox = pygame.Rect(0, 0, 64, 64)
 
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+        self.centerRects()
 
     def hover(self):
         if self.hitbox.collidepoint(pygame.mouse.get_pos()):
@@ -1337,8 +1336,7 @@ class MenuSlot(ActorBase):
         return finalImages
 
     def update(self):
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+        self.centerRects()
         
         if self.holding != None:
             self.count = self.owner.inventory[self.holding]

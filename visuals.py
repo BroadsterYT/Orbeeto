@@ -16,8 +16,7 @@ class InvisObj(ActorBase):
         self.rect = self.image.get_rect()
         self.hitbox = self.image.get_rect()
 
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+        self.centerRects()
 
     def update(self):
         pass
