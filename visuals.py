@@ -16,30 +16,30 @@ class InvisObj(ActorBase):
         self.rect = self.image.get_rect()
         self.hitbox = self.image.get_rect()
 
-        self.centerRects()
+        self.center_rects()
 
     def update(self):
         pass
 
 
 class Beam(ActorBase):
-    def __init__(self, fromSprite: pygame.sprite.Sprite, toSprite: pygame.sprite.Sprite):
+    def __init__(self, fromSprite, toSprite):
         super().__init__()
         self.show(LAYER['floor'])
 
         self.fromSprite, self.toSprite = fromSprite, toSprite
         self.index = 0
         
-        self.length = getDistToCoords(self.fromSprite.pos, self.toSprite.pos)
-        self.angle = getAngleToSprite(self.fromSprite, self.toSprite)
+        self.length = get_dist_to_coords(self.fromSprite.pos, self.toSprite.pos)
+        self.angle = get_angle_to_sprite(self.fromSprite, self.toSprite)
         self.image = pygame.Surface(vec(1, 1))
 
         self.rect = self.image.get_rect()
         self.rect.center = self.pos
 
     def buildSetup(self, startPos: pygame.math.Vector2, endPos: pygame.math.Vector2):
-        self.length = getDistToCoords(startPos, endPos)
-        self.angle = getAngleToSprite(self.fromSprite, self.toSprite)
+        self.length = get_dist_to_coords(startPos, endPos)
+        self.angle = get_angle_to_sprite(self.fromSprite, self.toSprite)
 
         opp = (self.length / 2) * cos(rad(self.angle + 90))
         adj = (self.length / 2) * sin(rad(self.angle + 90))

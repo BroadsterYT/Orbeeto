@@ -1,124 +1,131 @@
-import pygame
-import os
-
 from class_bases import *
 
-class TileBase(ActorBase):
-    def __init__(self, blockPosX: int, blockPosY: int, blockWidth: int, blockHeight: int, tileSize: int = 16):
-        """The base class for all tile sprites
-        
-        ### Arguments
-            - blockPosX (``int``): The x-position of the tile's topleft corner in the 45x80 tile grid
-            - blockPosY (``int``): The y-position of the tile's topleft corner in the 45x80 tile grid
-            - blockWidth (``int``): The width of the sprite (in tiles)
-            - blockHeight (``int``): The height of the sprite (in tiles)
-        """        
-        super().__init__()
-        self.tileSize = tileSize
 
-        self.blockWidth, self.blockHeight = blockWidth, blockHeight
+def fancy_tile_texture(block_width: int, block_height: int, textures: list, color_key: ColorRGB, style: int):
+    final_image = pygame.Surface(vec(block_width * 16, block_height * 16))
+
+    image_width, image_height = final_image.get_size()
+    texture_width, texture_height = 16, 16
+
+    # No borders
+    if style == 0:
+        for x in range(0, image_width, texture_width):
+            for y in range(0, image_height, texture_height):
+                tile_rect = pygame.Rect(x, y, texture_width, texture_height)
+                final_image.blit(textures[0], tile_rect)
+
+    # Bottom and right
+    elif style == 1:
+        for x in range(0, image_width, texture_width):
+            for y in range(0, image_height, texture_height):
+                if x == image_width - texture_width or y == image_height - texture_height:
+                    tile_rect = pygame.Rect(x, y, texture_width, texture_height)
+                    final_image.blit(textures[1], tile_rect)
+                else:
+                    tile_rect = pygame.Rect(x, y, texture_width, texture_height)
+                    final_image.blit(textures[0], tile_rect)
+
+    # Top and right
+    elif style == 2:
+        for x in range(0, image_width, texture_width):
+            for y in range(0, image_height, texture_height):
+                if x == image_width - texture_width or y == 0:
+                    tile_rect = pygame.Rect(x, y, texture_width, texture_height)
+                    final_image.blit(textures[1], tile_rect)
+                else:
+                    tile_rect = pygame.Rect(x, y, texture_width, texture_height)
+                    final_image.blit(textures[0], tile_rect)
+
+    final_image.set_colorkey(tuple(color_key))
+    return final_image
+
+
+def tile_texture(block_width: int, block_height: int, texture: pygame.Surface,
+                 color_key: ColorRGB) -> pygame.Surface:
+    """Tiles a texture across an image
+
+    ### Arguments
+        - blockWidth (``int``): The width of the final image in "blocks"
+        - blockHeight (``int``): The height of the final image in "blocks"
+        - texture (``pygame.Surface``): The texture that should be repeated across the final image
+        - colorkey (``tuple``): The color to set as the colorkey on the final image
+
+    ### Returns
+        - ``pygame.Surface``: The final image with the repeated texture
+    """
+    final_image = pygame.Surface(vec(block_width * 16, block_height * 16))
+
+    image_width, image_height = final_image.get_size()
+    texture_width, texture_height = texture.get_size()
+
+    for x in range(0, image_width, texture_width):
+        for y in range(0, image_height, texture_height):
+            tile_rect = pygame.Rect(x, y, texture_width, texture_height)
+            final_image.blit(texture, tile_rect)
+
+    final_image.set_colorkey(tuple(color_key))
+    return final_image
+
+
+class TileBase(ActorBase):
+    def __init__(self, block_pos_x: int | float, block_pos_y: int | float, block_width: int, block_height: int,
+                 tile_size: int = 16):
+        """The base class for all tile sprites.
+
+        Args:
+            block_pos_x: The x-axis position of the tile (in tiles)
+            block_pos_y: The y-axis position of the tile (in tiles)
+            block_width: The width of the tile (in tiles)
+            block_height: The height of the tile (in tiles)
+            tile_size: The size of each individual tile (in pixels)
+        """
+        super().__init__()
+        self.tileSize = tile_size
+
+        self.blockWidth, self.blockHeight = block_width, block_height
         self.width, self.height = self.blockWidth * self.tileSize, self.blockHeight * self.tileSize
-        self.pos = getTopLeftCoords(self.width, self.height, blockPosX * self.tileSize, blockPosY * self.tileSize)
+        self.pos = get_top_left_coords(self.width, self.height, block_pos_x * self.tileSize,
+                                       block_pos_y * self.tileSize)
 
         self.cAccel = 0.58
 
-    def tileTexture(self, blockWidth: int, blockHeight: int, texture: pygame.Surface, colorkey: ColorRGB) -> pygame.Surface:
-        """Tiles a texture across an image
-        
-        ### Arguments
-            - blockWidth (``int``): The width of the final image in "blocks"
-            - blockHeight (``int``): The height of the final image in "blocks"
-            - texture (``pygame.Surface``): The texture that should be repeated across the final image
-            - colorkey (``tuple``): The color to set as the colorkey on the final image
-        
-        ### Returns
-            - ``pygame.Surface``: The final image with the repeated texture
-        """        
-        finalImage = pygame.Surface(vec(blockWidth * 16, blockHeight * 16))
-
-        imageWidth, imageHeight = finalImage.get_size()
-        textureWidth, textureHeight = texture.get_size()
-
-        for x in range(0, imageWidth, textureWidth):
-            for y in range(0, imageHeight, textureHeight):
-                tile_rect = pygame.Rect(x, y, textureWidth, textureHeight)
-                finalImage.blit(texture, tile_rect)
-
-        finalImage.set_colorkey(tuple(colorkey))
-        return finalImage
-
-    def fancyTileTexture(self, blockWidth: int, blockHeight: int, textures: list, colorkey: ColorRGB, style: int):
-        finalImage = pygame.Surface(vec(blockWidth * 16, blockHeight * 16))
-
-        imageWidth, imageHeight = finalImage.get_size()
-        textureWidth, textureHeight = 16, 16
-
-        # No borders
-        if style == 0:
-            for x in range(0, imageWidth, textureWidth):
-                for y in range(0, imageHeight, textureHeight):
-                    tileRect = pygame.Rect(x, y, textureWidth, textureHeight)
-                    finalImage.blit(textures[0], tileRect)
-
-        # Bottom and right
-        elif style == 1:
-            for x in range(0, imageWidth, textureWidth):
-                for y in range(0, imageHeight, textureHeight):
-                    if x == imageWidth - textureWidth or y == imageHeight - textureHeight:
-                        tileRect = pygame.Rect(x, y, textureWidth, textureHeight)
-                        finalImage.blit(textures[1], tileRect)
-                    else:
-                        tileRect = pygame.Rect(x, y, textureWidth, textureHeight)
-                        finalImage.blit(textures[0], tileRect)
-
-        # Top and right
-        elif style == 2:
-            for x in range(0, imageWidth, textureWidth):
-                for y in range(0, imageHeight, textureHeight):
-                    if x == imageWidth - textureWidth or y == 0:
-                        tileRect = pygame.Rect(x, y, textureWidth, textureHeight)
-                        finalImage.blit(textures[1], tileRect)
-                    else:
-                        tileRect = pygame.Rect(x, y, textureWidth, textureHeight)
-                        finalImage.blit(textures[0], tileRect)
-
-        finalImage.set_colorkey(tuple(colorkey))
-        return finalImage
-
     def movement(self):
         if self.canUpdate:
-            self.accel = self.getAccel()
-            self.accelMovement()
+            self.accel = self.get_accel()
+            self.accel_movement()
 
-    def getAccel(self) -> pygame.math.Vector2:
-        room = self.getRoom()
-        finalAccel = vec(0, 0)
-        finalAccel += room.getAccel()
-        return finalAccel
+    # noinspection PyMethodMayBeStatic
+    def get_accel(self) -> pygame.math.Vector2:
+        room = get_room()
+        final_accel = vec(0, 0)
+        final_accel += room.get_accel()
+        return final_accel
 
 
 class Wall(TileBase):
-    def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float, imageRow: int = 0, style: int = 0):
-        super().__init__(blockPosX, blockPosY, blockWidth, blockHeight)
+    def __init__(self, block_pos_x: float, block_pos_y: float, block_width: int, block_height: int,
+                 image_row: int = 0, style: int = 0):
+        super().__init__(block_pos_x, block_pos_y, block_width, block_height)
         self.show(LAYER['wall'])
-        all_walls.add(self) 
+        all_walls.add(self)
 
         self.spritesheet = Spritesheet('sprites/tiles/wall.png', 16)
-        self.textures = self.spritesheet.getImages(16, 16, 16, imageRow * 16)
+        self.textures = self.spritesheet.getImages(16, 16, 16, image_row * 16)
         self.index = 0
 
         self.texture = self.textures[self.index]
-        self.image: pygame.Surface = self.fancyTileTexture(self.blockWidth, self.blockHeight, self.textures, BLACK, style)
+        self.image: pygame.Surface = fancy_tile_texture(self.blockWidth, self.blockHeight,
+                                                        self.textures, BLACK, style)
 
-        self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
+        self.set_rects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
 
     def update(self):
         pass
 
 
 class Floor(TileBase):
-    def __init__(self, blockPosX: float, blockPosY: float, blockWidth: float, blockHeight: float):
-        super().__init__(blockPosX, blockPosY, blockWidth, blockHeight)
+    def __init__(self, block_pos_x: int | float, block_pos_y: int | float, block_width: int, block_height: int):
+        super().__init__(block_pos_x, block_pos_y, block_width, block_height)
         self.show(LAYER['floor'])
         all_floors.add(self)
 
@@ -127,32 +134,32 @@ class Floor(TileBase):
         self.index = 0
 
         self.texture = self.textures[self.index]
-        self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
+        self.image = tile_texture(self.blockWidth, self.blockHeight, self.texture, BLACK)
 
-        self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
-    
+        self.set_rects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
+
     def update(self):
         # if self.visible:
-        #     if getTimeDiff(self.lastFrame) >= 0.235:
+        #     if get_time_diff(self.lastFrame) >= 0.235:
         #         self.texture = self.textures[self.index]
-        #         self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
+        #         self.image = self.tile_texture(self.blockWidth, self.blockHeight, self.texture, BLACK)
 
         #         self.index += 1
         #         if self.index > 3:
         #             self.index = 0
-                
+
         #         self.lastFrame = time.time()
         pass
 
 
 class RoomBorder(TileBase):
-    def __init__(self, blockPosX, blockPosY, blockWidth, blockHeight):
-        super().__init__(blockPosX, blockPosY, blockWidth, blockHeight)
+    def __init__(self, block_pos_x: float, block_pos_y: float, block_width: int | float, block_height: int | float):
+        super().__init__(block_pos_x, block_pos_y, block_width, block_height)
         self.show(LAYER['wall'])
-        all_borders.add(self) 
+        all_borders.add(self)
 
-        self.image = pygame.Surface(vec(blockWidth * 16, blockHeight * 16))
-        self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
+        self.image = pygame.Surface(vec(block_width * 16, block_height * 16))
+        self.set_rects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
 
     def update(self):
         pass

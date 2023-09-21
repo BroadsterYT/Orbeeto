@@ -1,51 +1,56 @@
-import pygame
-import os
-
 from class_bases import *
 from tiles import TileBase
 
+
 class Box(ActorBase):
-    def __init__(self, idValue, posX, posY):
+    def __init__(self, id_value, pos_x, pos_y):
+        """A box that can be pushed around and activate buttons.
+
+        Args:
+            id_value:
+            pos_x:
+            pos_y:
+        """
         super().__init__()
         self.show(LAYER['trinket'])
         all_movable.add(self)
-        self.idValue = idValue
+        self.idValue = id_value
 
-        self.pos = vec((posX, posY))
+        self.pos = vec((pos_x, pos_y))
         self.cAccel = 0.58
 
-        room = self.getRoom()
+        room = get_room()
         self.roomPos = vec((self.pos.x - room.pos.x, self.pos.y - room.pos.y))
         
-        self.setImages("sprites/textures/box.png", 64, 64, 5, 1, 0, 0)
-        self.setRects(0, 0, 64, 64, 64, 64, True)
+        self.set_images("sprites/textures/box.png", 64, 64, 5, 1, 0, 0)
+        self.set_rects(0, 0, 64, 64, 64, 64, True)
 
     def movement(self):
         if self.canUpdate and self.visible:
-            self.collideCheck(all_walls)
+            self.collide_check(all_walls)
 
-            self.setRoomPos()
+            self.set_room_pos()
 
-            self.accel = self.getAccel()
-            self.accelMovement()
+            self.accel = self.get_accel()
+            self.accel_movement()
 
-    def getAccel(self) -> pygame.math.Vector2:
-        room = self.getRoom()
-        finalAccel = vec(0, 0)
-        finalAccel += room.getAccel()
+    def get_accel(self) -> pygame.math.Vector2:
+        room = get_room()
+        final_accel = vec(0, 0)
+        final_accel += room.get_accel()
 
         for a_player in all_players:
             if self.hitbox.colliderect(a_player.hitbox):
-                if collideSideCheck(self, a_player) == SOUTH:
-                    finalAccel.y += 0.8
-                if collideSideCheck(self, a_player) == EAST:
-                    finalAccel.x += 0.8
-                if collideSideCheck(self, a_player) == NORTH:
-                    finalAccel.y -= 0.8
-                if collideSideCheck(self, a_player) == WEST:
-                    finalAccel.x -= 0.8
+                if triangle_collide(self, a_player) == SOUTH:
+                    final_accel.y += 0.8
+                if triangle_collide(self, a_player) == EAST:
+                    final_accel.x += 0.8
+                if triangle_collide(self, a_player) == NORTH:
+                    final_accel.y -= 0.8
+                if triangle_collide(self, a_player) == WEST:
+                    final_accel.x -= 0.8
         
-        return finalAccel
+        return final_accel
 
     def update(self):
         # Teleporting
@@ -58,68 +63,68 @@ class Box(ActorBase):
 
 
 class Button(ActorBase):
-    def __init__(self, idValue: int, blockPosX: int, blockPosY: int):
+    def __init__(self, id_value: int, block_pos_x: int, block_pos_y: int):
         """A button that can be activated and deactivated
-        
-        ### Arguments
-            - idValue (``int``): _description_
-            - blockPosX (``int``): _description_
-            - blockPosY (``int``): _description_
-        """        
+
+        Args:
+            id_value: The ID vale of the button. Will activate any trinket with the same ID value.
+            block_pos_x: The x-axis position of the button (in blocks)
+            block_pos_y: The y-axis position of the button (in blocks)
+        """
         super().__init__()
         self.show(LAYER['trinket'])
         all_trinkets.add(self)
-        self.idValue = idValue
+        self.idValue = id_value
         
         self.activated = False
 
-        self.pos = vec((blockPosX * 16, blockPosY * 16))
+        self.pos = vec((block_pos_x * 16, block_pos_y * 16))
         self.cAccel = 0.58
 
-        self.setRoomPos()
+        self.set_room_pos()
 
-        self.setImages('sprites/trinkets/button.png', 64, 64, 2, 2)
-        self.setRects(self.pos.x, self.pos.y, 64, 64, 64, 64)
+        self.set_images('sprites/trinkets/button.png', 64, 64, 2, 2)
+        self.set_rects(self.pos.x, self.pos.y, 64, 64, 64, 64)
 
-    def __activeCheck(self) -> bool:
-        isActive = False
+    def __active_check(self) -> bool:
+        is_active = False
         for box in all_movable:
             if not self.hitbox.colliderect(box.hitbox):
-                return isActive
+                return is_active
             else:
-                isActive = True
-                return isActive
+                is_active = True
+                return is_active
     
-    def getState(self):
-        return self.__activeCheck()
+    def get_state(self):
+        return self.__active_check()
 
     def movement(self):
         if self.canUpdate and self.visible:
-            self.setRoomPos()
+            self.set_room_pos()
 
-            self.accel = self.getAccel()
-            self.accelMovement()
+            self.accel = self.get_accel()
+            self.accel_movement()
 
-    def getAccel(self) -> pygame.math.Vector2:
-        room = self.getRoom()
-        finalAccel = vec(0, 0)
-        finalAccel += room.getAccel()
-        return finalAccel
+    def get_accel(self) -> pygame.math.Vector2:
+        room = get_room()
+        final_accel = vec(0, 0)
+        final_accel += room.get_accel()
+        return final_accel
 
     def update(self):
-        if self.__activeCheck():
+        if self.__active_check():
             self.index = 1
-        elif not self.__activeCheck():
+        elif not self.__active_check():
             self.index = 0
         
-        self.renderImages()
+        self.render_images()
 
     def __repr__(self):
-        return f'Button({self.idValue}, {self.pos}, {self.__activeCheck()})'
+        return f'Button({self.idValue}, {self.pos}, {self.__active_check()})'
 
 
 class LockedWall(TileBase):
-    def __init__(self, idValue: int, sBlockPosX: int, sBlockPosY: int, eBlockPosX: int, eBlockPosY: int, blockWidth: int, blockHeight: int):
+    def __init__(self, idValue: int, sBlockPosX: int, sBlockPosY: int, eBlockPosX: int, eBlockPosY: int, blockWidth: int, block_height: int):
         """A wall that will move when activated by a switch or button
         
         ### Arguments
@@ -131,31 +136,31 @@ class LockedWall(TileBase):
             - blockWidth (``int``): The width of the wall in "tiles"
             - blockHeight (``int``): The height of the wall in "tiles"
         """        
-        super().__init__(sBlockPosX, sBlockPosY, blockWidth, blockHeight)
+        super().__init__(sBlockPosX, sBlockPosY, blockWidth, block_height)
         self.show(LAYER['wall'])
         all_walls.add(self)
         all_trinkets.add(self)
         self.idValue = idValue
 
-        self.switch: Button = self.__findSwitch()
-        self.lastSwitchState = self.switch.getState()
+        self.switch: Button = self.__find_switch()
+        self.lastSwitchState = self.switch.get_state()
         self.hasActivated = False
         self.lastChange = time.time()
         
-        self.pos = getTopLeftCoords(self.width, self.height, sBlockPosX * self.tileSize, sBlockPosY * self.tileSize)
-        self.startPos = getTopLeftCoords(self.width, self.height, sBlockPosX * self.tileSize, sBlockPosY * self.tileSize)
-        self.endPos = getTopLeftCoords(self.width, self.height, eBlockPosX * self.tileSize, eBlockPosY * self.tileSize)
+        self.pos = get_top_left_coords(self.width, self.height, sBlockPosX * self.tileSize, sBlockPosY * self.tileSize)
+        self.startPos = get_top_left_coords(self.width, self.height, sBlockPosX * self.tileSize, sBlockPosY * self.tileSize)
+        self.endPos = get_top_left_coords(self.width, self.height, eBlockPosX * self.tileSize, eBlockPosY * self.tileSize)
 
         self.spritesheet = Spritesheet('sprites/tiles/wall.png', 1)
         self.textures = self.spritesheet.getImages(16, 16, 1)
         self.index = 0
 
         self.texture = self.textures[self.index]
-        self.image = self.tileTexture(self.blockWidth, self.blockHeight, self.texture, BLACK)
+        self.image = tile_texture(self.blockWidth, self.blockHeight, self.texture, BLACK)
 
-        self.setRects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
+        self.set_rects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
 
-    def __findSwitch(self) -> pygame.sprite.Sprite:
+    def __find_switch(self) -> pygame.sprite.Sprite:
         try:
             switchMatch = next(s for s in all_trinkets if s.idValue == self.idValue)
             return switchMatch
@@ -163,22 +168,22 @@ class LockedWall(TileBase):
             raise CustomError(f'Error: No switch with idValue of {self.idValue} found')
 
     def __activate(self):
-        currentSwitchState = self.switch.getState()
+        currentSwitchState = self.switch.get_state()
         if currentSwitchState != self.lastSwitchState:
             # Button state has changed, update lastChange and reset position
             self.lastChange = time.time()
             self.lastSwitchState = currentSwitchState
 
-        weight = getTimeDiff(self.lastChange) / 3
-        if not self.switch.getState() and self.hasActivated:
+        weight = get_time_diff(self.lastChange) / 3
+        if not self.switch.get_state() and self.hasActivated:
             self.pos = cerp(self.pos, self.startPos, weight)
-        elif self.switch.getState():
+        elif self.switch.get_state():
             self.hasActivated = True
             self.pos = cerp(self.pos, self.endPos, weight)
 
     def update(self):
         self.__activate()
-        self.centerRects()
+        self.center_rects()
 
     def __repr__(self):
         return f'LockedWall({self.idValue}, {self.pos}, {self.switch})'

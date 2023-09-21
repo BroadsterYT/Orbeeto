@@ -7,7 +7,18 @@ class Spritesheet(object):
         self.spritesheet = pygame.image.load(fileName).convert()
         self.columns = spritesPerRow
 
-    def getImages(self, width: int, height: int, imageCount: int, imageOffset: int = 0):
+    def getImages(self, width: int, height: int, imageCount: int, imageOffset: int = 0) -> list:
+        """Returns the images of the spritesheet as a list.
+        
+        ### Arguments
+            - width (``int``): The width of each frame
+            - height (``int``): The height of each frame
+            - imageCount (``int``): The number of images to "snip"
+            - imageOffset (``int``, optional): Which image should the "snip" start from? Defaults to ``0`` (the first image in the spritesheet).
+        
+        ### Returns
+            - ``list``: A list of the desired images
+        """        
         imageList = []
         offset = vec(imageOffset % self.columns, imageOffset // self.columns)
         for i in range(0, imageCount):

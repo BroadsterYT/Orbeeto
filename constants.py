@@ -10,11 +10,13 @@ deg = math.degrees
 
 sin = math.sin
 cos = math.cos
+pi = math.pi
+
 
 # ============================================================================ #
 #                                    Classes                                   #
 # ============================================================================ #
-class ColorRGB():
+class ColorRGB:
     def __init__(self, r: int, g: int, b: int):
         """A data type that represents a color given amounts of red, green, and blue.
         
@@ -22,7 +24,7 @@ class ColorRGB():
             - r (``int``): Red
             - g (``int``): Green
             - b (``int``): Blue
-        """        
+        """
         super().__init__()
         self.r, self.g, self.b = r, g, b
 
@@ -31,15 +33,15 @@ class ColorRGB():
             yield value
 
     def __add__(self, otherColor):
-        newR = math.sqrt((self.r**2 + otherColor.r**2) / 2)
-        newG = math.sqrt((self.g**2 + otherColor.g**2) / 2)
-        newB = math.sqrt((self.b**2 + otherColor.b**2) / 2)
+        new_r = math.sqrt((self.r ** 2 + otherColor.r ** 2) / 2)
+        new_g = math.sqrt((self.g ** 2 + otherColor.g ** 2) / 2)
+        new_b = math.sqrt((self.b ** 2 + otherColor.b ** 2) / 2)
 
-        return ColorRGB(newR, newG, newB)
-    
+        return ColorRGB(new_r, new_g, new_b)
+
     def __repr__(self):
         return f'ColorRGB({self.r}, {self.g}, {self.b})'
-    
+
 
 # ---------------------------------- Window ---------------------------------- #
 WINWIDTH = 1280
@@ -49,7 +51,9 @@ SPF = 0.0167
 
 ANIMTIME = 0.1
 
-LETTERS = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9, 'K': 10, 'L': 11, 'M': 12, 'N': 13, 'O': 14, 'P': 15, 'Q': 16, 'R': 17, 'S': 18, 'T': 19, 'U': 20, 'V': 21, 'W': 22, 'X': 23, 'Y': 24, 'Z': 25}
+LETTERS = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9, 'K': 10, 'L': 11, 'M': 12,
+           'N': 13, 'O': 14, 'P': 15, 'Q': 16, 'R': 17, 'S': 18, 'T': 19, 'U': 20, 'V': 21, 'W': 22, 'X': 23, 'Y': 24,
+           'Z': 25}
 NUMBERS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 SYMBOLS = {'/': 0}
 
@@ -97,8 +101,8 @@ PROJ_GRAPPLE = 'proj_GrappleHook'
 # A dictionary that stores all damage constants of all projectile types
 PROJDMG = {
     PROJ_STD: 1,
-    PROJ_LASER: 5, 
-    
+    PROJ_LASER: 5,
+
     PROJ_PORTAL: 20,
     PROJ_GRAPPLE: 0,
 }
@@ -138,15 +142,15 @@ MAT = {
 
 # All loot tables and their drops
 LTDROPS = {
-    0: [[(MAT[0],), (MAT[0],), (MAT[0],),], # Standard Grunt
-        [(MAT[0],), (MAT[0],), (MAT[0], MAT[0]),],
-        [(MAT[0],), (MAT[0], MAT[0],), (MAT[0], MAT[0],),],],
-    
-    1: [[(MAT[0],), (MAT[0],), (MAT[1],),], # Octogrunt
-        [(MAT[0],), (MAT[0],), (MAT[1],),],
-        [(MAT[1],), (MAT[0], MAT[1],), (MAT[1], MAT[1],),],],
+    0: [[(MAT[0],), (MAT[0],), (MAT[0],), ],  # Standard Grunt
+        [(MAT[0],), (MAT[0],), (MAT[0], MAT[0]), ],
+        [(MAT[0],), (MAT[0], MAT[0],), (MAT[0], MAT[0],), ], ],
 
-    2: [[(MAT[0],), (MAT[1],), (MAT[1],),], # Ambusher
-        [(MAT[1],), (MAT[0], MAT[1],), (MAT[0], MAT[1],),],
-        [(MAT[0],), (MAT[1], MAT[1],), (MAT[0], MAT[1], MAT[1]),],],
+    1: [[(MAT[0],), (MAT[0],), (MAT[1],), ],  # Octogrunt
+        [(MAT[0],), (MAT[0],), (MAT[1],), ],
+        [(MAT[1],), (MAT[0], MAT[1],), (MAT[1], MAT[1],), ], ],
+
+    2: [[(MAT[0],), (MAT[1],), (MAT[1],), ],  # Ambusher
+        [(MAT[1],), (MAT[0], MAT[1],), (MAT[0], MAT[1],), ],
+        [(MAT[0],), (MAT[1], MAT[1],), (MAT[0], MAT[1], MAT[1]), ], ],
 }

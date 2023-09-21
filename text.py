@@ -20,18 +20,18 @@ class DamageChar(ActorBase):
         self.start = time.time()
         self.pos = vec((posX, posY))
 
-        self.image = textToImage(str(damage), "sprites/ui/font.png", 9, 14, 36)
-        self.setRects(self.pos.x, self.pos.y, 9, 14, 9, 14)
+        self.image = text_to_image(str(damage), "sprites/ui/font.png", 9, 14, 36)
+        self.set_rects(self.pos.x, self.pos.y, 9, 14, 9, 14)
 
     def movement(self):
         self.accel = vec(0, 0)
-        if getTimeDiff(self.start) < 0.1:
+        if get_time_diff(self.start) < 0.1:
             self.accel = vec(0, -1)
 
-        self.accelMovement()
+        self.accel_movement()
 
     def update(self):
         self.movement()
 
-        if getTimeDiff(self.start) > 0.6:
+        if get_time_diff(self.start) > 0.6:
             self.kill()

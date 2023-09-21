@@ -24,15 +24,15 @@ class StatBarBase(ActorBase):
         self.cAccel = 0.58
 
         if isinstance(self, HealthBar):
-            self.setImages('sprites/stat_bars/health_bar.png', 128, 16, 1, 17, 0, 16)
+            self.set_images('sprites/stat_bars/health_bar.png', 128, 16, 1, 17, 0, 16)
         elif isinstance(self, DodgeBar):
-            self.setImages('sprites/stat_bars/dodge_bar.png', 128, 16, 1, 17, 0, 16)
+            self.set_images('sprites/stat_bars/dodge_bar.png', 128, 16, 1, 17, 0, 16)
         elif isinstance(self, AmmoBar):
-            self.setImages('sprites/stat_bars/ammo_bar.png', 128, 16, 1, 17, 0, 16)
+            self.set_images('sprites/stat_bars/ammo_bar.png', 128, 16, 1, 17, 0, 16)
         else:
             raise TypeError()
         
-        self.setRects(self.pos.x, self.pos.y, 128, 16, 128, 16)
+        self.set_rects(self.pos.x, self.pos.y, 128, 16, 128, 16)
 
         self.number = BarNumbers(self)
 
@@ -55,34 +55,33 @@ class BarNumbers(ActorBase):
         self.bar = bar
         self.owner = self.bar.owner
 
-        self.renderImages()
-        self.setRects(self.pos.x, self.pos.y, self.image.get_width(), self.image.get_height(), self.image.get_width(), self.image.get_height())
+        self.render_images()
+        self.set_rects(self.pos.x, self.pos.y, self.image.get_width(), self.image.get_height(), self.image.get_width(), self.image.get_height())
 
         self.pos = vec(self.bar.pos.x + self.bar.rect.width // 2 + self.rect.width // 2, self.bar.pos.y)
 
-    def renderImages(self):
+    def render_images(self):
         if isinstance(self.bar, HealthBar):
-            self.image = textToImage(str(self.owner.hp) + '/' + str(self.owner.maxHp), 'sprites/ui/small_font.png', 5, 7, 37)
+            self.image = text_to_image(str(self.owner.hp) + '/' + str(self.owner.maxHp), 'sprites/ui/small_font.png', 5, 7, 37)
 
         elif isinstance(self.bar, DodgeBar):
-            self.image = textToImage(str(self.owner.hitTime) + '/' + str(self.owner.hitTimeCharge), 'sprites/ui/small_font.png', 5, 7, 37)
+            self.image = text_to_image(str(self.owner.hitTime) + '/' + str(self.owner.hitTimeCharge), 'sprites/ui/small_font.png', 5, 7, 37)
 
         elif isinstance(self.bar, AmmoBar):
-            self.image = textToImage(str(self.owner.ammo) + '/' + str(self.owner.maxAmmo), 'sprites/ui/small_font.png', 5, 7, 37)
+            self.image = text_to_image(str(self.owner.ammo) + '/' + str(self.owner.maxAmmo), 'sprites/ui/small_font.png', 5, 7, 37)
 
         else:
             raise TypeError()
 
     def movement(self):
         self.pos = vec(self.bar.pos.x + self.bar.rect.width // 2 + self.rect.width // 2, self.bar.pos.y)
-        self.rect.center = self.pos
-        self.hitbox.center = self.pos
+        self.center_rects()
 
     def update(self):
         self.movement()
 
         if self.owner.hp > 0:
-            self.renderImages()
+            self.render_images()
         else:
             self.kill()
 
@@ -96,7 +95,7 @@ class HealthBar(StatBarBase):
 
         if self.owner.hp > 0:
             self.index = floor((16 * self.owner.hp) / self.owner.maxHp)
-            self.renderImages()
+            self.render_images()
         else:
             self.kill()
 
@@ -111,7 +110,7 @@ class DodgeBar(StatBarBase):
         if self.owner.hp > 0:
             if self.owner.hitTime < self.owner.hitTimeCharge:
                 self.index = ceil((16 * self.owner.hitTime) / self.owner.hitTimeCharge)
-                self.renderImages()
+                self.render_images()
         else:
             self.kill()
 
@@ -125,7 +124,7 @@ class AmmoBar(StatBarBase):
 
         if self.owner.hp > 0:
             self.index = floor((16 * self.owner.ammo) / self.owner.maxAmmo)
-            self.renderImages()
+            self.render_images()
         else:
             self.kill()
 

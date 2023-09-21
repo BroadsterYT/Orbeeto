@@ -1,15 +1,11 @@
-import pygame
-import random as rand
-
-from bullets import *
-from class_bases import *
+import bullets
 from itemdrops import *
 from statbars import *
 
 
 class EnemyBase(ActorBase):
     def __init__(self):
-        """The base class for all enemy objects. It contains parameters and methods to gain better control over enemy objects."""    
+        """The base class for all enemy objects. It gives you better control over enemy objects."""
         super().__init__()
         self.pos = vec((0, 0))
         self.vel = vec(0, 0)
@@ -17,7 +13,7 @@ class EnemyBase(ActorBase):
 
         self.isShooting = False
 
-        #-------------------- In-game Stats --------------------#
+        # -------------------- In-game Stats --------------------#
         self.maxHp = None
         self.hp = None
         self.maxAtk = None
@@ -28,7 +24,7 @@ class EnemyBase(ActorBase):
 
         self.healthBar = HealthBar(self)
 
-    def setStats(self, hp: int, attack: int, defense: int, xp: int):
+    def set_stats(self, hp: int, attack: int, defense: int, xp: int):
         self.maxHp = hp
         self.hp = hp
         self.maxAtk = attack
@@ -37,14 +33,14 @@ class EnemyBase(ActorBase):
         self.defense = defense
         self.xpWorth = xp
 
-    def awardXp(self):
+    def award_xp(self):
         for a_player in all_players:
             a_player.xp += self.xpWorth
-            a_player.updateLevel()
-            a_player.updateMaxStats()
+            a_player.update_level()
+            a_player.update_max_stats()
 
-    def dropItems(self, tableIndex):
-        drops = LTDROPS[tableIndex]
+    def drop_items(self, table_index):
+        drops = LTDROPS[table_index]
         row = rand.randint(0, 2)
         column = rand.randint(0, 2)
         
@@ -53,7 +49,7 @@ class EnemyBase(ActorBase):
 
 
 class StandardGrunt(EnemyBase):
-    def __init__(self, posX: int, posY: int):
+    def __init__(self, pos_x: float, pos_y: float):
         """A simple enemy that moves to random locations and shoots at players.
         
         ### Arguments
@@ -67,188 +63,119 @@ class StandardGrunt(EnemyBase):
         self.lastRelocate = time.time()
         self.lastShot = time.time()
 
-        self.pos = vec((posX, posY))
+        self.pos = vec((pos_x, pos_y))
         self.randPos = vec(rand.randint(64, WINWIDTH - 64), rand.randint(64, WINHEIGHT - 64))
 
-        self.setImages("sprites/enemies/standard_grunt.png", 64, 64, 5, 5, 0, 0)
-        self.setRects(0, 0, 64, 64, 32, 32)
+        self.set_images('sprites/enemies/standard_grunt.png', 64, 64, 5, 5, 0, 0)
+        self.set_rects(0, 0, 64, 64, 32, 32)
 
-        #---------------------- Game stats & UI ----------------------#
-        self.maxHp = 15
-        initStats(self, 15, 10, 10, 40, 0.4)
+        # ---------------------- Game stats & UI ----------------------#
+        self.set_stats(15, 10, 10, 40)
 
-    def movement(self, canShoot: bool = True):
+# --------------------------------- Movement --------------------------------- #
+    def movement(self, can_shoot: bool = True):
         if self.canUpdate and self.hp > 0:
-            if getTimeDiff(self.lastRelocate) > rand.uniform(2.5, 5.0):
-                self.randPos.x = rand.randint(self.image.get_width() + 64, WINWIDTH - self.image.get_width() - 64)
-                self.randPos.y = rand.randint(self.image.get_height() + 64, WINHEIGHT - self.image.get_height() - 64)
+            self.__set_rand_pos()
+            self.accel = self.get_accel()
+            
+            if can_shoot:
+                self.shoot(get_closest_player(self), 6, rand.uniform(0.4, 0.9))
+
+            self.accel_movement()
+
+    def __set_rand_pos(self):
+        """Assigns a random value within the proper range for the enemy to travel to."""        
+        if get_time_diff(self.lastRelocate) > rand.uniform(2.5, 5.0):
+            self.randPos.x = rand.randint(self.image.get_width(), WINWIDTH - self.image.get_width())
+            self.randPos.y = rand.randint(self.image.get_height(), WINHEIGHT - self.image.get_height())
+
+            pass_check = True
+            # If the assigned random position is within a border or wall, it will run again and assign a new one.
+            for border in all_borders:
+                if border.hitbox.collidepoint(self.randPos.x, self.randPos.y):
+                    pass_check = False
+
+            for wall in all_walls:
+                if wall.hitbox.collidepoint(self.randPos.x, self.randPos.y):
+                    pass_check = False
+            
+            if pass_check:
                 self.lastRelocate = time.time()
 
-            self.accel = self.getAccel()
-            
-            if canShoot:
-                self.shoot(getClosestPlayer(self), 6, rand.uniform(0.4, 0.9))
+    def get_accel(self) -> pygame.math.Vector2:
+        room = get_room()
+        final_accel = vec(0, 0)
 
-            self.accelMovement()
-
-    def getAccel(self) -> pygame.math.Vector2:
-        room = self.getRoom()
-        finalAccel = vec(0, 0)
-
-        finalAccel += room.getAccel()
+        final_accel += room.get_accel()
 
         if self.pos.x != self.randPos.x or self.pos.y != self.randPos.y:
             if self.pos.x < self.randPos.x - self.hitbox.width // 2:
-                finalAccel.x += self.cAccel
+                final_accel.x += self.cAccel
             if self.pos.x > self.randPos.x + self.hitbox.width // 2:
-                finalAccel.x -= self.cAccel
+                final_accel.x -= self.cAccel
 
             if self.pos.y < self.randPos.y - self.hitbox.height // 2:
-                finalAccel.y += self.cAccel
+                final_accel.y += self.cAccel
             if self.pos.y > self.randPos.y + self.hitbox.height // 2:
-                finalAccel.y -= self.cAccel
+                final_accel.y -= self.cAccel
 
-        return finalAccel
+        return final_accel
 
-    def shoot(self, target, vel, shootTime):
-        if getTimeDiff(self.lastShot) > shootTime:
+# ---------------------------------- Actions --------------------------------- #
+    def shoot(self, target, vel: float, shoot_time: float):
+        """Shoots a bullet at a specific velocity at a specified interval.
+        
+        ### Arguments
+            - target (``ActorBase``): The target the enemy is firing at
+            - vel (``float``): The velocity of the bullet
+            - shootTime (``float``): How often the enemy should fire
+        """        
+        if get_time_diff(self.lastShot) > shoot_time:
             self.isShooting = True
             try:
-                angle = getAngleToSprite(self, target)
-            except:
+                angle = get_angle_to_sprite(self, target)
+            except ValueError:
                 angle = 0
 
-            vel_x = vel * -sin(rad(angle))
-            vel_y = vel * -cos(rad(angle))
+            cos_angle = cos(rad(angle))
+            sin_angle = sin(rad(angle))
 
-            all_projs.add(EnemyStdBullet(self, self.pos.x - (21 * cos(rad(angle))) - (30 * sin(rad(angle))), self.pos.y + (21 * sin(rad(angle))) - (30 * cos(rad(angle))), vel_x, vel_y))
+            vel_x = vel * -sin_angle
+            vel_y = vel * -cos_angle
+            offset = vec(21, 30)
+
+            all_projs.add(
+                bullets.EnemyStdBullet(self, self.pos.x - (offset.x * cos_angle) - (offset.y * sin_angle),
+                                       self.pos.y + (offset.x * sin_angle) - (offset.y * cos_angle),
+                                       vel_x, vel_y)
+                )
             self.lastShot = time.time()
 
+# --------------------------------- Updating --------------------------------- #
     def update(self):
         if self.canUpdate and self.visible and self.hp > 0:
-            self.collideCheck(all_players, all_walls)
-            # self.movement()
+            self.collide_check(all_players, all_walls)
 
             # Animation
-            if getTimeDiff(self.lastFrame) > ANIMTIME:
-                if self.isShooting == True:
-                    self.index += 1
-                    if self.index > 4:
-                        self.index = 0
-                        self.isShooting = False
-                self.lastFrame = time.time()
-            self.rotateImage(getAngleToSprite(self, getClosestPlayer(self)))
+            self.__animate()
+            self.rotate_image(get_angle_to_sprite(self, get_closest_player(self)))
 
         if self.hp <= 0:
-            self.dropItems(0)
-            self.awardXp()
+            self.drop_items(0)
+            self.award_xp()
             self.kill()
+
+    def __animate(self):
+        if get_time_diff(self.lastFrame) > ANIMTIME:
+            if self.isShooting:
+                self.index += 1
+                if self.index > 4:
+                    self.index = 0
+                    self.isShooting = False
+            self.lastFrame = time.time()
 
     def __str__(self):
         return f'StandardGrunt at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\nxp worth: {self.xpWorth}'
 
     def __repr__(self):
         return f'StandardGrunt({self.pos}, {self.vel}, {self.accel}, {self.xpWorth})'
-
-
-class OctoGrunt(EnemyBase):
-    def __init__(self, posX, posY):
-        super().__init__()
-        self.show(LAYER['enemy'])
-        all_enemies.add(self)
-
-        self.lastRelocate = time.time()
-        self.lastShot = time.time()
-        
-        self.pos = vec((posX, posY))
-        self.randPos = vec(rand.randint(64, WINWIDTH - 64), rand.randint(64, WINHEIGHT - 64))
-        
-        self.setImages("sprites/enemies/octogrunt.png", 64, 64, 1, 1, 0, 0)
-        self.setRects(0, 0, 64, 64, 32, 32)
-
-        #---------------------- Game stats & UI ----------------------#
-        self.maxHp = 44
-        initStats(self, 44, 10, 10, 90, 0.4)
-    
-    def movement(self, canShoot):
-        if self.canUpdate and self.visible:
-            if getTimeDiff(self.lastRelocate) > rand.uniform(2.5, 5.0):
-                self.randPos.x = rand.randint(0, WINWIDTH)
-                self.randPos.y = rand.randint(0, WINHEIGHT)
-                self.lastRelocate = time.time()
-            
-            self.accel = self.getAccel()
-            
-            if canShoot == True:
-                self.shoot(getClosestPlayer(self), 3, 1)
-            
-            self.accelMovement()
-
-    def getAccel(self) -> pygame.math.Vector2:
-        finalAccel = vec(0, 0)
-        if self.pos.x != self.randPos.x or self.pos.y != self.randPos.y:
-            if self.pos.x < self.randPos.x - self.hitbox.width:
-                finalAccel.x += self.cAccel
-            elif self.pos.x > self.randPos.x + self.hitbox.width:
-                finalAccel.x -= self.cAccel
-            else:
-                pass
-
-            if self.pos.y < self.randPos.y - self.hitbox.height:
-                finalAccel.y += self.cAccel
-            elif self.pos.y > self.randPos.y + self.hitbox.height:
-                finalAccel.y -= self.cAccel
-            else:
-                pass
-
-        return finalAccel
-
-    def shoot(self, target, vel, shoot_time):
-        if getTimeDiff(self.lastShot) > shoot_time:
-            self.isShooting = True
-            angle_to_target = getAngleToSprite(self, target)
-            vel_x = vel * -sin(rad(angle_to_target))
-            vel_y = vel * -cos(rad(angle_to_target))
-            OFFSET = 21
-            all_projs.add(
-                EnemyStdBullet(self, self.pos.x - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))), vel_x, vel_y),
-                EnemyStdBullet(self, self.pos.x + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))), -vel_x, -vel_y),
-                EnemyStdBullet(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))), self.pos.y + (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target + 90)), vel * -cos(rad(angle_to_target + 90))),
-                EnemyStdBullet(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))), self.pos.y - (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target + 90)), -vel * -cos(rad(angle_to_target + 90))),
-                EnemyStdBullet(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target + 45)), vel * -cos(rad(angle_to_target + 45))),
-                EnemyStdBullet(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target + 45)), -vel * -cos(rad(angle_to_target + 45))),
-                EnemyStdBullet(self, self.pos.x + (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), self.pos.y - (OFFSET * cos(rad(angle_to_target))) - (OFFSET * sin(rad(angle_to_target))), vel * -sin(rad(angle_to_target - 45)), vel * -cos(rad(angle_to_target - 45))),
-                EnemyStdBullet(self, self.pos.x - (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), self.pos.y + (OFFSET * cos(rad(angle_to_target))) + (OFFSET * sin(rad(angle_to_target))), -vel * -sin(rad(angle_to_target - 45)), -vel * -cos(rad(angle_to_target - 45))),
-            )
-            self.lastShot = time.time()
-
-    def update(self):
-        if self.canUpdate and self.visible and self.hp > 0:
-            self.collideCheck(all_players, all_walls)
-            self.movement(True)
-
-            # Animation
-            if getTimeDiff(self.lastFrame) > ANIMTIME:
-                if self.isShooting:
-                    self.index += 0
-                    if self.index > 4:
-                        self.index = 0
-                    self.isShooting = False
-                self.lastFrame = time.time()
-            self.image = self.images[self.index]
-            self.origImage = self.origImages[self.index]
-            
-            # Animation rotation
-            self.image = pygame.transform.rotate(self.origImage, int(getAngleToSprite(self, getClosestPlayer(self))))
-            self.rect = self.image.get_rect(center = self.pos)
-        
-        if self.hp <= 0:
-            self.dropItems(1)
-            self.awardXp()
-            self.kill()
-
-    def __str__(self):
-        return f'OctoGrunt at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\nxp worth: {self.xpWorth}\n'
-    
-    def __repr__(self):
-        return f'OctoGrunt({self.pos}, {self.vel}, {self.accel}, {self.xpWorth})'

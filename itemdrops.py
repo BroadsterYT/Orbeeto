@@ -12,8 +12,8 @@ class DropBase(ActorBase):
 
 
 class ItemDrop(DropBase):
-    def __init__(self, droppedFrom, itemName):
-        """An item or material dropped by an enemey that is able to be collected
+    def __init__(self, dropped_from, item_name):
+        """An item or material dropped by an enemy that can be collected
         
         ### Arguments
             - droppedFrom (``pygame.sprite.Sprite``): The enemy that the item was dropped from
@@ -23,12 +23,12 @@ class ItemDrop(DropBase):
         self.show(LAYER['drops'])
         all_drops.add(self)
         
-        self.droppedFrom = droppedFrom
-        self.mat = itemName
+        self.droppedFrom = dropped_from
+        self.mat = item_name
 
         self.startTime = time.time()
         self.pos = vec(self.droppedFrom.pos.x, self.droppedFrom.pos.y)
-        self.randAccel = getRandComponents(self.cAccel)
+        self.randAccel = get_rand_components(self.cAccel)
         
         self.spritesheet = Spritesheet("sprites/textures/item_drops.png", 8)
         self.index = 0
@@ -49,36 +49,36 @@ class ItemDrop(DropBase):
     def movement(self):
         self.accel = vec(0, 0)
         if self.canUpdate:
-            existTime = getTimeDiff(self.startTime)
-            self.accel = self.getAccel()
+            exist_time = get_time_diff(self.startTime)
+            self.accel = self.get_accel()
             
-            if existTime <= 10:
+            if exist_time <= 10:
                 self.origImage = self.origImages[self.index]
-                self.image = pygame.transform.rotate(self.origImage, int(degrees(sin(self.period_mult * pi * existTime) * (1 / existTime))))
+                self.image = pygame.transform.rotate(self.origImage, int(degrees(sin(self.period_mult * pi * exist_time) * (1 / exist_time))))
                 self.rect = self.image.get_rect(center = self.rect.center)
             
-            self.accelMovement()
+            self.accel_movement()
 
-    def getAccel(self) -> pygame.math.Vector2:
-        room = self.getRoom()
-        finalAccel = vec(0, 0)
+    def get_accel(self) -> pygame.math.Vector2:
+        room = get_room()
+        final_accel = vec(0, 0)
 
-        finalAccel += room.getAccel()
+        final_accel += room.get_accel()
 
-        existTime = getTimeDiff(self.startTime)
-        if existTime <= 0.1:
-            finalAccel += self.randAccel
+        exist_time = get_time_diff(self.startTime)
+        if exist_time <= 0.1:
+            final_accel += self.randAccel
 
-        return finalAccel
+        return final_accel
 
     def update(self):
         self.movement()
-        self.collideCheck(all_walls)
+        self.collide_check(all_walls)
 
         for a_player in all_players:
             if self.hitbox.colliderect(a_player):
                 a_player.inventory[self.mat] += 1
-                a_player.menu.updateMenuSlots()
+                a_player.menu.update_menu_slots()
                 self.kill()
 
 
