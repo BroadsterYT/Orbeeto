@@ -1,7 +1,5 @@
-import pygame
-import os
+from pygame import Vector2
 
-from class_bases import *
 from portals import *
 from text import *
 from visuals import *
@@ -274,6 +272,8 @@ class PlayerLaserBullet(BulletBase):
 
 # ------------------------------ Utility Bullets ----------------------------- #
 class PortalBullet(BulletBase):
+    pos: Vector2
+
     def __init__(self, shot_from, pos_x, pos_y, vel_x, vel_y):
         super().__init__()
         self.show(LAYER['proj'])
@@ -366,12 +366,12 @@ class PortalBullet(BulletBase):
 
 
 class NewGrappleBullet(BulletBase):
-    def __init__(self, shotFrom, posX: float, posY: float, velX: float, velY: float):
+    def __init__(self, shot_from, pos_x: float, pos_y: float, vel_x: float, vel_y: float):
         super().__init__()
         self.show(LAYER['grapple'])
         self.damage = PROJDMG[PROJ_GRAPPLE]
         
-        self.shotFrom = shotFrom
+        self.shotFrom = shot_from
 
         self.isHooked = False
         self.grappledTo = None
@@ -379,8 +379,8 @@ class NewGrappleBullet(BulletBase):
         
         self.returning = False
 
-        self.pos = vec((posX, posY))
-        self.vel = vec(velX, velY)
+        self.pos = vec((pos_x, pos_y))
+        self.vel = vec(vel_x, vel_y)
         self.accel = vec(0, 0)
         self.cAccel = 1.5
 
@@ -391,18 +391,19 @@ class NewGrappleBullet(BulletBase):
         self.set_rects(0, 0, 32, 32, 16, 16)
         self.rotate_image(get_vec_angle(self.vel.x, self.vel.y))
 
-    def land(self, grappledTo):
+    def land(self, grappled_to):
         self.isHooked = True
-        self.grappledTo = grappledTo
-        if self.grappledTo != None:
+        self.grappledTo = grappled_to
+        if self.grappledTo is not None:
             self.grappledTo.isGrappled = True
             self.posOffset = vec(self.pos.x - self.grappledTo.pos.x, self.pos.y - self.grappledTo.pos.y)
 
     def shatter(self):
-        """Completely destroys the grappling hook"""        
+        """Completely destroys the grappling hook.
+        """
         self.returning = False
         self.shotFrom.grapple = None
-        if self.grappledTo != None:
+        if self.grappledTo is not None:
             self.grappledTo.isGrappled = False
 
         self.portalList = []
@@ -435,15 +436,15 @@ class NewGrappleBullet(BulletBase):
                 else:
                     self.land(collidingSprite)
 
-    def sendBack(self):
+    def send_back(self):
         if self.grappledTo not in all_walls:
             # Hook returns to portal it entered
             if len(self.portalList) > 1:
                 angle = get_angle_to_sprite(self, self.portalList[1])
                 room = get_room()
-                roomAccel = room.get_accel()
-                self.accel.x = self.cAccel * -sin(rad(angle)) + roomAccel.x
-                self.accel.y = self.cAccel * -cos(rad(angle)) + roomAccel.y
+                room_accel = room.get_accel()
+                self.accel.x = self.cAccel * -sin(rad(angle)) + room_accel.x
+                self.accel.y = self.cAccel * -cos(rad(angle)) + room_accel.y
 
                 if self.hitbox.colliderect(self.portalList[1]):
                     self.portalList = []
@@ -452,9 +453,9 @@ class NewGrappleBullet(BulletBase):
             else:
                 angle = get_angle_to_sprite(self, self.shotFrom)
                 room = get_room()
-                roomAccel = room.get_accel()
-                self.accel.x = self.cAccel * -sin(rad(angle)) + roomAccel.x
-                self.accel.y = self.cAccel * -cos(rad(angle)) + roomAccel.y
+                room_accel = room.get_accel()
+                self.accel.x = self.cAccel * -sin(rad(angle)) + room_accel.x
+                self.accel.y = self.cAccel * -cos(rad(angle)) + room_accel.y
 
                 # Hook disappears once it returns
                 if self.hitbox.colliderect(self.shotFrom.hitbox):
@@ -463,7 +464,7 @@ class NewGrappleBullet(BulletBase):
             self.accel_movement()
 
             # Hook follows whatever it has grabbed
-            if self.grappledTo != None and self.grappledTo not in all_portals:
+            if self.grappledTo is not None and self.grappledTo not in all_portals:
                 if self.grappledTo not in all_walls:
                     self.grappledTo.pos = self.pos
 
@@ -480,22 +481,22 @@ class NewGrappleBullet(BulletBase):
                 self.pos.y += self.vel.y
 
             elif self.isHooked:
-                if self.grappledTo != None and self.grappledTo not in all_walls:
+                if self.grappledTo is not None and self.grappledTo not in all_walls:
                     self.pos.x = self.grappledTo.pos.x
                     self.pos.y = self.grappledTo.pos.y
                 
-                elif self.grappledTo != None and self.grappledTo in all_walls:
+                elif self.grappledTo is not None and self.grappledTo in all_walls:
                     self.pos = self.grappledTo.pos + self.posOffset
                 
                 else:
                     self.pos = self.pos
         
         elif self.returning:
-            self.sendBack()
+            self.send_back()
 
         self.center_rects()
 
-    def bindProj(self):
+    def bind_proj(self):
         if self.canUpdate and self.visible:
             if not self.isHooked:
                 self.proj_collide(all_enemies, True)
@@ -507,14 +508,14 @@ class NewGrappleBullet(BulletBase):
             self.movement()
 
     def update(self):
-        self.bindProj()
+        self.bind_proj()
 
 
 # ============================================================================ #
 #                                 Enemy Bullets                                #
 # ============================================================================ #
 class EnemyStdBullet(BulletBase):
-    def __init__(self, shotFrom, posX: float, posY: float, velX: float, velY: float, bounceCount: int = 1):
+    def __init__(self, shot_from, pos_x: float, pos_y: float, vel_x: float, vel_y: float, bounce_count: int = 1):
         """A projectile fired by an enemy that moves at a constant velocity
 
         ### Arguments
@@ -528,12 +529,12 @@ class EnemyStdBullet(BulletBase):
         self.show(LAYER['proj'])
         self.damage = PROJDMG[PROJ_STD]
 
-        self.shotFrom = shotFrom
+        self.shotFrom = shot_from
 
-        self.pos = vec((posX, posY))
-        self.vel = vec(velX, velY)
+        self.pos = vec((pos_x, pos_y))
+        self.vel = vec(vel_x, vel_y)
         self.cVel = self.vel
-        self.ricCount = bounceCount
+        self.ricCount = bounce_count
 
         self.set_images("sprites/bullets/bullets.png", 32, 32, 8, 1)
         self.set_rects(self.pos.x, self.pos.y, 8, 8, 6, 6)

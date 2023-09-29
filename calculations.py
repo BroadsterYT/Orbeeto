@@ -11,13 +11,13 @@ from spritesheet import Spritesheet
 #                                 Returns float                                #
 # ============================================================================ #
 def get_angle_to_mouse(any_sprite) -> float:
-    """Returns the angle between a sprite and the mouse cursor
-    
-    ### Arguments
-        - anySprite ``(pygame.sprite.Sprite)``: The sprite to measure the angle from
-    
-    ### Returns
-        - ``float``: The angle between ``any_sprite`` and the mouse cursor
+    """Returns the angle between a sprite and the mouse cursor.
+
+    Args:
+        any_sprite: The sprite to measure the angle from
+
+    Returns:
+        float: The angle between the sprite and the mouse cursor
     """
     mouse_x, mouse_y = pygame.mouse.get_pos()
     length_to_x = mouse_x - any_sprite.pos.x
@@ -43,14 +43,14 @@ def get_angle_to_mouse(any_sprite) -> float:
 
 
 def get_angle_to_sprite(first_sprite, second_sprite) -> float:
-    """Returns the angle from one sprite to another
-    
-    ### Arguments
-        - firstSprite (``pygame.sprite.Sprite``): The sprite to begin the measurement from
-        - secondSprite (``pygame.sprite.Sprite``): The sprite to measure the angle to
-    
-    ### Returns
-        ``float``: The angle between the two sprites
+    """Returns the angle from one sprite to another.
+
+    Args:
+        first_sprite: The sprite to begin the measurement from
+        second_sprite: The sprite to measure the angle to
+
+    Returns:
+        float: The angle between the two sprites
     """
     length_to_x = second_sprite.pos.x - first_sprite.pos.x
     length_to_y = second_sprite.pos.y - first_sprite.pos.y
@@ -75,15 +75,14 @@ def get_angle_to_sprite(first_sprite, second_sprite) -> float:
 
 
 def get_angle_to_c_from_s(any_sprite, coords) -> float:
-    """Returns the angle between a sprite and a pair of coordinates. 
-    ## NOTE: The angle is measured from the sprite to the coordinates!
-    
-    ### Arguments
-        - anySprite (``pygame.sprite.Sprite``): _description_
-        - coords (``pygame.math.Vector2``): _description_
-    
-    ### Returns
-        - ``float``: _description_
+    """Returns the angle between a sprite and a set of coordinates. The angle is measured from the sprite to the coords.
+
+    Args:
+        any_sprite: The sprite to measure from
+        coords: The coordinates to measure from
+
+    Returns:
+        float: The angle between the sprite and the set of coordinates
     """
     length_to_x = coords.x - any_sprite.pos.x
     length_to_y = coords.y - any_sprite.pos.y
@@ -109,13 +108,13 @@ def get_angle_to_c_from_s(any_sprite, coords) -> float:
 
 def get_angle_to_c_from_c(start_coords: pygame.math.Vector2, end_coords: pygame.math.Vector2) -> float:
     """Returns the angle between two coordinate points
-    
-    ### Arguments
-        - startCoords (``pygame.math.Vector2``): The first set of coordinates
-        - endCoords (``pygame.math.Vector2``): The second set of coordinates
-    
-    ### Returns
-        - ``float``: The angle between the two coordinate point
+
+    Args:
+        start_coords: The first set of coordinates
+        end_coords: The second set of coordinates
+
+    Returns:
+        float: The angle between the two coordinate points
     """
     length_x = end_coords.x - start_coords.x
     length_y = end_coords.y - start_coords.y
@@ -198,20 +197,20 @@ def get_vec_angle(vec_x: float, vec_y: float) -> float:
 
 
 def get_time_diff(time_value: float) -> float:
-    """Returns the difference between the current time and another 
-    
-    ### Arguments
-        - timeValue (``float``): The time to compare to the current time
-    
-    ### Returns
-        - ``float``: The difference between the current time and the other time
+    """Returns the difference between the current time and another.
+
+    Args:
+        time_value: The time to compare to the current time
+
+    Returns:
+        float: The difference between the current time and the other time
     """
     return time.time() - time_value
 
 
 # ------------------------------ Math Functions ------------------------------ #
 # noinspection SpellCheckingInspection
-def cerp(a: float, b: float, weight: float) -> float:
+def cerp(a: int | float | vec, b: int | float | vec, weight: float) -> float:
     """Cosinusoidally interpolates between two values given a weight
 
     Args:
@@ -220,7 +219,7 @@ def cerp(a: float, b: float, weight: float) -> float:
         weight: The weight to interpolate by
 
     Returns:
-        ``float``: The interpolated value
+        float: The interpolated value
     """
     if weight < 0:
         weight = 0
@@ -231,7 +230,7 @@ def cerp(a: float, b: float, weight: float) -> float:
 
 
 # noinspection SpellCheckingInspection
-def eerp(a: float, b: float, weight: float) -> ValueError | float:
+def eerp(a: int | float | vec, b: int | float | vec, weight: float) -> float:
     """Exponentially interpolates between two values given a weight
 
     Args:
@@ -241,9 +240,12 @@ def eerp(a: float, b: float, weight: float) -> ValueError | float:
 
     Returns:
         float: The interpolated value
+
+    Raises:
+        ValueError: Raised if a and b have opposite signs
     """
     if (a < 0 < b) or (a > 0 > b):
-        return ValueError('Error: \"a\" and \"b\" cannot have opposite signs')
+        raise ValueError('Error: \"a\" and \"b\" cannot have opposite signs')
 
     true_b = pow(a / b, -1)
     true_a = a
@@ -271,9 +273,6 @@ def calculate_damage(sender, receiver, proj) -> int:
         int: The damage the receiver will take
     """
     damage = math.ceil((sender.atk / receiver.defense) * proj.damage)
-
-    # if damage < 1:
-    #     damage = 1
 
     return damage
 
@@ -393,13 +392,13 @@ def triangle_collide(instig, sprite) -> str:
 
 def wall_side_check(wall, proj) -> str:
     """Checks for which side of a wall a projectile hit and returns that value
-    
-    ### Arguments
-        - wall (``pygame.sprite.Sprite``): The wall being hit
-        - proj (``pygame.sprite.Sprite``): The projectile being fired
-    
-    ### Returns
-        - ``str``: The side of the wall that the projectile hit
+
+    Args:
+        wall: The wall being hit
+        proj: The projectile being fired
+
+    Returns:
+        str: The side of the wall that the projectile hit
     """
     if wall.pos.x - wall.hitbox.width * 0.45 <= proj.pos.x <= wall.pos.x + wall.hitbox.width * 0.45:
         if proj.pos.y < wall.pos.y:
@@ -418,29 +417,30 @@ def wall_side_check(wall, proj) -> str:
 #                                Returns Vector2                               #
 # ============================================================================ #
 def get_top_left_coords(sprite_width: int, sprite_height: int, desired_x: float,
-                        desired_y: float) -> pygame.math.Vector2:
-    """Returns the coordinates of the topleft corner of a sprite that is centered at its middle
-    
-    ### Arguments
-        - spriteWidth (``int``): _description_
-        - spriteHeight (``int``): _description_
-        - desiredX (``float``): _description_
-        - desiredY (``float``): _description_
-    
-    ### Returns
-        - ``pygame.math.Vector2``: _description_
+                        desired_y: float) -> vec:
+    """Returns the coordinates of the top-left corner of a sprite that is centered at its middle.
+
+    Args:
+        sprite_width: The width of the sprite (in pixels)
+        sprite_height: The height of the sprite (in pixels)
+        desired_x: Where the sprite's center should be placed along the x-axis
+        desired_y: Where the sprite's center should be placed along the y-axis
+
+    Returns:
+        pygame.math.Vector2: The coordinates of the sprite's top-left corner
     """
     return vec(desired_x + sprite_width // 2, desired_y + sprite_height // 2)
 
 
-def get_rand_components(max_value: int | float) -> pygame.math.Vector2:
-    """Given a maximum value, will output a vector containing two components that vectorially add to that value. The result can be positive or negative.
-    
-    ### Arguments
-        - ``maxValue`` ``(pygame.math.vector2)``: The value in which the components will vectorially add to. The result can add to +maxValue ot -maxValue.
-    
-    ### Returns
-        - ``pygame.math.Vector2``: The resultant random vector
+def get_rand_components(max_value: int | float) -> vec:
+    """Given a maximum value, will output a vector containing two components that vectorially add to that value.
+    The result can be positive or negative.
+
+    Args:
+        max_value: The value the components will vectorially add to. The result can add to +maxValue or -maxValue.
+
+    Returns:
+        pygame.math.Vector2: The resultant random vector
     """
     x = rand.uniform(-max_value, max_value)
     y = math.sqrt(pow(max_value, 2) - pow(x, 2))
@@ -454,13 +454,13 @@ def get_rand_components(max_value: int | float) -> pygame.math.Vector2:
 # ============================================================================ #
 def combine_images(base_img: pygame.Surface, top_img: pygame.Surface) -> pygame.Surface:
     """Combines two images directly on top of one another
-    
-    ### Arguments
-        - baseImg (``pygame.Surface``): The image to place first
-        - topImg (``pygame.Surface``): The image being pasted on top of the first image
-    
-    ### Returns
-        - ``pygame.Surface``: The combined image
+
+    Args:
+        base_img: The image to place first
+        top_img: The image being pasted on top of the first image
+
+    Returns:
+        pygame.Surface: The combined image
     """
     new_img: pygame.Surface = pygame.Surface(vec(max(base_img.get_width(), top_img.get_width())),
                                              max(base_img.get_height(), top_img.get_height()))
@@ -476,20 +476,20 @@ def combine_images(base_img: pygame.Surface, top_img: pygame.Surface) -> pygame.
 
 
 def text_to_image(text: str, font_img: str, char_width: int, char_height: int, char_count: int) -> pygame.Surface:
-    """Converts a spring of text into a surface with a given font
-    
-    ### Arguments
-        - text (``str``): _description_
-        - fontImg (``str``): _description_
-        - charWidth (``int``): _description_
-        - charHeight (``int``): _description_
-        - charCount (``int``): _description_
-    
-    ### Returns
-        - ``pygame.Surface``: _description_
+    """Converts a string of text into an image with a given font.
+
+    Args:
+        text: The text string to convert into an image
+        font_img: The folder directory of the font to use
+        char_width: The width of each individual character (in pixels)
+        char_height: The height of each individual character (in pixels)
+        char_count: The number of characters in the spritesheet (1 = 1 image in sprite sheet)
+
+    Returns:
+        pygame.Surface: The converted image
     """
     spritesheet = Spritesheet(font_img, 37)
-    images = spritesheet.getImages(char_width, char_height, char_count)
+    images = spritesheet.get_images(char_width, char_height, char_count)
     char_list = []
 
     final_image = pygame.Surface(vec(len(text) * char_width, char_height))
@@ -516,12 +516,12 @@ def text_to_image(text: str, font_img: str, char_width: int, char_height: int, c
 # ============================================================================ #
 def get_closest_player(check_sprite):
     """Checks for the closest player to a given sprite.
-    
-    ### Arguments
-         checkSprite ``(pygame.sprite.Sprite)``: The entity checking for the closest player
-    
-    ### Returns
-        - ``pygame.sprite.Sprite``: The player closest to ``checkSprite``
+
+    Args:
+        check_sprite: The sprite checking for the closest player
+
+    Returns:
+        Player: The closest player to the sprite
     """
     player_coords = {}
     for a_player in all_players:
@@ -531,11 +531,19 @@ def get_closest_player(check_sprite):
         temp = min(player_coords.values())
         result = [key for key in player_coords if player_coords[key] == temp]
         return result[0]
-    except:
+    except IndexError:
         return check_sprite
 
 
 def get_other_portal(portal_in):
+    """Returns the other portal present in the all_portals list.
+
+    Args:
+        portal_in: The portal that is known
+
+    Returns:
+        Portal: The other portal in the all_portals list
+    """
     for portal in all_portals:
         if portal != portal_in:
             return portal

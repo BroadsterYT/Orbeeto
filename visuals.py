@@ -1,15 +1,13 @@
-import pygame
-
 from class_bases import *
 
 
 class InvisObj(ActorBase):
-    def __init__(self, posX: int, posY: int, width: int, height: int):
+    def __init__(self, pos_x: int | float, pos_y: int | float, width: int, height: int):
         super().__init__()
         self.show(LAYER['floor'])
         all_invisible.add(self)
 
-        self.pos = vec((posX, posY))
+        self.pos = vec((pos_x, pos_y))
         
         self.image = pygame.Surface(vec(width, height))
         self.image.set_colorkey(BLACK)
@@ -23,11 +21,11 @@ class InvisObj(ActorBase):
 
 
 class Beam(ActorBase):
-    def __init__(self, fromSprite, toSprite):
+    def __init__(self, from_sprite, to_sprite):
         super().__init__()
         self.show(LAYER['floor'])
 
-        self.fromSprite, self.toSprite = fromSprite, toSprite
+        self.fromSprite, self.toSprite = from_sprite, to_sprite
         self.index = 0
         
         self.length = get_dist_to_coords(self.fromSprite.pos, self.toSprite.pos)
@@ -37,8 +35,8 @@ class Beam(ActorBase):
         self.rect = self.image.get_rect()
         self.rect.center = self.pos
 
-    def buildSetup(self, startPos: pygame.math.Vector2, endPos: pygame.math.Vector2):
-        self.length = get_dist_to_coords(startPos, endPos)
+    def build_setup(self, start_pos: pygame.math.Vector2, end_pos: pygame.math.Vector2):
+        self.length = get_dist_to_coords(start_pos, end_pos)
         self.angle = get_angle_to_sprite(self.fromSprite, self.toSprite)
 
         opp = (self.length / 2) * cos(rad(self.angle + 90))
@@ -46,31 +44,28 @@ class Beam(ActorBase):
 
         self.pos = vec(self.fromSprite.pos.x + opp, self.fromSprite.pos.y - adj)
 
-    def buildImage(self, frameOffset: int) -> pygame.Surface:
-        """Builds the image of the beam 
+    def build_image(self, frame_offset: int) -> None:
+        """Builds the image of the beam.
         
         ### Arguments
             - frameOffset (``int``): The frame from "beams.png" to build the beam from
-        
-        ### Returns
-            - ``pygame.Surface``: The image of the beam
         """        
         self.spritesheet = Spritesheet("sprites/textures/beams.png", 1)
-        baseImages = self.spritesheet.getImages(12, 12, 1, frameOffset)
-        baseImage: pygame.Surface = baseImages[self.index]
+        base_images = self.spritesheet.get_images(12, 12, 1, frame_offset)
+        base_image: pygame.Surface = base_images[self.index]
 
-        finalImage = pygame.Surface(vec(baseImage.get_width(), int(self.length)))
+        final_image = pygame.Surface(vec(base_image.get_width(), int(self.length)))
 
         offset = 0
-        for i in range(int(self.length / baseImage.get_height())):
-            finalImage.blit(baseImage, vec(0, offset))
-            offset += baseImage.get_height()
+        for i in range(int(self.length / base_image.get_height())):
+            final_image.blit(base_image, vec(0, offset))
+            offset += base_image.get_height()
 
-        finalImage.set_colorkey(BLACK)
-        self.image = pygame.transform.rotate(finalImage, self.angle)
+        final_image.set_colorkey(BLACK)
+        self.image = pygame.transform.rotate(final_image, self.angle)
 
     def update(self):
-        self.buildSetup(self.fromSprite.pos, self.toSprite.pos)
-        self.buildImage(0)
+        self.build_setup(self.fromSprite.pos, self.toSprite.pos)
+        self.build_image(0)
         self.rect = self.image.get_rect()
         self.rect.center = self.pos

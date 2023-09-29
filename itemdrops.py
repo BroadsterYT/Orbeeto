@@ -1,5 +1,3 @@
-import pygame
-import os
 from math import degrees, pi
 
 from class_bases import *
@@ -34,11 +32,11 @@ class ItemDrop(DropBase):
         self.index = 0
 
         if self.mat == MAT[0]:
-            self.origImages = self.spritesheet.getImages(32, 32, 1, 0)
-            self.images = self.spritesheet.getImages(32, 32, 1, 0)
+            self.origImages = self.spritesheet.get_images(32, 32, 1, 0)
+            self.images = self.spritesheet.get_images(32, 32, 1, 0)
         elif self.mat == MAT[1]:
-            self.origImages = self.spritesheet.getImages(32, 32, 1, 1)
-            self.images = self.spritesheet.getImages(32, 32, 1, 1)
+            self.origImages = self.spritesheet.get_images(32, 32, 1, 1)
+            self.images = self.spritesheet.get_images(32, 32, 1, 1)
 
         self.image = self.images[self.index]
         self.rect = pygame.Rect(0, 0, 32, 32)
@@ -55,7 +53,7 @@ class ItemDrop(DropBase):
             if exist_time <= 10:
                 self.origImage = self.origImages[self.index]
                 self.image = pygame.transform.rotate(self.origImage, int(degrees(sin(self.period_mult * pi * exist_time) * (1 / exist_time))))
-                self.rect = self.image.get_rect(center = self.rect.center)
+                self.rect = self.image.get_rect(center=self.rect.center)
             
             self.accel_movement()
 

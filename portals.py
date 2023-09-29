@@ -31,20 +31,18 @@ class Portal(ActorBase):
             raise ValueError(f'ERROR: {self.facing} is not a valid facing direction')
 
     def __get_face(self) -> None:
+        direction_angles = {SOUTH: 0, EAST: 90, NORTH: 180, WEST: 270}
+        self.rotate_image(direction_angles[self.facing])
         if self.facing == SOUTH:
-            self.image = self.images[self.index]
             self.set_rects(self.pos.x, self.pos.y, 64, 64, 54, 20)
 
         if self.facing == EAST:
-            self.image = pygame.transform.rotate(self.images[self.index], 90)
             self.set_rects(self.pos.x, self.pos.y, 64, 64, 20, 54)
 
         if self.facing == NORTH:
-            self.image = pygame.transform.rotate(self.images[self.index], 180)
             self.set_rects(self.pos.x, self.pos.y, 64, 64, 54, 20)
 
         if self.facing == WEST:
-            self.image = pygame.transform.rotate(self.images[self.index], 270)
             self.set_rects(self.pos.x, self.pos.y, 64, 64, 20, 54)
 
     def movement(self):

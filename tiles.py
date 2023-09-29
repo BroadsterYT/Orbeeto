@@ -36,32 +36,7 @@ def fancy_tile_texture(block_width: int, block_height: int, textures: list, colo
                     tile_rect = pygame.Rect(x, y, texture_width, texture_height)
                     final_image.blit(textures[0], tile_rect)
 
-    final_image.set_colorkey(tuple(color_key))
-    return final_image
-
-
-def tile_texture(block_width: int, block_height: int, texture: pygame.Surface,
-                 color_key: ColorRGB) -> pygame.Surface:
-    """Tiles a texture across an image
-
-    ### Arguments
-        - blockWidth (``int``): The width of the final image in "blocks"
-        - blockHeight (``int``): The height of the final image in "blocks"
-        - texture (``pygame.Surface``): The texture that should be repeated across the final image
-        - colorkey (``tuple``): The color to set as the colorkey on the final image
-
-    ### Returns
-        - ``pygame.Surface``: The final image with the repeated texture
-    """
-    final_image = pygame.Surface(vec(block_width * 16, block_height * 16))
-
-    image_width, image_height = final_image.get_size()
-    texture_width, texture_height = texture.get_size()
-
-    for x in range(0, image_width, texture_width):
-        for y in range(0, image_height, texture_height):
-            tile_rect = pygame.Rect(x, y, texture_width, texture_height)
-            final_image.blit(texture, tile_rect)
+    # Rest of styles
 
     final_image.set_colorkey(tuple(color_key))
     return final_image
@@ -94,7 +69,6 @@ class TileBase(ActorBase):
             self.accel = self.get_accel()
             self.accel_movement()
 
-    # noinspection PyMethodMayBeStatic
     def get_accel(self) -> pygame.math.Vector2:
         room = get_room()
         final_accel = vec(0, 0)
@@ -110,7 +84,7 @@ class Wall(TileBase):
         all_walls.add(self)
 
         self.spritesheet = Spritesheet('sprites/tiles/wall.png', 16)
-        self.textures = self.spritesheet.getImages(16, 16, 16, image_row * 16)
+        self.textures = self.spritesheet.get_images(16, 16, 16, image_row * 16)
         self.index = 0
 
         self.texture = self.textures[self.index]
@@ -130,11 +104,11 @@ class Floor(TileBase):
         all_floors.add(self)
 
         self.spritesheet = Spritesheet('sprites/tiles/floor.png', 4)
-        self.textures = self.spritesheet.getImages(16, 16, 4)
+        self.textures = self.spritesheet.get_images(16, 16, 4)
         self.index = 0
 
         self.texture = self.textures[self.index]
-        self.image = tile_texture(self.blockWidth, self.blockHeight, self.texture, BLACK)
+        self.image = fancy_tile_texture(self.blockWidth, self.blockHeight, self.textures, BLACK, 0)
 
         self.set_rects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
 
@@ -143,11 +117,11 @@ class Floor(TileBase):
         #     if get_time_diff(self.lastFrame) >= 0.235:
         #         self.texture = self.textures[self.index]
         #         self.image = self.tile_texture(self.blockWidth, self.blockHeight, self.texture, BLACK)
-
+        #
         #         self.index += 1
         #         if self.index > 3:
         #             self.index = 0
-
+        #
         #         self.lastFrame = time.time()
         pass
 

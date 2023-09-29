@@ -145,9 +145,11 @@ class StandardGrunt(EnemyBase):
             offset = vec(21, 30)
 
             all_projs.add(
-                bullets.EnemyStdBullet(self, self.pos.x - (offset.x * cos_angle) - (offset.y * sin_angle),
+                bullets.EnemyStdBullet(self,
+                                       self.pos.x - (offset.x * cos_angle) - (offset.y * sin_angle),
                                        self.pos.y + (offset.x * sin_angle) - (offset.y * cos_angle),
-                                       vel_x, vel_y)
+                                       vel_x,
+                                       vel_y)
                 )
             self.lastShot = time.time()
 

@@ -21,7 +21,7 @@ class Box(ActorBase):
 
         room = get_room()
         self.roomPos = vec((self.pos.x - room.pos.x, self.pos.y - room.pos.y))
-        
+
         self.set_images("sprites/textures/box.png", 64, 64, 5, 1, 0, 0)
         self.set_rects(0, 0, 64, 64, 64, 64, True)
 
@@ -49,7 +49,7 @@ class Box(ActorBase):
                     final_accel.y -= 0.8
                 if triangle_collide(self, a_player) == WEST:
                     final_accel.x -= 0.8
-        
+
         return final_accel
 
     def update(self):
@@ -75,7 +75,7 @@ class Button(ActorBase):
         self.show(LAYER['trinket'])
         all_trinkets.add(self)
         self.idValue = id_value
-        
+
         self.activated = False
 
         self.pos = vec((block_pos_x * 16, block_pos_y * 16))
@@ -94,7 +94,7 @@ class Button(ActorBase):
             else:
                 is_active = True
                 return is_active
-    
+
     def get_state(self):
         return self.__active_check()
 
@@ -116,7 +116,7 @@ class Button(ActorBase):
             self.index = 1
         elif not self.__active_check():
             self.index = 0
-        
+
         self.render_images()
 
     def __repr__(self):
@@ -124,7 +124,8 @@ class Button(ActorBase):
 
 
 class LockedWall(TileBase):
-    def __init__(self, idValue: int, sBlockPosX: int, sBlockPosY: int, eBlockPosX: int, eBlockPosY: int, blockWidth: int, block_height: int):
+    def __init__(self, id_value: int, start_block_pos_x: int, start_block_pos_y: int, end_block_pos_x: int,
+                 end_block_pos_y: int, block_width: int, block_height: int):
         """A wall that will move when activated by a switch or button
         
         ### Arguments
@@ -135,24 +136,27 @@ class LockedWall(TileBase):
             - eBlockPosY (``int``): The y position where the wall should relocate after being activated (0 being the top edge and 45 being the bottom)
             - blockWidth (``int``): The width of the wall in "tiles"
             - blockHeight (``int``): The height of the wall in "tiles"
-        """        
-        super().__init__(sBlockPosX, sBlockPosY, blockWidth, block_height)
+        """
+        super().__init__(start_block_pos_x, start_block_pos_y, block_width, block_height)
         self.show(LAYER['wall'])
         all_walls.add(self)
         all_trinkets.add(self)
-        self.idValue = idValue
+        self.idValue = id_value
 
         self.switch: Button = self.__find_switch()
         self.lastSwitchState = self.switch.get_state()
         self.hasActivated = False
         self.lastChange = time.time()
-        
-        self.pos = get_top_left_coords(self.width, self.height, sBlockPosX * self.tileSize, sBlockPosY * self.tileSize)
-        self.startPos = get_top_left_coords(self.width, self.height, sBlockPosX * self.tileSize, sBlockPosY * self.tileSize)
-        self.endPos = get_top_left_coords(self.width, self.height, eBlockPosX * self.tileSize, eBlockPosY * self.tileSize)
+
+        self.pos = get_top_left_coords(self.width, self.height, start_block_pos_x * self.tileSize,
+                                       start_block_pos_y * self.tileSize)
+        self.startPos = get_top_left_coords(self.width, self.height, start_block_pos_x * self.tileSize,
+                                            start_block_pos_y * self.tileSize)
+        self.endPos = get_top_left_coords(self.width, self.height, end_block_pos_x * self.tileSize,
+                                          end_block_pos_y * self.tileSize)
 
         self.spritesheet = Spritesheet('sprites/tiles/wall.png', 1)
-        self.textures = self.spritesheet.getImages(16, 16, 1)
+        self.textures = self.spritesheet.get_images(16, 16, 1)
         self.index = 0
 
         self.texture = self.textures[self.index]
@@ -162,17 +166,17 @@ class LockedWall(TileBase):
 
     def __find_switch(self) -> pygame.sprite.Sprite:
         try:
-            switchMatch = next(s for s in all_trinkets if s.idValue == self.idValue)
-            return switchMatch
+            switch_match = next(s for s in all_trinkets if s.idValue == self.idValue)
+            return switch_match
         except StopIteration:
             raise CustomError(f'Error: No switch with idValue of {self.idValue} found')
 
     def __activate(self):
-        currentSwitchState = self.switch.get_state()
-        if currentSwitchState != self.lastSwitchState:
+        current_switch_state = self.switch.get_state()
+        if current_switch_state != self.lastSwitchState:
             # Button state has changed, update lastChange and reset position
             self.lastChange = time.time()
-            self.lastSwitchState = currentSwitchState
+            self.lastSwitchState = current_switch_state
 
         weight = get_time_diff(self.lastChange) / 3
         if not self.switch.get_state() and self.hasActivated:
@@ -187,7 +191,3 @@ class LockedWall(TileBase):
 
     def __repr__(self):
         return f'LockedWall({self.idValue}, {self.pos}, {self.switch})'
-
-
-if __name__ == '__main__':
-    os.system('python main.py')

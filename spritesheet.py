@@ -1,13 +1,14 @@
-## Spritesheet function module
+# Spritesheet function module
 import pygame
 from constants import vec
-    
-class Spritesheet(object):
-    def __init__(self, fileName, spritesPerRow):
-        self.spritesheet = pygame.image.load(fileName).convert()
-        self.columns = spritesPerRow
 
-    def getImages(self, width: int, height: int, imageCount: int, imageOffset: int = 0) -> list:
+
+class Spritesheet(object):
+    def __init__(self, file_name, sprites_per_row):
+        self.spritesheet = pygame.image.load(file_name).convert()
+        self.columns = sprites_per_row
+
+    def get_images(self, width: int, height: int, image_count: int, image_offset: int = 0) -> list:
         """Returns the images of the spritesheet as a list.
         
         ### Arguments
@@ -18,18 +19,17 @@ class Spritesheet(object):
         
         ### Returns
             - ``list``: A list of the desired images
-        """        
-        imageList = []
-        offset = vec(imageOffset % self.columns, imageOffset // self.columns)
-        for i in range(0, imageCount):
+        """
+        image_list = []
+        offset = vec(image_offset % self.columns, image_offset // self.columns)
+        for i in range(0, image_count):
             if offset.x >= self.columns:
                 offset.x = 0
                 offset.y += 1
             image = pygame.Surface(vec(width, height))
             image.blit(self.spritesheet, vec(0, 0), (offset.x * width, offset.y * height, width, height))
             image.set_colorkey((0, 0, 0))
-            imageList.append(image)
+            image_list.append(image)
             offset.x += 1
 
-        return imageList
-
+        return image_list

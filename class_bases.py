@@ -10,7 +10,7 @@ def get_room():
     """Returns the room object being used
 
     Returns:
-        Room
+        Room: The central room object
     """
     return all_rooms[0]
 
@@ -49,7 +49,8 @@ class ActorBase(pygame.sprite.Sprite):
     
     # -------------------------------- Visibility -------------------------------- #
     def hide(self) -> None:
-        """Makes the sprite invisible. The sprite's ``update()`` method will not be called."""
+        """Makes the sprite invisible. The sprite's ``update()`` method will not be called.
+        """
         self.visible = False
         if hasattr(self, 'healthBar'):
             self.healthBar.hide()
@@ -70,8 +71,8 @@ class ActorBase(pygame.sprite.Sprite):
     # ----------------------------- Images and Rects ----------------------------- #
     def set_images(self, image_file: str, frame_width: int, frame_height: int, sprites_per_row: int,
                    image_count: int, image_offset: int = 0, index: int = 0) -> None:
-        """
-        Initializes the sprite's spritesheet, images, and animations.
+        """Initializes the sprite's spritesheet, images, and animations.
+
         Args:
             image_file: The path of the spritesheet image
             frame_width: The width of each individual frame
@@ -86,8 +87,8 @@ class ActorBase(pygame.sprite.Sprite):
 
         """
         self.spritesheet = Spritesheet(image_file, sprites_per_row)
-        self.origImages = self.spritesheet.getImages(frame_width, frame_height, image_count, image_offset)
-        self.images = self.spritesheet.getImages(frame_width, frame_height, image_count, image_offset)
+        self.origImages = self.spritesheet.get_images(frame_width, frame_height, image_count, image_offset)
+        self.images = self.spritesheet.get_images(frame_width, frame_height, image_count, image_offset)
         self.index = index
 
         self.render_images()
@@ -169,6 +170,15 @@ class ActorBase(pygame.sprite.Sprite):
 
         self.center_rects()
 
+    def get_accel(self) -> pygame.math.Vector2:
+        """Returns the acceleration the sprite should have. (Should be overridden if the sprite does not use
+        acceleration or if the sprite does not move at all).
+        """
+        room = get_room()
+        final_accel = vec(0, 0)
+        final_accel += room.get_accel()
+        return final_accel
+
     def collide_check(self, *contact_lists: list) -> None:
         """Check if the sprite comes into contact with another sprite from a specific group. 
         If the sprites do collide, then they will perform a hitbox collision.
@@ -205,30 +215,6 @@ class ActorBase(pygame.sprite.Sprite):
             if triangle_collide(self, sprite) == NORTH:
                 self.vel.y = 0
                 self.pos.y = sprite.pos.y - height
-
-        # if instig.hitbox.colliderect(sprite.hitbox):
-        #     width = (instig.hitbox.width + sprite.hitbox.width) // 2
-        #     height = (instig.hitbox.height + sprite.hitbox.height) // 2
-        #
-        #     if triangle_collide(instig, sprite) == SOUTH and instig.pos.y <= sprite.pos.y + height and (
-        #             instig.vel.y < 0 or sprite.vel.y > 0):
-        #         instig.vel.y = 0
-        #         instig.pos.y = sprite.pos.y + height
-        #
-        #     if triangle_collide(instig, sprite) == EAST and instig.pos.x <= sprite.pos.x + width and (
-        #             instig.vel.x < 0 or sprite.vel.x > 0):
-        #         instig.vel.x = 0
-        #         instig.pos.x = sprite.pos.x + width
-        #
-        #     if triangle_collide(instig, sprite) == NORTH and instig.pos.y >= sprite.pos.y - height and (
-        #             instig.vel.y > 0 or sprite.vel.y < 0):
-        #         instig.vel.y = 0
-        #         instig.pos.y = sprite.pos.y - height
-        #
-        #     if triangle_collide(instig, sprite) == WEST and instig.pos.x >= sprite.pos.x - width and (
-        #             instig.vel.x > 0 or sprite.vel.x < 0):
-        #         instig.vel.x = 0
-        #         instig.pos.x = sprite.pos.x - width
 
     def teleport(self, portal_in):
         portal_out = get_other_portal(portal_in)
