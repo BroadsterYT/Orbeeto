@@ -45,17 +45,19 @@ class EnemyBase(ActorBase):
         column = rand.randint(0, 2)
         
         for item in drops[row][column]:
-            ItemDrop(self, item)
+            all_drops.add(
+                ItemDrop(self, item)
+            )
 
 
 class StandardGrunt(EnemyBase):
     def __init__(self, pos_x: float, pos_y: float):
         """A simple enemy that moves to random locations and shoots at players.
-        
-        ### Arguments
-            - posX (``int``): The x-position to spawn at
-            - posY (``int``): The y-position to spawn at
-        """         
+
+        Args:
+            pos_x: The x-position to spawn at
+            pos_y: The y-position to spawn at
+        """
         super().__init__()
         self.show(LAYER['enemy'])
         all_enemies.add(self)
@@ -65,6 +67,8 @@ class StandardGrunt(EnemyBase):
 
         self.pos = vec((pos_x, pos_y))
         self.randPos = vec(rand.randint(64, WINWIDTH - 64), rand.randint(64, WINHEIGHT - 64))
+
+        self.set_room_pos()
 
         self.set_images('sprites/enemies/standard_grunt.png', 64, 64, 5, 5, 0, 0)
         self.set_rects(0, 0, 64, 64, 32, 32)
@@ -77,6 +81,7 @@ class StandardGrunt(EnemyBase):
         if self.canUpdate and self.hp > 0:
             self.__set_rand_pos()
             self.accel = self.get_accel()
+            self.set_room_pos()
             
             if can_shoot:
                 self.shoot(get_closest_player(self), 6, rand.uniform(0.4, 0.9))
@@ -84,7 +89,8 @@ class StandardGrunt(EnemyBase):
             self.accel_movement()
 
     def __set_rand_pos(self):
-        """Assigns a random value within the proper range for the enemy to travel to."""        
+        """Assigns a random value within the proper range for the enemy to travel to.
+        """
         if get_time_diff(self.lastRelocate) > rand.uniform(2.5, 5.0):
             self.randPos.x = rand.randint(self.image.get_width(), WINWIDTH - self.image.get_width())
             self.randPos.y = rand.randint(self.image.get_height(), WINHEIGHT - self.image.get_height())
@@ -109,11 +115,13 @@ class StandardGrunt(EnemyBase):
         final_accel += room.get_accel()
 
         if self.pos.x != self.randPos.x or self.pos.y != self.randPos.y:
+            # Moving to proper x-position
             if self.pos.x < self.randPos.x - self.hitbox.width // 2:
                 final_accel.x += self.cAccel
             if self.pos.x > self.randPos.x + self.hitbox.width // 2:
                 final_accel.x -= self.cAccel
 
+            # Moving to proper y-position
             if self.pos.y < self.randPos.y - self.hitbox.height // 2:
                 final_accel.y += self.cAccel
             if self.pos.y > self.randPos.y + self.hitbox.height // 2:
@@ -122,14 +130,14 @@ class StandardGrunt(EnemyBase):
         return final_accel
 
 # ---------------------------------- Actions --------------------------------- #
-    def shoot(self, target, vel: float, shoot_time: float):
+    def shoot(self, target, vel: float, shoot_time: float) -> None:
         """Shoots a bullet at a specific velocity at a specified interval.
-        
-        ### Arguments
-            - target (``ActorBase``): The target the enemy is firing at
-            - vel (``float``): The velocity of the bullet
-            - shootTime (``float``): How often the enemy should fire
-        """        
+
+        Args:
+            target: The target the enemy is firing at
+            vel: The velocity of the bullet
+            shoot_time: How often the enemy should fire
+        """
         if get_time_diff(self.lastShot) > shoot_time:
             self.isShooting = True
             try:

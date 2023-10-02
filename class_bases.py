@@ -162,7 +162,8 @@ class ActorBase(pygame.sprite.Sprite):
             self.center_rects()
 
     def accel_movement(self) -> None:
-        """Makes a sprite move according to its acceleration (self.accel and self.cAccel)"""
+        """Makes a sprite move according to its acceleration (self.accel and self.cAccel).
+        """
         self.accel.x += self.vel.x * FRIC
         self.accel.y += self.vel.y * FRIC
         self.vel += self.accel
@@ -277,22 +278,10 @@ class ActorBase(pygame.sprite.Sprite):
             dir_list.update({WEST: 180, SOUTH: 90, EAST: 0, NORTH: 270})
             rotate_vel()
 
-# ----------------------------------- Rooms ---------------------------------- #
-    def change_room(self, direction: str):
-        if direction == SOUTH:
-            self.pos.y -= WINHEIGHT
-
-        elif direction == EAST:
-            self.pos.x -= WINWIDTH
-
-        elif direction == NORTH:
-            self.pos.y += WINHEIGHT
-
-        elif direction == WEST:
-            self.pos.y += WINWIDTH
-
-        else:
-            raise ValueError(f'Error: {direction} is not a valid input for changeRooms')
+    def __animate(self) -> None:
+        """Runs the animation sequence of the sprite.
+        """
+        pass
 
 
 class AbstractBase(pygame.sprite.AbstractGroup):

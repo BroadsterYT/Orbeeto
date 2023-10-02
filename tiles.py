@@ -36,8 +36,6 @@ def fancy_tile_texture(block_width: int, block_height: int, textures: list, colo
                     tile_rect = pygame.Rect(x, y, texture_width, texture_height)
                     final_image.blit(textures[0], tile_rect)
 
-    # Rest of styles
-
     final_image.set_colorkey(tuple(color_key))
     return final_image
 
@@ -113,17 +111,20 @@ class Floor(TileBase):
         self.set_rects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
 
     def update(self):
-        # if self.visible:
-        #     if get_time_diff(self.lastFrame) >= 0.235:
-        #         self.texture = self.textures[self.index]
-        #         self.image = self.tile_texture(self.blockWidth, self.blockHeight, self.texture, BLACK)
-        #
-        #         self.index += 1
-        #         if self.index > 3:
-        #             self.index = 0
-        #
-        #         self.lastFrame = time.time()
-        pass
+        if self.visible:
+            # self.__animate()
+            pass
+
+    def __animate(self):
+        if get_time_diff(self.lastFrame) >= 0.235:
+            self.texture = self.textures[self.index]
+            self.image = fancy_tile_texture(self.blockWidth, self.blockHeight, self.textures, BLACK, 0)
+
+            self.index += 1
+            if self.index > 3:
+                self.index = 0
+
+            self.lastFrame = time.time()
 
 
 class RoomBorder(TileBase):

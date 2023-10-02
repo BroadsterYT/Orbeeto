@@ -1,30 +1,23 @@
-from math import degrees, pi
-
+from math import pi
 from class_bases import *
 
 
-class DropBase(ActorBase):
-    def __init__(self):
-        super().__init__()
-        self.cAccel = 0.8
+class ItemDrop(ActorBase):
+    def __init__(self, dropped_from, item_name: str):
+        """An item or material dropped by an enemy that can be collected.
 
-
-class ItemDrop(DropBase):
-    def __init__(self, dropped_from, item_name):
-        """An item or material dropped by an enemy that can be collected
-        
-        ### Arguments
-            - droppedFrom (``pygame.sprite.Sprite``): The enemy that the item was dropped from
-            - itemName (``str``): The item to drop
-        """        
+        Args:
+            dropped_from: The enemy that the item was dropped from
+            item_name: The item to drop
+        """
         super().__init__()
         self.show(LAYER['drops'])
-        all_drops.add(self)
         
         self.droppedFrom = dropped_from
         self.mat = item_name
 
         self.startTime = time.time()
+        self.cAccel = 0.8
         self.pos = vec(self.droppedFrom.pos.x, self.droppedFrom.pos.y)
         self.randAccel = get_rand_components(self.cAccel)
         
@@ -45,14 +38,13 @@ class ItemDrop(DropBase):
         self.period_mult = rand.uniform(0.5, 1.5)
 
     def movement(self):
-        self.accel = vec(0, 0)
         if self.canUpdate:
             exist_time = get_time_diff(self.startTime)
             self.accel = self.get_accel()
             
             if exist_time <= 10:
-                self.origImage = self.origImages[self.index]
-                self.image = pygame.transform.rotate(self.origImage, int(degrees(sin(self.period_mult * pi * exist_time) * (1 / exist_time))))
+                angle = sin(self.period_mult * pi * exist_time) * (1 / exist_time)
+                self.rotate_image(int(deg(angle)))
                 self.rect = self.image.get_rect(center=self.rect.center)
             
             self.accel_movement()
@@ -60,7 +52,6 @@ class ItemDrop(DropBase):
     def get_accel(self) -> pygame.math.Vector2:
         room = get_room()
         final_accel = vec(0, 0)
-
         final_accel += room.get_accel()
 
         exist_time = get_time_diff(self.startTime)

@@ -80,7 +80,8 @@ class Player(ActorBase):
 
     # ----------------------------------- Stats ---------------------------------- #
     def update_max_stats(self):
-        """Updates all the player's max stats."""
+        """Updates all the player's max stats.
+        """
         self.maxHp = floor(eerp(50, 650, self.level / self.maxLevel))
         self.maxAtk = floor(eerp(10, 1250, self.level / self.maxLevel))
         self.maxDef = floor(eerp(15, 800, self.level / self.maxLevel))
@@ -160,10 +161,10 @@ class Player(ActorBase):
             self.accel_movement()
 
     def get_accel(self) -> pygame.math.Vector2:
-        """Returns the acceleration that the player should undergo given specific conditions
-        
-        ### Returns
-            - ``pygame.math.Vector2``: The acceleration value of the player
+        """Returns the acceleration that the player should undergo given specific conditions.
+
+        Returns:
+            pygame.math.Vector2: The acceleration value of the player
         """
         final_accel = vec(0, 0)
         if not self.room.isScrollingX:
@@ -175,7 +176,7 @@ class Player(ActorBase):
         return final_accel
 
     def __get_x_axis_output(self) -> float:
-        output: float = 0.0
+        output = 0.0
         if isInputHeld[K_a]:
             output -= self.cAccel
         if isInputHeld[K_d]:
@@ -188,7 +189,7 @@ class Player(ActorBase):
         return output
 
     def __get_y_axis_output(self) -> float:
-        output: float = 0.0
+        output = 0.0
         if isInputHeld[K_w]:
             output -= self.cAccel
         if isInputHeld[K_s]:
@@ -286,7 +287,7 @@ class Player(ActorBase):
         if self.canUpdate and self.visible:
             self.movement()
             self.shoot()
-            self.check_room_change()
+            # self.check_room_change()
 
             # Animation
             self.__animate()
@@ -343,10 +344,7 @@ class Room(AbstractBase):
         self.room = vec((room_x, room_y))
         self.size = vec((1280, 720))
 
-        # self.roomOffset = vec(0, 0)
-
         self.lastEntranceDir = None
-        self.isChangingRooms = False
 
         self.player1: Player = Player()
         self.posCopy = self.player1.pos.copy()
@@ -356,6 +354,7 @@ class Room(AbstractBase):
         self.borderEast = RoomBorder(WINWIDTH // 16, 0, 1, self.size.y // 16)
         self.borderNorth = RoomBorder(0, -1, self.size.x // 16, 1)
         self.borderWest = RoomBorder(-1, 0, 1, self.size.y // 16)
+        self.add(self.borderSouth, self.borderEast, self.borderNorth, self.borderWest)
 
         self.isScrollingX = True
         self.isScrollingY = True
@@ -388,7 +387,7 @@ class Room(AbstractBase):
         self.pos = vec(self.borderWest.pos.x + self.borderWest.hitbox.width // 2,
                        self.borderNorth.pos.y + self.borderNorth.height // 2)
 
-    def get_accel(self) -> pygame.math.Vector2:
+    def get_accel(self) -> vec:
         final_accel = vec(0, 0)
         if self.isScrollingX:
             final_accel.x += self.__get_x_axis_output()
@@ -709,28 +708,28 @@ class Room(AbstractBase):
                     instig.vel.y < 0 or sprite.vel.y > 0) and instig.pos.y <= sprite.pos.y + height:
                 self.accel.y = 0
                 self.vel.y = 0
-                # if not self.isScrollingX and self.isScrollingY:
+                self.player1.vel.y = 0
                 instig.pos.y = sprite.pos.y + height
 
             if triangle_collide(instig, sprite) == EAST and (
                     instig.vel.x < 0 or sprite.vel.x > 0) and instig.pos.x <= sprite.pos.x + width:
                 self.accel.x = 0
                 self.vel.x = 0
-                # if self.isScrollingX and not self.isScrollingY:
+                self.player1.vel.x = 0
                 instig.pos.x = sprite.pos.x + width
 
             if triangle_collide(instig, sprite) == NORTH and (
                     instig.vel.y > 0 or sprite.vel.y < 0) and instig.pos.y >= sprite.pos.y - height:
                 self.accel.y = 0
                 self.vel.y = 0
-                # if not self.isScrollingX and self.isScrollingY:
+                self.player1.vel.y = 0
                 instig.pos.y = sprite.pos.y - height
 
             if triangle_collide(instig, sprite) == WEST and (
                     instig.vel.x > 0 or sprite.vel.x < 0) and instig.pos.x >= sprite.pos.x - width:
                 self.accel.x = 0
                 self.vel.x = 0
-                # if self.isScrollingX and not self.isScrollingY:
+                self.player1.vel.x = 0
                 instig.pos.x = sprite.pos.x - width
 
     @staticmethod
@@ -763,7 +762,38 @@ class Room(AbstractBase):
                 instig.vel.x = 0
                 instig.pos.x = sprite.pos.x - width
 
-    # -------------------------------- Room Layout ------------------------------- # 
+    # -------------------------------- Room Layout ------------------------------- #
+    def __change_room(self) -> None:
+        """If the player touches a room border, he/she will change rooms.
+        """
+        if self.borderSouth.hitbox.colliderect(self.player1.hitbox):
+            self.room.y -= 1
+            self.lastEntranceDir = SOUTH
+            self.layout_update()
+            kill_groups(all_projs)
+            print('south')
+
+        elif self.borderEast.hitbox.colliderect(self.player1.hitbox):
+            self.room.x += 1
+            self.lastEntranceDir = EAST
+            self.layout_update()
+            kill_groups(all_projs)
+            print('east')
+
+        elif self.borderNorth.hitbox.colliderect(self.player1.hitbox):
+            self.room.y += 1
+            self.lastEntranceDir = NORTH
+            self.layout_update()
+            kill_groups(all_projs)
+            print('north')
+
+        elif self.borderWest.hitbox.colliderect(self.player1.hitbox):
+            self.room.x -= 1
+            self.lastEntranceDir = WEST
+            self.layout_update()
+            kill_groups(all_projs)
+            print('west')
+
     def __set_room_borders(self, room_width: int, room_height: int) -> None:
         """Sets the borders of the room.
 
@@ -792,7 +822,6 @@ class Room(AbstractBase):
 
         scroll_copy_x = copy.copy(self.isScrollingX)
         scroll_copy_y = copy.copy(self.isScrollingY)
-
         self.isScrollingX = can_scroll_x
         self.isScrollingY = can_scroll_y
 
@@ -888,7 +917,7 @@ class Room(AbstractBase):
                 all_containers.append(
                     RoomContainer(
                         self.room.x, self.room.y,
-                        Box(0, WINWIDTH // 2, WINHEIGHT // 2),
+                        Box(WINWIDTH // 2, WINHEIGHT // 2),
                         StandardGrunt(200, 200)
                     )
                 )
@@ -908,51 +937,12 @@ class Room(AbstractBase):
                 all_containers.append(
                     RoomContainer(
                         self.room.x, self.room.y,
-                        # Box(1, 300, 400)
-                    )
-                )
-
-        if self.room == vec(-1, 0):
-            self.__init_room(WINWIDTH, WINHEIGHT, False, False)
-
-            self.add(
-                Wall(8, 0, 4, 4),
-                Wall(40, 8, 8, 8)
-            )
-
-            try:
-                container: RoomContainer = next(c for c in all_containers if c.room == self.room)
-                container.show_sprites()
-
-            except StopIteration:
-                all_containers.append(
-                    RoomContainer(
-                        self.room.x, self.room.y,
-                        # Box(1, 300, 400)
-                    )
-                )
-
-        if self.room == vec(1, 0):
-            self.__init_room(WINWIDTH, WINHEIGHT, False, False)
-
-            self.add(
-                Wall(8, 0, 4, 4),
-                Wall(40, 8, 8, 8)
-            )
-
-            try:
-                container: RoomContainer = next(c for c in all_containers if c.room == self.room)
-                container.show_sprites()
-
-            except StopIteration:
-                all_containers.append(
-                    RoomContainer(
-                        self.room.x, self.room.y,
-                        # Box(1, 300, 400)
+                        # Box(300, 400)
                     )
                 )
 
     def update(self):
+        self.__change_room()
         self.movement()
 
     def __repr__(self):
@@ -1309,9 +1299,9 @@ class MenuSlot(ActorBase):
 def redraw_game_window():
     """Draws all sprites every frame.
     """
-    main_room.update()
     all_sprites.update()
     all_sprites.draw(screen)
+    main_room.update()
     pygame.display.update()
 
 
