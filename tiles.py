@@ -77,6 +77,16 @@ class TileBase(ActorBase):
 class Wall(TileBase):
     def __init__(self, block_pos_x: float, block_pos_y: float, block_width: int, block_height: int,
                  image_row: int = 0, style: int = 0):
+        """A wall that cannot be passed or obstructed.
+
+        Args:
+            block_pos_x: The x-axis position to spawn the wall on the block grid (1 block = 16 pixels)
+            block_pos_y: The y-axis position to spawn the wall on the block grid (1 block = 16 pixels)
+            block_width: The width of the wall (in blocks)
+            block_height: The height of the wall (in blocks)
+            image_row: The row of images to use from the sprite sheet
+            style: The tiling style to use on the wall
+        """
         super().__init__(block_pos_x, block_pos_y, block_width, block_height)
         self.show(LAYER['wall'])
         all_walls.add(self)
@@ -138,7 +148,3 @@ class RoomBorder(TileBase):
 
     def update(self):
         pass
-
-
-if __name__ == '__main__':
-    os.system('python main.py')

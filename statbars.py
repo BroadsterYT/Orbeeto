@@ -1,6 +1,9 @@
 from math import floor, ceil
 
-from init import *
+from class_bases import ActorBase
+from calculations import *
+from constants import *
+from groups import *
 
 
 class StatBarBase(ActorBase):
@@ -125,7 +128,3 @@ class AmmoBar(StatBarBase):
             self.render_images()
         else:
             self.kill()
-
-
-if __name__ == '__main__':
-    os.system('python main.py')

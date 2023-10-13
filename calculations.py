@@ -1,4 +1,3 @@
-import os
 import random as rand
 import time
 
@@ -134,14 +133,14 @@ def get_angle_to_c_from_c(start_coords: pygame.math.Vector2, end_coords: pygame.
 
 
 def get_dist_to_sprite(first_sprite, second_sprite) -> float:
-    """Gets the distance between two entities
-    
-    ### Arguments
-        - selfEntity (``pygame.sprite.Sprite``): The entity to start the measurement from
-        - targetEntity (``pygame.sprite.Sprite``): The second entity to measure to from the first
-    
-    ### Returns
-        - ``float``: Distance between ``selfEntity`` and ``targetEntity``
+    """Returns the distance between two sprites.
+
+    Args:
+        first_sprite: The sprite to start the measurement from
+        second_sprite: The second sprite to measure the distance from the first
+
+    Returns:
+        float: The distance between the two sprites
     """
     length_to_x = second_sprite.pos.x - first_sprite.pos.x
     length_to_y = second_sprite.pos.y - first_sprite.pos.y
@@ -174,7 +173,6 @@ def get_vec_angle(vec_x: float, vec_y: float) -> float:
 
     Returns:
         The angle of the resultant vector (in degrees)
-
     """
     if vec_x and vec_y != 0:
         vec_angle = -math.degrees(math.atan2(vec_y, vec_x)) - 90
@@ -585,7 +583,3 @@ def swap_color(image: pygame.Surface, old_color: tuple, new_color: tuple) -> pyg
 
 class CustomError(Exception):
     pass
-
-
-if __name__ == '__main__':
-    os.system('python main.py')

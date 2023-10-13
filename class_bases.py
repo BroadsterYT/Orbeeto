@@ -45,6 +45,7 @@ class ActorBase(pygame.sprite.Sprite):
         self.hitbox = None
 
         self.isGrappled = False
+        self.grappledBy = None
         self.grappleHurtTime = time.time()
     
     # -------------------------------- Visibility -------------------------------- #
@@ -299,7 +300,3 @@ class AbstractBase(pygame.sprite.AbstractGroup):
     #     """
     #     for sprite in sprites:
     #         super().add(sprite)
-
-
-if __name__ == '__main__':
-    os.system('python main.py')

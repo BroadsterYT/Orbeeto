@@ -381,6 +381,7 @@ class NewGrappleBullet(BulletBase):
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
+        self.cVel = self.vel
         self.accel = vec(0, 0)
         self.cAccel = 1.5
 
@@ -392,11 +393,13 @@ class NewGrappleBullet(BulletBase):
         self.rotate_image(get_vec_angle(self.vel.x, self.vel.y))
 
     def land(self, grappled_to):
-        self.isHooked = True
-        self.grappledTo = grappled_to
-        if self.grappledTo is not None:
-            self.grappledTo.isGrappled = True
-            self.posOffset = vec(self.pos.x - self.grappledTo.pos.x, self.pos.y - self.grappledTo.pos.y)
+        if not self.returning:  # Hook won't scoop thing up on the way back to the player
+            self.isHooked = True
+            self.grappledTo = grappled_to
+            self.grappledTo.grappledBy = self
+            if self.grappledTo is not None:
+                self.grappledTo.isGrappled = True
+                self.posOffset = vec(self.pos.x - self.grappledTo.pos.x, self.pos.y - self.grappledTo.pos.y)
 
     def shatter(self):
         """Completely destroys the grappling hook.
@@ -445,6 +448,7 @@ class NewGrappleBullet(BulletBase):
                 room_accel = room.get_accel()
                 self.accel.x = self.cAccel * -sin(rad(angle)) + room_accel.x
                 self.accel.y = self.cAccel * -cos(rad(angle)) + room_accel.y
+                # self.pos = self.grappledTo.pos
 
                 if self.hitbox.colliderect(self.portalList[1]):
                     self.portalList = []
@@ -477,8 +481,8 @@ class NewGrappleBullet(BulletBase):
     def movement(self):
         if not self.returning:
             if not self.isHooked:
-                self.pos.x += self.vel.x
-                self.pos.y += self.vel.y
+                self.vel = self.get_vel()
+                self.vel_movement(True)
 
             elif self.isHooked:
                 if self.grappledTo is not None and self.grappledTo not in all_walls:
@@ -558,7 +562,3 @@ class EnemyStdBullet(BulletBase):
 
     def __repr__(self):
         return f'EnemyStdBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.ricCount})'
-
-
-if __name__ == '__main__':
-    os.system('main.py')

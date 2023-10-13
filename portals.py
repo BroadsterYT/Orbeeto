@@ -68,7 +68,3 @@ def portal_count_check():
             all_portals.remove(oldest_portal)
             if len(portal_temp) > 1:
                 all_portals.add(portal_temp[1:])
-
-
-if __name__ == '__main__':
-    os.system('python main.py')
