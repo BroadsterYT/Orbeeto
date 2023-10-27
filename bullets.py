@@ -138,7 +138,7 @@ class BulletBase(ActorBase):
             if damage > 0:
                 all_font_chars.add(DamageChar(receiver.pos.x, receiver.pos.y, damage))
             if hasattr(receiver, 'hitTime'):
-                receiver.hitTime = 0
+                receiver.dodgeTime = 0
                 receiver.lastHit = time.time()
 
 

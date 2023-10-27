@@ -65,8 +65,8 @@ class Player(ActorBase):
 
         self.grappleSpeed: float = 2.0
 
-        self.hitTimeCharge = 1200
-        self.hitTime = 0
+        self.dodgeTimeCharge = 1200
+        self.dodgeTime = 0
         self.lastHit = time.time()
 
         self.update_level()
@@ -108,6 +108,16 @@ class Player(ActorBase):
 
         self.level = floor((256 * self.xp) / (self.xp + 16384))
         self.update_max_stats()
+
+    def passive_hp_regen(self) -> None:
+        """Regenerates the player's HP after not being attacked for a period of time.
+        """
+        last_regen = time.time()
+        regens_per_sec = 0
+        if get_time_diff(self.lastHit) < 5:
+            regens_per_sec = 0
+        elif get_time_diff(self.lastHit) >= 5:
+            regens_per_sec = math.ceil(pow(self.lastHit - 5, 0.5))
 
     # --------------------------------- Movement --------------------------------- #
     def movement(self):
@@ -250,10 +260,11 @@ class Player(ActorBase):
             self.rotate_image(get_angle_to_mouse(self))
 
             # Dodge charge up
-            if self.hitTime < self.hitTimeCharge:
-                self.hitTime += 1
+            if self.dodgeTime < self.dodgeTimeCharge:
+                self.dodgeTime += 1
 
         self.menu.update()
+        self.passive_hp_regen()
 
         if self.hp <= 0:
             self.kill()

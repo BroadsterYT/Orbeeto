@@ -64,7 +64,7 @@ class BarNumbers(ActorBase):
                                        7, 37)
 
         elif isinstance(self.bar, DodgeBar):
-            self.image = text_to_image(str(self.owner.hitTime) + '/' + str(self.owner.hitTimeCharge),
+            self.image = text_to_image(str(self.owner.dodgeTime) + '/' + str(self.owner.dodgeTimeCharge),
                                        'sprites/ui/small_font.png', 5, 7, 37)
 
         elif isinstance(self.bar, AmmoBar):
@@ -109,8 +109,8 @@ class DodgeBar(StatBarBase):
         self.movement()
 
         if self.owner.hp > 0:
-            if self.owner.hitTime < self.owner.hitTimeCharge:
-                self.index = ceil((16 * self.owner.hitTime) / self.owner.hitTimeCharge)
+            if self.owner.dodgeTime < self.owner.dodgeTimeCharge:
+                self.index = ceil((16 * self.owner.dodgeTime) / self.owner.dodgeTimeCharge)
                 self.render_images()
         else:
             self.kill()
