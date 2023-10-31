@@ -501,7 +501,7 @@ def text_to_image(text: str, font_img: str, char_width: int, char_height: int, c
             char_list.append(images[SYMBOLS[char] + 36])
 
     count = 0
-    for char in char_list:
+    for _ in char_list:
         final_image.blit(char_list[count], vec(count * char_width, 0))
         count += 1
 

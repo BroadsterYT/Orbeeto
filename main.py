@@ -12,6 +12,7 @@ from trinkets import *
 
 clock = pygame.time.Clock()
 
+buffer_screen = pygame.Surface((WINWIDTH, WINHEIGHT))
 screen = pygame.display.set_mode((WINWIDTH, WINHEIGHT), pygame.SCALED, 0, 0, 1)
 pygame.display.set_caption('Orbeeto')
 
@@ -46,16 +47,18 @@ class Player(ActorBase):
         self.cAccel = 0.58
 
         # -------------------------------- Game Stats -------------------------------- #
-        self.xp: int = 0
-        self.level: int = 0
+        self.xp: int = 0                        # Experience point are earned by defeating enemies
+        self.level: int = 0                     # Determined by experience points
         self.maxLevel: int = 249
 
         self.maxHp: int = 50
-        self.hp: int = self.maxHp
+        self.hp: int = self.maxHp               # Health points
         self.maxAtk: int = 10
-        self.atk: int = self.maxAtk
+        self.atk: int = self.maxAtk             # Attack - how strong player's attacks are
         self.maxDef: int = 10
-        self.defense: int = self.maxDef
+        self.defense: int = self.maxDef         # Defense - Reduces damage taken
+
+        self.lastRegen = time.time()            # Used for timing passive regeneration
 
         self.maxAmmo: int = 40
         self.ammo: int = self.maxAmmo
@@ -109,15 +112,22 @@ class Player(ActorBase):
         self.level = floor((256 * self.xp) / (self.xp + 16384))
         self.update_max_stats()
 
-    def passive_hp_regen(self) -> None:
+    def __passive_hp_regen(self) -> None:
         """Regenerates the player's HP after not being attacked for a period of time.
         """
-        last_regen = time.time()
+        time_hit = get_time_diff(self.lastHit)
         regens_per_sec = 0
-        if get_time_diff(self.lastHit) < 5:
+        if time_hit < 5:
             regens_per_sec = 0
-        elif get_time_diff(self.lastHit) >= 5:
-            regens_per_sec = math.ceil(pow(self.lastHit - 5, 0.5))
+        elif time_hit >= 5:
+            regens_per_sec = math.ceil(0.12 * math.log(time_hit - 4, math.e))
+
+        if regens_per_sec == 0:
+            pass
+        elif get_time_diff(self.lastRegen) >= 1 / regens_per_sec:
+            if self.hp < self.maxHp:
+                self.hp += 1
+            self.lastRegen = time.time()
 
     # --------------------------------- Movement --------------------------------- #
     def movement(self):
@@ -264,7 +274,7 @@ class Player(ActorBase):
                 self.dodgeTime += 1
 
         self.menu.update()
-        self.passive_hp_regen()
+        self.__passive_hp_regen()
 
         if self.hp <= 0:
             self.kill()
@@ -754,28 +764,24 @@ class Room(AbstractBase):
             self.lastEntranceDir = SOUTH
             self.layout_update()
             kill_groups(all_projs)
-            print('south')
 
         elif self.player1.pos.x >= self.borderEast.pos.x - width:
             self.room.x += 1
             self.lastEntranceDir = EAST
             self.layout_update()
             kill_groups(all_projs)
-            print('east')
 
         elif self.player1.pos.y <= self.borderNorth.pos.y + height:
             self.room.y += 1
             self.lastEntranceDir = NORTH
             self.layout_update()
             kill_groups(all_projs)
-            print('north')
 
         elif self.player1.pos.x <= self.borderWest.pos.x + width:
             self.room.x -= 1
             self.lastEntranceDir = WEST
             self.layout_update()
             kill_groups(all_projs)
-            print('west')
 
     def __check_room_change(self) -> None:
         """If the player touches a room border, he/she will change rooms.
@@ -973,7 +979,6 @@ class Room(AbstractBase):
     def update(self):
         self.__check_room_change()
         self.movement()
-        print(self.vel)
 
     def __repr__(self):
         return f'Room({self.room}, {self.pos}, {self.vel}, {self.accel})'
@@ -1334,8 +1339,9 @@ def redraw_game_window():
     """Draws all sprites every frame.
     """
     all_sprites.update()
-    all_sprites.draw(screen)
+    all_sprites.draw(buffer_screen)
     main_room.update()
+    screen.blit(buffer_screen, (0, 0))
     pygame.display.update()
 
 
@@ -1404,7 +1410,7 @@ while running:
             if main_room.player1.ammo < main_room.player1.maxAmmo:
                 main_room.player1.ammo += 1
 
-    screen.fill((255, 255, 255))
+    buffer_screen.fill((255, 255, 255))
 
     # ------------------------------ Game Operation ------------------------------ #
     # Regenerate health for testing purposes

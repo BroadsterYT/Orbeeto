@@ -96,6 +96,8 @@ class BulletBase(ActorBase):
 
             if can_hurt:
                 self.inflict_damage(sprite_group, self.shotFrom, collidingSprite)
+                if hasattr(collidingSprite, 'lastHit'):
+                    collidingSprite.lastHit = time.time()
                 self.land(collidingSprite)
 
             elif not can_hurt:
@@ -106,7 +108,7 @@ class BulletBase(ActorBase):
                                 self.teleport(portal)
                                 self.rotate_image(get_vec_angle(self.vel.x, self.vel.y))
                         return
-                    
+
                     elif len(all_portals) < 2:
                         self.land(collidingSprite)
                         return
@@ -116,7 +118,7 @@ class BulletBase(ActorBase):
 
     def inflict_damage(self, sprite_group, sender, receiver) -> None:
         """Executes the subtraction of ``hp`` after a sprite is struck by a projectile
-        
+
         ### Arguments
             - spriteGroup (``pygame.sprite.Group``): The group that the receiving sprite is a member of
             - sender (``ActorBase``): The sprite that fired the projectile
