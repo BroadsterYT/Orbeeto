@@ -1,7 +1,7 @@
 from class_bases import *
 
 
-def fancy_tile_texture(block_width: int, block_height: int, textures: list, color_key: ColorRGB, style: int):
+def fancy_tile_texture(block_width: int, block_height: int, textures: list, color_key: tuple, style: int):
     final_image = pygame.Surface(vec(block_width * 16, block_height * 16))
 
     image_width, image_height = final_image.get_size()
@@ -36,7 +36,7 @@ def fancy_tile_texture(block_width: int, block_height: int, textures: list, colo
                     tile_rect = pygame.Rect(x, y, texture_width, texture_height)
                     final_image.blit(textures[0], tile_rect)
 
-    final_image.set_colorkey(tuple(color_key))
+    final_image.set_colorkey(color_key)
     return final_image
 
 

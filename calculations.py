@@ -447,6 +447,51 @@ def get_rand_components(max_value: int | float) -> vec:
     return vec(x, y)
 
 
+class ScreenShakeQueue:
+    def __init__(self):
+        """The object that handles screen-shaking capabilities.
+        """
+        self.queue: list = []
+
+    def add(self, amplitude: int | float, duration: int) -> None:
+        """Adds a screen shake to the queue of screen shakes.
+
+        Args:
+            amplitude: How intense the shake should be
+            duration: How long the shake should last
+        """
+        new_queue = []
+        for tick in range(duration):
+            decay = (duration - tick) / duration
+            queue_input = vec(rand.uniform(-amplitude, amplitude) * decay, rand.uniform(-amplitude, amplitude) * decay)
+            new_queue.append(queue_input)
+
+        self.queue = self.__combine_queues(new_queue)
+
+    def __combine_queues(self, waiting_queue):
+        combined_list = []
+        max_length = max(len(self.queue), len(waiting_queue))
+
+        for i in range(max_length):
+            value1 = self.queue[i] if i < len(self.queue) else vec(0, 0)
+            value2 = waiting_queue[i] if i < len(waiting_queue) else vec(0, 0)
+            combined_list.append(value1 + value2)
+
+        return combined_list
+
+    def run(self):
+        if len(self.queue) != 0:
+            output = self.queue[0]
+            self.queue.pop(0)
+            print(output)
+            return output
+        else:
+            return vec(0, 0)
+
+
+screen_shake_queue = ScreenShakeQueue()
+
+
 # ============================================================================ #
 #                                Returns Surface                               #
 # ============================================================================ #

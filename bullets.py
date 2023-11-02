@@ -143,6 +143,16 @@ class BulletBase(ActorBase):
                 receiver.dodgeTime = 0
                 receiver.lastHit = time.time()
 
+    def update(self):
+        room = get_room()
+        if (
+            self.pos.y > room.borderSouth.pos.y or
+            self.pos.x > room.borderEast.pos.x or
+            self.pos.y < room.borderNorth.pos.y or
+            self.pos.x < room.borderWest.pos.x
+        ):
+            self.kill()
+
 
 # ============================================================================ #
 #                                  Explosions                                  #
@@ -232,6 +242,7 @@ class PlayerStdBullet(BulletBase):
                 self.kill()
 
     def update(self):
+        super().update()
         self.movement()
 
     def __repr__(self):

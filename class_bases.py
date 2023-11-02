@@ -123,9 +123,6 @@ class ActorBase(pygame.sprite.Sprite):
 
         Args:
             angle: The angle to rotate the sprite's image by
-
-        Returns:
-            None:
         """
         self.origImage = self.origImages[self.index]
         self.image = pygame.transform.rotate(self.origImage, int(angle))

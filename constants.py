@@ -12,37 +12,6 @@ sin = math.sin
 cos = math.cos
 pi = math.pi
 
-
-# ============================================================================ #
-#                                    Classes                                   #
-# ============================================================================ #
-class ColorRGB:
-    def __init__(self, r: int, g: int, b: int):
-        """A data type that represents a color given amounts of red, green, and blue.
-        
-        ### Arguments
-            - r (``int``): Red
-            - g (``int``): Green
-            - b (``int``): Blue
-        """
-        super().__init__()
-        self.r, self.g, self.b = r, g, b
-
-    def __iter__(self):
-        for value in self.__dict__.values():
-            yield value
-
-    def __add__(self, otherColor):
-        new_r = math.sqrt((self.r ** 2 + otherColor.r ** 2) / 2)
-        new_g = math.sqrt((self.g ** 2 + otherColor.g ** 2) / 2)
-        new_b = math.sqrt((self.b ** 2 + otherColor.b ** 2) / 2)
-
-        return ColorRGB(new_r, new_g, new_b)
-
-    def __repr__(self):
-        return f'ColorRGB({self.r}, {self.g}, {self.b})'
-
-
 # ---------------------------------- Window ---------------------------------- #
 WINWIDTH = 1280
 WINHEIGHT = 720

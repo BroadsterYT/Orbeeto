@@ -1,4 +1,5 @@
 import bullets
+from calculations import screen_shake_queue
 from itemdrops import *
 from statbars import *
 
@@ -171,6 +172,7 @@ class StandardGrunt(EnemyBase):
             self.rotate_image(get_angle_to_sprite(self, get_closest_player(self)))
 
         if self.hp <= 0:
+            screen_shake_queue.add(6, 75)
             self.drop_items(0)
             self.award_xp()
             self.kill()
