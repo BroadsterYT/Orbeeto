@@ -242,8 +242,8 @@ class PlayerStdBullet(BulletBase):
                 self.kill()
 
     def update(self):
-        super().update()
         self.movement()
+        super().update()
 
     def __repr__(self):
         return f'PlayerStdBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.ricCount})'
@@ -281,6 +281,7 @@ class PlayerLaserBullet(BulletBase):
 
     def update(self):
         self.movement()
+        super().update()
 
 
 # ------------------------------ Utility Bullets ----------------------------- #
@@ -378,7 +379,7 @@ class PortalBullet(BulletBase):
         return f'PortalBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.ricCount})'
 
 
-class NewGrappleBullet(BulletBase):
+class GrappleBullet(BulletBase):
     def __init__(self, shot_from, pos_x: float, pos_y: float, vel_x: float, vel_y: float):
         super().__init__()
         self.show(LAYER['grapple'])
