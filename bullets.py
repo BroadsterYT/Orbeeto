@@ -204,15 +204,16 @@ class StdBulletExplode(ActorBase):
 # ============================================================================ #
 class PlayerStdBullet(BulletBase):
     def __init__(self, shot_from, pos_x: float, pos_y: float, vel_x: float, vel_y: float, bounce_count: int = 1):
-        """A projectile fired by a player that moves at a constant velocity
+        """A projectile fired by a player that moves at a constant velocity.
 
-        ### Arguments
-            - shotFrom (``Player``): The player that the bullet was shot from
-            - posX (``int``): The x-position where the bullet should be spawned
-            - posY (``int``): The y-position where the bullet should be spawned
-            - velX (``int``): The x-axis component of the bullet's velocity
-            - velY (``int``): The y-axis component of the bullet's velocity
-        """        
+        Args:
+            shot_from: The player that the bullet was shot from
+            pos_x: The x-position where the bullet should be spawned
+            pos_y: The y-position where the bullet should be spawned
+            vel_x: The x-axis component of the bullet's velocity
+            vel_y: The y-axis component of the bullet's velocity
+            bounce_count: The amount of times the bullet should bounce. (1 = no bounce)
+        """
         super().__init__()
         self.show(LAYER['proj'])
         self.damage = PROJDMG[PROJ_STD]
@@ -242,8 +243,8 @@ class PlayerStdBullet(BulletBase):
                 self.kill()
 
     def update(self):
-        super().update()
         self.movement()
+        super().update()
 
     def __repr__(self):
         return f'PlayerStdBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.ricCount})'
@@ -281,6 +282,7 @@ class PlayerLaserBullet(BulletBase):
 
     def update(self):
         self.movement()
+        super().update()
 
 
 # ------------------------------ Utility Bullets ----------------------------- #
@@ -378,7 +380,7 @@ class PortalBullet(BulletBase):
         return f'PortalBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.ricCount})'
 
 
-class NewGrappleBullet(BulletBase):
+class GrappleBullet(BulletBase):
     def __init__(self, shot_from, pos_x: float, pos_y: float, vel_x: float, vel_y: float):
         super().__init__()
         self.show(LAYER['grapple'])
@@ -444,7 +446,8 @@ class NewGrappleBullet(BulletBase):
                     if len(all_portals) == 2:
                         for portal in all_portals:
                             if self.hitbox.colliderect(portal.hitbox):
-                                self.portalList.append(portal); self.portalList.append(get_other_portal(portal))
+                                self.portalList.append(portal)
+                                self.portalList.append(get_other_portal(portal))
                                 self.teleport(portal)
                                 self.rotate_image(get_vec_angle(self.vel.x, self.vel.y))
                         return

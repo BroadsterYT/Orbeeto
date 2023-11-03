@@ -1,4 +1,3 @@
-# Spritesheet function module
 import pygame
 from constants import vec
 
@@ -9,16 +8,16 @@ class Spritesheet(object):
         self.columns = sprites_per_row
 
     def get_images(self, width: int, height: int, image_count: int, image_offset: int = 0) -> list:
-        """Returns the images of the spritesheet as a list.
-        
-        ### Arguments
-            - width (``int``): The width of each frame
-            - height (``int``): The height of each frame
-            - imageCount (``int``): The number of images to "snip"
-            - imageOffset (``int``, optional): Which image should the "snip" start from? Defaults to ``0`` (the first image in the spritesheet).
-        
-        ### Returns
-            - ``list``: A list of the desired images
+        """Returns the images of the spritesheet as a list of images.
+
+        Args:
+            width: The width of each frame (in pixels)
+            height: The height of each frame (in pixels)
+            image_count: The number of images to "snip"
+            image_offset: Which image should the "snip" start from? Defaults to the first image in the spritesheet.
+
+        Returns:
+            list: A list of the desired images
         """
         image_list = []
         offset = vec(image_offset % self.columns, image_offset // self.columns)

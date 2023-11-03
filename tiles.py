@@ -14,28 +14,6 @@ def fancy_tile_texture(block_width: int, block_height: int, textures: list, colo
                 tile_rect = pygame.Rect(x, y, texture_width, texture_height)
                 final_image.blit(textures[0], tile_rect)
 
-    # Bottom and right
-    elif style == 1:
-        for x in range(0, image_width, texture_width):
-            for y in range(0, image_height, texture_height):
-                if x == image_width - texture_width or y == image_height - texture_height:
-                    tile_rect = pygame.Rect(x, y, texture_width, texture_height)
-                    final_image.blit(textures[1], tile_rect)
-                else:
-                    tile_rect = pygame.Rect(x, y, texture_width, texture_height)
-                    final_image.blit(textures[0], tile_rect)
-
-    # Top and right
-    elif style == 2:
-        for x in range(0, image_width, texture_width):
-            for y in range(0, image_height, texture_height):
-                if x == image_width - texture_width or y == 0:
-                    tile_rect = pygame.Rect(x, y, texture_width, texture_height)
-                    final_image.blit(textures[1], tile_rect)
-                else:
-                    tile_rect = pygame.Rect(x, y, texture_width, texture_height)
-                    final_image.blit(textures[0], tile_rect)
-
     final_image.set_colorkey(color_key)
     return final_image
 

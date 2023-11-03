@@ -453,16 +453,17 @@ class ScreenShakeQueue:
         """
         self.queue: list = []
 
-    def add(self, amplitude: int | float, duration: int) -> None:
+    def add(self, amplitude: int | float, duration: int, rate_of_decay: int | float = 1) -> None:
         """Adds a screen shake to the queue of screen shakes.
 
         Args:
             amplitude: How intense the shake should be
             duration: How long the shake should last
+            rate_of_decay: The intensity of the decay. Set to 1 by default. Should be greater than or equal to 0.
         """
         new_queue = []
         for tick in range(duration):
-            decay = (duration - tick) / duration
+            decay = (pow(duration - tick, rate_of_decay)) / pow(duration, rate_of_decay)
             queue_input = vec(rand.uniform(-amplitude, amplitude) * decay, rand.uniform(-amplitude, amplitude) * decay)
             new_queue.append(queue_input)
 

@@ -41,7 +41,7 @@ class EnemyBase(ActorBase):
             a_player.update_max_stats()
 
     def drop_items(self, table_index):
-        drops = LTDROPS[table_index]
+        drops = LOOTDROPS[table_index]
         row = rand.randint(0, 2)
         column = rand.randint(0, 2)
         

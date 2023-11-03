@@ -9,7 +9,7 @@ from enemies import *
 from statbars import *
 from tiles import *
 from trinkets import *
-from menus import *
+from menu_ui import *
 
 clock = pygame.time.Clock()
 
@@ -257,7 +257,7 @@ class Player(ActorBase):
         if keyReleased[2] % 2 != 0 and self.canGrapple:
             if self.grapple is not None:
                 self.grapple.shatter()
-            self.grapple = NewGrappleBullet(self, self.pos.x, self.pos.y, vel_x, vel_y)
+            self.grapple = GrappleBullet(self, self.pos.x, self.pos.y, vel_x, vel_y)
             self.canGrapple = False
 
         if keyReleased[2] % 2 == 0 and not self.canGrapple:
@@ -959,7 +959,7 @@ class Room(AbstractBase):
                         # Box(300, 400)
                     )
                 )
-            self.__init_room(WINWIDTH, WINHEIGHT, False, False)
+            self.__init_room(WINWIDTH // 2, WINHEIGHT // 2, False, False)
 
         if self.room == vec(1, 0):
             self.add(
@@ -1023,9 +1023,9 @@ class RoomContainer(AbstractBase):
 class InventoryMenu(AbstractBase):
     def __init__(self, owner: Player):
         """A menu used to view collected items and utilize them for various purposes
-        
-        ### Arguments
-            - owner ``(pygame.sprite.Sprite)``: The player whom the inventory belongs to
+
+        Args:
+            owner: The player whom the inventory belongs to
         """
         super().__init__()
         self.cyclingLeft = False
@@ -1046,13 +1046,13 @@ class InventoryMenu(AbstractBase):
         )
 
     def hide(self):
-        """Makes all the elements of the inventory menu invisible (closes the inventory menu)
+        """Makes all the elements of the inventory menu invisible (closes the inventory menu).
         """
         for sprite in self.sprites():
             all_sprites.remove(sprite)
 
     def show(self):
-        """Makes all the elements of the inventory menu visible
+        """Makes all the elements of the inventory menu visible.
         """
         for sprite in self.sprites():
             all_sprites.add(sprite, layer=LAYER['ui_1'])

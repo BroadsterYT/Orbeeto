@@ -170,13 +170,14 @@ class MenuSlot(ActorBase):
                 new_img.set_colorkey((0, 0, 0))
                 center_x = (new_img.get_width() - frame.get_width()) // 2
                 center_y = (new_img.get_height() - frame.get_height()) // 2
-                new_img.blit(
-                    swap_color(
-                        swap_color(count_surface, (44, 44, 44), (156, 156, 156)), (0, 0, 1), (255, 255, 255)),
-                    vec(center_x, center_y)
-                )
-                final_images.append(new_img)
 
+                # Changing dark gray to light gray
+                color_swap_1 = swap_color(count_surface, (44, 44, 44), (156, 156, 156))
+                # Changing black to white
+                color_swap_2 = swap_color(color_swap_1, (0, 0, 1), (255, 255, 255))
+
+                new_img.blit(color_swap_2, vec(center_x, center_y))
+                final_images.append(new_img)
         else:
             final_images.append(self.menuImg)
 

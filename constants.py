@@ -110,7 +110,7 @@ MAT = {
 }
 
 # All loot tables and their drops
-LTDROPS = {
+LOOTDROPS = {
     0: [[(MAT[0],), (MAT[0],), (MAT[0],), ],  # Standard Grunt
         [(MAT[0],), (MAT[0],), (MAT[0], MAT[0]), ],
         [(MAT[0],), (MAT[0], MAT[0],), (MAT[0], MAT[0],), ], ],
