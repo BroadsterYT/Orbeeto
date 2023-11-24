@@ -144,10 +144,6 @@ class ActorBase(pygame.sprite.Sprite):
 
         Args:
             adjust_centers_first: Should rect and hitbox be snapped to its position before or after the vel calculation?
-
-        Returns:
-            None:
-
         """
         if adjust_centers_first:
             self.center_rects()

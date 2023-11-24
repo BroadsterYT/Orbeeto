@@ -1,5 +1,4 @@
 import bullets
-from calculations import screen_shake_queue
 from itemdrops import *
 from statbars import *
 
@@ -25,7 +24,7 @@ class EnemyBase(ActorBase):
 
         self.healthBar = HealthBar(self)
 
-    def set_stats(self, hp: int, attack: int, defense: int, xp: int):
+    def _set_stats(self, hp: int, attack: int, defense: int, xp: int):
         self.maxHp = hp
         self.hp = hp
         self.maxAtk = attack
@@ -75,7 +74,7 @@ class StandardGrunt(EnemyBase):
         self.set_rects(0, 0, 64, 64, 32, 32)
 
         # ---------------------- Game stats & UI ----------------------#
-        self.set_stats(15, 10, 10, 40)
+        self._set_stats(15, 10, 10, 40)
 
 # --------------------------------- Movement --------------------------------- #
     def movement(self, can_shoot: bool = True):
