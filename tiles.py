@@ -19,13 +19,13 @@ def fancy_tile_texture(block_width: int, block_height: int, textures: list, colo
 
 
 class TileBase(ActorBase):
-    def __init__(self, block_pos_x: int | float, block_pos_y: int | float, block_width: int, block_height: int,
+    def __init__(self, pos_x: int | float, pos_y: int | float, block_width: int, block_height: int,
                  tile_size: int = 16):
         """The base class for all tile sprites.
 
         Args:
-            block_pos_x: The x-axis position of the tile (in tiles)
-            block_pos_y: The y-axis position of the tile (in tiles)
+            pos_x: The x-axis position of the tile (in tiles)
+            pos_y: The y-axis position of the tile (in tiles)
             block_width: The width of the tile (in tiles)
             block_height: The height of the tile (in tiles)
             tile_size: The size of each individual tile (in pixels)
@@ -35,8 +35,7 @@ class TileBase(ActorBase):
 
         self.blockWidth, self.blockHeight = block_width, block_height
         self.width, self.height = self.blockWidth * self.tileSize, self.blockHeight * self.tileSize
-        self.pos = get_top_left_coords(self.width, self.height, block_pos_x * self.tileSize,
-                                       block_pos_y * self.tileSize)
+        self.pos = vec(pos_x, pos_y)
 
         self.cAccel = 0.58
 
@@ -51,21 +50,24 @@ class TileBase(ActorBase):
         final_accel += room.get_accel()
         return final_accel
 
+    def __repr__(self):
+        return f'Wall([{self.pos.x - self.hitbox.width // 2},{self.pos.y - self.hitbox.height // 2}])'
+
 
 class Wall(TileBase):
-    def __init__(self, block_pos_x: float, block_pos_y: float, block_width: int, block_height: int,
+    def __init__(self, pos_x: float, pos_y: float, block_width: int, block_height: int,
                  image_row: int = 0, style: int = 0):
         """A wall that cannot be passed or obstructed.
 
         Args:
-            block_pos_x: The x-axis position to spawn the wall on the block grid (1 block = 16 pixels)
-            block_pos_y: The y-axis position to spawn the wall on the block grid (1 block = 16 pixels)
+            pos_x: The x-axis position to spawn the wall on the block grid (1 block = 16 pixels)
+            pos_y: The y-axis position to spawn the wall on the block grid (1 block = 16 pixels)
             block_width: The width of the wall (in blocks)
             block_height: The height of the wall (in blocks)
             image_row: The row of images to use from the sprite sheet
             style: The tiling style to use on the wall
         """
-        super().__init__(block_pos_x, block_pos_y, block_width, block_height)
+        super().__init__(pos_x, pos_y, block_width, block_height)
         self.show(LAYER['wall'])
         all_walls.add(self)
 
@@ -84,8 +86,8 @@ class Wall(TileBase):
 
 
 class Floor(TileBase):
-    def __init__(self, block_pos_x: int | float, block_pos_y: int | float, block_width: int, block_height: int):
-        super().__init__(block_pos_x, block_pos_y, block_width, block_height)
+    def __init__(self, pos_x: int | float, pos_y: int | float, block_width: int, block_height: int):
+        super().__init__(pos_x, pos_y, block_width, block_height)
         self.show(LAYER['floor'])
         all_floors.add(self)
 
@@ -116,8 +118,8 @@ class Floor(TileBase):
 
 
 class RoomBorder(TileBase):
-    def __init__(self, block_pos_x: float, block_pos_y: float, block_width: int | float, block_height: int | float):
-        super().__init__(block_pos_x, block_pos_y, block_width, block_height)
+    def __init__(self, pos_x: float, pos_y: float, block_width: int | float, block_height: int | float):
+        super().__init__(pos_x, pos_y, block_width, block_height)
         self.show(LAYER['wall'])
         all_borders.add(self)
 

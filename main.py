@@ -800,10 +800,27 @@ class Room(AbstractBase):
             room_width: The width of the room (in pixels)
             room_height: The height of the room (in pixels)
         """
-        self.borderSouth = RoomBorder(0, room_height // 16, room_width // 16, 1)
-        self.borderEast = RoomBorder(room_width // 16, 0, 1, room_height // 16)
-        self.borderNorth = RoomBorder(0, -1, room_width // 16, 1)
-        self.borderWest = RoomBorder(-1, 0, 1, room_height // 16)
+        west_coords = vec(-8, room_height // 2)
+        north_coords = vec(room_width // 2, -8)
+        south_coords = vec(north_coords.x, north_coords.y + room_height + 16)
+        east_coords = vec(west_coords.x + room_width + 16, room_height // 2)
+
+        if room_width < WINWIDTH:
+            west_coords.x = WINWIDTH / 2 - room_width / 2 - 8
+            east_coords.x = west_coords.x + room_width + 16
+            south_coords.x = west_coords.x + room_width / 2 + 8
+            north_coords.x = south_coords.x
+
+        if room_height < WINHEIGHT:
+            north_coords.y = WINHEIGHT / 2 - room_height / 2 - 8
+            south_coords.y = north_coords.y + room_height + 16
+            east_coords.y = north_coords.y + room_height / 2 + 8
+            west_coords.y = east_coords.y
+
+        self.borderSouth = RoomBorder(south_coords.x, south_coords.y, room_width / 16, 1)
+        self.borderEast = RoomBorder(east_coords.x, east_coords.y, 1, room_height / 16)
+        self.borderNorth = RoomBorder(north_coords.x, north_coords.y, room_width / 16, 1)
+        self.borderWest = RoomBorder(west_coords.x, west_coords.y, 1, room_height / 16)
 
         self.add(self.borderSouth, self.borderEast, self.borderNorth, self.borderWest)
 
@@ -885,29 +902,6 @@ class Room(AbstractBase):
             elif not new_room_scroll_y:
                 self.player1.vel.y = player_vel.y
 
-    def __build_room(self,
-                     room_x, room_y,
-                     room_width, room_height,
-                     can_scroll_x, can_scroll_y,
-                     room_sprites: list, actor_sprites: list
-                     ) -> None:
-        if self.room == vec(room_x, room_y):
-            self.add(
-                room_sprites
-            )
-
-            try:
-                container = next(c for c in all_containers if c.room == self.room)
-                container.show_sprites()
-            except StopIteration:
-                all_containers.append(
-                    RoomContainer(
-                        room_x, room_y,
-                        actor_sprites
-                    )
-                )
-            self.__init_room(room_width, room_height, can_scroll_x, can_scroll_y)
-
     def layout_update(self) -> None:
         """Updates the layout of the room
         """
@@ -921,10 +915,6 @@ class Room(AbstractBase):
         # ------------------------------- Room Layouts ------------------------------- #
         if self.room == vec(0, 0):
             self.add(
-                Wall(0, 0, 8, 8),
-                Wall(0, 37, 8, 8),
-                Wall(72, 0, 8, 8),
-                Wall(72, 37, 8, 8),
                 Button(1, 14, 38),
             )
 
@@ -944,8 +934,7 @@ class Room(AbstractBase):
 
         if self.room == vec(0, 1):
             self.add(
-                Wall(8, 0, 4, 4),
-                Wall(40, 20, 8, 8)
+                Wall(WINWIDTH // 4 + 32, WINHEIGHT // 4 + 32, 4, 4)
             )
 
             try:
@@ -963,8 +952,7 @@ class Room(AbstractBase):
 
         if self.room == vec(1, 0):
             self.add(
-                Wall(8, 0, 4, 4),
-                Wall(40, 20, 8, 8)
+
             )
 
             try:
@@ -1009,6 +997,7 @@ class RoomContainer(AbstractBase):
         for sprite in self.sprites():
             sprite.hide()
 
+    # TODO: Allow sprites to be redrawn back on their original layers
     def show_sprites(self, layer='enemy'):
         for sprite in self.sprites():
             sprite.show(LAYER[layer])
