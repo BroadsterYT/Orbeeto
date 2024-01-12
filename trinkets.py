@@ -1,8 +1,16 @@
-from class_bases import *
-# from tiles import TileBase
+import pygame
+
+import classbases as cb
+import constants as cst
+import calculations as calc
+
+import groups
+
+# Aliases
+vec = pygame.math.Vector2
 
 
-class Box(ActorBase):
+class Box(cb.ActorBase):
     def __init__(self, pos_x, pos_y):
         """A box that can be pushed around and activate buttons.
 
@@ -11,13 +19,13 @@ class Box(ActorBase):
             pos_y: The position on the y-axis to spawn the box
         """
         super().__init__()
-        self.show(LAYER['trinket'])
-        all_movable.add(self)
+        self.show(cst.LAYER['trinket'])
+        groups.all_movable.add(self)
 
         self.pos = vec((pos_x, pos_y))
         self.cAccel = 0.58
 
-        room = get_room()
+        room = cb.get_room()
         self.roomPos = vec((self.pos.x - room.pos.x, self.pos.y - room.pos.y))
 
         self.set_images("sprites/textures/box.png", 64, 64, 5, 1, 0, 0)
@@ -25,7 +33,7 @@ class Box(ActorBase):
 
     def movement(self):
         if self.canUpdate and self.visible:
-            self.collide_check(all_walls)
+            self.collide_check(groups.all_walls)
 
             self.set_room_pos()
 
@@ -33,34 +41,34 @@ class Box(ActorBase):
             self.accel_movement()
 
     def get_accel(self) -> pygame.math.Vector2:
-        room = get_room()
+        room = cb.get_room()
         final_accel = vec(0, 0)
         final_accel += room.get_accel()
 
-        for a_player in all_players:
+        for a_player in groups.all_players:
             if self.hitbox.colliderect(a_player.hitbox):
-                if triangle_collide(self, a_player) == SOUTH:
+                if calc.triangle_collide(self, a_player) == cst.SOUTH:
                     final_accel.y += 0.8
-                if triangle_collide(self, a_player) == EAST:
+                if calc.triangle_collide(self, a_player) == cst.EAST:
                     final_accel.x += 0.8
-                if triangle_collide(self, a_player) == NORTH:
+                if calc.triangle_collide(self, a_player) == cst.NORTH:
                     final_accel.y -= 0.8
-                if triangle_collide(self, a_player) == WEST:
+                if calc.triangle_collide(self, a_player) == cst.WEST:
                     final_accel.x -= 0.8
 
         return final_accel
 
     def update(self):
         # Teleporting
-        for portal in all_portals:
-            if self.hitbox.colliderect(portal.hitbox) and len(all_portals) == 2:
+        for portal in groups.all_portals:
+            if self.hitbox.colliderect(portal.hitbox) and len(groups.all_portals) == 2:
                 self.teleport(portal)
 
     def __repr__(self):
         return f'Box({self.pos}, {self.vel}, {self.accel})'
 
 
-class Button(ActorBase):
+class Button(cb.ActorBase):
     def __init__(self, id_value: int, block_pos_x: int, block_pos_y: int):
         """A button that can be activated and deactivated
 
@@ -70,8 +78,8 @@ class Button(ActorBase):
             block_pos_y: The y-axis position of the button (in blocks)
         """
         super().__init__()
-        self.show(LAYER['trinket'])
-        all_trinkets.add(self)
+        self.show(cst.LAYER['trinket'])
+        groups.all_trinkets.add(self)
 
         self.idValue = id_value
         self.activated = False
@@ -86,7 +94,7 @@ class Button(ActorBase):
 
     def __active_check(self) -> bool:
         is_active = False
-        for box in all_movable:
+        for box in groups.all_movable:
             if not self.hitbox.colliderect(box.hitbox):
                 return is_active
             else:
@@ -104,7 +112,7 @@ class Button(ActorBase):
             self.accel_movement()
 
     def get_accel(self) -> pygame.math.Vector2:
-        room = get_room()
+        room = cb.get_room()
         final_accel = vec(0, 0)
         final_accel += room.get_accel()
         return final_accel
@@ -136,8 +144,8 @@ class Button(ActorBase):
 #             - blockHeight (``int``): The height of the wall in "tiles"
 #         """
 #         super().__init__(start_block_pos_x, start_block_pos_y, block_width, block_height)
-#         self.show(LAYER['wall'])
-#         all_walls.add(self)
+#         self.show(cst.LAYER['wall'])
+#         groups.all_walls.add(self)
 #         all_trinkets.add(self)
 #         self.idValue = id_value
 #

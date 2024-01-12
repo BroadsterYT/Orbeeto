@@ -1,9 +1,16 @@
 import random as rand
+import math
 import time
+import pygame
 
-from constants import *
-from groups import *
+import constants as cst
+import groups
+import screen
 from spritesheet import Spritesheet
+
+# Aliases
+vec = pygame.math.Vector2
+rad = math.radians
 
 
 # ============================================================================ #
@@ -256,6 +263,47 @@ def eerp(a: int | float | vec, b: int | float | vec, weight: float) -> float:
     return true_a * pow(true_b, weight)
 
 
+def fish_eye(image: pygame.Surface) -> pygame.Surface:
+    """ Fish eye algorithm """
+    width, height = image.get_size()
+    half_width = width / 2
+    half_height = height / 2
+    image_copy = pygame.Surface((width, height), flags=pygame.RLEACCEL).convert()
+    for y in range(height):
+        # Normalize every pixel along y-axis
+        # when y = 0 --> ny = -1
+        # when y = height --> ny = +1
+        ny = ((2 * y) / height) - 1
+        # ny * ny pre-calculated
+        ny2 = ny ** 2
+        for x in range(width):
+            # Normalize every pixel along x-axis
+            # when x = 0 --> nx = -1
+            # when x = w --> nx = +1
+            nx = ((2 * x) / width) - 1
+            # pre calculated nx * nx
+            nx2 = nx ** 2
+
+            # calculate distance from center (0, 0)
+            r = math.sqrt(nx2 + ny2)
+
+            # discard pixel if r below 0.0 or above 1.0
+            if 0.0 <= r <= 1.0:
+                nr = (r + 1 - math.sqrt(1 - r ** 2)) / 2
+                if nr <= 1.0:
+                    theta = math.atan2(ny, nx)
+                    nxn = nr * math.cos(theta)
+                    nyn = nr * math.sin(theta)
+                    x2 = int(nxn * half_width + half_width)
+                    y2 = int(nyn * half_height + half_height)
+
+                    if 0 <= int(y2 * width + x2) < width * height:
+                        pixel = image.get_at((x2, y2))
+                        image_copy.set_at((x, y), pixel)
+    # image_copy.set_colorkey(cst.BLACK)
+    return image_copy
+
+
 # ============================================================================ #
 #                                  Returns int                                 #
 # ============================================================================ #
@@ -314,10 +362,10 @@ def triangle_collide(instig, sprite) -> str:
     angle_c = rad(get_angle_to_c_from_c(instig.pos, point_c) + 90)
     angle_d = rad(get_angle_to_c_from_c(instig.pos, point_d) + 90)
 
-    height_ap = abs(len_point_a * sin(angle_a))
-    height_bp = abs(len_point_b * cos(angle_b))
-    height_cp = abs(len_point_c * sin(angle_c))
-    height_dp = abs(len_point_d * cos(angle_d))
+    height_ap = abs(len_point_a * math.sin(angle_a))
+    height_bp = abs(len_point_b * math.cos(angle_b))
+    height_cp = abs(len_point_c * math.sin(angle_c))
+    height_dp = abs(len_point_d * math.cos(angle_d))
 
     def is_closest_side(height: float):
         if height == height_ap:
@@ -357,35 +405,35 @@ def triangle_collide(instig, sprite) -> str:
 
     if is_closest_side(height_ap):
         if instig.pos.x >= point_b.x:
-            return EAST
+            return cst.EAST
         if instig.pos.x <= point_d.x:
-            return WEST
+            return cst.WEST
 
-        return SOUTH
+        return cst.SOUTH
 
     elif is_closest_side(height_bp):
         if instig.pos.y >= point_a.y:
-            return SOUTH
+            return cst.SOUTH
         if instig.pos.y <= point_c.y:
-            return NORTH
+            return cst.NORTH
 
-        return EAST
+        return cst.EAST
 
     elif is_closest_side(height_cp):
         if instig.pos.x >= point_b.x:
-            return EAST
+            return cst.EAST
         if instig.pos.x <= point_d.x:
-            return WEST
+            return cst.WEST
 
-        return NORTH
+        return cst.NORTH
 
     elif is_closest_side(height_dp):
         if instig.pos.y >= point_a.y:
-            return SOUTH
+            return cst.SOUTH
         if instig.pos.y <= point_c.y:
-            return NORTH
+            return cst.NORTH
 
-        return WEST
+        return cst.WEST
 
 
 def wall_side_check(wall, proj) -> str:
@@ -400,15 +448,15 @@ def wall_side_check(wall, proj) -> str:
     """
     if wall.pos.x - wall.hitbox.width * 0.45 <= proj.pos.x <= wall.pos.x + wall.hitbox.width * 0.45:
         if proj.pos.y < wall.pos.y:
-            return NORTH
+            return cst.NORTH
         elif proj.pos.y > wall.pos.y:
-            return SOUTH
+            return cst.SOUTH
 
     elif wall.pos.y - wall.hitbox.height * 0.45 <= proj.pos.y <= wall.pos.y + wall.hitbox.height * 0.45:
         if proj.pos.x < wall.pos.x:
-            return WEST
+            return cst.WEST
         elif proj.pos.x > wall.pos.x:
-            return EAST
+            return cst.EAST
 
 
 # ============================================================================ #
@@ -515,7 +563,7 @@ def combine_images(base_img: pygame.Surface, top_img: pygame.Surface) -> pygame.
     center_x = (new_img.get_width() - top_img.get_width()) // 2
     center_y = (new_img.get_height() - top_img.get_height()) // 2
     new_img.blit(top_img, vec(center_x, center_y))
-    new_img.set_colorkey(BLACK)
+    new_img.set_colorkey(cst.BLACK)
     return new_img
 
 
@@ -539,19 +587,19 @@ def text_to_image(text: str, font_img: str, char_width: int, char_height: int, c
     final_image = pygame.Surface(vec(len(text) * char_width, char_height))
 
     for char in text:
-        if char in LETTERS.keys():
-            char_list.append(images[LETTERS[char]])
-        elif char in NUMBERS:
+        if char in cst.LETTERS.keys():
+            char_list.append(images[cst.LETTERS[char]])
+        elif char in cst.NUMBERS:
             char_list.append(images[int(char) + 26])
-        elif char in SYMBOLS:
-            char_list.append(images[SYMBOLS[char] + 36])
+        elif char in cst.SYMBOLS:
+            char_list.append(images[cst.SYMBOLS[char] + 36])
 
     count = 0
     for _ in char_list:
         final_image.blit(char_list[count], vec(count * char_width, 0))
         count += 1
 
-    final_image.set_colorkey(BLACK)
+    final_image.set_colorkey(cst.BLACK)
     return final_image
 
 
@@ -568,7 +616,7 @@ def get_closest_player(check_sprite):
         Player: The closest player to the sprite
     """
     player_coords = {}
-    for a_player in all_players:
+    for a_player in groups.all_players:
         player_coords[a_player] = get_dist_to_sprite(check_sprite, a_player)
 
     try:
@@ -588,7 +636,7 @@ def get_other_portal(portal_in):
     Returns:
         Portal: The other portal in the all_portals list
     """
-    for portal in all_portals:
+    for portal in groups.all_portals:
         if portal != portal_in:
             return portal
 
@@ -596,10 +644,10 @@ def get_other_portal(portal_in):
 # ============================================================================ #
 #                                 Returns None                                 #
 # ============================================================================ #
-def kill_groups(*groups) -> None:
-    """Calls .kill() for all sprites within one or more groups.
+def kill_groups(*any_groups) -> None:
+    """Calls ``.kill()`` for all sprites within one or more groups.
     """
-    for group in groups:
+    for group in any_groups:
         for entity in group:
             if hasattr(entity, 'shatter'):
                 entity.shatter()
@@ -627,5 +675,7 @@ def swap_color(image: pygame.Surface, old_color: tuple, new_color: tuple) -> pyg
     return new_img
 
 
-class CustomError(Exception):
-    pass
+def draw_text(text: str, pos_x, pos_y):
+    font = pygame.font.SysFont('Arial', 24)
+    image = font.render(text, True, (0, 0, 0))
+    screen.buffer_screen.blit(image, vec(pos_x, pos_y))

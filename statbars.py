@@ -1,33 +1,32 @@
-from math import floor, ceil
+import pygame
+import math
 
-from class_bases import ActorBase
-from calculations import *
-from constants import *
-from groups import *
+import classbases as cb
+import calculations as calc
+import constants as cst
+import groups
+
+# Aliases
+vec = pygame.math.Vector2
 
 
-class StatBarBase(ActorBase):
+# TODO: Generate value of bar on-the-fly and overlay UI on top...?
+class StatBarBase(cb.ActorBase):
     def __init__(self, owner, order: int):
+        """A bar that shows a specific value on-screen
+
+        Args:
+            owner: The owner of the value being displayed
+            order: The order in which the statbar will be displayed with others
+        """
         super().__init__()
-        self.show(LAYER['statbar'])
-        all_stat_bars.add(self)
+        self.show(cst.LAYER['statbar'])
+        groups.all_stat_bars.add(self)
         self.owner = owner
+        self.order = order  # The order of the stat bars, like which one is on top, which one is below that, etc.
 
-        self.order = order
         self.pos = vec(self.owner.pos.x, self.owner.pos.y + 42 + self.order * 18)
-        self.ownerPos = vec(self.owner.pos.x, self.owner.pos.y + 42 + self.order * 18)
-
         self.cAccel = 0.58
-
-        if isinstance(self, HealthBar):
-            self.set_images('sprites/stat_bars/health_bar.png', 128, 16, 1, 17, 0, 16)
-        elif isinstance(self, DodgeBar):
-            self.set_images('sprites/stat_bars/dodge_bar.png', 128, 16, 1, 17, 0, 16)
-        elif isinstance(self, AmmoBar):
-            self.set_images('sprites/stat_bars/ammo_bar.png', 128, 16, 1, 17, 0, 16)
-        else:
-            raise TypeError()
-
         self.set_rects(self.pos.x, self.pos.y, 128, 16, 128, 16)
 
         self.number = BarNumbers(self)
@@ -38,16 +37,17 @@ class StatBarBase(ActorBase):
         self.rect.center = self.pos
         self.hitbox.center = self.pos
 
-    def kill(self):
-        self.number.kill()
-        super().kill()
 
-
-class BarNumbers(ActorBase):
+class BarNumbers(cb.ActorBase):
     def __init__(self, bar):
+        """A number indicating the value of a statbar
+
+        Args:
+            bar: The bar to display next to
+        """
         super().__init__()
-        self.show(LAYER['statbar'])
-        all_stat_bars.add(self)
+        self.show(cst.LAYER['statbar'])
+        groups.all_stat_bars.add(self)
 
         self.bar = bar
         self.owner = self.bar.owner
@@ -60,16 +60,17 @@ class BarNumbers(ActorBase):
 
     def render_images(self):
         if isinstance(self.bar, HealthBar):
-            self.image = text_to_image(str(self.owner.hp) + '/' + str(self.owner.maxHp), 'sprites/ui/small_font.png', 5,
-                                       7, 37)
+            self.image = calc.text_to_image(str(self.owner.hp) + '/' + str(self.owner.maxHp),
+                                            'sprites/ui/small_font.png', 5,
+                                            7, 37)
 
         elif isinstance(self.bar, DodgeBar):
-            self.image = text_to_image(str(self.owner.dodgeTime) + '/' + str(self.owner.dodgeTimeCharge),
-                                       'sprites/ui/small_font.png', 5, 7, 37)
+            self.image = calc.text_to_image(str(self.owner.dodgeTime) + '/' + str(self.owner.dodgeTimeCharge),
+                                            'sprites/ui/small_font.png', 5, 7, 37)
 
         elif isinstance(self.bar, AmmoBar):
-            self.image = text_to_image(str(self.owner.ammo) + '/' + str(self.owner.maxAmmo),
-                                       'sprites/ui/small_font.png', 5, 7, 37)
+            self.image = calc.text_to_image(str(self.owner.ammo) + '/' + str(self.owner.maxAmmo),
+                                            'sprites/ui/small_font.png', 5, 7, 37)
 
         else:
             raise TypeError()
@@ -80,7 +81,6 @@ class BarNumbers(ActorBase):
 
     def update(self):
         self.movement()
-
         if self.owner.hp > 0:
             self.render_images()
         else:
@@ -90,12 +90,12 @@ class BarNumbers(ActorBase):
 class HealthBar(StatBarBase):
     def __init__(self, owner):
         super().__init__(owner, 0)
+        self.set_images('sprites/stat_bars/health_bar.png', 128, 16, 1, 17, 0, 16)
 
     def update(self):
         self.movement()
-
         if self.owner.hp > 0:
-            self.index = floor((16 * self.owner.hp) / self.owner.maxHp)
+            self.index = math.floor((16 * self.owner.hp) / self.owner.maxHp)
             self.render_images()
         else:
             self.kill()
@@ -104,13 +104,13 @@ class HealthBar(StatBarBase):
 class DodgeBar(StatBarBase):
     def __init__(self, owner):
         super().__init__(owner, 2)
+        self.set_images('sprites/stat_bars/dodge_bar.png', 128, 16, 1, 17, 0, 16)
 
     def update(self):
         self.movement()
-
         if self.owner.hp > 0:
             if self.owner.dodgeTime < self.owner.dodgeTimeCharge:
-                self.index = ceil((16 * self.owner.dodgeTime) / self.owner.dodgeTimeCharge)
+                self.index = math.ceil((16 * self.owner.dodgeTime) / self.owner.dodgeTimeCharge)
                 self.render_images()
         else:
             self.kill()
@@ -119,12 +119,12 @@ class DodgeBar(StatBarBase):
 class AmmoBar(StatBarBase):
     def __init__(self, owner):
         super().__init__(owner, 1)
+        self.set_images('sprites/stat_bars/ammo_bar.png', 128, 16, 1, 17, 0, 16)
 
     def update(self):
         self.movement()
-
         if self.owner.hp > 0:
-            self.index = floor((16 * self.owner.ammo) / self.owner.maxAmmo)
+            self.index = math.floor((16 * self.owner.ammo) / self.owner.maxAmmo)
             self.render_images()
         else:
             self.kill()

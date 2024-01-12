@@ -68,7 +68,7 @@ PROJ_PORTAL = 'proj_PortalBullet'
 PROJ_GRAPPLE = 'proj_GrappleHook'
 
 # A dictionary that stores all damage constants of all projectile types
-PROJDMG = {
+PROJ_DAMAGE = {
     PROJ_STD: 1,
     PROJ_LASER: 5,
 

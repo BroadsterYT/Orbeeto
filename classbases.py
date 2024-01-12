@@ -1,9 +1,14 @@
+import pygame
+import time
 import copy
 
-from calculations import *
-from constants import *
-from groups import *
+import calculations as calc
+import constants as cst
+import groups
 from spritesheet import Spritesheet
+
+# Aliases
+vec = pygame.math.Vector2
 
 
 def get_room():
@@ -12,7 +17,14 @@ def get_room():
     Returns:
         Room: The central room object
     """
-    return all_rooms[0]
+    return groups.all_rooms[0]
+
+
+def removal_decorator(func, sprite):
+    def inner(*args, **kwargs):
+        func(*args, **kwargs)
+        groups.all_sprites.remove(sprite)
+    return inner
 
 
 class ActorBase(pygame.sprite.Sprite):
@@ -56,7 +68,7 @@ class ActorBase(pygame.sprite.Sprite):
         if hasattr(self, 'healthBar'):
             self.healthBar.hide()
             self.healthBar.number.hide()
-        all_sprites.remove(self)
+        groups.all_sprites.remove(self)
 
     def show(self, layer_send: str) -> None:
         """Makes the sprite visible. The sprite's ``update()`` method will be called.
@@ -66,8 +78,8 @@ class ActorBase(pygame.sprite.Sprite):
         """        
         self.visible = True
         if hasattr(self, 'healthBar'):
-            self.healthBar.show(LAYER['statbar'])
-        all_sprites.add(self, layer=layer_send)
+            self.healthBar.show(cst.LAYER['statbar'])
+        groups.all_sprites.add(self, layer=layer_send)
 
     # ----------------------------- Images and Rects ----------------------------- #
     def set_images(self, image_file: str, frame_width: int, frame_height: int, sprites_per_row: int,
@@ -100,17 +112,19 @@ class ActorBase(pygame.sprite.Sprite):
 
     def set_rects(self, rect_pos_x: float, rect_pos_y: float, rect_width: int, rect_height: int,
                   hitbox_width: int, hitbox_height: int, set_pos: bool = True):
-        """Defines the rect and hitbox of a sprite
-        
-        ### Parameters
-            - rectPosX (``int``): The x-axis position to spawn the rect and hitbox
-            - rectPosY (``int``): The y-axis position to spawn the rect and hitbox
-            - rectWidth (``int``): The width of the rect
-            - rectHeight (``int``): The height of the rect
-            - hitboxWidth (``int``): The width of the hitbox
-            - hitboxHeight (``int``): The height of the hitbox
-            - setPos (``bool``, optional): Should the rect and hitbox be snapped to the position of the sprite?.
-              Defaults to ``True``.
+        """Defines the rect and hitbox of a sprite.
+
+        Args:
+            rect_pos_x: The x-axis position to spawn the rect and hitbox
+            rect_pos_y: The y-axis position to spawn the rect and hitbox
+            rect_width: The width of the rect
+            rect_height: The height of the rect
+            hitbox_width: The width of the hitbox
+            hitbox_height: The height of the hitbox
+            set_pos: Should the rect and hitbox be snapped to the position of the sprite? Is ``true`` by default.
+
+        Returns:
+            None
         """
         self.rect = pygame.Rect(rect_pos_x, rect_pos_y, rect_width, rect_height)
         self.hitbox = pygame.Rect(rect_pos_x, rect_pos_y, hitbox_width, hitbox_height)
@@ -158,8 +172,8 @@ class ActorBase(pygame.sprite.Sprite):
     def accel_movement(self) -> None:
         """Makes a sprite move according to its acceleration (self.accel and self.cAccel).
         """
-        self.accel.x += self.vel.x * FRIC
-        self.accel.y += self.vel.y * FRIC
+        self.accel.x += self.vel.x * cst.FRIC
+        self.accel.y += self.vel.y * cst.FRIC
         self.vel += self.accel
         self.pos += self.vel + self.cAccel * self.accel
 
@@ -175,11 +189,14 @@ class ActorBase(pygame.sprite.Sprite):
         return final_accel
 
     def collide_check(self, *contact_lists: list) -> None:
-        """Check if the sprite comes into contact with another sprite from a specific group. 
+        """Check if the sprite comes into contact with another sprite from a specific group.
         If the sprites do collide, then they will perform a hitbox collision.
-        
-        ### Arguments
-            - contactLists (``list``): The sprite group(s) to check for a collision with
+
+        Args:
+            *contact_lists: The sprite group(s) to check for a collision with
+
+        Returns:
+            None
         """
         for group in contact_lists:
             for sprite in group:
@@ -192,27 +209,27 @@ class ActorBase(pygame.sprite.Sprite):
             height = (self.hitbox.height + sprite.hitbox.height) // 2
 
             # If hitting the right side
-            if triangle_collide(self, sprite) == EAST:
+            if calc.triangle_collide(self, sprite) == cst.EAST:
                 self.vel.x = 0
                 self.pos.x = sprite.pos.x + width
 
             # Hitting bottom side
-            if triangle_collide(self, sprite) == SOUTH:
+            if calc.triangle_collide(self, sprite) == cst.SOUTH:
                 self.vel.y = 0
                 self.pos.y = sprite.pos.y + height
 
             # Hitting left side
-            if triangle_collide(self, sprite) == WEST:
+            if calc.triangle_collide(self, sprite) == cst.WEST:
                 self.vel.x = 0
                 self.pos.x = sprite.pos.x - width
 
             # Hitting top side
-            if triangle_collide(self, sprite) == NORTH:
+            if calc.triangle_collide(self, sprite) == cst.NORTH:
                 self.vel.y = 0
                 self.pos.y = sprite.pos.y - height
 
     def teleport(self, portal_in):
-        portal_out = get_other_portal(portal_in)
+        portal_out = calc.get_other_portal(portal_in)
         width = (portal_out.hitbox.width + self.hitbox.width) // 2
         height = (portal_out.hitbox.height + self.hitbox.height) // 2
 
@@ -221,24 +238,27 @@ class ActorBase(pygame.sprite.Sprite):
 
         def align_sprite(offset: float, direction: str) -> None:
             """Places the sprite in the correct spot after teleporting.
-            
-            ### Arguments
-                - offset (``float``): The difference between the sprite's position and the entering portal's center
-                - direction (``str``): The direction the exiting portal is facing
-            """            
-            if direction == SOUTH:
+
+            Args:
+                offset: The difference between the sprite's position and the entering portal's center
+                direction: The direction the exiting portal is facing
+
+            Returns:
+                None
+            """
+            if direction == cst.SOUTH:
                 self.pos.x = portal_out.pos.x - offset
                 self.pos.y = portal_out.pos.y + height + abs(vel_adjust.y)
 
-            elif direction == EAST:
+            elif direction == cst.EAST:
                 self.pos.x = portal_out.pos.x + width + abs(vel_adjust.x)
                 self.pos.y = portal_out.pos.y - offset
 
-            elif direction == NORTH:
+            elif direction == cst.NORTH:
                 self.pos.x = portal_out.pos.x + offset
                 self.pos.y = portal_out.pos.y - height - abs(vel_adjust.y)
 
-            elif direction == WEST:
+            elif direction == cst.WEST:
                 self.pos.x = portal_out.pos.x - width - abs(vel_adjust.x)
                 self.pos.y = portal_out.pos.y + offset
 
@@ -251,25 +271,25 @@ class ActorBase(pygame.sprite.Sprite):
         room = get_room()
         vel_adjust: vec = room.vel.copy()
 
-        dir_list = {SOUTH: 180, EAST: 90, NORTH: 0, WEST: 270}
+        dir_list = {cst.SOUTH: 180, cst.EAST: 90, cst.NORTH: 0, cst.WEST: 270}
 
-        if dir_in == SOUTH:
+        if dir_in == cst.SOUTH:
             dist_offset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
             rotate_vel()
 
-        elif dir_in == EAST:
+        elif dir_in == cst.EAST:
             dist_offset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
-            dir_list.update({EAST: 180, NORTH: 90, WEST: 0, SOUTH: 270})
+            dir_list.update({cst.EAST: 180, cst.NORTH: 90, cst.WEST: 0, cst.SOUTH: 270})
             rotate_vel()
 
-        elif dir_in == NORTH:
+        elif dir_in == cst.NORTH:
             dist_offset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
-            dir_list.update({NORTH: 180, WEST: 90, SOUTH: 0, EAST: 270})
+            dir_list.update({cst.NORTH: 180, cst.WEST: 90, cst.SOUTH: 0, cst.EAST: 270})
             rotate_vel()
 
-        elif dir_in == WEST:
+        elif dir_in == cst.WEST:
             dist_offset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
-            dir_list.update({WEST: 180, SOUTH: 90, EAST: 0, NORTH: 270})
+            dir_list.update({cst.WEST: 180, cst.SOUTH: 90, cst.EAST: 0, cst.NORTH: 270})
             rotate_vel()
 
     def __animate(self) -> None:

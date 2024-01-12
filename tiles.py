@@ -1,4 +1,15 @@
-from class_bases import *
+import pygame
+import time
+
+import classbases as cb
+import constants as cst
+import calculations as calc
+
+import groups
+import spritesheet
+
+# Aliases
+vec = pygame.math.Vector2
 
 
 def fancy_tile_texture(block_width: int, block_height: int, textures: list, color_key: tuple, style: int):
@@ -18,7 +29,7 @@ def fancy_tile_texture(block_width: int, block_height: int, textures: list, colo
     return final_image
 
 
-class TileBase(ActorBase):
+class TileBase(cb.ActorBase):
     def __init__(self, pos_x: int | float, pos_y: int | float, block_width: int, block_height: int,
                  tile_size: int = 16):
         """The base class for all tile sprites.
@@ -45,7 +56,7 @@ class TileBase(ActorBase):
             self.accel_movement()
 
     def get_accel(self) -> pygame.math.Vector2:
-        room = get_room()
+        room = cb.get_room()
         final_accel = vec(0, 0)
         final_accel += room.get_accel()
         return final_accel
@@ -68,16 +79,16 @@ class Wall(TileBase):
             style: The tiling style to use on the wall
         """
         super().__init__(pos_x, pos_y, block_width, block_height)
-        self.show(LAYER['wall'])
-        all_walls.add(self)
+        self.show(cst.LAYER['wall'])
+        groups.all_walls.add(self)
 
-        self.spritesheet = Spritesheet('sprites/tiles/wall.png', 16)
+        self.spritesheet = spritesheet.Spritesheet('sprites/tiles/wall.png', 16)
         self.textures = self.spritesheet.get_images(16, 16, 16, image_row * 16)
         self.index = 0
 
         self.texture = self.textures[self.index]
         self.image: pygame.Surface = fancy_tile_texture(self.blockWidth, self.blockHeight,
-                                                        self.textures, BLACK, style)
+                                                        self.textures, cst.BLACK, style)
 
         self.set_rects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
 
@@ -88,15 +99,15 @@ class Wall(TileBase):
 class Floor(TileBase):
     def __init__(self, pos_x: int | float, pos_y: int | float, block_width: int, block_height: int):
         super().__init__(pos_x, pos_y, block_width, block_height)
-        self.show(LAYER['floor'])
-        all_floors.add(self)
+        self.show(cst.LAYER['floor'])
+        groups.all_floors.add(self)
 
-        self.spritesheet = Spritesheet('sprites/tiles/floor.png', 4)
+        self.spritesheet = spritesheet.Spritesheet('sprites/tiles/floor.png', 4)
         self.textures = self.spritesheet.get_images(16, 16, 4)
         self.index = 0
 
         self.texture = self.textures[self.index]
-        self.image = fancy_tile_texture(self.blockWidth, self.blockHeight, self.textures, BLACK, 0)
+        self.image = fancy_tile_texture(self.blockWidth, self.blockHeight, self.textures, cst.BLACK, 0)
 
         self.set_rects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
 
@@ -106,9 +117,9 @@ class Floor(TileBase):
             pass
 
     def __animate(self):
-        if get_time_diff(self.lastFrame) >= 0.235:
+        if calc.get_time_diff(self.lastFrame) >= 0.235:
             self.texture = self.textures[self.index]
-            self.image = fancy_tile_texture(self.blockWidth, self.blockHeight, self.textures, BLACK, 0)
+            self.image = fancy_tile_texture(self.blockWidth, self.blockHeight, self.textures, cst.BLACK, 0)
 
             self.index += 1
             if self.index > 3:
@@ -120,8 +131,8 @@ class Floor(TileBase):
 class RoomBorder(TileBase):
     def __init__(self, pos_x: float, pos_y: float, block_width: int | float, block_height: int | float):
         super().__init__(pos_x, pos_y, block_width, block_height)
-        self.show(LAYER['wall'])
-        all_borders.add(self)
+        self.show(cst.LAYER['wall'])
+        groups.all_borders.add(self)
 
         self.image = pygame.Surface(vec(block_width * 16, block_height * 16))
         self.set_rects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)

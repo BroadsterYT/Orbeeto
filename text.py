@@ -1,8 +1,17 @@
-from class_bases import *
-from constants import *
+import pygame
+import time
+
+import classbases as cb
+import constants as cst
+import calculations as calc
+
+import groups
+
+# Aliases
+vec = pygame.math.Vector2
 
 
-class DamageChar(ActorBase):
+class DamageChar(cb.ActorBase):
     def __init__(self, pos_x: int | float, pos_y: int | float, damage: int):
         """A number that pops up after a player or enemy is hit that indicates how much damage that entity has taken.
 
@@ -12,20 +21,20 @@ class DamageChar(ActorBase):
             damage: The damage to display
         """
         super().__init__()
-        self.show(LAYER['text'])
-        all_font_chars.add(self)
+        self.show(cst.LAYER['text'])
+        groups.all_font_chars.add(self)
         
         self.start = time.time()
         self.pos = vec((pos_x, pos_y))
 
-        self.image = text_to_image(str(damage), "sprites/ui/font.png", 9, 14, 36)
+        self.image = calc.text_to_image(str(damage), "sprites/ui/font.png", 9, 14, 36)
         self.set_rects(self.pos.x, self.pos.y, 9, 14, 9, 14)
 
     def get_accel(self):
         final_accel = vec(0, 0)
-        room = get_room()
+        room = cb.get_room()
         final_accel += room.get_accel()
-        if get_time_diff(self.start) < 0.1:
+        if calc.get_time_diff(self.start) < 0.1:
             final_accel.y -= 1
 
         return final_accel
@@ -36,6 +45,5 @@ class DamageChar(ActorBase):
 
     def update(self):
         self.movement()
-
-        if get_time_diff(self.start) > 0.6:
+        if calc.get_time_diff(self.start) > 0.6:
             self.kill()
