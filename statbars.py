@@ -20,13 +20,14 @@ class StatBarBase(cb.ActorBase):
             order: The order in which the statbar will be displayed with others
         """
         super().__init__()
-        self.show(cst.LAYER['statbar'])
+        self.layer = cst.LAYER['statbar']
+        self.show(self.layer)
         groups.all_stat_bars.add(self)
         self.owner = owner
         self.order = order  # The order of the stat bars, like which one is on top, which one is below that, etc.
 
         self.pos = vec(self.owner.pos.x, self.owner.pos.y + 42 + self.order * 18)
-        self.cAccel = 0.58
+        self.accel_const = self.owner.accel_const
         self.set_rects(self.pos.x, self.pos.y, 128, 16, 128, 16)
 
         self.number = BarNumbers(self)
@@ -46,7 +47,8 @@ class BarNumbers(cb.ActorBase):
             bar: The bar to display next to
         """
         super().__init__()
-        self.show(cst.LAYER['statbar'])
+        self.layer = cst.LAYER['statbar']
+        self.show(self.layer)
         groups.all_stat_bars.add(self)
 
         self.bar = bar
@@ -60,16 +62,16 @@ class BarNumbers(cb.ActorBase):
 
     def render_images(self):
         if isinstance(self.bar, HealthBar):
-            self.image = calc.text_to_image(str(self.owner.hp) + '/' + str(self.owner.maxHp),
+            self.image = calc.text_to_image(str(self.owner.hp) + '/' + str(self.owner.max_hp),
                                             'sprites/ui/small_font.png', 5,
                                             7, 37)
 
         elif isinstance(self.bar, DodgeBar):
-            self.image = calc.text_to_image(str(self.owner.dodgeTime) + '/' + str(self.owner.dodgeTimeCharge),
+            self.image = calc.text_to_image(str(self.owner.dodge_time) + '/' + str(self.owner.dodge_charge_up_time),
                                             'sprites/ui/small_font.png', 5, 7, 37)
 
         elif isinstance(self.bar, AmmoBar):
-            self.image = calc.text_to_image(str(self.owner.ammo) + '/' + str(self.owner.maxAmmo),
+            self.image = calc.text_to_image(str(self.owner.ammo) + '/' + str(self.owner.max_ammo),
                                             'sprites/ui/small_font.png', 5, 7, 37)
 
         else:
@@ -95,7 +97,7 @@ class HealthBar(StatBarBase):
     def update(self):
         self.movement()
         if self.owner.hp > 0:
-            self.index = math.floor((16 * self.owner.hp) / self.owner.maxHp)
+            self.index = math.floor((16 * self.owner.hp) / self.owner.max_hp)
             self.render_images()
         else:
             self.kill()
@@ -109,8 +111,8 @@ class DodgeBar(StatBarBase):
     def update(self):
         self.movement()
         if self.owner.hp > 0:
-            if self.owner.dodgeTime < self.owner.dodgeTimeCharge:
-                self.index = math.ceil((16 * self.owner.dodgeTime) / self.owner.dodgeTimeCharge)
+            if self.owner.dodge_time < self.owner.dodge_charge_up_time:
+                self.index = math.ceil((16 * self.owner.dodge_time) / self.owner.dodge_charge_up_time)
                 self.render_images()
         else:
             self.kill()
@@ -124,7 +126,7 @@ class AmmoBar(StatBarBase):
     def update(self):
         self.movement()
         if self.owner.hp > 0:
-            self.index = math.floor((16 * self.owner.ammo) / self.owner.maxAmmo)
+            self.index = math.floor((16 * self.owner.ammo) / self.owner.max_ammo)
             self.render_images()
         else:
             self.kill()

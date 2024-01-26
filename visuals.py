@@ -13,34 +13,16 @@ vec = pygame.math.Vector2
 rad = math.radians
 
 
-class InvisObj(cb.ActorBase):
-    def __init__(self, pos_x: int | float, pos_y: int | float, width: int, height: int):
-        super().__init__()
-        self.show(cst.LAYER['floor'])
-        groups.all_invisible.add(self)
-
-        self.pos = vec((pos_x, pos_y))
-        
-        self.image = pygame.Surface(vec(width, height))
-        self.image.set_colorkey(cst.BLACK)
-        self.rect = self.image.get_rect()
-        self.hitbox = self.image.get_rect()
-
-        self.center_rects()
-
-    def update(self):
-        pass
-
-
 class Beam(cb.ActorBase):
     def __init__(self, from_sprite, to_sprite):
         super().__init__()
-        self.show(cst.LAYER['floor'])
+        self.layer = cst.LAYER['floor']
+        self.show(self.layer)
 
         self.fromSprite, self.toSprite = from_sprite, to_sprite
         self.index = 0
         
-        self.length = calc.get_dist_to_coords(self.fromSprite.pos, self.toSprite.pos)
+        self.length = calc.get_dist(self.fromSprite.pos, self.toSprite.pos)
         self.angle = calc.get_angle_to_sprite(self.fromSprite, self.toSprite)
         self.image = pygame.Surface(vec(1, 1))
 
@@ -48,7 +30,7 @@ class Beam(cb.ActorBase):
         self.rect.center = self.pos
 
     def build_setup(self, start_pos: pygame.math.Vector2, end_pos: pygame.math.Vector2):
-        self.length = calc.get_dist_to_coords(start_pos, end_pos)
+        self.length = calc.get_dist(start_pos, end_pos)
         self.angle = calc.get_angle_to_sprite(self.fromSprite, self.toSprite)
 
         opp = (self.length / 2) * math.cos(rad(self.angle + 90))

@@ -1,0 +1,353 @@
+"""
+Player
+"""
+import pygame
+from pygame.locals import *
+
+import time
+import math
+
+import calculations as calc
+import classbases as cb
+import constants as cst
+import controls as ctrl
+import menu_ui as menu
+
+import bullets
+import groups
+import statbars
+
+vec = pygame.math.Vector2
+rad = math.radians
+
+
+class Player(cb.ActorBase):
+    """A player sprite that can move and shoot.
+    """
+    def __init__(self):
+        super().__init__()
+        self.layer = cst.LAYER['player']
+        self.show(self.layer)
+        groups.all_players.add(self)
+
+        self.room = cb.get_room()
+
+        self.set_images("sprites/orbeeto/orbeeto.png", 64, 64, 5, 5)
+        self.set_rects(0, 0, 64, 64, 32, 32)
+
+        self.pos = vec((cst.WINWIDTH // 2, cst.WINHEIGHT // 2))
+        self.accel_const = 0.58
+
+        # -------------------------------- Game Stats -------------------------------- #
+        self._xp = 0
+        self._level = 0
+        self.max_level = 249
+
+        self._max_hp = 50
+        self._hp = 5
+        self._max_defense = 10
+        self._defense = 10
+
+        self.last_regen = time.time()  # Used for timing passive regeneration
+
+        self.immune = False
+        self.immune_length = 1.0
+
+        self.max_ammo: int = 40
+        self.ammo = self.max_ammo
+        self.bullet_vel = 12.0
+        self.gun_cooldown = 0.12
+        self.last_shot_time = time.time()
+
+        self.grapple_speed = 2.0
+
+        self.dodge_charge_up_time = 1200  # TODO: Make dodge charge using time, not ticks
+        self.dodge_time = 0
+
+        self.last_hit = time.time()
+
+        self.update_level()
+
+        # --------------------------------- Stat Bars -------------------------------- #
+        self.health_bar = statbars.HealthBar(self)
+        self.dodge_bar = statbars.DodgeBar(self)
+        self.ammo_bar = statbars.AmmoBar(self)
+
+        self.menu = menu.InventoryMenu(self)
+
+        self.inventory = {}
+        for item in cst.MAT.values():
+            self.inventory.update({item: 0})
+
+        # ---------------------- Bullets, Portals, and Grapples ---------------------- #
+        self.bullet_type = cst.PROJ_STD
+        self.can_portal = False
+        self.can_grapple = True
+        self.grapple = None
+
+    @property
+    def xp(self):
+        """The amount of experience points the player has collected. The more xp the player has, the higher their
+        level will be."""
+        return self._xp
+
+    @xp.setter
+    def xp(self, value: int):
+        if value > 582803:
+            self._xp = 582803
+        else:
+            self._xp = value
+
+    @property
+    def level(self):
+        """The level the player is. This determines how "strong" he/she is."""
+        return self._level
+
+    @level.setter
+    def level(self, value: int):
+        self._level = value
+
+    @property
+    def max_hp(self):
+        """The maximum amount of health the player can "naturally" reach."""
+        return self._max_hp
+
+    @max_hp.setter
+    def max_hp(self, value: int):
+        self._max_hp = value
+
+    @property
+    def hp(self):
+        """The amount of health the player has. When the player's health reaches 0, the game is over."""
+        return self._hp
+
+    @hp.setter
+    def hp(self, value: int):
+        self._hp = value
+
+    @property
+    def max_defense(self):
+        """The maximum amount of defense the player can "naturally" have."""
+        return self._max_defense
+
+    @max_defense.setter
+    def max_defense(self, value: int):
+        if value < 0:
+            self._max_defense = 0
+        self._max_defense = value
+
+    @property
+    def defense(self):
+        """The damage reduction value of the player. The higher the player's defense, the less damage he/she
+        will take."""
+        return self._defense
+
+    @defense.setter
+    def defense(self, value: int):
+        self._defense = value
+
+    # ----------------------------------- Stats ---------------------------------- #
+    def update_max_stats(self):
+        """Updates all the player's max stats.
+        """
+        self.max_hp = math.floor(calc.eerp(50, 650, self.level / self.max_level))
+        self.max_defense = math.floor(calc.eerp(15, 800, self.level / self.max_level))
+        self.max_ammo = math.floor(calc.eerp(40, 500, self.level / self.max_level))
+
+        self.grapple_speed = math.floor(calc.eerp(2.0, 4.0, self.level / self.max_level))
+
+        self.defense = self.max_defense
+
+    def update_level(self) -> None:
+        """Updates the level of the player using the amount of xp collected.
+
+        Returns:
+            None
+        """
+        self.level = math.floor((256 * self.xp) / (self.xp + 16384))
+        self.update_max_stats()
+
+    def _passive_hp_regen(self) -> None:
+        """Regenerates the player's HP after not being attacked for a period of time.
+        """
+        time_hit = calc.get_time_diff(self.last_hit)
+        regen_delay = 5
+        regens_per_sec = 0
+
+        if time_hit < regen_delay:
+            regens_per_sec = 0
+        elif time_hit >= regen_delay:
+            regens_per_sec = pow(0.95, -(time_hit - regen_delay + 1)) - (1/regen_delay)
+
+        if regens_per_sec == 0:
+            pass
+        elif calc.get_time_diff(self.last_regen) >= 1 / regens_per_sec:
+            if self.hp < self.max_hp:
+                self.hp += 1
+            self.last_regen = time.time()
+
+    # --------------------------------- Movement --------------------------------- #
+    def movement(self):
+        """When called once every frame, it allows the player to receive input from the user and move accordingly
+        """
+        if self.can_update and self.visible:
+            self.accel = self.get_accel()
+            self.accel_movement()
+
+    def get_accel(self) -> pygame.math.Vector2:
+        """Returns the acceleration that the player should undergo given specific conditions.
+
+        Returns:
+            pygame.math.Vector2: The acceleration value of the player
+        """
+        final_accel = vec(0, 0)
+        if not self.room.isScrollingX:
+            final_accel.x += self.__get_x_axis_output()
+
+        if not self.room.isScrollingY:
+            final_accel.y += self.__get_y_axis_output()
+
+        return final_accel
+
+    def __get_x_axis_output(self) -> float:
+        output = 0.0
+        if ctrl.is_input_held[K_a]:
+            output -= self.accel_const
+        if ctrl.is_input_held[K_d]:
+            output += self.accel_const
+
+        if self.is_swinging():
+            angle = calc.get_angle_to_sprite(self, self.grapple)
+            output += self.grapple_speed * -math.sin(rad(angle))
+
+        return output
+
+    def __get_y_axis_output(self) -> float:
+        output = 0.0
+        if ctrl.is_input_held[K_w]:
+            output -= self.accel_const
+        if ctrl.is_input_held[K_s]:
+            output += self.accel_const
+
+        if self.is_swinging():
+            angle = calc.get_angle_to_sprite(self, self.grapple)
+            output += self.grapple_speed * -math.cos(rad(angle))
+
+        return output
+
+    def is_swinging(self) -> bool:
+        """Determines if the player should be accelerating towards the grappling hook.
+
+        Returns:
+            bool: Whether the player is swinging
+        """
+        output = False
+        if self.grapple is None:
+            return output
+        elif not self.grapple.returning:
+            return output
+        elif self.grapple.grappledTo not in groups.all_walls:
+            return output
+        else:
+            output = True
+            return output
+
+    def shoot(self):
+        """Shoots bullets.
+        """
+        angle = rad(calc.get_angle_to_mouse(self))
+        vel_x = self.bullet_vel * -math.sin(angle)
+        vel_y = self.bullet_vel * -math.cos(angle)
+
+        offset = vec((21, 30))
+
+        if (ctrl.is_input_held[1] and
+                self.ammo > 0 and
+                calc.get_time_diff(self.last_shot_time) >= self.gun_cooldown):
+            # Standard bullets
+            if self.bullet_type == cst.PROJ_STD:
+                groups.all_projs.add(
+                    bullets.PlayerStdBullet(self.pos.x - (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
+                                            self.pos.y + (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
+                                            vel_x, vel_y, 1),
+                    bullets.PlayerStdBullet(self.pos.x + (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
+                                            self.pos.y - (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
+                                            vel_x, vel_y, 1)
+                )
+
+            # Laser bullets
+            elif self.bullet_type == cst.PROJ_LASER:
+                groups.all_projs.add(
+                    bullets.PlayerLaserBullet(self.pos.x - (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
+                                              self.pos.y + (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
+                                              vel_x * 2, vel_y * 2, 1),
+                    bullets.PlayerLaserBullet(self.pos.x + (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
+                                              self.pos.y - (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
+                                              vel_x * 2, vel_y * 2, 1)
+                )
+
+            self.ammo -= 1
+            self.last_shot_time = time.time()
+
+        # ------------------------------ Firing Portals ------------------------------ #
+        if ctrl.key_released[3] % 2 == 0 and self.can_portal and self.can_grapple:
+            groups.all_projs.add(bullets.PortalBullet(self.pos.x, self.pos.y, vel_x * 0.75, vel_y * 0.75))
+            self.can_portal = False
+
+        elif ctrl.key_released[3] % 2 != 0 and not self.can_portal and self.can_grapple:
+            groups.all_projs.add(bullets.PortalBullet(self.pos.x, self.pos.y, vel_x * 0.75, vel_y * 0.75))
+            self.can_portal = True
+
+        # --------------------------- Firing Grappling Hook -------------------------- #
+        if ctrl.key_released[2] % 2 != 0 and self.can_grapple:
+            if self.grapple is not None:
+                self.grapple.shatter()
+            self.grapple = bullets.GrappleBullet(self, self.pos.x, self.pos.y, vel_x, vel_y)
+            self.can_grapple = False
+
+        if ctrl.key_released[2] % 2 == 0 and not self.can_grapple:
+            self.grapple.returning = True
+            self.can_grapple = True
+
+    def update(self):
+        if self.can_update and self.visible:
+            self.movement()
+            self.shoot()
+
+            # Animation
+            self.__animate()
+            self.rotate_image(calc.get_angle_to_mouse(self))
+
+            # Dodge charge up
+            if self.dodge_time < self.dodge_charge_up_time:
+                self.dodge_time += 1
+
+            # Immunity frames
+            if calc.get_time_diff(self.last_hit) <= self.immune_length:
+                self.immune = True
+            else:
+                self.immune = False
+
+        self.menu.update()
+        self._passive_hp_regen()
+
+        if self.hp <= 0:
+            self.kill()
+
+    def __animate(self):
+        if calc.get_time_diff(self.last_frame) > 0.05:
+            if ctrl.is_input_held[1]:
+                self.index += 1
+                if self.index > 4:
+                    self.index = 0
+            else:  # Idle animation
+                self.index = 0
+
+            self.lastFrame = time.time()
+
+    def __str__(self):
+        return (f'Player at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\ncurrent bullet: {self.bullet_type}\n'
+                f'xp: {self.xp}\nlevel: {self.level}\n')
+
+    def __repr__(self):
+        return f'Player({self.pos}, {self.vel}, {self.accel}, {self.bullet_type}, {self.xp}, {self.level})'

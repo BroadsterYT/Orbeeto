@@ -1,8 +1,14 @@
+"""
+Contains the object classes that the player can interact with/manipulate within the game.
+"""
+
 import pygame
 
 import classbases as cb
 import constants as cst
 import calculations as calc
+
+import tiles
 
 import groups
 
@@ -19,11 +25,12 @@ class Box(cb.ActorBase):
             pos_y: The position on the y-axis to spawn the box
         """
         super().__init__()
-        self.show(cst.LAYER['trinket'])
+        self.layer = cst.LAYER['trinket']
+        self.show(self.layer)
         groups.all_movable.add(self)
 
         self.pos = vec((pos_x, pos_y))
-        self.cAccel = 0.58
+        self.accel_const = 0.58
 
         room = cb.get_room()
         self.roomPos = vec((self.pos.x - room.pos.x, self.pos.y - room.pos.y))
@@ -32,7 +39,7 @@ class Box(cb.ActorBase):
         self.set_rects(0, 0, 64, 64, 64, 64, True)
 
     def movement(self):
-        if self.canUpdate and self.visible:
+        if self.can_update and self.visible:
             self.collide_check(groups.all_walls)
 
             self.set_room_pos()
@@ -78,21 +85,27 @@ class Button(cb.ActorBase):
             block_pos_y: The y-axis position of the button (in blocks)
         """
         super().__init__()
-        self.show(cst.LAYER['trinket'])
+        self.layer = cst.LAYER['button']
+        self.show(self.layer)
         groups.all_trinkets.add(self)
 
-        self.idValue = id_value
+        self.id_value = id_value
         self.activated = False
 
         self.pos = vec((block_pos_x * 16, block_pos_y * 16))
-        self.cAccel = 0.58
+        self.accel_const = 0.58
 
         self.set_room_pos()
 
         self.set_images('sprites/trinkets/button.png', 64, 64, 2, 2)
         self.set_rects(self.pos.x, self.pos.y, 64, 64, 64, 64)
 
-    def __active_check(self) -> bool:
+    def get_state(self) -> bool:
+        """Checks if the button is being pressed by a box. Returns true if yes and false if no.
+
+        Returns:
+            bool: If button is activated (true/false)
+        """
         is_active = False
         for box in groups.all_movable:
             if not self.hitbox.colliderect(box.hitbox):
@@ -101,99 +114,85 @@ class Button(cb.ActorBase):
                 is_active = True
                 return is_active
 
-    def get_state(self):
-        return self.__active_check()
-
     def movement(self):
-        if self.canUpdate and self.visible:
+        if self.can_update and self.visible:
             self.set_room_pos()
 
             self.accel = self.get_accel()
             self.accel_movement()
 
-    def get_accel(self) -> pygame.math.Vector2:
-        room = cb.get_room()
-        final_accel = vec(0, 0)
-        final_accel += room.get_accel()
-        return final_accel
-
     def update(self):
-        if self.__active_check():
+        if self.get_state():
             self.index = 1
-        elif not self.__active_check():
+        elif not self.get_state():
             self.index = 0
-
         self.render_images()
 
     def __repr__(self):
-        return f'Button({self.idValue}, {self.pos}, {self.__active_check()})'
+        return f'Button({self.id_value}, {self.pos}, {self.get_state()})'
 
 
-# class LockedWall(TileBase):
-#     def __init__(self, id_value: int, start_block_pos_x: int, start_block_pos_y: int, end_block_pos_x: int,
-#                  end_block_pos_y: int, block_width: int, block_height: int):
-#         """A wall that will move when activated by a switch or button
-#
-#         ### Arguments
-#             - idValue (``int``): The ID value of the wall. A button with the same ID value must be present in the same room!
-#             - sBlockPosX (``int``): The x position where the wall should be placed in "tiles" (0 being the left edge and 80 being the right)
-#             - sBlockPosY (``int``): The y position where the wall should be placed in "tiles" (0 being the top edge and 45 being the bottom)
-#             - eBlockPosX (``int``): The x position where the wall should relocate after being activated (0 being the left edge and 80 being the right)
-#             - eBlockPosY (``int``): The y position where the wall should relocate after being activated (0 being the top edge and 45 being the bottom)
-#             - blockWidth (``int``): The width of the wall in "tiles"
-#             - blockHeight (``int``): The height of the wall in "tiles"
-#         """
-#         super().__init__(start_block_pos_x, start_block_pos_y, block_width, block_height)
-#         self.show(cst.LAYER['wall'])
-#         groups.all_walls.add(self)
-#         all_trinkets.add(self)
-#         self.idValue = id_value
-#
-#         self.switch: Button = self.__find_switch()
-#         self.lastSwitchState = self.switch.get_state()
-#         self.hasActivated = False
-#         self.lastChange = time.time()
-#
-#         self.pos = get_top_left_coords(self.width, self.height, start_block_pos_x * self.tileSize,
-#                                        start_block_pos_y * self.tileSize)
-#         self.startPos = get_top_left_coords(self.width, self.height, start_block_pos_x * self.tileSize,
-#                                             start_block_pos_y * self.tileSize)
-#         self.endPos = get_top_left_coords(self.width, self.height, end_block_pos_x * self.tileSize,
-#                                           end_block_pos_y * self.tileSize)
-#
-#         self.spritesheet = Spritesheet('sprites/tiles/wall.png', 1)
-#         self.textures = self.spritesheet.get_images(16, 16, 1)
-#         self.index = 0
-#
-#         self.texture = self.textures[self.index]
-#         self.image = tile_texture(self.blockWidth, self.blockHeight, self.texture, BLACK)
-#
-#         self.set_rects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
-#
-#     def __find_switch(self) -> pygame.sprite.Sprite:
-#         try:
-#             switch_match = next(s for s in all_trinkets if s.idValue == self.idValue)
-#             return switch_match
-#         except StopIteration:
-#             raise CustomError(f'Error: No switch with idValue of {self.idValue} found')
-#
-#     def __activate(self):
-#         current_switch_state = self.switch.get_state()
-#         if current_switch_state != self.lastSwitchState:
-#             # Button state has changed, update lastChange and reset position
-#             self.lastChange = time.time()
-#             self.lastSwitchState = current_switch_state
-#
-#         weight = get_time_diff(self.lastChange) / 3
-#         if not self.switch.get_state() and self.hasActivated:
-#             self.pos = cerp(self.pos, self.startPos, weight)
-#         elif self.switch.get_state():
-#             self.hasActivated = True
-#             self.pos = cerp(self.pos, self.endPos, weight)
-#
-#     def update(self):
-#         self.__activate()
-#         self.center_rects()
-#
-#     def __repr__(self):
-#         return f'LockedWall({self.idValue}, {self.pos}, {self.switch})'
+class LockedWall(tiles.Wall):
+    """A locked wall that can be opened by triggering it via a switch with an identical ID value."""
+    def __init__(self, start_pos_x, start_pos_y, end_pos_x, end_pos_y, id_value: int,
+                 block_width: int, block_height: int):
+        super().__init__(start_pos_x, start_pos_y, block_width, block_height)
+        self.layer = cst.LAYER['wall']
+        self.show(self.layer)
+        groups.all_walls.add(self)
+        groups.all_trinkets.add(self)
+        self.id_value = id_value
+
+        self.activator = self._get_activator()
+        self.last_state = self.activator.get_state()
+
+        self.start_pos = vec((start_pos_x, start_pos_y))
+        self.end_pos = vec((end_pos_x, end_pos_y))
+
+        self.start_room_pos = vec((0, 0))
+        self.end_room_pos = vec((0, 0))
+
+        self._is_moving = False
+
+    def _get_activator(self):
+        """Finds the switch/trigger/activator sprite with the same ID value.
+
+        Returns:
+            The trinket that activates the locked wall
+        """
+        try:
+            activator = next(s for s in groups.all_trinkets if s.id_value == self.id_value)
+            return activator
+        except StopIteration:
+            raise IndexError
+
+    def _set_room_points(self):
+        room = cb.get_room()
+        self.start_room_pos = vec((self.start_pos.x + room.pos.x, self.start_pos.y + room.pos.y))
+        self.end_room_pos = vec((self.end_pos.x + room.pos.x, self.end_pos.y + room.pos.y))
+
+    def movement(self):
+        if self.can_update:
+            self.set_room_pos()
+            self._set_room_points()
+
+            # Controls movement of wall when activator is activated/deactivated
+            if self.last_state is not self.activator.get_state():
+                if self.activator.get_state():
+                    self.pos = self.end_room_pos
+                else:
+                    self.pos = self.start_room_pos
+                self.last_state = self.activator.get_state()
+
+            self.accel = self.get_accel()
+            self.accel_movement()
+
+    def update(self):
+        calc.draw_text(str(self), 0, 64)
+
+    def __repr__(self):
+        return f'LockedWall({self.id_value}, {self.pos}, {self.start_room_pos})'
+
+    def __str__(self):
+        return (f'ID value: {self.id_value}, pos: {self.pos}, Start pos: {self.start_room_pos}, '
+                f'End pos: {self.end_room_pos}')

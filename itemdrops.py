@@ -9,6 +9,7 @@ import calculations as calc
 
 import groups
 import spritesheet
+import text
 
 # Aliases
 vec = pygame.math.Vector2
@@ -24,24 +25,25 @@ class ItemDrop(cb.ActorBase):
             item_name: The item to drop
         """
         super().__init__()
-        self.show(cst.LAYER['drops'])
+        self.layer = cst.LAYER['drops']
+        self.show(self.layer)
         
         self.droppedFrom = dropped_from
         self.mat = item_name
 
         self.startTime = time.time()
-        self.cAccel = 0.8
+        self.accel_const = 0.8
         self.pos = vec(self.droppedFrom.pos.x, self.droppedFrom.pos.y)
-        self.randAccel = calc.get_rand_components(self.cAccel)
+        self.randAccel = calc.get_rand_components(self.accel_const)
         
         self.spritesheet = spritesheet.Spritesheet("sprites/textures/item_drops.png", 8)
         self.index = 0
 
         if self.mat == cst.MAT[0]:
-            self.origImages = self.spritesheet.get_images(32, 32, 1, 0)
+            self.orig_images = self.spritesheet.get_images(32, 32, 1, 0)
             self.images = self.spritesheet.get_images(32, 32, 1, 0)
         elif self.mat == cst.MAT[1]:
-            self.origImages = self.spritesheet.get_images(32, 32, 1, 1)
+            self.orig_images = self.spritesheet.get_images(32, 32, 1, 1)
             self.images = self.spritesheet.get_images(32, 32, 1, 1)
 
         self.image = self.images[self.index]
@@ -51,7 +53,7 @@ class ItemDrop(cb.ActorBase):
         self.period_mult = rand.uniform(0.5, 1.5)
 
     def movement(self):
-        if self.canUpdate:
+        if self.can_update:
             exist_time = calc.get_time_diff(self.startTime)
             self.accel = self.get_accel()
             
@@ -74,11 +76,11 @@ class ItemDrop(cb.ActorBase):
         return final_accel
 
     def update(self):
-        # self.movement()
         self.collide_check(groups.all_walls)
-
         for a_player in groups.all_players:
             if self.hitbox.colliderect(a_player):
+                groups.all_font_chars.add(
+                    text.IndicatorText(a_player.pos.x, a_player.pos.y - a_player.rect.height // 2, self.mat, 1)
+                )
                 a_player.inventory[self.mat] += 1
-                a_player.menu.update_menu_slots()
                 self.kill()

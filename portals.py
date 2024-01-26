@@ -9,7 +9,7 @@ import groups
 vec = pygame.math.Vector2
 
 
-class Portal(cb.ActorBase):
+class Portal(cb.ActorBase):  # TODO: Update docstring
     def __init__(self, spawned_from, pos_x: int | float, pos_y: int | float, facing: str = cst.SOUTH):
         """A portal that can teleport any moving object
 
@@ -19,8 +19,10 @@ class Portal(cb.ActorBase):
             - facing (``str``, optional): The direction the portal should face. Defaults to ``cst.SOUTH``.
         """        
         super().__init__()
-        self.show(cst.LAYER['portal'])
+        self.layer = cst.LAYER['portal']
+        self.show(self.layer)
         groups.all_portals.add(self)
+
         room = cb.get_room()
         room.add(self)
 
@@ -33,12 +35,12 @@ class Portal(cb.ActorBase):
         self.set_images("sprites/portals/portals.png", 64, 64, 1, 1)
         self.set_rects(self.pos.x, self.pos.y, 64, 64, 54, 20)
 
-        self.__get_face()
+        self._get_face()
 
         if self.facing is None:
             raise ValueError(f'ERROR: {self.facing} is not a valid facing direction')
 
-    def __get_face(self) -> None:
+    def _get_face(self) -> None:
         direction_angles = {cst.SOUTH: 0, cst.EAST: 90, cst.NORTH: 180, cst.WEST: 270}
         self.rotate_image(direction_angles[self.facing])
         if self.facing == cst.SOUTH:
@@ -59,7 +61,7 @@ class Portal(cb.ActorBase):
         self.center_rects()
 
     def update(self):
-        self.__get_face()
+        pass
 
     def __repr__(self):
         return f'Portal({self.landedOn}, {self.facing}, {self.pos})'

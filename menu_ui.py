@@ -4,13 +4,15 @@ import time
 import math
 
 import classbases as cb
-import controls
+import controls as ctrl
 from spritesheet import Spritesheet
 import groups
 import constants as cst
 import calculations as calc
 
 vec = pygame.math.Vector2
+
+# TODO: Make slots for each individual material instead of the first-come first-served approach
 
 
 class InventoryMenu(cb.AbstractBase):
@@ -29,13 +31,16 @@ class InventoryMenu(cb.AbstractBase):
         self.wipeTime = 1
         self.window = 0
 
+        self.last_release_value = ctrl.key_released[K_e]
+        self.is_open = False
+
         self.lastCycle = time.time()
 
         self.rightArrow = RightMenuArrow(cst.WINWIDTH - 64, cst.WINHEIGHT / 2)
         self.leftArrow = LeftMenuArrow(64, cst.WINHEIGHT / 2)
 
         self.add(
-            self.build_inventory_slots()
+            self.build_materials_slots()
         )
 
     def hide(self):
@@ -48,18 +53,18 @@ class InventoryMenu(cb.AbstractBase):
         """Makes all the elements of the inventory menu visible.
         """
         for sprite in self.sprites():
-            groups.all_sprites.add(sprite, layer=cst.LAYER['ui_1'])
+            groups.all_sprites.add(sprite, layer=sprite.layer)
 
     def cycle_menu(self):
         if (not self.cyclingLeft and
                 not self.cyclingRight and
-                not self.canUpdate):
-            if controls.is_input_held[1] and self.leftArrow.hitbox.collidepoint(pygame.mouse.get_pos()):
+                not self.can_update):
+            if ctrl.is_input_held[1] and self.leftArrow.hitbox.collidepoint(pygame.mouse.get_pos()):
                 self.window -= 1
                 self.lastCycle = time.time()
                 self.cyclingLeft = True
 
-            if controls.is_input_held[1] and self.rightArrow.hitbox.collidepoint(pygame.mouse.get_pos()):
+            if ctrl.is_input_held[1] and self.rightArrow.hitbox.collidepoint(pygame.mouse.get_pos()):
                 self.window += 1
                 self.lastCycle = time.time()
                 self.cyclingRight = True
@@ -86,12 +91,13 @@ class InventoryMenu(cb.AbstractBase):
                     sprite.startPos.x = sprite.pos.x
                 self.cyclingRight = False
 
-    def build_inventory_slots(self) -> list:
-        """Creates and aligns the inventory slots of the menu.
+    def build_materials_slots(self) -> list:
+        """Creates and aligns the materials slots of the menu.
 
         Returns:
-            list: A list containing the menu slots created
+            list: A list containing the materials slots created
         """
+        count = 0
         space = vec(0, 0)
         space_cushion = vec(82, 82)
         menu_slots = []
@@ -99,10 +105,11 @@ class InventoryMenu(cb.AbstractBase):
         offset = 0
         for y in range(5):
             for x in range(5):
-                menu_slots.append(MenuSlot(self.owner, 64 + space.x, 64 + space.y, None))
+                menu_slots.append(MenuSlot(self.owner, 64 + space.x, 64 + space.y, cst.MAT[count]))
                 space.x += space_cushion.x
                 offset += 1
                 slot_count += 1
+                count += 1
             space.y += space_cushion.y
             space.x = 0
         return menu_slots
@@ -120,23 +127,29 @@ class InventoryMenu(cb.AbstractBase):
                 slot.create_slot_images()
 
     def update(self):
-        if controls.key_released[K_e] % 2 != 0 and controls.key_released[K_e] > 0:
+        if self.last_release_value != ctrl.key_released[K_e] and not self.is_open:
             self.show()
             self.rightArrow.show(cst.LAYER['ui_1'])
             self.leftArrow.show(cst.LAYER['ui_1'])
 
-            self.canUpdate = False
+            self.can_update = False
             for sprite in groups.all_sprites:
-                sprite.canUpdate = False
+                sprite.can_update = False
 
-        elif controls.key_released[K_e] % 2 == 0 and controls.key_released[K_e] > 0:
+            self.last_release_value = ctrl.key_released[K_e]
+            self.is_open = True
+
+        elif self.last_release_value != ctrl.key_released[K_e] and self.is_open:
             self.hide()
             self.rightArrow.hide()
             self.leftArrow.hide()
 
-            self.canUpdate = True
+            self.can_update = True
             for sprite in groups.all_sprites:
-                sprite.canUpdate = True
+                sprite.can_update = True
+
+            self.last_release_value = ctrl.key_released[K_e]
+            self.is_open = False
 
         self.cycle_menu()
 
@@ -150,6 +163,7 @@ class RightMenuArrow(cb.ActorBase):
             - ``posY`` ``(int)``: The y-position the element should be displayed at
         """
         super().__init__()
+        self.layer = cst.LAYER['ui_1']
         self.pos = vec((pos_x, pos_y))
         self.return_pos = vec((pos_x, pos_y))
 
@@ -180,7 +194,7 @@ class RightMenuArrow(cb.ActorBase):
         self.hover()
 
     def __animate(self):
-        if calc.get_time_diff(self.lastFrame) > cst.SPF:
+        if calc.get_time_diff(self.last_frame) > cst.SPF:
             if self.index > 60:
                 self.index = 1
 
@@ -198,6 +212,7 @@ class LeftMenuArrow(cb.ActorBase):
             - ``posY`` ``(int)``: The y-position the element should be displayed at
         """
         super().__init__()
+        self.layer = cst.LAYER['ui_1']
         self.pos = vec((pos_x, pos_y))
         self.return_pos = vec((pos_x, pos_y))
 
@@ -226,13 +241,13 @@ class LeftMenuArrow(cb.ActorBase):
         self.rect.center = self.pos
 
     def update(self):
-        if calc.get_time_diff(self.lastFrame) >= cst.SPF:
+        if calc.get_time_diff(self.last_frame) >= cst.SPF:
             if self.index > 60:
                 self.index = 1
 
             self.image = pygame.transform.flip(pygame.transform.scale(self.images[self.index], (64, 64)), True, False)
             self.index += 1
-            self.lastFrame = time.time()
+            self.last_frame = time.time()
 
         self.hover()
 
@@ -248,6 +263,7 @@ class MenuSlot(cb.ActorBase):
             item_held: The item the menu slot will hold. Items are chosen from MATERIALS dictionary.
         """
         super().__init__()
+        self.layer = cst.LAYER['ui_1']
         groups.all_slots.add(self)
         self.owner = owner
 
@@ -288,6 +304,8 @@ class MenuSlot(cb.ActorBase):
             return self.itemSheet.get_images(32, 32, 1, 0)
         elif self.holding == cst.MAT[1]:
             return self.itemSheet.get_images(32, 32, 1, 1)
+        elif self.holding == cst.MAT[2]:
+            return self.itemSheet.get_images(32, 32, 1, 2)
         else:
             return self.itemSheet.get_images(32, 32, 1, 0)
 

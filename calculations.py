@@ -1,3 +1,4 @@
+import numba
 import random as rand
 import math
 import time
@@ -34,18 +35,14 @@ def get_angle_to_mouse(any_sprite) -> float:
     else:
         if length_to_y == 0:
             if length_to_x > 0:
-                angle_to_mouse = -90
-                return angle_to_mouse
+                return -90
             else:
-                angle_to_mouse = 90
-                return angle_to_mouse
+                return 90
         else:
             if length_to_y > 0:
-                angle_to_mouse = -180
-                return angle_to_mouse
+                return -180
             else:
-                angle_to_mouse = 0
-                return angle_to_mouse
+                return 0
 
 
 def get_angle_to_sprite(first_sprite, second_sprite) -> float:
@@ -66,18 +63,14 @@ def get_angle_to_sprite(first_sprite, second_sprite) -> float:
     else:
         if length_to_y == 0:
             if length_to_x > 0:
-                angle = -90
-                return angle
+                return -90
             else:
-                angle = 90
-                return angle
+                return 90
         else:
             if length_to_y > 0:
-                angle = -180
-                return angle
+                return -180
             else:
-                angle = 0
-                return angle
+                return 0
 
 
 def get_angle_to_c_from_s(any_sprite, coords) -> float:
@@ -98,18 +91,14 @@ def get_angle_to_c_from_s(any_sprite, coords) -> float:
     else:
         if length_to_y == 0:
             if length_to_x > 0:
-                angle = -90
-                return angle
+                return -90
             else:
-                angle = 90
-                return angle
+                return 90
         else:
             if length_to_y > 0:
-                angle = -180
-                return angle
+                return -180
             else:
-                angle = 0
-                return angle
+                return 0
 
 
 def get_angle_to_c_from_c(start_coords: pygame.math.Vector2, end_coords: pygame.math.Vector2) -> float:
@@ -125,7 +114,8 @@ def get_angle_to_c_from_c(start_coords: pygame.math.Vector2, end_coords: pygame.
     length_x = end_coords.x - start_coords.x
     length_y = end_coords.y - start_coords.y
     if length_x and length_y != 0:
-        return -math.degrees(math.atan2(length_y, length_x)) - 90
+        angle = -math.degrees(math.atan2(length_y, length_x)) - 90
+        return angle
     else:
         if length_y == 0:
             if length_x > 0:
@@ -139,39 +129,34 @@ def get_angle_to_c_from_c(start_coords: pygame.math.Vector2, end_coords: pygame.
                 return 0
 
 
-def get_dist_to_sprite(first_sprite, second_sprite) -> float:
-    """Returns the distance between two sprites.
+def get_dist(first_input, sec_input) -> float:
+    """Returns the distance between two sprites or coordinates.
 
     Args:
-        first_sprite: The sprite to start the measurement from
-        second_sprite: The second sprite to measure the distance from the first
+        first_input: The object to start the measure from
+        sec_input: The second object to measure the distance from the first
 
     Returns:
-        float: The distance between the two sprites
+        float: The distance between the two objects
     """
-    length_to_x = second_sprite.pos.x - first_sprite.pos.x
-    length_to_y = second_sprite.pos.y - first_sprite.pos.y
+    if type(first_input) is pygame.math.Vector2:
+        first_vec = first_input
+    else:
+        first_vec = first_input.pos
 
-    return math.sqrt((length_to_x ** 2) + (length_to_y ** 2))
+    if type(sec_input) is pygame.math.Vector2:
+        sec_vec = sec_input
+    else:
+        sec_vec = sec_input.pos
 
+    length_x = sec_vec.x - first_vec.x
+    length_y = sec_vec.y - first_vec.y
 
-def get_dist_to_coords(start_coords: pygame.math.Vector2, end_coords: pygame.math.Vector2):
-    """Returns the distance between two coordinates
-    
-    ### Arguments
-        - startCoords (``pygame.math.Vector2``): The first set of coordinates
-        - endCoords (``pygame.math.Vector2``): The second set of coordinates
-    
-    ### Returns
-        - ``float``: The distance between the two coordinates
-    """
-    length_x = end_coords.x - start_coords.x
-    length_y = end_coords.y - start_coords.y
-
-    return math.sqrt(pow(length_x, 2) + pow(length_y, 2))
+    return math.sqrt(length_x**2 + length_y**2)
 
 
-def get_vec_angle(vec_x: float, vec_y: float) -> float:
+@numba.njit
+def get_vec_angle(vec_x: int | float, vec_y: int | float) -> float:
     """Returns the angle of a resultant vector
 
     Args:
@@ -215,7 +200,8 @@ def get_time_diff(time_value: float) -> float:
 
 # ------------------------------ Math Functions ------------------------------ #
 # noinspection SpellCheckingInspection
-def cerp(a: int | float | vec, b: int | float | vec, weight: float) -> float:
+@numba.njit
+def cerp(a: int | float, b: int | float, weight: float) -> float:
     """Cosinusoidally interpolates between two values given a weight
 
     Args:
@@ -235,7 +221,8 @@ def cerp(a: int | float | vec, b: int | float | vec, weight: float) -> float:
 
 
 # noinspection SpellCheckingInspection
-def eerp(a: int | float | vec, b: int | float | vec, weight: float) -> float:
+@numba.njit
+def eerp(a: int | float, b: int | float, weight: float) -> float:
     """Exponentially interpolates between two values given a weight
 
     Args:
@@ -263,62 +250,22 @@ def eerp(a: int | float | vec, b: int | float | vec, weight: float) -> float:
     return true_a * pow(true_b, weight)
 
 
-def fish_eye(image: pygame.Surface) -> pygame.Surface:
-    """ Fish eye algorithm """
-    width, height = image.get_size()
-    half_width = width / 2
-    half_height = height / 2
-    image_copy = pygame.Surface((width, height), flags=pygame.RLEACCEL).convert()
-    for y in range(height):
-        # Normalize every pixel along y-axis
-        # when y = 0 --> ny = -1
-        # when y = height --> ny = +1
-        ny = ((2 * y) / height) - 1
-        # ny * ny pre-calculated
-        ny2 = ny ** 2
-        for x in range(width):
-            # Normalize every pixel along x-axis
-            # when x = 0 --> nx = -1
-            # when x = w --> nx = +1
-            nx = ((2 * x) / width) - 1
-            # pre calculated nx * nx
-            nx2 = nx ** 2
-
-            # calculate distance from center (0, 0)
-            r = math.sqrt(nx2 + ny2)
-
-            # discard pixel if r below 0.0 or above 1.0
-            if 0.0 <= r <= 1.0:
-                nr = (r + 1 - math.sqrt(1 - r ** 2)) / 2
-                if nr <= 1.0:
-                    theta = math.atan2(ny, nx)
-                    nxn = nr * math.cos(theta)
-                    nyn = nr * math.sin(theta)
-                    x2 = int(nxn * half_width + half_width)
-                    y2 = int(nyn * half_height + half_height)
-
-                    if 0 <= int(y2 * width + x2) < width * height:
-                        pixel = image.get_at((x2, y2))
-                        image_copy.set_at((x, y), pixel)
-    # image_copy.set_colorkey(cst.BLACK)
-    return image_copy
-
-
 # ============================================================================ #
 #                                  Returns int                                 #
 # ============================================================================ #
-def calculate_damage(sender, receiver, proj) -> int:
+def calculate_damage(receiver, proj) -> int:
     """Calculates the damage a sprite receives after being hit.
 
     Args:
-        sender: The sprite that is inflicting the damage
         receiver: The sprite taking damage
         proj: The projectile the receiver got hit by
 
     Returns:
         int: The damage the receiver will take
     """
-    damage = math.ceil((sender.atk / receiver.defense) * proj.damage)
+    damage = math.ceil(proj.damage - receiver.defense)
+    if damage <= 0:
+        damage = 1
 
     return damage
 
@@ -352,10 +299,10 @@ def triangle_collide(instig, sprite) -> str:
     point_d = vec(sprite.pos.x - sprite.hitbox.width // 2,
                   sprite.pos.y + sprite.hitbox.height // 2)
 
-    len_point_a = get_dist_to_coords(instig.pos, point_a)
-    len_point_b = get_dist_to_coords(instig.pos, point_b)
-    len_point_c = get_dist_to_coords(instig.pos, point_c)
-    len_point_d = get_dist_to_coords(instig.pos, point_d)
+    len_point_a = get_dist(instig.pos, point_a)
+    len_point_b = get_dist(instig.pos, point_b)
+    len_point_c = get_dist(instig.pos, point_c)
+    len_point_d = get_dist(instig.pos, point_d)
 
     angle_a = rad(get_angle_to_c_from_c(instig.pos, point_a) + 90)
     angle_b = rad(get_angle_to_c_from_c(instig.pos, point_b) + 90)
@@ -436,29 +383,6 @@ def triangle_collide(instig, sprite) -> str:
         return cst.WEST
 
 
-def wall_side_check(wall, proj) -> str:
-    """Checks for which side of a wall a projectile hit and returns that value
-
-    Args:
-        wall: The wall being hit
-        proj: The projectile being fired
-
-    Returns:
-        str: The side of the wall that the projectile hit
-    """
-    if wall.pos.x - wall.hitbox.width * 0.45 <= proj.pos.x <= wall.pos.x + wall.hitbox.width * 0.45:
-        if proj.pos.y < wall.pos.y:
-            return cst.NORTH
-        elif proj.pos.y > wall.pos.y:
-            return cst.SOUTH
-
-    elif wall.pos.y - wall.hitbox.height * 0.45 <= proj.pos.y <= wall.pos.y + wall.hitbox.height * 0.45:
-        if proj.pos.x < wall.pos.x:
-            return cst.WEST
-        elif proj.pos.x > wall.pos.x:
-            return cst.EAST
-
-
 # ============================================================================ #
 #                                Returns Vector2                               #
 # ============================================================================ #
@@ -496,9 +420,8 @@ def get_rand_components(max_value: int | float) -> vec:
 
 
 class ScreenShakeQueue:
+    """An object that handles screen-shaking capabilities."""
     def __init__(self):
-        """The object that handles screen-shaking capabilities.
-        """
         self.queue: list = []
 
     def add(self, amplitude: int | float, duration: int, rate_of_decay: int | float = 1) -> None:
@@ -532,7 +455,7 @@ class ScreenShakeQueue:
         if len(self.queue) != 0:
             output = self.queue[0]
             self.queue.pop(0)
-            print(output)
+            # print(output)
             return output
         else:
             return vec(0, 0)
@@ -617,7 +540,7 @@ def get_closest_player(check_sprite):
     """
     player_coords = {}
     for a_player in groups.all_players:
-        player_coords[a_player] = get_dist_to_sprite(check_sprite, a_player)
+        player_coords[a_player] = get_dist(check_sprite, a_player)
 
     try:
         temp = min(player_coords.values())

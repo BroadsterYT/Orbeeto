@@ -4,6 +4,12 @@ from constants import vec
 
 class Spritesheet(object):
     def __init__(self, file_name, sprites_per_row):
+        """An object that handles sprite sheets and can extract frames and animations from them.
+
+        Args:
+            file_name: The file name of the sprite sheet to manipulate
+            sprites_per_row: The amount of sprites in each row of the sprite sheet image file
+        """
         self.spritesheet = pygame.image.load(file_name).convert()
         self.columns = sprites_per_row
 

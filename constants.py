@@ -41,15 +41,17 @@ SOUTH = 'loc_south'
 # ---------------------------------- Layers ---------------------------------- #
 LAYER = {
     'floor': 1,
-    'player': 2,
-    'enemy': 2,
-    'trinket': 4,
-    'drops': 2,
-    'proj': 2,
+    'button': 2,
+    'player': 3,
+    'enemy': 3,
+    'trinket': 5,
+    'drops': 3,
+    'proj': 3,
     'explosion': 5,
     'wall': 5,
     'grapple': 6,
     'portal': 6,
+
     'text': 50,
     'statbar': 100,
 
@@ -69,10 +71,10 @@ PROJ_GRAPPLE = 'proj_GrappleHook'
 
 # A dictionary that stores all damage constants of all projectile types
 PROJ_DAMAGE = {
-    PROJ_STD: 1,
-    PROJ_LASER: 5,
+    PROJ_STD: 7,
+    PROJ_LASER: 16,
 
-    PROJ_PORTAL: 20,
+    PROJ_PORTAL: 0,
     PROJ_GRAPPLE: 0,
 }
 

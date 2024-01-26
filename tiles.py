@@ -48,10 +48,10 @@ class TileBase(cb.ActorBase):
         self.width, self.height = self.blockWidth * self.tileSize, self.blockHeight * self.tileSize
         self.pos = vec(pos_x, pos_y)
 
-        self.cAccel = 0.58
+        self.accel_const = 0.58
 
     def movement(self):
-        if self.canUpdate:
+        if self.can_update:
             self.accel = self.get_accel()
             self.accel_movement()
 
@@ -79,7 +79,8 @@ class Wall(TileBase):
             style: The tiling style to use on the wall
         """
         super().__init__(pos_x, pos_y, block_width, block_height)
-        self.show(cst.LAYER['wall'])
+        self.layer = cst.LAYER['wall']
+        self.show(self.layer)
         groups.all_walls.add(self)
 
         self.spritesheet = spritesheet.Spritesheet('sprites/tiles/wall.png', 16)
@@ -99,7 +100,8 @@ class Wall(TileBase):
 class Floor(TileBase):
     def __init__(self, pos_x: int | float, pos_y: int | float, block_width: int, block_height: int):
         super().__init__(pos_x, pos_y, block_width, block_height)
-        self.show(cst.LAYER['floor'])
+        self.layer = cst.LAYER['floor']
+        self.show(self.layer)
         groups.all_floors.add(self)
 
         self.spritesheet = spritesheet.Spritesheet('sprites/tiles/floor.png', 4)
@@ -117,7 +119,7 @@ class Floor(TileBase):
             pass
 
     def __animate(self):
-        if calc.get_time_diff(self.lastFrame) >= 0.235:
+        if calc.get_time_diff(self.last_frame) >= 0.235:
             self.texture = self.textures[self.index]
             self.image = fancy_tile_texture(self.blockWidth, self.blockHeight, self.textures, cst.BLACK, 0)
 
@@ -131,7 +133,8 @@ class Floor(TileBase):
 class RoomBorder(TileBase):
     def __init__(self, pos_x: float, pos_y: float, block_width: int | float, block_height: int | float):
         super().__init__(pos_x, pos_y, block_width, block_height)
-        self.show(cst.LAYER['wall'])
+        self.layer = cst.LAYER['wall']
+        self.show(self.layer)
         groups.all_borders.add(self)
 
         self.image = pygame.Surface(vec(block_width * 16, block_height * 16))

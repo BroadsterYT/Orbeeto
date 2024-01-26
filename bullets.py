@@ -21,7 +21,6 @@ class BulletBase(cb.ActorBase):
     def __init__(self):
         """The base class for all projectiles"""        
         super().__init__()
-        self.shotFrom = None
         self.ricCount = 1
         self.startTime = time.time()
 
@@ -30,7 +29,7 @@ class BulletBase(cb.ActorBase):
 
     def get_vel(self) -> pygame.math.Vector2:
         room = cb.get_room()
-        final_vel = self.cVel + room.vel
+        final_vel = self.vel_const + room.vel
 
         return final_vel
 
@@ -67,38 +66,40 @@ class BulletBase(cb.ActorBase):
 
             if self.sideHit == cst.SOUTH:
                 self.pos.y = self.hit.pos.y + self.hit.hitbox.height // 2 + self.hitbox.height // 2 + abs(room_vel.y)
-                self.cVel.y = -self.cVel.y
+                self.vel_const.y = -self.vel_const.y
                 self.vel.y = -self.vel.y
                 print(cst.SOUTH)
 
             elif self.sideHit == cst.EAST:
                 self.pos.x = self.hit.pos.x + self.hit.hitbox.width // 2 + self.hitbox.width // 2 + abs(room_vel.x)
-                self.cVel.x = -self.cVel.x
+                self.vel_const.x = -self.vel_const.x
                 self.vel.x = -self.vel.x
                 print(cst.EAST)
 
             elif self.sideHit == cst.NORTH:
                 self.pos.y = self.hit.pos.y - self.hit.hitbox.height // 2 - self.hitbox.height // 2 - abs(room_vel.y)
-                self.cVel.y = -self.cVel.y
+                self.vel_const.y = -self.vel_const.y
                 self.vel.y = -self.vel.y
                 print(cst.NORTH)
 
             elif self.sideHit == cst.WEST:
                 self.pos.x = self.hit.pos.x - self.hit.hitbox.width // 2 - self.hitbox.width // 2 - abs(room_vel.x)
-                self.cVel.x = -self.cVel.x
+                self.vel_const.x = -self.vel_const.x
                 self.vel.x = -self.vel.x
                 print(cst.WEST)
 
             self.rotate_image(calc.get_vec_angle(self.vel.x, self.vel.y))
     
-    def proj_collide(self, sprite_group, can_hurt):
-        """Destroys a given projectile upon a collision and renders an explosion
+    def proj_collide(self, sprite_group, can_hurt) -> None:
+        """Destroys the projectile upon a collision and renders an explosion
 
-        ### Arguments
-            - spriteGroup (``pygame.sprite.Group``): The group of the entity the projectile is colliding with
-            - proj (``pygame.sprite.Sprite``): The projectile involved in the collision
-            - canHurt (``bool``): Should the projectile calculate damage upon impact?
-        """    
+        Args:
+            sprite_group: The group to check for a collision with.
+            can_hurt: Can the projectile damage sprites in the group to check for? True if yes, false if no.
+
+        Returns:
+            None
+        """
         for collidingSprite in sprite_group:
             if not self.hitbox.colliderect(collidingSprite.hitbox):
                 continue
@@ -107,9 +108,9 @@ class BulletBase(cb.ActorBase):
                 continue
 
             if can_hurt:
-                self.inflict_damage(sprite_group, self.shotFrom, collidingSprite)
-                if hasattr(collidingSprite, 'lastHit'):
-                    collidingSprite.lastHit = time.time()
+                self.inflict_damage(sprite_group, collidingSprite)
+                if hasattr(collidingSprite, 'last_hit'):
+                    collidingSprite.last_hit = time.time()
                 self.land(collidingSprite)
 
             elif not can_hurt:
@@ -128,7 +129,7 @@ class BulletBase(cb.ActorBase):
                 else:
                     self.land(collidingSprite)
 
-    def inflict_damage(self, sprite_group, sender, receiver) -> None:
+    def inflict_damage(self, sprite_group, receiver) -> None:
         """Executes the subtraction of ``hp`` after a sprite is struck by a projectile
 
         ### Arguments
@@ -136,24 +137,28 @@ class BulletBase(cb.ActorBase):
             - sender (``ActorBase``): The sprite that fired the projectile
             - receiver (``ActorBase``): The sprite being hit by the projectile
         """        
-        damage = calc.calculate_damage(sender, receiver, self)
+        damage = calc.calculate_damage(receiver, self)
         if sprite_group == groups.all_enemies:
             if rand.randint(1, 20) == 1:
                 receiver.hp -= damage * 3
                 if damage > 0:
-                    groups.all_font_chars.add(text.DamageChar(receiver.pos.x, receiver.pos.y, damage * 3))
+                    groups.all_font_chars.add(text.IndicatorText(receiver.pos.x, receiver.pos.y, damage * 3))
             else:
                 receiver.hp -= damage
                 if damage > 0:
-                    groups.all_font_chars.add(text.DamageChar(receiver.pos.x, receiver.pos.y, damage))
+                    groups.all_font_chars.add(text.IndicatorText(receiver.pos.x, receiver.pos.y, damage))
 
-        elif sprite_group != groups.all_enemies:
+        elif sprite_group == groups.all_players:
             receiver.hp -= damage
             if damage > 0:
-                groups.all_font_chars.add(text.DamageChar(receiver.pos.x, receiver.pos.y, damage))
-            if hasattr(receiver, 'hitTime'):
-                receiver.dodgeTime = 0
-                receiver.lastHit = time.time()
+                groups.all_font_chars.add(text.IndicatorText(receiver.pos.x, receiver.pos.y, damage))
+            receiver.dodge_time = 0
+            receiver.last_hit = time.time()
+
+        else:
+            receiver.hp -= damage
+            if damage > 0:
+                groups.all_font_chars.add(text.IndicatorText(receiver.pos.x, receiver.pos.y, damage))
 
     def update(self):
         room = cb.get_room()
@@ -170,15 +175,18 @@ class BulletBase(cb.ActorBase):
 #                                  Explosions                                  #
 # ============================================================================ #
 class StdBulletExplode(cb.ActorBase):
-    def __init__(self, proj: BulletBase, pos_x: float, pos_y: float):
-        """An explosion that is displayed on-screen when a projectile hits something
-        
-        ### Arguments
-            - proj (``BulletBase``): The projectile that is exploding
-        """            
+    def __init__(self, owner, pos_x: float, pos_y: float):
+        """An explosion that is displayed on-screen when a projectile hits something.
+
+        Args:
+            owner: The entity to render an explosion for
+            pos_x: The x-position to spawn the explosion at
+            pos_y: The y-position to spawn the explosion at
+        """
         super().__init__()
-        self.show(cst.LAYER['explosion'])
-        self.owner = proj
+        self.layer = cst.LAYER['explosion']
+        self.show(self.layer)
+        self.owner = owner
 
         self.pos = vec((pos_x, pos_y))
         self.posOffset = vec(self.pos.x - self.owner.hit.pos.x, self.pos.y - self.owner.hit.pos.y)
@@ -195,16 +203,16 @@ class StdBulletExplode(cb.ActorBase):
     def update(self):
         self.movement()
 
-        if calc.get_time_diff(self.lastFrame) >= cst.SPF:
+        if calc.get_time_diff(self.last_frame) >= cst.SPF:
             if self.index > 3:
                 self.kill()
             else:
                 self.render_images()
                 self.index += 1
-            self.lastFrame = time.time()
+            self.last_frame = time.time()
 
         # Give explosion its random rotation
-        self.image = pygame.transform.rotate(self.origImage, self.randRotation)
+        self.image = pygame.transform.rotate(self.orig_image, self.randRotation)
         self.center_rects()
 
     def __repr__(self):
@@ -215,11 +223,10 @@ class StdBulletExplode(cb.ActorBase):
 #                                Player Bullets                                #
 # ============================================================================ #
 class PlayerStdBullet(BulletBase):
-    def __init__(self, shot_from, pos_x: float, pos_y: float, vel_x: float, vel_y: float, bounce_count: int = 1):
+    def __init__(self, pos_x: float, pos_y: float, vel_x: float, vel_y: float, bounce_count: int = 1):
         """A projectile fired by a player that moves at a constant velocity.
 
         Args:
-            shot_from: The player that the bullet was shot from
             pos_x: The x-position where the bullet should be spawned
             pos_y: The y-position where the bullet should be spawned
             vel_x: The x-axis component of the bullet's velocity
@@ -227,14 +234,13 @@ class PlayerStdBullet(BulletBase):
             bounce_count: The amount of times the bullet should bounce. (1 = no bounce)
         """
         super().__init__()
-        self.show(cst.LAYER['proj'])
+        self.layer = cst.LAYER['proj']
+        self.show(self.layer)
         self.damage = cst.PROJ_DAMAGE[cst.PROJ_STD]
-
-        self.shotFrom = shot_from
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
-        self.cVel = self.vel
+        self.vel_const = self.vel
         self.ricCount = bounce_count
 
         self.set_images("sprites/bullets/bullets.png", 32, 32, 8, 1)
@@ -243,7 +249,7 @@ class PlayerStdBullet(BulletBase):
         self.rotate_image(calc.get_vec_angle(self.vel.x, self.vel.y))
     
     def movement(self):
-        if self.canUpdate:
+        if self.can_update:
             self.proj_collide(groups.all_enemies, True)
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)
@@ -259,20 +265,19 @@ class PlayerStdBullet(BulletBase):
         super().update()
 
     def __repr__(self):
-        return f'PlayerStdBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.ricCount})'
+        return f'PlayerStdBullet({self.pos}, {self.vel}, {self.ricCount})'
 
 
-class PlayerLaserBullet(BulletBase):
-    def __init__(self, shot_from, pos_x: float, pos_y: float, vel_x: float, vel_y: float, bounce_count: int = 1):
+class PlayerLaserBullet(BulletBase):  # TODO: Add docstring
+    def __init__(self, pos_x: float, pos_y: float, vel_x: float, vel_y: float, bounce_count: int = 1):
         super().__init__()
-        self.show(cst.LAYER['proj'])
+        self.layer = cst.LAYER['proj']
+        self.show(self.layer)
         self.damage = cst.PROJ_DAMAGE[cst.PROJ_LASER]
-
-        self.shotFrom = shot_from
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
-        self.cVel = self.vel
+        self.vel_const = self.vel
         self.ricCount = bounce_count
 
         self.set_images("sprites/bullets/bullets.png", 32, 32, 8, 1, 4)
@@ -281,7 +286,7 @@ class PlayerLaserBullet(BulletBase):
         self.rotate_image(calc.get_vec_angle(self.vel.x, self.vel.y))
 
     def movement(self):
-        if self.canUpdate:
+        if self.can_update:
             self.proj_collide(groups.all_enemies, True)
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)
@@ -299,15 +304,14 @@ class PlayerLaserBullet(BulletBase):
 
 # ------------------------------ Utility Bullets ----------------------------- #
 class PortalBullet(BulletBase):
-    def __init__(self, shot_from, pos_x, pos_y, vel_x, vel_y):
+    def __init__(self, pos_x, pos_y, vel_x, vel_y):
         super().__init__()
-        self.show(cst.LAYER['proj'])
-        
-        self.shotFrom = shot_from
+        self.layer = cst.LAYER['proj']
+        self.show(self.layer)
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
-        self.cVel = self.vel
+        self.vel_const = self.vel
 
         self.hitbox_adjust = vec(0, 0)
         self.damage = cst.PROJ_DAMAGE[cst.PROJ_PORTAL]
@@ -327,7 +331,7 @@ class PortalBullet(BulletBase):
                 continue
 
             if can_hurt:
-                self.inflict_damage(sprite_group, self.shotFrom, collidingSprite)
+                self.inflict_damage(sprite_group, collidingSprite)
                 self.land(collidingSprite)
 
             elif not can_hurt:
@@ -340,18 +344,21 @@ class PortalBullet(BulletBase):
 
                 elif sprite_group == groups.all_walls:
                     self.land(collidingSprite)
-                    self.__spawn_portal(collidingSprite)
+                    self._spawn_portal(collidingSprite)
                 
                 else:
                     self.land(collidingSprite)
 
-    def __spawn_portal(self, surface):
+    def _spawn_portal(self, surface) -> None:
         """Spawns a portal on the surface that the portal bullet hit.
-        
-        ### Arguments
-            - wall (``ActorBase``): The sprite that the portal bullet hit
-        """        
-        side = calc.wall_side_check(surface, self)
+
+        Args:
+            surface: The surface the portal bullet landed on.
+
+        Returns:
+            None
+        """
+        side = calc.triangle_collide(self, surface)
         if side == cst.SOUTH:
             groups.all_portals.add(portals.Portal(self, self.pos.x, surface.pos.y + surface.hitbox.height // 2, side))
             portals.portal_count_check()
@@ -366,35 +373,36 @@ class PortalBullet(BulletBase):
             portals.portal_count_check()
 
     def movement(self):
-        if self.canUpdate:
+        if self.can_update:
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)
 
-            if calc.get_time_diff(self.startTime) <= 10:
+            if calc.get_time_diff(self.startTime) <= 5:
                 self.vel = self.get_vel()
                 self.vel_movement(False)
             else:
                 self.kill()
 
     def update(self):
-        if calc.get_time_diff(self.lastFrame) > cst.ANIMTIME:
+        if calc.get_time_diff(self.last_frame) > cst.ANIMTIME:
             self.index += 1
             if self.index > 4:
                 self.index = 0
-            self.lastFrame = time.time()
+            self.last_frame = time.time()
 
-        rotate_angle = int(calc.get_vec_angle(self.cVel.x, self.cVel.y))
+        rotate_angle = int(calc.get_vec_angle(self.vel_const.x, self.vel_const.y))
         self.rotate_image(rotate_angle)
         self.movement()
 
     def __repr__(self):
-        return f'PortalBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.ricCount})'
+        return f'PortalBullet({self.pos}, {self.vel}, {self.ricCount})'
 
 
 class GrappleBullet(BulletBase):
     def __init__(self, shot_from, pos_x: float, pos_y: float, vel_x: float, vel_y: float):
         super().__init__()
-        self.show(cst.LAYER['grapple'])
+        self.layer = cst.LAYER['grapple']
+        self.show(self.layer)
         self.damage = cst.PROJ_DAMAGE[cst.PROJ_GRAPPLE]
         
         self.shotFrom = shot_from
@@ -407,9 +415,9 @@ class GrappleBullet(BulletBase):
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
-        self.cVel = self.vel
+        self.vel_const = self.vel
         self.accel = vec(0, 0)
-        self.cAccel = 1.5
+        self.accel_const = 1.5
 
         self.chain = visuals.Beam(self, self.shotFrom)
         self.portalList = []
@@ -422,9 +430,9 @@ class GrappleBullet(BulletBase):
         if not self.returning:  # Hook won't scoop thing up on the way back to the player
             self.isHooked = True
             self.grappledTo = grappled_to
-            self.grappledTo.grappledBy = self
+            self.grappledTo.grappled_by = self
             if self.grappledTo is not None:
-                self.grappledTo.isGrappled = True
+                self.grappledTo.is_grappled = True
                 self.posOffset = vec(self.pos.x - self.grappledTo.pos.x, self.pos.y - self.grappledTo.pos.y)
 
     def shatter(self):
@@ -433,7 +441,7 @@ class GrappleBullet(BulletBase):
         self.returning = False
         self.shotFrom.grapple = None
         if self.grappledTo is not None:
-            self.grappledTo.isGrappled = False
+            self.grappledTo.is_grappled = False
 
         self.portalList = []
 
@@ -449,7 +457,7 @@ class GrappleBullet(BulletBase):
                 continue
 
             if can_hurt:
-                self.inflict_damage(sprite_group, self.shotFrom, collidingSprite)
+                self.inflict_damage(sprite_group, collidingSprite)
                 self.land(collidingSprite)
 
             elif not can_hurt:
@@ -473,8 +481,8 @@ class GrappleBullet(BulletBase):
                 angle = calc.get_angle_to_sprite(self, self.portalList[1])
                 room = cb.get_room()
                 room_accel = room.get_accel()
-                self.accel.x = self.cAccel * -math.sin(rad(angle)) + room_accel.x
-                self.accel.y = self.cAccel * -math.cos(rad(angle)) + room_accel.y
+                self.accel.x = self.accel_const * -math.sin(rad(angle)) + room_accel.x
+                self.accel.y = self.accel_const * -math.cos(rad(angle)) + room_accel.y
                 # self.pos = self.grappledTo.pos
 
                 if self.hitbox.colliderect(self.portalList[1]):
@@ -485,8 +493,8 @@ class GrappleBullet(BulletBase):
                 angle = calc.get_angle_to_sprite(self, self.shotFrom)
                 room = cb.get_room()
                 room_accel = room.get_accel()
-                self.accel.x = self.cAccel * -math.sin(rad(angle)) + room_accel.x
-                self.accel.y = self.cAccel * -math.cos(rad(angle)) + room_accel.y
+                self.accel.x = self.accel_const * -math.sin(rad(angle)) + room_accel.x
+                self.accel.y = self.accel_const * -math.cos(rad(angle)) + room_accel.y
 
                 # Hook disappears once it returns
                 if self.hitbox.colliderect(self.shotFrom.hitbox):
@@ -528,7 +536,7 @@ class GrappleBullet(BulletBase):
         self.center_rects()
 
     def bind_proj(self):
-        if self.canUpdate and self.visible:
+        if self.can_update and self.visible:
             if not self.isHooked:
                 self.proj_collide(groups.all_enemies, True)
                 self.proj_collide(groups.all_movable, False)
@@ -546,25 +554,24 @@ class GrappleBullet(BulletBase):
 #                                 Enemy Bullets                                #
 # ============================================================================ #
 class EnemyStdBullet(BulletBase):
-    def __init__(self, shot_from, pos_x: float, pos_y: float, vel_x: float, vel_y: float, bounce_count: int = 1):
+    def __init__(self, pos_x: float, pos_y: float, vel_x: float, vel_y: float, bounce_count: int = 1):
         """A projectile fired by an enemy that moves at a constant velocity
 
-        ### Arguments
-            - shotFrom (``ActorBase``): The player that the bullet was shot from
-            - posX (``int``): The x-position where the bullet should be spawned
-            - posY (``int``): The y-position where the bullet should be spawned
-            - velX (``int``): The x-axis component of the bullet's velocity
-            - velY (``int``): The y-axis component of the bullet's velocity
-        """        
+        Args:
+            pos_x: The x-position where the bullet should be spawned
+            pos_y: The y-position where the bullet should be spawned
+            vel_x: The x-axis component of the bullet's velocity
+            vel_y: The y-axis component of the bullet's velocity
+            bounce_count: The amount of times the bullet should bounce/ricochet
+        """
         super().__init__()
-        self.show(cst.LAYER['proj'])
+        self.layer = cst.LAYER['proj']
+        self.show(self.layer)
         self.damage = cst.PROJ_DAMAGE[cst.PROJ_STD]
-
-        self.shotFrom = shot_from
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
-        self.cVel = self.vel
+        self.vel_const = self.vel
         self.ricCount = bounce_count
 
         self.set_images("sprites/bullets/bullets.png", 32, 32, 8, 1)
@@ -573,7 +580,7 @@ class EnemyStdBullet(BulletBase):
         self.rotate_image(calc.get_vec_angle(self.vel.x, self.vel.y))
     
     def movement(self):
-        if self.canUpdate:
+        if self.can_update:
             self.proj_collide(groups.all_players, True)
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)
@@ -588,4 +595,4 @@ class EnemyStdBullet(BulletBase):
         self.movement()
 
     def __repr__(self):
-        return f'EnemyStdBullet({self.shotFrom}, {self.pos}, {self.vel}, {self.ricCount})'
+        return f'EnemyStdBullet({self.pos}, {self.vel}, {self.ricCount})'

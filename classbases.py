@@ -7,7 +7,6 @@ import constants as cst
 import groups
 from spritesheet import Spritesheet
 
-# Aliases
 vec = pygame.math.Vector2
 
 
@@ -20,35 +19,30 @@ def get_room():
     return groups.all_rooms[0]
 
 
-def removal_decorator(func, sprite):
-    def inner(*args, **kwargs):
-        func(*args, **kwargs)
-        groups.all_sprites.remove(sprite)
-    return inner
-
-
 class ActorBase(pygame.sprite.Sprite):
+    """The base class for all actors in the game.
+    """
     def __init__(self):
-        """The base class for all actors in the game.
-        """
         super().__init__()
         self.visible = True
-        self.canUpdate = True
-        self.lastFrame = time.time()
+        self.can_update = True
+        self._layer = 1
 
-        self.pos = vec((0, 0))
-        self.posCopy = self.pos.copy()  # For adjusting sprites within the scrolling rooms
+        self.last_frame = time.time()
+
+        self._pos = vec((0, 0))
+        self.pos_copy = self._pos.copy()  # For adjusting sprites within the scrolling rooms
         
-        self.roomPos = vec(0, 0)  # For maintaining position within a moving room
+        self._room_pos = vec(0, 0)  # For maintaining position within a moving room
         
-        self.vel = vec(0, 0)
-        self.cVel = vec(0, 0)  # Only for bullets; otherwise this will stay (0, 0)
-        self.accel = vec(0, 0)
-        self.cAccel = 0.3
+        self._vel = vec(0, 0)
+        self._vel_const = vec(0, 0)  # Only for bullets; otherwise this will stay (0, 0)
+        self._accel = vec(0, 0)
+        self._accel_const = 0.3
 
         self.spritesheet = None
-        self.origImages = None
-        self.origImage = None
+        self.orig_images = None
+        self.orig_image = None
         self.images = None
         self.image = None
         self.index = None
@@ -56,29 +50,100 @@ class ActorBase(pygame.sprite.Sprite):
         self.rect = None
         self.hitbox = None
 
-        self.isGrappled = False
-        self.grappledBy = None
-        self.grappleHurtTime = time.time()
-    
+        self.is_grappled = False
+        self.grappled_by = None
+
+    # ----------------- Setting properties ----------------- #
+    @property
+    def layer(self):
+        """The layer the sprite should be drawn in. Higher values are drawn on top of lower values."""
+        return self._layer
+
+    @layer.setter
+    def layer(self, value: int):
+        self._layer = value
+
+    @property
+    def pos(self):
+        """The position of the sprite according to the bounds of the screen. (0, 0) is the top left of the screen."""
+        return self._pos
+
+    @pos.setter
+    def pos(self, value: pygame.math.Vector2):
+        self._pos = value
+
+    @property
+    def room_pos(self):
+        """The position of the sprite within its current room."""
+        return self._room_pos
+
+    @room_pos.setter
+    def room_pos(self, value: pygame.math.Vector2):
+        self._room_pos = value
+
+    @property
+    def vel(self):
+        """The velocity of the sprite."""
+        return self._vel
+
+    @vel.setter
+    def vel(self, value: pygame.math.Vector2):
+        self._vel = value
+        if -0.001 < self._vel.x < 0.001:
+            self._vel.x = 0
+
+    @property
+    def vel_const(self):
+        """The velocity constant of the sprite. It determines how fast a sprite moving with a constant velocity
+        should move along the x-axis and y-axis. If the sprite moves according to acceleration and not velocity alone,
+        then this value will not be used."""
+        return self._vel_const
+
+    @vel_const.setter
+    def vel_const(self, value: pygame.math.Vector2):
+        self._vel_const = value
+
+    @property
+    def accel(self):
+        """The acceleration of the sprite."""
+        return self._accel
+
+    @accel.setter
+    def accel(self, value: pygame.math.Vector2):
+        self._accel = value
+
+    @property
+    def accel_const(self):
+        """The acceleration constant to use when accelerating the sprite. The higher this value, the faster
+        the sprite will move."""
+        return self._accel_const
+
+    @accel_const.setter
+    def accel_const(self, value: int | float):
+        self._accel_const = value
+
     # -------------------------------- Visibility -------------------------------- #
     def hide(self) -> None:
-        """Makes the sprite invisible. The sprite's ``update()`` method will not be called.
+        """Makes the sprite invisible. The sprite's ``update()`` method cannot be called.
         """
         self.visible = False
-        if hasattr(self, 'healthBar'):
-            self.healthBar.hide()
-            self.healthBar.number.hide()
+        if hasattr(self, 'health_bar'):
+            self.health_bar.hide()
+            self.health_bar.number.hide()
         groups.all_sprites.remove(self)
 
-    def show(self, layer_send: str) -> None:
-        """Makes the sprite visible. The sprite's ``update()`` method will be called.
-        
-        ### Parameters
-            - layer_send (``str``): The layer the sprite should be added to
-        """        
+    def show(self, layer_send: int) -> None:
+        """Makes the sprite visible. The sprite's ``update()`` method can be called.
+
+        Args:
+            layer_send: The layer to draw the sprite onto. (Higher values are drawn on top of lower values.)
+
+        Returns:
+            None
+        """
         self.visible = True
-        if hasattr(self, 'healthBar'):
-            self.healthBar.show(cst.LAYER['statbar'])
+        if hasattr(self, 'health_bar'):
+            self.health_bar.show(cst.LAYER['statbar'])
         groups.all_sprites.add(self, layer=layer_send)
 
     # ----------------------------- Images and Rects ----------------------------- #
@@ -96,22 +161,26 @@ class ActorBase(pygame.sprite.Sprite):
             index: The index of the sprite's animation to start from
 
         Returns:
-            None:
-
+            None
         """
         self.spritesheet = Spritesheet(image_file, sprites_per_row)
-        self.origImages = self.spritesheet.get_images(frame_width, frame_height, image_count, image_offset)
+        self.orig_images = self.spritesheet.get_images(frame_width, frame_height, image_count, image_offset)
         self.images = self.spritesheet.get_images(frame_width, frame_height, image_count, image_offset)
         self.index = index
 
         self.render_images()
 
-    def render_images(self):
+    def render_images(self) -> None:  # TODO: Update docstring
+        """
+
+        Returns:
+            None
+        """
         self.image = self.images[self.index]
-        self.origImage = self.origImages[self.index]
+        self.orig_image = self.orig_images[self.index]
 
     def set_rects(self, rect_pos_x: float, rect_pos_y: float, rect_width: int, rect_height: int,
-                  hitbox_width: int, hitbox_height: int, set_pos: bool = True):
+                  hitbox_width: int, hitbox_height: int, set_pos: bool = True) -> None:
         """Defines the rect and hitbox of a sprite.
 
         Args:
@@ -138,20 +207,21 @@ class ActorBase(pygame.sprite.Sprite):
         Args:
             angle: The angle to rotate the sprite's image by
         """
-        self.origImage = self.origImages[self.index]
-        self.image = pygame.transform.rotate(self.origImage, int(angle))
+        self.orig_image = self.orig_images[self.index]
+        self.image = pygame.transform.rotate(self.orig_image, int(angle))
         self.rect = self.image.get_rect(center=self.rect.center)
     
     # ---------------------------------- Physics --------------------------------- # 
     def center_rects(self):
+        """Sets the ``rect`` and ``hitbox`` of the sprite to its position."""
         self.rect.center = self.pos
         self.hitbox.center = self.pos
 
     def set_room_pos(self):
-        """Calculates the position of the sprite within its current room and assigns that value to self.roomPos
+        """Calculates the position of the sprite within its current room and assigns that value to self.room_pos
         """        
         room = get_room()
-        self.roomPos = vec((self.pos.x - room.pos.x, self.pos.y - room.pos.y))
+        self.room_pos = vec((self.pos.x - room.pos.x, self.pos.y - room.pos.y))
 
     def vel_movement(self, adjust_centers_first: bool) -> None:
         """Makes a sprite move according to its velocity (self.vel)
@@ -170,12 +240,12 @@ class ActorBase(pygame.sprite.Sprite):
             self.center_rects()
 
     def accel_movement(self) -> None:
-        """Makes a sprite move according to its acceleration (self.accel and self.cAccel).
+        """Makes a sprite move according to its acceleration (self.accel and self.accel_const).
         """
         self.accel.x += self.vel.x * cst.FRIC
         self.accel.y += self.vel.y * cst.FRIC
         self.vel += self.accel
-        self.pos += self.vel + self.cAccel * self.accel
+        self.pos += self.vel + self.accel_const * self.accel
 
         self.center_rects()
 
@@ -264,7 +334,7 @@ class ActorBase(pygame.sprite.Sprite):
 
         def rotate_vel() -> None:
             align_sprite(dist_offset, dir_out)
-            self.cVel = self.cVel.rotate(dir_list[dir_out])
+            self.vel_const = self.vel_const.rotate(dir_list[dir_out])
             self.vel = self.vel.rotate(dir_list[dir_out])
 
         # Makes sure that sprites don't repeatedly get thrown back into the portals b/c of room velocity
@@ -299,11 +369,11 @@ class ActorBase(pygame.sprite.Sprite):
 
 
 class AbstractBase(pygame.sprite.AbstractGroup):
+    """The base class for all standard abstract groups. Contains methods to help manipulate the abstract group.
+    """
     def __init__(self):
-        """The base class for all standard abstract groups. Contains methods to help manipulate the abstract group.
-        """
         super().__init__()
-        self.canUpdate = True
+        self.can_update = True
     
     # def add(self, *sprites):
     #     """Adds one or more sprites to the abstract group.
