@@ -466,7 +466,7 @@ class GrappleBullet(BulletBase):
                         for portal in groups.all_portals:
                             if self.hitbox.colliderect(portal.hitbox):
                                 self.portalList.append(portal)
-                                self.portalList.append(calc.get_other_portal(portal))
+                                self.portalList.append(portals.get_other_portal(portal))
                                 self.teleport(portal)
                                 self.rotate_image(calc.get_vec_angle(self.vel.x, self.vel.y))
                         return

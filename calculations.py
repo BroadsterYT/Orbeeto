@@ -1,4 +1,3 @@
-import numba
 import random as rand
 import math
 import time
@@ -157,7 +156,6 @@ def get_dist(first_input, sec_input) -> float:
     return math.sqrt(length_x**2 + length_y**2)
 
 
-@numba.njit
 def get_vec_angle(vec_x: int | float, vec_y: int | float) -> float:
     """Returns the angle of a resultant vector
 
@@ -202,7 +200,6 @@ def get_time_diff(time_value: float) -> float:
 
 # ------------------------------ Math Functions ------------------------------ #
 # noinspection SpellCheckingInspection
-@numba.njit
 def cerp(a: int | float, b: int | float, weight: float) -> float:
     """Cosinusoidally interpolates between two values given a weight
 
@@ -223,7 +220,6 @@ def cerp(a: int | float, b: int | float, weight: float) -> float:
 
 
 # noinspection SpellCheckingInspection
-@numba.njit
 def eerp(a: int | float, b: int | float, weight: float) -> float:
     """Exponentially interpolates between two values given a weight
 
@@ -424,7 +420,7 @@ def get_rand_components(max_value: int | float) -> vec:
 class ScreenShakeQueue:
     """An object that handles screen-shaking capabilities."""
     def __init__(self):
-        self.queue: list = []
+        self.queue = []
 
     def add(self, amplitude: int | float, duration: int, rate_of_decay: int | float = 1) -> None:
         """Adds a screen shake to the queue of screen shakes.
@@ -457,7 +453,6 @@ class ScreenShakeQueue:
         if len(self.queue) != 0:
             output = self.queue[0]
             self.queue.pop(0)
-            # print(output)
             return output
         else:
             return vec(0, 0)
@@ -559,20 +554,6 @@ def get_closest_player(check_sprite):
         return result[0]
     except IndexError:
         return check_sprite
-
-
-def get_other_portal(portal_in):
-    """Returns the other portal present in the all_portals list.
-
-    Args:
-        portal_in: The portal that is known
-
-    Returns:
-        Portal: The other portal in the all_portals list
-    """
-    for portal in groups.all_portals:
-        if portal != portal_in:
-            return portal
 
 
 # ============================================================================ #

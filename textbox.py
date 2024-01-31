@@ -100,7 +100,7 @@ class TextBox(cb.ActorBase):
         Returns:
             None
         """
-        pass
+        self.show(self)
 
     def close(self):
         """Closes the dialogue box
@@ -108,7 +108,7 @@ class TextBox(cb.ActorBase):
         Returns:
             None
         """
-        pass
+        self.hide()
 
     def update(self):
         if self.visible:

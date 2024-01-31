@@ -16,6 +16,7 @@ import controls as ctrl
 import enemies
 import groups
 import players
+import portals
 import roomcontainers
 import tiles
 import trinkets
@@ -150,7 +151,7 @@ class Room(cb.AbstractBase):
             for portal in groups.all_portals:
                 if self.player1.hitbox.colliderect(portal.hitbox):
                     portal_in = portal
-                    portal_out = calc.get_other_portal(portal_in)
+                    portal_out = portals.get_other_portal(portal_in)
 
                     if len(groups.all_portals) == 2:
                         self._teleport_player(portal_in, portal_out)
