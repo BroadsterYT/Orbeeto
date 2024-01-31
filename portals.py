@@ -67,20 +67,6 @@ class Portal(cb.ActorBase):  # TODO: Update docstring
         return f'Portal({self.landedOn}, {self.facing}, {self.pos})'
 
 
-def get_other_portal(portal_in):
-    """Returns the other portal present in the all_portals list.
-
-    Args:
-        portal_in: The portal that is known
-
-    Returns:
-        Portal: The other portal in the all_portals list
-    """
-    for portal in groups.all_portals:
-        if portal != portal_in:
-            return portal
-
-
 def portal_count_check():
     """If more than two portals are present during gameplay, the oldest one will be deleted to make another one.
     """

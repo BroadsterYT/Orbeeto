@@ -94,7 +94,7 @@ class EnemyBase(cb.ActorBase):
             a_player.update_level()
 
     def _drop_items(self, table_index):
-        drops = cst.LOOTDROPS[table_index]
+        drops = cst.LOOT_DROPS[table_index]
         row = rand.randint(0, 2)
         column = rand.randint(0, 2)
 
@@ -236,7 +236,7 @@ class StandardGrunt(EnemyBase):
         self._destroy_check(6, 75, 0)
 
     def __animate(self):
-        if calc.get_time_diff(self.last_frame) > cst.ANIMTIME:
+        if calc.get_time_diff(self.last_frame) > 0.1:  # TODO: Use SPF to standardize animations
             if self.isShooting:
                 self.index += 1
                 if self.index > 4:

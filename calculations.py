@@ -556,6 +556,20 @@ def get_closest_player(check_sprite):
         return check_sprite
 
 
+def get_other_portal(portal_in):
+    """Returns the other portal present in the all_portals list.
+
+    Args:
+        portal_in: The portal that is known
+
+    Returns:
+        Portal: The other portal in the all_portals list
+    """
+    for portal in groups.all_portals:
+        if portal != portal_in:
+            return portal
+
+
 # ============================================================================ #
 #                                 Returns None                                 #
 # ============================================================================ #
