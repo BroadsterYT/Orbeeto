@@ -5,7 +5,6 @@ import copy
 import calculations as calc
 import constants as cst
 import groups
-import portals
 from spritesheet import Spritesheet
 
 vec = pygame.math.Vector2
@@ -300,7 +299,7 @@ class ActorBase(pygame.sprite.Sprite):
                 self.pos.y = sprite.pos.y - height
 
     def teleport(self, portal_in):
-        portal_out = portals.get_other_portal(portal_in)
+        portal_out = calc.get_other_portal(portal_in)
         width = (portal_out.hitbox.width + self.hitbox.width) // 2
         height = (portal_out.hitbox.height + self.hitbox.height) // 2
 
