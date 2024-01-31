@@ -10,9 +10,9 @@ import groups
 import constants as cst
 import calculations as calc
 
-vec = pygame.math.Vector2
+import fontinfo
 
-# TODO: Make slots for each individual material instead of the first-come first-served approach
+vec = pygame.math.Vector2
 
 
 class InventoryMenu(cb.AbstractBase):
@@ -116,7 +116,7 @@ class InventoryMenu(cb.AbstractBase):
 
     def update_menu_slots(self):
         for material in self.owner.inventory:
-            if self.owner.inventory[material] > 0:  # Every material in the owner's inventory
+            if self.owner.inventory[material] > 0:
                 for slot in self.sprites():
                     if slot.holding == material:
                         break
@@ -323,7 +323,7 @@ class MenuSlot(cb.ActorBase):
                 new_img = calc.combine_images(self.menuImg, frame)
 
                 # Adding the count of the item to its images
-                count_surface = calc.text_to_image(str(self.count), 'sprites/ui/font.png', 9, 14, 36)
+                count_surface = calc.text_to_image(str(self.count), fontinfo.font1)
                 new_img.set_colorkey((0, 0, 0))
                 center_x = (new_img.get_width() - frame.get_width()) // 2
                 center_y = (new_img.get_height() - frame.get_height()) // 2

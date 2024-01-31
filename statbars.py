@@ -4,6 +4,8 @@ import math
 import classbases as cb
 import calculations as calc
 import constants as cst
+
+import fontinfo
 import groups
 
 # Aliases
@@ -62,17 +64,14 @@ class BarNumbers(cb.ActorBase):
 
     def render_images(self):
         if isinstance(self.bar, HealthBar):
-            self.image = calc.text_to_image(str(self.owner.hp) + '/' + str(self.owner.max_hp),
-                                            'sprites/ui/small_font.png', 5,
-                                            7, 37)
+            self.image = calc.text_to_image(str(self.owner.hp) + '/' + str(self.owner.max_hp), fontinfo.font_small)
 
         elif isinstance(self.bar, DodgeBar):
             self.image = calc.text_to_image(str(self.owner.dodge_time) + '/' + str(self.owner.dodge_charge_up_time),
-                                            'sprites/ui/small_font.png', 5, 7, 37)
+                                            fontinfo.font_small)
 
         elif isinstance(self.bar, AmmoBar):
-            self.image = calc.text_to_image(str(self.owner.ammo) + '/' + str(self.owner.max_ammo),
-                                            'sprites/ui/small_font.png', 5, 7, 37)
+            self.image = calc.text_to_image(str(self.owner.ammo) + '/' + str(self.owner.max_ammo), fontinfo.font_small)
 
         else:
             raise TypeError()

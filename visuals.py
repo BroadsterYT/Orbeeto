@@ -5,12 +5,29 @@ import classbases as cb
 import constants as cst
 import calculations as calc
 
-import groups
 import spritesheet
 
-# Aliases
 vec = pygame.math.Vector2
 rad = math.radians
+
+
+def stack_images(base_image: pygame.Surface, top_image: pygame.Surface, stack_x: int, stack_y: int) -> pygame.Surface:
+    """Places an image overtop another image, then returns the new image
+
+    Args:
+        base_image: The image being covered over
+        top_image: The image being placed on top of the base image
+        stack_x: The x-position to put the top image over the base image (top left corner)
+        stack_y: The y-position to put the top image over the base image (top left corner)
+
+    Returns:
+        pygame.Surface: The resulting image
+    """
+    output_image = pygame.Surface(vec(base_image.get_width(), base_image.get_height()))
+    output_image.blit(base_image, vec(0, 0))
+    output_image.blit(top_image, vec(stack_x, stack_y))
+
+    return output_image
 
 
 class Beam(cb.ActorBase):

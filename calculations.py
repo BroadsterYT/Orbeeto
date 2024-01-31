@@ -9,6 +9,8 @@ import groups
 import screen
 from spritesheet import Spritesheet
 
+import fontinfo
+
 # Aliases
 vec = pygame.math.Vector2
 rad = math.radians
@@ -490,36 +492,45 @@ def combine_images(base_img: pygame.Surface, top_img: pygame.Surface) -> pygame.
     return new_img
 
 
-def text_to_image(text: str, font_img: str, char_width: int, char_height: int, char_count: int) -> pygame.Surface:
+# TODO: Move this function to text.py
+def text_to_image(text: str, a_font: fontinfo.Font) -> pygame.Surface:
     """Converts a string of text into an image with a given font.
 
     Args:
         text: The text string to convert into an image
-        font_img: The folder directory of the font to use
-        char_width: The width of each individual character (in pixels)
-        char_height: The height of each individual character (in pixels)
-        char_count: The number of characters in the spritesheet (1 = 1 image in sprite sheet)
+        a_font: The font object to retrieve font data from
 
     Returns:
         pygame.Surface: The converted image
     """
-    spritesheet = Spritesheet(font_img, 37)
-    images = spritesheet.get_images(char_width, char_height, char_count)
+    spritesheet = Spritesheet(a_font.path, a_font.chars_per_row)
+    images = spritesheet.get_images(a_font.char_width, a_font.char_height, a_font.char_count)
     char_list = []
 
-    final_image = pygame.Surface(vec(len(text) * char_width, char_height))
+    final_image = pygame.Surface(vec(len(text) * a_font.char_width, a_font.char_height))
 
-    for char in text:
-        if char in cst.LETTERS.keys():
-            char_list.append(images[cst.LETTERS[char]])
-        elif char in cst.NUMBERS:
-            char_list.append(images[int(char) + 26])
-        elif char in cst.SYMBOLS:
-            char_list.append(images[cst.SYMBOLS[char] + 36])
+    if a_font.path == 'sprites/ui/font.png' or a_font.path == 'sprites/ui/small_font.png':
+        for char in text:
+            if char in cst.LETTERS.keys():
+                char_list.append(images[cst.LETTERS[char]])
+            elif char in cst.NUMBERS:
+                char_list.append(images[int(char) + 26])
+            elif char in cst.SYMBOLS:
+                char_list.append(images[cst.SYMBOLS[char] + 36])
+    else:
+        for char in text:
+            if char in cst.UPPERCASE.keys():
+                char_list.append(images[cst.UPPERCASE[char]])
+            elif char in cst.LOWERCASE.keys():
+                char_list.append(images[cst.LOWERCASE[char]])
+            elif char in cst.NEW_NUMBERS.keys():
+                char_list.append(images[cst.NEW_NUMBERS[char]])
+            elif char in cst.NEW_SYMBOLS.keys():
+                char_list.append(images[cst.NEW_SYMBOLS[char]])
 
     count = 0
     for _ in char_list:
-        final_image.blit(char_list[count], vec(count * char_width, 0))
+        final_image.blit(char_list[count], vec(count * a_font.char_width, 0))
         count += 1
 
     final_image.set_colorkey(cst.BLACK)
@@ -598,6 +609,7 @@ def swap_color(image: pygame.Surface, old_color: tuple, new_color: tuple) -> pyg
     return new_img
 
 
+# TODO: Move this function to text.py
 def draw_text(text: str, pos_x, pos_y):
     font = pygame.font.SysFont('Arial', 24)
     image = font.render(text, True, (0, 0, 0))

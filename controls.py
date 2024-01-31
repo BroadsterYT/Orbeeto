@@ -11,7 +11,9 @@ is_input_held = {
     K_s: False,
     K_d: False,
     K_x: False,
-    K_e: False
+    K_e: False,
+
+    K_SPACE: False,
 }
 
 # Keeps track of the number of times each key has been released
@@ -27,4 +29,6 @@ key_released = {
     K_s: 0,
     K_d: 0,
     K_e: 0,
+
+    K_SPACE: 0,
 }

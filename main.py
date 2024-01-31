@@ -1,7 +1,6 @@
 """
 Main
 """
-
 import sys
 import math
 
@@ -25,14 +24,8 @@ screen.buffer_screen = pygame.Surface((cst.WINWIDTH, cst.WINHEIGHT))
 screen.viewport = pygame.display.set_mode((cst.WINWIDTH, cst.WINHEIGHT), pygame.SCALED, 0, 0, 2)
 pygame.display.set_caption('Orbeeto')
 
-# Aliases
 vec = pygame.math.Vector2
 rad = math.radians
-
-# ============================================================================ #
-#                                  Room Class                                  #
-# ============================================================================ #
-# noinspection PyTypeChecker
 
 
 # ============================================================================ #
@@ -103,9 +96,11 @@ while running:
             K_d: keyPressed[K_d],
             K_x: keyPressed[K_x],
             K_e: keyPressed[K_e],
+
+            K_SPACE: keyPressed[K_SPACE],
         }
 
-        check_key_release(False, K_a, K_w, K_s, K_d, K_e, K_x)
+        check_key_release(False, K_a, K_w, K_s, K_d, K_e, K_x, K_SPACE)
         check_key_release(True, 1, 2, 3)
 
         if event.type == pygame.MOUSEWHEEL:

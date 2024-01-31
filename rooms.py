@@ -60,6 +60,8 @@ class Room(cb.AbstractBase):
         self.centeringY = False
         self.lastRecenterX = time.time()
         self.lastRecenterY = time.time()
+        self.recenter_weight_limit = 0.25
+
         self.offsetX = self.player1.pos.x - cst.WINWIDTH // 2
         self.offsetY = self.player1.pos.y - cst.WINHEIGHT // 2
 
@@ -139,6 +141,7 @@ class Room(cb.AbstractBase):
             self.accel_movement()
 
             self._sprite_collide_check(self.player1, groups.all_walls)
+
             if self.isScrollingX and self.isScrollingY:
                 for sprite in groups.all_movable:
                     self._sprite_collide_check(sprite, groups.all_walls)
@@ -152,6 +155,7 @@ class Room(cb.AbstractBase):
                     if len(groups.all_portals) == 2:
                         self._teleport_player(portal_in, portal_out)
 
+            # TODO: Find a way to implement these without having to call them every frame
             self.__recenter_player_x()
             self.__recenter_player_y()
 
@@ -193,10 +197,12 @@ class Room(cb.AbstractBase):
 
             if self.centeringX:
                 weight = calc.get_time_diff(self.lastRecenterX)
-                if weight <= 0.25:
+                if weight <= self.recenter_weight_limit:
                     self.player1.pos.x = calc.cerp(self.posCopy.x, cst.WINWIDTH // 2, weight * 4)
                     for sprite in self._get_sprites_to_recenter():
-                        sprite.pos.x = calc.cerp(sprite.pos_copy.x, sprite.pos_copy.x - self.offsetX, weight * 4)
+                        sprite.pos.x = calc.cerp(sprite.pos_copy.x,
+                                                 sprite.pos_copy.x - self.offsetX,
+                                                 weight * (1 / self.recenter_weight_limit))
                 else:
                     self.player1.pos.x = cst.WINWIDTH // 2
                     self.centeringX = False
@@ -217,10 +223,12 @@ class Room(cb.AbstractBase):
 
             if self.centeringY:
                 weight = calc.get_time_diff(self.lastRecenterY)
-                if weight <= 0.25:
+                if weight <= self.recenter_weight_limit:
                     self.player1.pos.y = calc.cerp(self.posCopy.y, cst.WINHEIGHT // 2, weight * 4)
                     for sprite in self._get_sprites_to_recenter():
-                        sprite.pos.y = calc.cerp(sprite.pos_copy.y, sprite.pos_copy.y - self.offsetY, weight * 4)
+                        sprite.pos.y = calc.cerp(sprite.pos_copy.y,
+                                                 sprite.pos_copy.y - self.offsetY,
+                                                 weight * (1 / self.recenter_weight_limit))
                 else:
                     self.player1.pos.y = cst.WINHEIGHT // 2
                     self.centeringY = False
@@ -440,6 +448,7 @@ class Room(cb.AbstractBase):
                 self.vel.y = 0
                 self.player1.vel.y = 0
                 instig.pos.y = sprite.pos.y + height
+                # self.__recenter_player_y()
 
             if calc.triangle_collide(instig, sprite) == cst.EAST and (
                     instig.vel.x < 0 or sprite.vel.x > 0) and instig.pos.x <= sprite.pos.x + width:
@@ -447,6 +456,7 @@ class Room(cb.AbstractBase):
                 self.vel.x = 0
                 self.player1.vel.x = 0
                 instig.pos.x = sprite.pos.x + width
+                # self.__recenter_player_x()
 
             if calc.triangle_collide(instig, sprite) == cst.NORTH and (
                     instig.vel.y > 0 or sprite.vel.y < 0) and instig.pos.y >= sprite.pos.y - height:
@@ -454,6 +464,7 @@ class Room(cb.AbstractBase):
                 self.vel.y = 0
                 self.player1.vel.y = 0
                 instig.pos.y = sprite.pos.y - height
+                # self.__recenter_player_y()
 
             if calc.triangle_collide(instig, sprite) == cst.WEST and (
                     instig.vel.x > 0 or sprite.vel.x < 0) and instig.pos.x >= sprite.pos.x - width:
@@ -461,6 +472,7 @@ class Room(cb.AbstractBase):
                 self.vel.x = 0
                 self.player1.vel.x = 0
                 instig.pos.x = sprite.pos.x - width
+                # self.__recenter_player_x()
 
     @staticmethod
     def _sprite_block_from_side(instig, sprite) -> None:

@@ -16,10 +16,10 @@ import menu_ui as menu
 import bullets
 import groups
 import statbars
+import textbox
 
 vec = pygame.math.Vector2
 rad = math.radians
-
 
 class Player(cb.ActorBase):
     """A player sprite that can move and shoot.
@@ -44,7 +44,7 @@ class Player(cb.ActorBase):
         self.max_level = 249
 
         self._max_hp = 50
-        self._hp = 5
+        self._hp = 50
         self._max_defense = 10
         self._defense = 10
 
@@ -74,6 +74,8 @@ class Player(cb.ActorBase):
         self.ammo_bar = statbars.AmmoBar(self)
 
         self.menu = menu.InventoryMenu(self)
+
+        self.textbox = textbox.TextBox(cst.WINWIDTH // 2, cst.WINHEIGHT - 72, 0)
 
         self.inventory = {}
         for item in cst.MAT.values():
@@ -347,7 +349,7 @@ class Player(cb.ActorBase):
 
     def __str__(self):
         return (f'Player at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\ncurrent bullet: {self.bullet_type}\n'
-                f'xp: {self.xp}\nlevel: {self.level}\n')
+                f'xp: {self.xp}\nlevel: {self.level}\n room: {self.room.room}')
 
     def __repr__(self):
         return f'Player({self.pos}, {self.vel}, {self.accel}, {self.bullet_type}, {self.xp}, {self.level})'

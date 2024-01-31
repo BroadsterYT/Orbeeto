@@ -29,5 +29,6 @@ all_rooms = []
 all_containers = []
 
 # --------------------------------- UI groups ---------------------------------#
+all_text_boxes = spriteGroup()
 all_font_chars = spriteGroup()
 all_stat_bars = spriteGroup()

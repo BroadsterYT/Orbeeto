@@ -5,6 +5,7 @@ import classbases as cb
 import constants as cst
 import calculations as calc
 
+import fontinfo
 import groups
 
 # Aliases
@@ -31,7 +32,7 @@ class IndicatorText(cb.ActorBase):
 
         self.duration = duration
 
-        self.image = calc.text_to_image(str(text), "sprites/ui/font.png", 9, 14, 36)
+        self.image = calc.text_to_image(str(text), fontinfo.font1)
         self.set_rects(self.pos.x, self.pos.y, 9, 14, 9, 14)
 
     def get_accel(self):
