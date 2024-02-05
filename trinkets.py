@@ -4,6 +4,8 @@ Contains the object classes that the player can interact with/manipulate within 
 
 import pygame
 
+from text import display_text
+
 import classbases as cb
 import constants as cst
 import calculations as calc
@@ -188,7 +190,7 @@ class LockedWall(tiles.Wall):
             self.accel_movement()
 
     def update(self):
-        calc.draw_text(str(self), 0, 64)
+        display_text.draw_text(str(self), 0, 64)
 
     def __repr__(self):
         return f'LockedWall({self.id_value}, {self.pos}, {self.start_room_pos})'

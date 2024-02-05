@@ -111,7 +111,7 @@ class Room(cb.AbstractBase):
             output -= self.player1.accel_const
 
         if self.player1.is_swinging():
-            angle = calc.get_angle_to_sprite(self.player1, self.player1.grapple)
+            angle = calc.get_angle(self.player1, self.player1.grapple)
             output += self.player1.grapple_speed * math.sin(rad(angle))
 
         return output
@@ -129,7 +129,7 @@ class Room(cb.AbstractBase):
             output -= self.player1.accel_const
 
         if self.player1.is_swinging():
-            angle = calc.get_angle_to_sprite(self.player1, self.player1.grapple)
+            angle = calc.get_angle(self.player1, self.player1.grapple)
             output += self.player1.grapple_speed * math.cos(rad(angle))
 
         return output

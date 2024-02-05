@@ -5,15 +5,22 @@ Contains all text classes that appear on-screen, as well as all on-screen text o
 import pygame
 import time
 
+from text import fontinfo
+
 import classbases as cb
 import constants as cst
 import calculations as calc
 
-from text import fontinfo
 import groups
+import screen
 
-# Aliases
 vec = pygame.math.Vector2
+
+
+def draw_text(text: str, pos_x, pos_y):
+    font = pygame.font.SysFont('Arial', 24)
+    image = font.render(text, True, (0, 0, 0))
+    screen.buffer_screen.blit(image, vec(pos_x, pos_y))
 
 
 class IndicatorText(cb.ActorBase):

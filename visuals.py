@@ -40,7 +40,7 @@ class Beam(cb.ActorBase):
         self.index = 0
         
         self.length = calc.get_dist(self.fromSprite.pos, self.toSprite.pos)
-        self.angle = calc.get_angle_to_sprite(self.fromSprite, self.toSprite)
+        self.angle = calc.get_angle(self.fromSprite, self.toSprite)
         self.image = pygame.Surface(vec(1, 1))
 
         self.rect = self.image.get_rect()
@@ -48,7 +48,7 @@ class Beam(cb.ActorBase):
 
     def build_setup(self, start_pos: pygame.math.Vector2, end_pos: pygame.math.Vector2):
         self.length = calc.get_dist(start_pos, end_pos)
-        self.angle = calc.get_angle_to_sprite(self.fromSprite, self.toSprite)
+        self.angle = calc.get_angle(self.fromSprite, self.toSprite)
 
         opp = (self.length / 2) * math.cos(rad(self.angle + 90))
         adj = (self.length / 2) * math.sin(rad(self.angle + 90))

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Main
 """
@@ -9,6 +10,8 @@ import math
 
 import controls.key_trackers as kt
 from controls.keybinds import *
+
+from text import display_text
 
 import calculations as calc
 import constants as cst
@@ -73,6 +76,7 @@ def check_key_release(is_mouse) -> None:
 #                                   Main Loop                                  #
 # ============================================================================ #
 def main():
+    """Main sequence"""
     running = True
     while running:
         for a_player in groups.all_players:
@@ -105,7 +109,7 @@ def main():
 
         screen.buffer_screen.fill((255, 255, 255))
 
-        calc.draw_text(f'{main_room.player1}', 0, 0)
+        display_text.draw_text(f'{main_room.player1}', 0, 0)
 
         # ------------------------------ Game Operation ------------------------------ #
         for portals in groups.all_portals:

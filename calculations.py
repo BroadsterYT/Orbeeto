@@ -1,17 +1,18 @@
 import pygame
+from pygame.math import Vector2 as vec
+
 import random as rand
 import math
 import time
 
 from text import fontinfo
-
 import constants as cst
 import groups
-import screen
-from spritesheet import Spritesheet
+
+import spritesheet
 
 # Aliases
-vec = pygame.math.Vector2
+# vec = pygame.math.Vector2
 rad = math.radians
 
 
@@ -46,17 +47,29 @@ def get_angle_to_mouse(any_sprite) -> float:
                 return 0
 
 
-def get_angle_to_sprite(first_sprite, second_sprite) -> float:
-    """Returns the angle from one sprite to another.
+def get_angle(first_obj, sec_obj) -> float:
+    """Returns the angle between two sprites/coordinates
+
     Args:
-        first_sprite: The sprite to begin the measurement from
-        second_sprite: The sprite to measure the angle to
+        first_obj: The first object
+        sec_obj: The second object
 
     Returns:
-        float: The angle between the two sprites
+        float: The angle between the two objects
     """
-    length_to_x = second_sprite.pos.x - first_sprite.pos.x
-    length_to_y = second_sprite.pos.y - first_sprite.pos.y
+    if type(first_obj) is pygame.math.Vector2:
+        first_pos = first_obj.copy()
+    else:
+        first_pos = first_obj.pos
+
+    if type(sec_obj) is pygame.math.Vector2:
+        sec_pos = sec_obj.copy()
+    else:
+        sec_pos = sec_obj.pos
+
+    length_to_x = sec_pos.x - first_pos.x
+    length_to_y = sec_pos.y - first_pos.y
+
     if length_to_x and length_to_y != 0:
         angle = -math.degrees(math.atan2(length_to_y, length_to_x)) - 90
         return angle
@@ -71,74 +84,6 @@ def get_angle_to_sprite(first_sprite, second_sprite) -> float:
                 return -180
             else:
                 return 0
-
-
-def get_angle_to_c_from_s(any_sprite, coords) -> float:
-    """Returns the angle between a sprite and a set of coordinates. The angle is measured from the sprite to the coords.
-
-    Args:
-        any_sprite: The sprite to measure from
-        coords: The coordinates to measure from
-
-    Returns:
-        float: The angle between the sprite and the set of coordinates
-    """
-    length_to_x = coords.x - any_sprite.pos.x
-    length_to_y = coords.y - any_sprite.pos.y
-    if length_to_x and length_to_y != 0:
-        angle = -math.degrees(math.atan2(length_to_y, length_to_x)) - 90
-        return angle
-    else:
-        if length_to_y == 0:
-            if length_to_x > 0:
-                return -90
-            else:
-                return 90
-        else:
-            if length_to_y > 0:
-                return -180
-            else:
-                return 0
-
-
-def get_angle_to_c_from_c(start_coords: pygame.math.Vector2, end_coords: pygame.math.Vector2) -> float:
-    """Returns the angle between two coordinate points
-
-    Args:
-        start_coords: The first set of coordinates
-        end_coords: The second set of coordinates
-
-    Returns:
-        float: The angle between the two coordinate points
-    """
-    length_x = end_coords.x - start_coords.x
-    length_y = end_coords.y - start_coords.y
-    if length_x and length_y != 0:
-        angle = -math.degrees(math.atan2(length_y, length_x)) - 90
-        return angle
-    else:
-        if length_y == 0:
-            if length_x > 0:
-                return -90
-            else:
-                return 90
-        else:
-            if length_y > 0:
-                return -180
-            else:
-                return 0
-
-
-def get_angle(first_obj, sec_obj) -> float | ValueError:
-    first_pos = vec(0, 0)
-    sec_pos = vec(0, 0)
-
-    if type(first_obj) is str:
-        if first_obj == 'mouse':
-            mouse_x, mouse_y = pygame.mouse.get_pos()
-            first_pos = vec(mouse_x, mouse_y)
-        else:
-            return ValueError(f'ERROR: {first_obj} is not a valid string input.')
 
 
 def get_dist(first_input, sec_input) -> float:
@@ -183,18 +128,14 @@ def get_vec_angle(vec_x: int | float, vec_y: int | float) -> float:
     else:
         if vec_y == 0:
             if vec_x > 0:
-                vec_angle = -90
-                return vec_angle
+                return -90
             else:
-                vec_angle = 90
-                return vec_angle
+                return 90
         else:
             if vec_y > 0:
-                vec_angle = -180
-                return vec_angle
+                return -180
             else:
-                vec_angle = 0
-                return vec_angle
+                return 0
 
 
 def get_time_diff(time_value: float) -> float:
@@ -313,58 +254,42 @@ def triangle_collide(instig, sprite) -> str:
     len_point_c = get_dist(instig.pos, point_c)
     len_point_d = get_dist(instig.pos, point_d)
 
-    angle_a = rad(get_angle_to_c_from_c(instig.pos, point_a) + 90)
-    angle_b = rad(get_angle_to_c_from_c(instig.pos, point_b) + 90)
-    angle_c = rad(get_angle_to_c_from_c(instig.pos, point_c) + 90)
-    angle_d = rad(get_angle_to_c_from_c(instig.pos, point_d) + 90)
+    angle_a = rad(get_angle(instig.pos, point_a) + 90)
+    angle_b = rad(get_angle(instig.pos, point_b) + 90)
+    angle_c = rad(get_angle(instig.pos, point_c) + 90)
+    angle_d = rad(get_angle(instig.pos, point_d) + 90)
 
     height_ap = abs(len_point_a * math.sin(angle_a))
     height_bp = abs(len_point_b * math.cos(angle_b))
     height_cp = abs(len_point_c * math.sin(angle_c))
     height_dp = abs(len_point_d * math.cos(angle_d))
 
-    def is_closest_side(height: float):
-        if height == height_ap:
-            if (height_ap < height_bp and
-                    height_ap < height_cp and
-                    height_ap < height_dp):
-                return True
-            else:
-                return False
+    def is_closest_side(height: float) -> bool:
+        """Determines if the given distance is the one closest to the instigator (the shortest)
 
-        elif height == height_bp:
-            if (height_bp < height_ap and
-                    height_bp < height_cp and
-                    height_bp < height_dp):
-                return True
-            else:
-                return False
+        Args:
+            height: The distance from a side to the instigator
 
-        elif height == height_cp:
-            if (height_cp < height_ap and
-                    height_cp < height_bp and
-                    height_cp < height_dp):
-                return True
-            else:
-                return False
+        Returns:
+            bool: If the distance is the shortest (True) or not (False)
+        """
+        height_list = [height_ap, height_bp, height_cp, height_dp]
+        height_list.remove(height)
 
-        elif height == height_dp:
-            if (height_dp < height_ap and
-                    height_dp < height_bp and
-                    height_dp < height_cp):
-                return True
+        output = True
+        for dist in height_list:
+            if height < dist:
+                output = True
             else:
-                return False
-
-        else:
-            raise ValueError('Error: height value is not a valid input')
+                output = False
+                break
+        return output
 
     if is_closest_side(height_ap):
         if instig.pos.x >= point_b.x:
             return cst.EAST
         if instig.pos.x <= point_d.x:
             return cst.WEST
-
         return cst.SOUTH
 
     elif is_closest_side(height_bp):
@@ -372,7 +297,6 @@ def triangle_collide(instig, sprite) -> str:
             return cst.SOUTH
         if instig.pos.y <= point_c.y:
             return cst.NORTH
-
         return cst.EAST
 
     elif is_closest_side(height_cp):
@@ -380,7 +304,6 @@ def triangle_collide(instig, sprite) -> str:
             return cst.EAST
         if instig.pos.x <= point_d.x:
             return cst.WEST
-
         return cst.NORTH
 
     elif is_closest_side(height_dp):
@@ -388,29 +311,12 @@ def triangle_collide(instig, sprite) -> str:
             return cst.SOUTH
         if instig.pos.y <= point_c.y:
             return cst.NORTH
-
         return cst.WEST
 
 
 # ============================================================================ #
 #                                Returns Vector2                               #
 # ============================================================================ #
-def get_top_left_coords(sprite_width: int, sprite_height: int, desired_x: float,
-                        desired_y: float) -> vec:
-    """Returns the coordinates of the top-left corner of a sprite that is centered at its middle.
-
-    Args:
-        sprite_width: The width of the sprite (in pixels)
-        sprite_height: The height of the sprite (in pixels)
-        desired_x: Where the sprite's center should be placed along the x-axis
-        desired_y: Where the sprite's center should be placed along the y-axis
-
-    Returns:
-        pygame.math.Vector2: The coordinates of the sprite's top-left corner
-    """
-    return vec(desired_x + sprite_width // 2, desired_y + sprite_height // 2)
-
-
 def get_rand_components(max_value: int | float) -> vec:
     """Given a maximum value, will output a vector containing two components that vectorially add to that value.
     The result can be positive or negative.
@@ -509,8 +415,8 @@ def text_to_image(text: str, a_font: fontinfo.Font) -> pygame.Surface:
     Returns:
         pygame.Surface: The converted image
     """
-    spritesheet = Spritesheet(a_font.path, a_font.chars_per_row)
-    images = spritesheet.get_images(a_font.char_width, a_font.char_height, a_font.char_count)
+    sheet = spritesheet.Spritesheet(a_font.path, a_font.chars_per_row)
+    images = sheet.get_images(a_font.char_width, a_font.char_height, a_font.char_count)
     char_list = []
 
     final_image = pygame.Surface(vec(len(text) * a_font.char_width, a_font.char_height))
@@ -616,8 +522,8 @@ def swap_color(image: pygame.Surface, old_color: tuple, new_color: tuple) -> pyg
     return new_img
 
 
-# TODO: Move this function to display_text.py
-def draw_text(text: str, pos_x, pos_y):
-    font = pygame.font.SysFont('Arial', 24)
-    image = font.render(text, True, (0, 0, 0))
-    screen.buffer_screen.blit(image, vec(pos_x, pos_y))
+# # TODO: Move this function to display_text.py
+# def draw_text(text: str, pos_x, pos_y):
+#     font = pygame.font.SysFont('Arial', 24)
+#     image = font.render(text, True, (0, 0, 0))
+#     screen.buffer_screen.blit(image, vec(pos_x, pos_y))
