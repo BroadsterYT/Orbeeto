@@ -1,16 +1,18 @@
 import pygame
-from pygame.locals import *
+
 import time
 import math
 
+import controls.key_trackers as kt
+from controls.keybinds import *
+
+from text import fontinfo
+
 import classbases as cb
-import controls as ctrl
 from spritesheet import Spritesheet
 import groups
 import constants as cst
 import calculations as calc
-
-import fontinfo
 
 vec = pygame.math.Vector2
 
@@ -31,7 +33,7 @@ class InventoryMenu(cb.AbstractBase):
         self.wipeTime = 1
         self.window = 0
 
-        self.last_release_value = ctrl.key_released[K_e]
+        self.last_release_value = kt.key_released[K_MENU]
         self.is_open = False
 
         self.lastCycle = time.time()
@@ -59,12 +61,12 @@ class InventoryMenu(cb.AbstractBase):
         if (not self.cyclingLeft and
                 not self.cyclingRight and
                 not self.can_update):
-            if ctrl.is_input_held[1] and self.leftArrow.hitbox.collidepoint(pygame.mouse.get_pos()):
+            if kt.is_input_held[1] and self.leftArrow.hitbox.collidepoint(pygame.mouse.get_pos()):
                 self.window -= 1
                 self.lastCycle = time.time()
                 self.cyclingLeft = True
 
-            if ctrl.is_input_held[1] and self.rightArrow.hitbox.collidepoint(pygame.mouse.get_pos()):
+            if kt.is_input_held[1] and self.rightArrow.hitbox.collidepoint(pygame.mouse.get_pos()):
                 self.window += 1
                 self.lastCycle = time.time()
                 self.cyclingRight = True
@@ -127,7 +129,7 @@ class InventoryMenu(cb.AbstractBase):
                 slot.create_slot_images()
 
     def update(self):
-        if self.last_release_value != ctrl.key_released[K_e] and not self.is_open:
+        if self.last_release_value != kt.key_released[K_MENU] and not self.is_open:
             self.show()
             self.rightArrow.show(cst.LAYER['ui_1'])
             self.leftArrow.show(cst.LAYER['ui_1'])
@@ -136,10 +138,10 @@ class InventoryMenu(cb.AbstractBase):
             for sprite in groups.all_sprites:
                 sprite.can_update = False
 
-            self.last_release_value = ctrl.key_released[K_e]
+            self.last_release_value = kt.key_released[K_MENU]
             self.is_open = True
 
-        elif self.last_release_value != ctrl.key_released[K_e] and self.is_open:
+        elif self.last_release_value != kt.key_released[K_MENU] and self.is_open:
             self.hide()
             self.rightArrow.hide()
             self.leftArrow.hide()
@@ -148,7 +150,7 @@ class InventoryMenu(cb.AbstractBase):
             for sprite in groups.all_sprites:
                 sprite.can_update = True
 
-            self.last_release_value = ctrl.key_released[K_e]
+            self.last_release_value = kt.key_released[K_MENU]
             self.is_open = False
 
         self.cycle_menu()

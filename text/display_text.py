@@ -1,3 +1,7 @@
+"""
+Contains all text classes that appear on-screen, as well as all on-screen text operations.
+"""
+
 import pygame
 import time
 
@@ -5,7 +9,7 @@ import classbases as cb
 import constants as cst
 import calculations as calc
 
-import fontinfo
+from text import fontinfo
 import groups
 
 # Aliases

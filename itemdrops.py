@@ -3,13 +3,14 @@ import time
 import math
 import random as rand
 
+from text import display_text
+
 import classbases as cb
 import constants as cst
 import calculations as calc
 
 import groups
 import spritesheet
-import text
 
 # Aliases
 vec = pygame.math.Vector2
@@ -80,7 +81,7 @@ class ItemDrop(cb.ActorBase):
         for a_player in groups.all_players:
             if self.hitbox.colliderect(a_player):
                 groups.all_font_chars.add(
-                    text.IndicatorText(a_player.pos.x, a_player.pos.y - a_player.rect.height // 2, self.mat, 1)
+                    display_text.IndicatorText(a_player.pos.x, a_player.pos.y - a_player.rect.height // 2, self.mat, 1)
                 )
                 a_player.inventory[self.mat] += 1
                 self.kill()

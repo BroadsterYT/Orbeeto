@@ -2,33 +2,39 @@
 Player
 """
 import pygame
-from pygame.locals import *
 
 import time
 import math
 
+import controls.key_trackers as kt
+from controls.keybinds import *
+
+from text import textbox
+
 import calculations as calc
 import classbases as cb
 import constants as cst
-import controls as ctrl
 import menu_ui as menu
 
 import bullets
 import groups
 import statbars
-import textbox
 
 vec = pygame.math.Vector2
 rad = math.radians
 
+
 class Player(cb.ActorBase):
     """A player sprite that can move and shoot.
     """
+
     def __init__(self):
         super().__init__()
         self.layer = cst.LAYER['player']
         self.show(self.layer)
         groups.all_players.add(self)
+
+        self.last_textbox_release = kt.key_released[K_DIALOGUE]
 
         self.room = cb.get_room()
 
@@ -49,9 +55,6 @@ class Player(cb.ActorBase):
         self._defense = 10
 
         self.last_regen = time.time()  # Used for timing passive regeneration
-
-        self.immune = False
-        self.immune_length = 1.0
 
         self.max_ammo: int = 40
         self.ammo = self.max_ammo
@@ -74,8 +77,6 @@ class Player(cb.ActorBase):
         self.ammo_bar = statbars.AmmoBar(self)
 
         self.menu = menu.InventoryMenu(self)
-
-        self.textbox = textbox.TextBox(cst.WINWIDTH // 2, cst.WINHEIGHT - 72, 0)
 
         self.inventory = {}
         for item in cst.MAT.values():
@@ -213,9 +214,9 @@ class Player(cb.ActorBase):
 
     def __get_x_axis_output(self) -> float:
         output = 0.0
-        if ctrl.is_input_held[K_a]:
+        if kt.is_input_held[K_MOVE_LEFT]:
             output -= self.accel_const
-        if ctrl.is_input_held[K_d]:
+        if kt.is_input_held[K_MOVE_RIGHT]:
             output += self.accel_const
 
         if self.is_swinging():
@@ -226,9 +227,9 @@ class Player(cb.ActorBase):
 
     def __get_y_axis_output(self) -> float:
         output = 0.0
-        if ctrl.is_input_held[K_w]:
+        if kt.is_input_held[K_MOVE_UP]:
             output -= self.accel_const
-        if ctrl.is_input_held[K_s]:
+        if kt.is_input_held[K_MOVE_DOWN]:
             output += self.accel_const
 
         if self.is_swinging():
@@ -263,7 +264,7 @@ class Player(cb.ActorBase):
 
         offset = vec((21, 30))
 
-        if (ctrl.is_input_held[1] and
+        if (kt.is_input_held[1] and
                 self.ammo > 0 and
                 calc.get_time_diff(self.last_shot_time) >= self.gun_cooldown):
             # Standard bullets
@@ -292,22 +293,22 @@ class Player(cb.ActorBase):
             self.last_shot_time = time.time()
 
         # ------------------------------ Firing Portals ------------------------------ #
-        if ctrl.key_released[3] % 2 == 0 and self.can_portal and self.can_grapple:
+        if kt.key_released[3] % 2 == 0 and self.can_portal and self.can_grapple:
             groups.all_projs.add(bullets.PortalBullet(self.pos.x, self.pos.y, vel_x * 0.75, vel_y * 0.75))
             self.can_portal = False
 
-        elif ctrl.key_released[3] % 2 != 0 and not self.can_portal and self.can_grapple:
+        elif kt.key_released[3] % 2 != 0 and not self.can_portal and self.can_grapple:
             groups.all_projs.add(bullets.PortalBullet(self.pos.x, self.pos.y, vel_x * 0.75, vel_y * 0.75))
             self.can_portal = True
 
         # --------------------------- Firing Grappling Hook -------------------------- #
-        if ctrl.key_released[2] % 2 != 0 and self.can_grapple:
+        if kt.key_released[2] % 2 != 0 and self.can_grapple:
             if self.grapple is not None:
                 self.grapple.shatter()
             self.grapple = bullets.GrappleBullet(self, self.pos.x, self.pos.y, vel_x, vel_y)
             self.can_grapple = False
 
-        if ctrl.key_released[2] % 2 == 0 and not self.can_grapple:
+        if kt.key_released[2] % 2 == 0 and not self.can_grapple:
             self.grapple.returning = True
             self.can_grapple = True
 
@@ -317,28 +318,28 @@ class Player(cb.ActorBase):
             self.shoot()
 
             # Animation
-            self.__animate()
+            self._animate()
             self.rotate_image(calc.get_angle_to_mouse(self))
 
             # Dodge charge up
             if self.dodge_time < self.dodge_charge_up_time:
                 self.dodge_time += 1
 
-            # Immunity frames
-            if calc.get_time_diff(self.last_hit) <= self.immune_length:
-                self.immune = True
-            else:
-                self.immune = False
-
         self.menu.update()
         self._passive_hp_regen()
+
+        # Dialogue
+        if self.last_textbox_release != kt.key_released[K_DIALOGUE]:
+            if len(groups.all_text_boxes) < 1:
+                groups.all_text_boxes.add(textbox.TextBox(cst.WINWIDTH // 2, cst.WINHEIGHT - 72, 'default_text'))
+            self.last_textbox_release = kt.key_released[K_DIALOGUE]
 
         if self.hp <= 0:
             self.kill()
 
-    def __animate(self):
+    def _animate(self):
         if calc.get_time_diff(self.last_frame) > 0.05:
-            if ctrl.is_input_held[1]:
+            if kt.is_input_held[1]:
                 self.index += 1
                 if self.index > 4:
                     self.index = 0

@@ -1,11 +1,12 @@
 import pygame
 import math
 
+from text import fontinfo
+
 import classbases as cb
 import calculations as calc
 import constants as cst
 
-import fontinfo
 import groups
 
 # Aliases

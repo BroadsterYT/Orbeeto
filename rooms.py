@@ -2,7 +2,9 @@
 Contains the room class.
 """
 import pygame
-from pygame.locals import *
+
+import controls.key_trackers as kt
+from controls.keybinds import *
 
 import time
 import math
@@ -11,12 +13,10 @@ import copy
 import calculations as calc
 import classbases as cb
 import constants as cst
-import controls as ctrl
 
 import enemies
 import groups
 import players
-import portals
 import roomcontainers
 import tiles
 import trinkets
@@ -75,7 +75,7 @@ class Room(cb.AbstractBase):
         self.dashCooldown = time.time()
         self.dashTimer = time.time()
         self.dashCheck = True
-        self.lastPresses = copy.copy(ctrl.key_released)
+        self.lastPresses = copy.copy(kt.key_released)
 
         self.layout_update()
 
@@ -105,9 +105,9 @@ class Room(cb.AbstractBase):
             float: The room's acceleration's x-axis component
         """
         output: float = 0.0
-        if ctrl.is_input_held[K_a]:
+        if kt.is_input_held[K_MOVE_LEFT]:
             output += self.player1.accel_const
-        if ctrl.is_input_held[K_d]:
+        if kt.is_input_held[K_MOVE_RIGHT]:
             output -= self.player1.accel_const
 
         if self.player1.is_swinging():
@@ -123,9 +123,9 @@ class Room(cb.AbstractBase):
             float: The room's acceleration's y-axis component
         """
         output: float = 0.0
-        if ctrl.is_input_held[K_w]:
+        if kt.is_input_held[K_MOVE_UP]:
             output += self.player1.accel_const
-        if ctrl.is_input_held[K_s]:
+        if kt.is_input_held[K_MOVE_DOWN]:
             output -= self.player1.accel_const
 
         if self.player1.is_swinging():

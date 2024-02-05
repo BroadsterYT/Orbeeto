@@ -24,7 +24,8 @@ class Font:
         self.char_count = char_count
 
 
+# -------------------- Initialized Fonts -------------------- #
 font1 = Font('sprites/ui/font.png', 9, 14, 37, 37)
 font_small = Font('sprites/ui/small_font.png', 5, 7, 37, 37)
 
-dialogue_font = Font('sprites/fonts/dialogue_font1.png', 32, 32, 26, 71)
+dialogue_font = Font('sprites/fonts/dialogue_font1.png', 32, 32, 26, 81)

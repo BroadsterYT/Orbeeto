@@ -3,13 +3,14 @@ import math
 import random as rand
 import time
 
+from text import display_text
+
 import classbases as cb
 import calculations as calc
 import constants as cst
 import groups
 
 import portals
-import text
 import visuals
 
 # Aliases
@@ -142,23 +143,23 @@ class BulletBase(cb.ActorBase):
             if rand.randint(1, 20) == 1:
                 receiver.hp -= damage * 3
                 if damage > 0:
-                    groups.all_font_chars.add(text.IndicatorText(receiver.pos.x, receiver.pos.y, damage * 3))
+                    groups.all_font_chars.add(display_text.IndicatorText(receiver.pos.x, receiver.pos.y, damage * 3))
             else:
                 receiver.hp -= damage
                 if damage > 0:
-                    groups.all_font_chars.add(text.IndicatorText(receiver.pos.x, receiver.pos.y, damage))
+                    groups.all_font_chars.add(display_text.IndicatorText(receiver.pos.x, receiver.pos.y, damage))
 
         elif sprite_group == groups.all_players:
             receiver.hp -= damage
             if damage > 0:
-                groups.all_font_chars.add(text.IndicatorText(receiver.pos.x, receiver.pos.y, damage))
+                groups.all_font_chars.add(display_text.IndicatorText(receiver.pos.x, receiver.pos.y, damage))
             receiver.dodge_time = 0
             receiver.last_hit = time.time()
 
         else:
             receiver.hp -= damage
             if damage > 0:
-                groups.all_font_chars.add(text.IndicatorText(receiver.pos.x, receiver.pos.y, damage))
+                groups.all_font_chars.add(display_text.IndicatorText(receiver.pos.x, receiver.pos.y, damage))
 
     def update(self):
         room = cb.get_room()

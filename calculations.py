@@ -1,14 +1,14 @@
+import pygame
 import random as rand
 import math
 import time
-import pygame
+
+from text import fontinfo
 
 import constants as cst
 import groups
 import screen
 from spritesheet import Spritesheet
-
-import fontinfo
 
 # Aliases
 vec = pygame.math.Vector2
@@ -48,7 +48,6 @@ def get_angle_to_mouse(any_sprite) -> float:
 
 def get_angle_to_sprite(first_sprite, second_sprite) -> float:
     """Returns the angle from one sprite to another.
-
     Args:
         first_sprite: The sprite to begin the measurement from
         second_sprite: The sprite to measure the angle to
@@ -128,6 +127,18 @@ def get_angle_to_c_from_c(start_coords: pygame.math.Vector2, end_coords: pygame.
                 return -180
             else:
                 return 0
+
+
+def get_angle(first_obj, sec_obj) -> float | ValueError:
+    first_pos = vec(0, 0)
+    sec_pos = vec(0, 0)
+
+    if type(first_obj) is str:
+        if first_obj == 'mouse':
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            first_pos = vec(mouse_x, mouse_y)
+        else:
+            return ValueError(f'ERROR: {first_obj} is not a valid string input.')
 
 
 def get_dist(first_input, sec_input) -> float:
@@ -487,7 +498,7 @@ def combine_images(base_img: pygame.Surface, top_img: pygame.Surface) -> pygame.
     return new_img
 
 
-# TODO: Move this function to text.py
+# TODO: Move this function to display_text.py
 def text_to_image(text: str, a_font: fontinfo.Font) -> pygame.Surface:
     """Converts a string of text into an image with a given font.
 
@@ -504,6 +515,7 @@ def text_to_image(text: str, a_font: fontinfo.Font) -> pygame.Surface:
 
     final_image = pygame.Surface(vec(len(text) * a_font.char_width, a_font.char_height))
 
+    # TODO: Make all fonts follow the same text-to-image logic
     if a_font.path == 'sprites/ui/font.png' or a_font.path == 'sprites/ui/small_font.png':
         for char in text:
             if char in cst.LETTERS.keys():
@@ -604,7 +616,7 @@ def swap_color(image: pygame.Surface, old_color: tuple, new_color: tuple) -> pyg
     return new_img
 
 
-# TODO: Move this function to text.py
+# TODO: Move this function to display_text.py
 def draw_text(text: str, pos_x, pos_y):
     font = pygame.font.SysFont('Arial', 24)
     image = font.render(text, True, (0, 0, 0))
