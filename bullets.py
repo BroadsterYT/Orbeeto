@@ -3,6 +3,8 @@ import math
 import random as rand
 import time
 
+import controls.key_trackers as kt
+from controls.keybinds import *
 from text import display_text
 
 import classbases as cb
@@ -22,8 +24,8 @@ class BulletBase(cb.ActorBase):
     def __init__(self):
         """The base class for all projectiles"""        
         super().__init__()
-        self.ricCount = 1
-        self.startTime = time.time()
+        self.ric_count = 1
+        self.start_time = time.time()
 
         self.hit = None
         self.sideHit = None
@@ -37,13 +39,13 @@ class BulletBase(cb.ActorBase):
     def land(self, target) -> None:
         self.hit = target
         self.sideHit = calc.triangle_collide(self, self.hit)
-        self.ricCount -= 1
+        self.ric_count -= 1
 
         boom_pos_x = 0
         boom_pos_y = 0
 
         # Bullet explodes
-        if self.ricCount <= 0 or self.hit in groups.all_enemies:
+        if self.ric_count <= 0 or self.hit in groups.all_enemies:
             if self.sideHit == cst.SOUTH:
                 boom_pos_x = self.pos.x
                 boom_pos_y = self.hit.pos.y + self.hit.hitbox.height // 2
@@ -255,7 +257,7 @@ class PlayerStdBullet(BulletBase):
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)
 
-            if calc.get_time_diff(self.startTime) <= 10:
+            if calc.get_time_diff(self.start_time) <= 10:
                 self.vel = self.get_vel()
                 self.vel_movement(True)
             else:
@@ -292,7 +294,7 @@ class PlayerLaserBullet(BulletBase):  # TODO: Add docstring
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)
 
-            if calc.get_time_diff(self.startTime) <= 10:
+            if calc.get_time_diff(self.start_time) <= 10:
                 self.vel = self.get_vel()
                 self.vel_movement(True)
             else:
@@ -378,7 +380,7 @@ class PortalBullet(BulletBase):
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)
 
-            if calc.get_time_diff(self.startTime) <= 5:
+            if calc.get_time_diff(self.start_time) <= 5:
                 self.vel = self.get_vel()
                 self.vel_movement(False)
             else:
@@ -396,7 +398,7 @@ class PortalBullet(BulletBase):
         self.movement()
 
     def __repr__(self):
-        return f'PortalBullet({self.pos}, {self.vel}, {self.ricCount})'
+        return f'PortalBullet({self.pos}, {self.vel}, {self.ric_count})'
 
 
 class GrappleBullet(BulletBase):
@@ -406,7 +408,7 @@ class GrappleBullet(BulletBase):
         self.show(self.layer)
         self.damage = cst.PROJ_DAMAGE[cst.PROJ_GRAPPLE]
         
-        self.shotFrom = shot_from
+        self.shot_from = shot_from
 
         self.isHooked = False
         self.grappledTo = None
@@ -420,7 +422,7 @@ class GrappleBullet(BulletBase):
         self.accel = vec(0, 0)
         self.accel_const = 1.5
 
-        self.chain = visuals.Beam(self, self.shotFrom)
+        self.chain = visuals.Beam(self, self.shot_from)
         self.portalList = []
 
         self.set_images("sprites/bullets/bullets.png", 32, 32, 8, 2, 16)
@@ -440,7 +442,7 @@ class GrappleBullet(BulletBase):
         """Completely destroys the grappling hook.
         """
         self.returning = False
-        self.shotFrom.grapple = None
+        self.shot_from.grapple = None
         if self.grappledTo is not None:
             self.grappledTo.is_grappled = False
 
@@ -491,14 +493,14 @@ class GrappleBullet(BulletBase):
             
             # Hook returns to player
             else:
-                angle = calc.get_angle(self, self.shotFrom)
+                angle = calc.get_angle(self, self.shot_from)
                 room = cb.get_room()
                 room_accel = room.get_accel()
                 self.accel.x = self.accel_const * -math.sin(rad(angle)) + room_accel.x
                 self.accel.y = self.accel_const * -math.cos(rad(angle)) + room_accel.y
 
                 # Hook disappears once it returns
-                if self.hitbox.colliderect(self.shotFrom.hitbox):
+                if self.hitbox.colliderect(self.shot_from.hitbox):
                     self.shatter()
             
             self.accel_movement()
@@ -511,7 +513,7 @@ class GrappleBullet(BulletBase):
         # Player should accelerate to the hook
         else:
             self.pos = self.grappledTo.pos + self.posOffset
-            if self.hitbox.colliderect(self.shotFrom.hitbox):
+            if self.hitbox.colliderect(self.shot_from.hitbox):
                 self.shatter()
 
     def movement(self):
@@ -549,6 +551,7 @@ class GrappleBullet(BulletBase):
 
     def update(self):
         self.bind_proj()
+        # self.shot_from.last_grapple_input_count = kt.key_released[K_GRAPPLE]
 
 
 # ============================================================================ #
@@ -586,7 +589,7 @@ class EnemyStdBullet(BulletBase):
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)
 
-            if calc.get_time_diff(self.startTime) <= 10:
+            if calc.get_time_diff(self.start_time) <= 10:
                 self.vel = self.get_vel()
                 self.vel_movement(True)
             else:

@@ -1,8 +1,8 @@
 """
 Contains the object classes that the player can interact with/manipulate within the game.
 """
-
 import pygame
+from pygame.math import Vector2 as vec
 
 from text import display_text
 
@@ -10,12 +10,8 @@ import classbases as cb
 import constants as cst
 import calculations as calc
 
-import tiles
-
 import groups
-
-# Aliases
-vec = pygame.math.Vector2
+import tiles
 
 
 class Box(cb.ActorBase):

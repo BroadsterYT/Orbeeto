@@ -1,15 +1,13 @@
-import pygame
 import time
+
+import pygame
+from pygame.math import Vector2 as vec
 
 import classbases as cb
 import constants as cst
 import calculations as calc
-
 import groups
 import spritesheet
-
-# Aliases
-vec = pygame.math.Vector2
 
 
 def fancy_tile_texture(block_width: int, block_height: int, textures: list, color_key: tuple, style: int):

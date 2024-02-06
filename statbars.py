@@ -1,19 +1,16 @@
-import pygame
 import math
+
+from pygame.math import Vector2 as vec
 
 from text import fontinfo
 
 import classbases as cb
 import calculations as calc
 import constants as cst
-
 import groups
 
-# Aliases
-vec = pygame.math.Vector2
 
-
-# TODO: Generate value of bar on-the-fly and overlay UI on top...?
+# Generate value of bar on-the-fly and overlay UI on top...?
 class StatBarBase(cb.ActorBase):
     def __init__(self, owner, order: int):
         """A bar that shows a specific value on-screen

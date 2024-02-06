@@ -60,9 +60,6 @@ class Portal(cb.ActorBase):  # TODO: Update docstring
         self.pos = self.landedOn.pos + self.posOffset
         self.center_rects()
 
-    def update(self):
-        pass
-
     def __repr__(self):
         return f'Portal({self.landedOn}, {self.facing}, {self.pos})'
 

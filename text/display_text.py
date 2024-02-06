@@ -1,9 +1,10 @@
 """
 Contains all text classes that appear on-screen, as well as all on-screen text operations.
 """
+import time
 
 import pygame
-import time
+from pygame.math import Vector2 as vec
 
 from text import fontinfo
 
@@ -14,10 +15,18 @@ import calculations as calc
 import groups
 import screen
 
-vec = pygame.math.Vector2
 
+def draw_text(text: str, pos_x, pos_y) -> None:
+    """Draws text on to the screen.
 
-def draw_text(text: str, pos_x, pos_y):
+    Args:
+        text: The text to display
+        pos_x: The x-position to display the text (top-left corner)
+        pos_y: The y-position to display the text (top-left corner)
+
+    Returns:
+        None
+    """
     font = pygame.font.SysFont('Arial', 24)
     image = font.render(text, True, (0, 0, 0))
     screen.buffer_screen.blit(image, vec(pos_x, pos_y))

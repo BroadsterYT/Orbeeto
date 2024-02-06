@@ -1,14 +1,12 @@
-import pygame
 import math
+
+import pygame
+from pygame.math import Vector2 as vec
 
 import classbases as cb
 import constants as cst
 import calculations as calc
-
 import spritesheet
-
-vec = pygame.math.Vector2
-rad = math.radians
 
 
 def stack_images(base_image: pygame.Surface, top_image: pygame.Surface, stack_x: int, stack_y: int) -> pygame.Surface:
@@ -36,24 +34,24 @@ class Beam(cb.ActorBase):
         self.layer = cst.LAYER['floor']
         self.show(self.layer)
 
-        self.fromSprite, self.toSprite = from_sprite, to_sprite
+        self.from_sprite, self.to_sprite = from_sprite, to_sprite
         self.index = 0
         
-        self.length = calc.get_dist(self.fromSprite.pos, self.toSprite.pos)
-        self.angle = calc.get_angle(self.fromSprite, self.toSprite)
+        self.length = calc.get_dist(self.from_sprite.pos, self.to_sprite.pos)
+        self.angle = calc.get_angle(self.from_sprite, self.to_sprite)
         self.image = pygame.Surface(vec(1, 1))
 
         self.rect = self.image.get_rect()
         self.rect.center = self.pos
 
-    def build_setup(self, start_pos: pygame.math.Vector2, end_pos: pygame.math.Vector2):
+    def build_setup(self, start_pos: pygame.math.Vector2, end_pos: pygame.math.Vector2) -> None:
         self.length = calc.get_dist(start_pos, end_pos)
-        self.angle = calc.get_angle(self.fromSprite, self.toSprite)
+        self.angle = calc.get_angle(self.from_sprite, self.to_sprite)
 
-        opp = (self.length / 2) * math.cos(rad(self.angle + 90))
-        adj = (self.length / 2) * math.sin(rad(self.angle + 90))
+        opp = (self.length / 2) * math.cos(math.radians(self.angle + 90))
+        adj = (self.length / 2) * math.sin(math.radians(self.angle + 90))
 
-        self.pos = vec(self.fromSprite.pos.x + opp, self.fromSprite.pos.y - adj)
+        self.pos = vec(self.from_sprite.pos.x + opp, self.from_sprite.pos.y - adj)
 
     def build_image(self, frame_offset: int) -> None:
         """Builds the image of the beam.
@@ -76,7 +74,7 @@ class Beam(cb.ActorBase):
         self.image = pygame.transform.rotate(final_image, self.angle)
 
     def update(self):
-        self.build_setup(self.fromSprite.pos, self.toSprite.pos)
+        self.build_setup(self.from_sprite.pos, self.to_sprite.pos)
         self.build_image(0)
         self.rect = self.image.get_rect()
         self.rect.center = self.pos

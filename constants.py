@@ -3,7 +3,6 @@ import math
 
 # ---------------------------------- Aliases --------------------------------- #
 vec = pygame.math.Vector2
-spriteGroup = pygame.sprite.Group
 
 rad = math.radians
 deg = math.degrees

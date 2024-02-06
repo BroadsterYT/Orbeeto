@@ -1,8 +1,6 @@
 """
 Contains the custom font class and all information about every custom font.
 """
-
-
 class Font:
     """
     Stores all the critical data of a font

@@ -1,12 +1,9 @@
 """
 Contains the room container class that handles enemies and movable entities in rooms.
 """
-import pygame
+from pygame.math import Vector2 as vec
 
 import classbases as cb
-
-
-vec = pygame.math.Vector2
 
 
 class RoomContainer(cb.AbstractBase):

@@ -1,5 +1,5 @@
 """
-Player
+Contains the player class.
 """
 import pygame
 
@@ -15,7 +15,6 @@ import calculations as calc
 import classbases as cb
 import constants as cst
 import menu_ui as menu
-
 import bullets
 import groups
 import statbars
@@ -85,8 +84,10 @@ class Player(cb.ActorBase):
         # ---------------------- Bullets, Portals, and Grapples ---------------------- #
         self.bullet_type = cst.PROJ_STD
         self.can_portal = False
-        self.can_grapple = True
+
         self.grapple = None
+        self.can_grapple = True
+        self.grapple_input_copy = kt.key_released[K_GRAPPLE]
 
     @property
     def xp(self):
@@ -293,24 +294,26 @@ class Player(cb.ActorBase):
             self.last_shot_time = time.time()
 
         # ------------------------------ Firing Portals ------------------------------ #
-        if kt.key_released[3] % 2 == 0 and self.can_portal and self.can_grapple:
+        if kt.key_released[3] % 2 == 0 and self.can_portal:
             groups.all_projs.add(bullets.PortalBullet(self.pos.x, self.pos.y, vel_x * 0.75, vel_y * 0.75))
             self.can_portal = False
 
-        elif kt.key_released[3] % 2 != 0 and not self.can_portal and self.can_grapple:
+        elif kt.key_released[3] % 2 != 0 and not self.can_portal:
             groups.all_projs.add(bullets.PortalBullet(self.pos.x, self.pos.y, vel_x * 0.75, vel_y * 0.75))
             self.can_portal = True
 
         # --------------------------- Firing Grappling Hook -------------------------- #
-        if kt.key_released[2] % 2 != 0 and self.can_grapple:
-            if self.grapple is not None:
-                self.grapple.shatter()
+        if self.grapple_input_copy != kt.key_released[K_GRAPPLE] and self.can_grapple:
             self.grapple = bullets.GrappleBullet(self, self.pos.x, self.pos.y, vel_x, vel_y)
             self.can_grapple = False
+            self.grapple_input_copy = kt.key_released[K_GRAPPLE]
 
-        if kt.key_released[2] % 2 == 0 and not self.can_grapple:
-            self.grapple.returning = True
-            self.can_grapple = True
+        if self.grapple_input_copy != kt.key_released[K_GRAPPLE] and not self.can_grapple:
+            if self.grapple is not None:
+                self.grapple.returning = True
+            else:
+                self.can_grapple = True
+                self.grapple_input_copy = kt.key_released[K_GRAPPLE]
 
     def update(self):
         if self.can_update and self.visible:

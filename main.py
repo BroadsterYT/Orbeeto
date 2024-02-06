@@ -2,22 +2,19 @@
 """
 Main
 """
+import sys
+
 import pygame
 from pygame.locals import QUIT
 
-import sys
-import math
-
 import controls.key_trackers as kt
 from controls.keybinds import *
-
 from text import display_text
 
 import calculations as calc
 import constants as cst
-
-import rooms
 import groups
+import rooms
 import screen
 
 pygame.init()
@@ -27,9 +24,6 @@ clock = pygame.time.Clock()
 screen.buffer_screen = pygame.Surface((cst.WINWIDTH, cst.WINHEIGHT))
 screen.viewport = pygame.display.set_mode((cst.WINWIDTH, cst.WINHEIGHT), pygame.SCALED, 0, 0, 2)
 pygame.display.set_caption('Orbeeto')
-
-vec = pygame.math.Vector2
-rad = math.radians
 
 
 # ============================================================================ #

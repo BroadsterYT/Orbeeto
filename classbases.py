@@ -20,13 +20,17 @@ def get_room():
 
 
 class ActorBase(pygame.sprite.Sprite):
-    """The base class for all actors in the game.
-    """
-    def __init__(self):
+    """The base class for all actors in the game."""
+    def __init__(self, layer=1):
+        """The base class for all actors in the game.
+
+        Args:
+            layer: The layer the sprite should be drawn on
+        """
         super().__init__()
         self.visible = True
         self.can_update = True
-        self._layer = 1
+        self._layer = layer
 
         self.last_frame = time.time()
 
@@ -89,8 +93,6 @@ class ActorBase(pygame.sprite.Sprite):
     @vel.setter
     def vel(self, value: pygame.math.Vector2):
         self._vel = value
-        if -0.001 < self._vel.x < 0.001:
-            self._vel.x = 0
 
     @property
     def vel_const(self):
@@ -170,8 +172,8 @@ class ActorBase(pygame.sprite.Sprite):
 
         self.render_images()
 
-    def render_images(self) -> None:  # TODO: Update docstring
-        """
+    def render_images(self) -> None:
+        """Sets the proper image for the sprite to display.
 
         Returns:
             None
@@ -212,14 +214,14 @@ class ActorBase(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.rect.center)
     
     # ---------------------------------- Physics --------------------------------- # 
-    def center_rects(self):
+    def center_rects(self) -> None:
         """Sets the ``rect`` and ``hitbox`` of the sprite to its position."""
         self.rect.center = self.pos
         self.hitbox.center = self.pos
 
-    def set_room_pos(self):
+    def set_room_pos(self) -> None:
         """Calculates the position of the sprite within its current room and assigns that value to self.room_pos
-        """        
+        """
         room = get_room()
         self.room_pos = vec((self.pos.x - room.pos.x, self.pos.y - room.pos.y))
 
@@ -339,7 +341,7 @@ class ActorBase(pygame.sprite.Sprite):
 
         # Makes sure that sprites don't repeatedly get thrown back into the portals b/c of room velocity
         room = get_room()
-        vel_adjust: vec = room.vel.copy()
+        vel_adjust = room.vel.copy()
 
         dir_list = {cst.SOUTH: 180, cst.EAST: 90, cst.NORTH: 0, cst.WEST: 270}
 
@@ -374,12 +376,3 @@ class AbstractBase(pygame.sprite.AbstractGroup):
     def __init__(self):
         super().__init__()
         self.can_update = True
-    
-    # def add(self, *sprites):
-    #     """Adds one or more sprites to the abstract group.
-    #
-    #     ### Arguments
-    #         - sprites (``pygame.sprite.Sprite``): The sprite(s) to add to the group
-    #     """
-    #     for sprite in sprites:
-    #         super().add(sprite)

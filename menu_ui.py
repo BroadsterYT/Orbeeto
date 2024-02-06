@@ -25,12 +25,10 @@ class InventoryMenu(cb.AbstractBase):
             owner: The player whom the inventory belongs to
         """
         super().__init__()
-        self.cyclingLeft = False
-        self.cyclingRight = False
+        self.cycling_left = False
+        self.cycling_right = False
 
         self.owner = owner
-
-        self.wipeTime = 1
         self.window = 0
 
         self.last_release_value = kt.key_released[K_MENU]
@@ -58,21 +56,21 @@ class InventoryMenu(cb.AbstractBase):
             groups.all_sprites.add(sprite, layer=sprite.layer)
 
     def cycle_menu(self):
-        if (not self.cyclingLeft and
-                not self.cyclingRight and
+        if (not self.cycling_left and
+                not self.cycling_right and
                 not self.can_update):
             if kt.is_input_held[1] and self.leftArrow.hitbox.collidepoint(pygame.mouse.get_pos()):
                 self.window -= 1
                 self.lastCycle = time.time()
-                self.cyclingLeft = True
+                self.cycling_left = True
 
             if kt.is_input_held[1] and self.rightArrow.hitbox.collidepoint(pygame.mouse.get_pos()):
                 self.window += 1
                 self.lastCycle = time.time()
-                self.cyclingRight = True
+                self.cycling_right = True
 
         # Cycling left
-        if self.cyclingLeft and not self.cyclingRight:
+        if self.cycling_left and not self.cycling_right:
             weight = calc.get_time_diff(self.lastCycle)
             if weight <= 1:
                 for sprite in self.sprites():
@@ -80,10 +78,10 @@ class InventoryMenu(cb.AbstractBase):
             else:
                 for sprite in self.sprites():
                     sprite.startPos.x = sprite.pos.x
-                self.cyclingLeft = False
+                self.cycling_left = False
 
         # Cycling right
-        if not self.cyclingLeft and self.cyclingRight:
+        if not self.cycling_left and self.cycling_right:
             weight = calc.get_time_diff(self.lastCycle)
             if weight <= 1:
                 for sprite in self.sprites():
@@ -91,7 +89,7 @@ class InventoryMenu(cb.AbstractBase):
             else:
                 for sprite in self.sprites():
                     sprite.startPos.x = sprite.pos.x
-                self.cyclingRight = False
+                self.cycling_right = False
 
     def build_materials_slots(self) -> list:
         """Creates and aligns the materials slots of the menu.

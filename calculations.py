@@ -1,19 +1,14 @@
-import pygame
-from pygame.math import Vector2 as vec
-
 import random as rand
 import math
 import time
 
+import pygame
+from pygame.math import Vector2 as vec
 from text import fontinfo
+
 import constants as cst
 import groups
-
 import spritesheet
-
-# Aliases
-# vec = pygame.math.Vector2
-rad = math.radians
 
 
 # ============================================================================ #
@@ -254,10 +249,10 @@ def triangle_collide(instig, sprite) -> str:
     len_point_c = get_dist(instig.pos, point_c)
     len_point_d = get_dist(instig.pos, point_d)
 
-    angle_a = rad(get_angle(instig.pos, point_a) + 90)
-    angle_b = rad(get_angle(instig.pos, point_b) + 90)
-    angle_c = rad(get_angle(instig.pos, point_c) + 90)
-    angle_d = rad(get_angle(instig.pos, point_d) + 90)
+    angle_a = math.radians(get_angle(instig.pos, point_a) + 90)
+    angle_b = math.radians(get_angle(instig.pos, point_b) + 90)
+    angle_c = math.radians(get_angle(instig.pos, point_c) + 90)
+    angle_d = math.radians(get_angle(instig.pos, point_d) + 90)
 
     height_ap = abs(len_point_a * math.sin(angle_a))
     height_bp = abs(len_point_b * math.cos(angle_b))
@@ -520,10 +515,3 @@ def swap_color(image: pygame.Surface, old_color: tuple, new_color: tuple) -> pyg
             if current_color == old_color:
                 new_img.set_at((x, y), new_color)
     return new_img
-
-
-# # TODO: Move this function to display_text.py
-# def draw_text(text: str, pos_x, pos_y):
-#     font = pygame.font.SysFont('Arial', 24)
-#     image = font.render(text, True, (0, 0, 0))
-#     screen.buffer_screen.blit(image, vec(pos_x, pos_y))

@@ -1,11 +1,11 @@
 """
 Contains the ``TextBox`` class.
 """
-
-import pygame
-
 import json
 import time
+
+import pygame
+from pygame.math import Vector2 as vec
 
 import controls.key_trackers as kt
 from controls.keybinds import *
@@ -17,8 +17,6 @@ import classbases as cb
 import constants as cst
 
 import visuals
-
-vec = pygame.math.Vector2
 
 
 # noinspection PyTypeChecker

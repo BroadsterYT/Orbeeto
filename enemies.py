@@ -1,7 +1,9 @@
 import random as rand
 import math
 import time
+
 import pygame
+from pygame.math import Vector2 as vec
 
 import constants as cst
 import calculations as calc
@@ -11,19 +13,16 @@ import classbases as cb
 import statbars
 import itemdrops
 
-vec = pygame.math.Vector2
-
 
 class EnemyBase(cb.ActorBase):
     def __init__(self):
         """The base class for all enemy objects. It gives you better control over enemy objects."""
-        super().__init__()
-        self.layer = cst.LAYER['enemy']
+        super().__init__(cst.LAYER['enemy'])
         self.pos = vec((0, 0))
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
 
-        self.isShooting = False
+        self.is_shooting = False
 
         # -------------------- In-game Stats --------------------#
         self._max_hp = None
@@ -130,11 +129,11 @@ class StandardGrunt(EnemyBase):
         self.show(self.layer)
         groups.all_enemies.add(self)
 
-        self.lastRelocate = time.time()
-        self.lastShot = time.time()
+        self.last_relocate = time.time()
+        self.last_shot = time.time()
 
         self.pos = vec((pos_x, pos_y))
-        self.randPos = vec(rand.randint(64, cst.WINWIDTH - 64), rand.randint(64, cst.WINHEIGHT - 64))
+        self.rand_pos = vec(rand.randint(64, cst.WINWIDTH - 64), rand.randint(64, cst.WINHEIGHT - 64))
 
         self.set_room_pos()
 
@@ -159,18 +158,18 @@ class StandardGrunt(EnemyBase):
     def __set_rand_pos(self):
         """Assigns a random value within the proper range for the enemy to travel to.
         """
-        if calc.get_time_diff(self.lastRelocate) > rand.uniform(2.5, 5.0):
-            self.randPos.x = rand.randint(self.image.get_width(), cst.WINWIDTH - self.image.get_width())
-            self.randPos.y = rand.randint(self.image.get_height(), cst.WINHEIGHT - self.image.get_height())
+        if calc.get_time_diff(self.last_relocate) > rand.uniform(2.5, 5.0):
+            self.rand_pos.x = rand.randint(self.image.get_width(), cst.WINWIDTH - self.image.get_width())
+            self.rand_pos.y = rand.randint(self.image.get_height(), cst.WINHEIGHT - self.image.get_height())
 
             pass_check = True
             # If the assigned random position is within a border or wall, it will run again and assign a new one.
             for border in groups.all_borders:
-                if border.hitbox.collidepoint(self.randPos.x, self.randPos.y):
+                if border.hitbox.collidepoint(self.rand_pos.x, self.rand_pos.y):
                     pass_check = False
 
             for wall in groups.all_walls:
-                if wall.hitbox.collidepoint(self.randPos.x, self.randPos.y):
+                if wall.hitbox.collidepoint(self.rand_pos.x, self.rand_pos.y):
                     pass_check = False
 
             if pass_check:
@@ -182,17 +181,17 @@ class StandardGrunt(EnemyBase):
 
         final_accel += room.get_accel()
 
-        if self.pos.x != self.randPos.x or self.pos.y != self.randPos.y:
+        if self.pos.x != self.rand_pos.x or self.pos.y != self.rand_pos.y:
             # Moving to proper x-position
-            if self.pos.x < self.randPos.x - self.hitbox.width // 2:
+            if self.pos.x < self.rand_pos.x - self.hitbox.width // 2:
                 final_accel.x += self.accel_const
-            if self.pos.x > self.randPos.x + self.hitbox.width // 2:
+            if self.pos.x > self.rand_pos.x + self.hitbox.width // 2:
                 final_accel.x -= self.accel_const
 
             # Moving to proper y-position
-            if self.pos.y < self.randPos.y - self.hitbox.height // 2:
+            if self.pos.y < self.rand_pos.y - self.hitbox.height // 2:
                 final_accel.y += self.accel_const
-            if self.pos.y > self.randPos.y + self.hitbox.height // 2:
+            if self.pos.y > self.rand_pos.y + self.hitbox.height // 2:
                 final_accel.y -= self.accel_const
 
         return final_accel
@@ -206,8 +205,8 @@ class StandardGrunt(EnemyBase):
             vel: The velocity of the bullet
             shoot_time: How often the enemy should fire
         """
-        if calc.get_time_diff(self.lastShot) > shoot_time:
-            self.isShooting = True
+        if calc.get_time_diff(self.last_shot) > shoot_time:
+            self.is_shooting = True
             angle = calc.get_angle(self, target)
 
             cos_angle = math.cos(math.radians(angle))
@@ -222,11 +221,11 @@ class StandardGrunt(EnemyBase):
                                        self.pos.y + (offset.x * sin_angle) - (offset.y * cos_angle),
                                        vel_x, vel_y)
             )
-            self.lastShot = time.time()
+            self.last_shot = time.time()
 
 # --------------------------------- Updating --------------------------------- #
     def update(self):
-        if self.can_update and self.visible and self.hp > 0:
+        if self.visible and self.hp > 0:
             self.collide_check(groups.all_players, groups.all_walls)
 
             # Animation
@@ -237,7 +236,7 @@ class StandardGrunt(EnemyBase):
 
     def __animate(self):
         if calc.get_time_diff(self.last_frame) > 0.1:  # TODO: Use SPF to standardize animations
-            if self.isShooting:
+            if self.is_shooting:
                 self.index += 1
                 if self.index > 4:
                     self.index = 0

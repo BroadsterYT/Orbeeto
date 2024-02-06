@@ -1,14 +1,15 @@
 """
 Contains the room class.
 """
+import time
+import copy
+import math
+
 import pygame
+from pygame.math import Vector2 as vec
 
 import controls.key_trackers as kt
 from controls.keybinds import *
-
-import time
-import math
-import copy
 
 import calculations as calc
 import classbases as cb
@@ -20,9 +21,6 @@ import players
 import roomcontainers
 import tiles
 import trinkets
-
-vec = pygame.math.Vector2
-rad = math.radians
 
 
 # noinspection PyTypeChecker
@@ -112,7 +110,7 @@ class Room(cb.AbstractBase):
 
         if self.player1.is_swinging():
             angle = calc.get_angle(self.player1, self.player1.grapple)
-            output += self.player1.grapple_speed * math.sin(rad(angle))
+            output += self.player1.grapple_speed * math.sin(math.radians(angle))
 
         return output
 
@@ -130,7 +128,7 @@ class Room(cb.AbstractBase):
 
         if self.player1.is_swinging():
             angle = calc.get_angle(self.player1, self.player1.grapple)
-            output += self.player1.grapple_speed * math.cos(rad(angle))
+            output += self.player1.grapple_speed * math.cos(math.radians(angle))
 
         return output
 
