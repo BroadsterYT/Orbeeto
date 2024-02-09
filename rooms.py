@@ -10,12 +10,11 @@ from pygame.math import Vector2 as vec
 
 import controls.key_trackers as kt
 from controls.keybinds import *
+from enemies import standardgrunt
 
 import calculations as calc
 import classbases as cb
 import constants as cst
-
-import enemies
 import groups
 import players
 import roomcontainers
@@ -664,7 +663,7 @@ class Room(cb.AbstractBase):
                         trinkets.Button(1, 14, 16),
                         trinkets.Box(cst.WINWIDTH // 2, cst.WINHEIGHT // 2),
                         trinkets.LockedWall(64, 64, 120, 120, 1, 4, 4),
-                        enemies.StandardGrunt(200, 200),
+                        standardgrunt.StandardGrunt(200, 200),
                         # enemies.Ambusher(500, 500),
                     )
                 )

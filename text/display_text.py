@@ -8,10 +8,9 @@ from pygame.math import Vector2 as vec
 
 from text import fontinfo
 
+import calculations as calc
 import classbases as cb
 import constants as cst
-import calculations as calc
-
 import groups
 import screen
 

@@ -1,6 +1,5 @@
-#!/usr/bin/env python
 """
-Main
+Main program. Contains the game loop.
 """
 import sys
 
@@ -26,9 +25,6 @@ screen.viewport = pygame.display.set_mode((cst.WINWIDTH, cst.WINHEIGHT), pygame.
 pygame.display.set_caption('Orbeeto')
 
 
-# ============================================================================ #
-#                              Redraw Game Window                              #
-# ============================================================================ #
 def redraw_game_window():
     """Draws all sprites every frame.
     """

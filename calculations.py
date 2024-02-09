@@ -310,6 +310,23 @@ def triangle_collide(instig, sprite) -> str:
 
 
 # ============================================================================ #
+#                               Returns iterator                               #
+# ============================================================================ #
+def chain(*iterables):
+    """Given multiple iterables, will return a generator containing all elements of all iterables.
+
+    Args:
+        *iterables: The iterables to chain together
+
+    Returns:
+        A generator containing all elements of all iterables
+    """
+    for it in iterables:
+        for element in it:
+            yield element
+
+
+# ============================================================================ #
 #                                Returns Vector2                               #
 # ============================================================================ #
 def get_rand_components(max_value: int | float) -> vec:
@@ -399,7 +416,6 @@ def combine_images(base_img: pygame.Surface, top_img: pygame.Surface) -> pygame.
     return new_img
 
 
-# TODO: Move this function to display_text.py
 def text_to_image(text: str, a_font: fontinfo.Font) -> pygame.Surface:
     """Converts a string of text into an image with a given font.
 

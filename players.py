@@ -1,26 +1,25 @@
 """
 Contains the player class.
 """
-import pygame
 
 import time
 import math
 
+import pygame
+from pygame.math import Vector2 as vec
+
 import controls.key_trackers as kt
 from controls.keybinds import *
-
 from text import textbox
 
+import bullets
 import calculations as calc
 import classbases as cb
 import constants as cst
-import menu_ui as menu
-import bullets
 import groups
+import menu_ui as menu
 import statbars
-
-vec = pygame.math.Vector2
-rad = math.radians
+import trinkets
 
 
 class Player(cb.ActorBase):
@@ -206,14 +205,14 @@ class Player(cb.ActorBase):
         """
         final_accel = vec(0, 0)
         if not self.room.isScrollingX:
-            final_accel.x += self.__get_x_axis_output()
+            final_accel.x += self._get_x_axis_output()
 
         if not self.room.isScrollingY:
-            final_accel.y += self.__get_y_axis_output()
+            final_accel.y += self._get_y_axis_output()
 
         return final_accel
 
-    def __get_x_axis_output(self) -> float:
+    def _get_x_axis_output(self) -> float:
         output = 0.0
         if kt.is_input_held[K_MOVE_LEFT]:
             output -= self.accel_const
@@ -222,11 +221,11 @@ class Player(cb.ActorBase):
 
         if self.is_swinging():
             angle = calc.get_angle(self, self.grapple)
-            output += self.grapple_speed * -math.sin(rad(angle))
+            output += self.grapple_speed * -math.sin(math.radians(angle))
 
         return output
 
-    def __get_y_axis_output(self) -> float:
+    def _get_y_axis_output(self) -> float:
         output = 0.0
         if kt.is_input_held[K_MOVE_UP]:
             output -= self.accel_const
@@ -235,7 +234,7 @@ class Player(cb.ActorBase):
 
         if self.is_swinging():
             angle = calc.get_angle(self, self.grapple)
-            output += self.grapple_speed * -math.cos(rad(angle))
+            output += self.grapple_speed * -math.cos(math.radians(angle))
 
         return output
 
@@ -259,7 +258,7 @@ class Player(cb.ActorBase):
     def shoot(self):
         """Shoots bullets.
         """
-        angle = rad(calc.get_angle_to_mouse(self))
+        angle = math.radians(calc.get_angle_to_mouse(self))
         vel_x = self.bullet_vel * -math.sin(angle)
         vel_y = self.bullet_vel * -math.cos(angle)
 
@@ -315,6 +314,48 @@ class Player(cb.ActorBase):
                 self.can_grapple = True
                 self.grapple_input_copy = kt.key_released[K_GRAPPLE]
 
+    def _get_closest_interact(self):
+        sprite_dists = {}
+        for sprite in [s for s in calc.chain(groups.all_movable, groups.all_trinkets) if s.visible]:
+            sprite_dists.update({sprite: calc.get_dist(self, sprite)})
+        try:
+            shortest_dist = min(sprite_dists.values())
+            closest_sprites = [key for key in sprite_dists if sprite_dists[key] == shortest_dist]
+            the_sprite = closest_sprites[0]
+            if shortest_dist <= 128:  # TODO: Calculate proper radius to activate
+                return closest_sprites[0]
+            else:
+                return None
+
+        except ValueError:
+            return None
+
+    def _get_dialogue(self) -> str:
+        """Returns the proper dialogue to show when in proximity to a sprite.
+
+        Returns:
+            str: The correct dialogue from ``dialogue.all_dialogue_lines``
+        """
+        closest_sprite = self._get_closest_interact()
+        print(closest_sprite.__class__.__name__)
+        if closest_sprite is None:
+            return 'default'
+        elif isinstance(closest_sprite, trinkets.Box):
+            return 'box_test'
+        elif isinstance(closest_sprite, trinkets.Button):
+            return 'error'
+        else:
+            return 'error'
+
+    def generate_text_box(self) -> None:
+        """Generates dialogue based on specific conditions."""
+        if self.last_textbox_release != kt.key_released[K_DIALOGUE]:
+            if len(groups.all_text_boxes) < 1:
+                groups.all_text_boxes.add(
+                    textbox.TextBox(cst.WINWIDTH // 2, cst.WINHEIGHT - 90, self._get_dialogue())
+                )
+            self.last_textbox_release = kt.key_released[K_DIALOGUE]
+
     def update(self):
         if self.can_update and self.visible:
             self.movement()
@@ -331,11 +372,7 @@ class Player(cb.ActorBase):
         self.menu.update()
         self._passive_hp_regen()
 
-        # Dialogue
-        if self.last_textbox_release != kt.key_released[K_DIALOGUE]:
-            if len(groups.all_text_boxes) < 1:
-                groups.all_text_boxes.add(textbox.TextBox(cst.WINWIDTH // 2, cst.WINHEIGHT - 72, 'default_text'))
-            self.last_textbox_release = kt.key_released[K_DIALOGUE]
+        self.generate_text_box()
 
         if self.hp <= 0:
             self.kill()

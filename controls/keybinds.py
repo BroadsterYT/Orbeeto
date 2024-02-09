@@ -12,5 +12,6 @@ K_MOVE_RIGHT = pgl.K_d
 K_MOVE_LEFT = pgl.K_a
 
 K_GRAPPLE = 2  # Middle mouse button
+K_PORTAL = 3  # Right click
 
 K_DIALOGUE = pgl.K_SPACE
