@@ -56,7 +56,7 @@ class Player(cb.ActorBase):
 
         self.max_ammo: int = 40
         self.ammo = self.max_ammo
-        self.bullet_vel = 12.0
+        self.bullet_vel = 12
         self.gun_cooldown = 0.12
         self.last_shot_time = time.time()
 
@@ -204,10 +204,9 @@ class Player(cb.ActorBase):
             pygame.math.Vector2: The acceleration value of the player
         """
         final_accel = vec(0, 0)
-        if not self.room.isScrollingX:
+        if not self.room.is_scrolling_x:
             final_accel.x += self._get_x_axis_output()
-
-        if not self.room.isScrollingY:
+        if not self.room.is_scrolling_y:
             final_accel.y += self._get_y_axis_output()
 
         return final_accel

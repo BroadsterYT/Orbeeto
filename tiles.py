@@ -53,12 +53,6 @@ class TileBase(cb.ActorBase):
             self.accel = self.get_accel()
             self.accel_movement()
 
-    def get_accel(self) -> pygame.math.Vector2:
-        room = cb.get_room()
-        final_accel = vec(0, 0)
-        final_accel += room.get_accel()
-        return final_accel
-
     def __repr__(self):
         return f'Wall([{self.pos.x - self.hitbox.width // 2},{self.pos.y - self.hitbox.height // 2}])'
 

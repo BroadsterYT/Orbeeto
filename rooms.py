@@ -48,16 +48,13 @@ class Room(cb.AbstractBase):
         self.borderWest = tiles.RoomBorder(-1, 0, 1, self.size.y // 16)
         self.add(self.borderSouth, self.borderEast, self.borderNorth, self.borderWest)
 
-        self.isScrollingX = True
-        self.isScrollingY = True
+        self.is_scrolling_x = True
+        self.is_scrolling_y = True
 
-        self.canSwitchX = True
-        self.canSwitchY = True
-
-        self.centeringX = False
-        self.centeringY = False
-        self.lastRecenterX = time.time()
-        self.lastRecenterY = time.time()
+        self.centering_x = False
+        self.centering_y = False
+        self.last_recenter_x = time.time()
+        self.last_recenter_y = time.time()
         self.recenter_weight_limit = 0.25
 
         self.offsetX = self.player1.pos.x - cst.WINWIDTH // 2
@@ -88,9 +85,9 @@ class Room(cb.AbstractBase):
 
     def get_accel(self) -> vec:
         final_accel = vec(0, 0)
-        if self.isScrollingX:
+        if self.is_scrolling_x:
             final_accel.x += self.__get_x_axis_output()
-        if self.isScrollingY:
+        if self.is_scrolling_y:
             final_accel.y += self.__get_y_axis_output()
 
         return final_accel
@@ -140,7 +137,7 @@ class Room(cb.AbstractBase):
 
             self._sprite_collide_check(self.player1, groups.all_walls)
 
-            if self.isScrollingX and self.isScrollingY:
+            if self.is_scrolling_x and self.is_scrolling_y:
                 for sprite in groups.all_movable:
                     self._sprite_collide_check(sprite, groups.all_walls)
 
@@ -154,8 +151,8 @@ class Room(cb.AbstractBase):
                         self._teleport_player(portal_in, portal_out)
 
             # TODO: Find a way to implement these without having to call them every frame
-            self.__recenter_player_x()
-            self.__recenter_player_y()
+            # self.__recenter_player_x()
+            # self.__recenter_player_y()
 
             for sprite in self._get_sprites_to_recenter():
                 sprite.movement()
@@ -182,54 +179,68 @@ class Room(cb.AbstractBase):
     def __recenter_player_x(self) -> None:
         """Moves all the objects in the room so that the player is centered along the x-axis.
         """
-        if self.isScrollingX:
-            if not self.centeringX:
-                if self.player1.pos.x != cst.WINWIDTH // 2:
-                    self.posCopy = self.player1.pos.copy()
-                    self.offsetX = self.posCopy.x - cst.WINWIDTH // 2
-                    for sprite in self._get_sprites_to_recenter():
-                        sprite.pos_copy = sprite.pos.copy()
-
-                    self.lastRecenterX = time.time()
-                    self.centeringX = True
-
-            if self.centeringX:
-                weight = calc.get_time_diff(self.lastRecenterX)
-                if weight <= self.recenter_weight_limit:
-                    self.player1.pos.x = calc.cerp(self.posCopy.x, cst.WINWIDTH // 2, weight * 4)
-                    for sprite in self._get_sprites_to_recenter():
-                        sprite.pos.x = calc.cerp(sprite.pos_copy.x,
-                                                 sprite.pos_copy.x - self.offsetX,
-                                                 weight * (1 / self.recenter_weight_limit))
-                else:
-                    self.player1.pos.x = cst.WINWIDTH // 2
-                    self.centeringX = False
+        # if self.is_scrolling_x:
+        #     if not self.centering_x:
+        #         if self.player1.pos.x != cst.WINWIDTH // 2:
+        #             self.posCopy = self.player1.pos.copy()
+        #             self.offsetX = self.posCopy.x - cst.WINWIDTH // 2
+        #             for sprite in self._get_sprites_to_recenter():
+        #                 sprite.pos_copy = sprite.pos.copy()
+        #
+        #             self.last_recenter_x = time.time()
+        #             self.centering_x = True
+        #
+        #     if self.centering_x:
+        #         weight = calc.get_time_diff(self.last_recenter_x)
+        #         if weight <= self.recenter_weight_limit:
+        #             self.player1.pos.x = calc.cerp(self.posCopy.x, cst.WINWIDTH // 2, weight * 4)
+        #             for sprite in self._get_sprites_to_recenter():
+        #                 sprite.pos.x = calc.cerp(sprite.pos_copy.x,
+        #                                          sprite.pos_copy.x - self.offsetX,
+        #                                          weight * (1 / self.recenter_weight_limit))
+        #         else:
+        #             self.player1.pos.x = cst.WINWIDTH // 2
+        #             self.centering_x = False
+        if self.player1.pos.x != cst.WINWIDTH // 2:
+            self.posCopy = self.player1.pos.copy()
+            self.offsetX = self.posCopy.x - cst.WINWIDTH // 2
+            for sprite in self._get_sprites_to_recenter():
+                sprite.pos_copy = sprite.pos.copy()
+                sprite.pos.x = sprite.pos_copy.x - self.offsetX
+            self.player1.pos.x = cst.WINWIDTH // 2
 
     def __recenter_player_y(self) -> None:
         """Moves all the objects in the room so that the player is centered along the y-axis.
         """
-        if self.isScrollingY:
-            if not self.centeringY:
-                if self.player1.pos.y != cst.WINHEIGHT // 2:
-                    self.posCopy = self.player1.pos.copy()
-                    self.offsetY = self.posCopy.y - cst.WINHEIGHT // 2
-                    for sprite in self._get_sprites_to_recenter():
-                        sprite.pos_copy = sprite.pos.copy()
-
-                    self.lastRecenterY = time.time()
-                    self.centeringY = True
-
-            if self.centeringY:
-                weight = calc.get_time_diff(self.lastRecenterY)
-                if weight <= self.recenter_weight_limit:
-                    self.player1.pos.y = calc.cerp(self.posCopy.y, cst.WINHEIGHT // 2, weight * 4)
-                    for sprite in self._get_sprites_to_recenter():
-                        sprite.pos.y = calc.cerp(sprite.pos_copy.y,
-                                                 sprite.pos_copy.y - self.offsetY,
-                                                 weight * (1 / self.recenter_weight_limit))
-                else:
-                    self.player1.pos.y = cst.WINHEIGHT // 2
-                    self.centeringY = False
+        # if self.is_scrolling_y:
+        #     if not self.centering_y:
+        #         if self.player1.pos.y != cst.WINHEIGHT // 2:
+        #             self.posCopy = self.player1.pos.copy()
+        #             self.offsetY = self.posCopy.y - cst.WINHEIGHT // 2
+        #             for sprite in self._get_sprites_to_recenter():
+        #                 sprite.pos_copy = sprite.pos.copy()
+        #
+        #             self.last_recenter_y = time.time()
+        #             self.centering_y = True
+        #
+        #     if self.centering_y:
+        #         weight = calc.get_time_diff(self.last_recenter_y)
+        #         if weight <= self.recenter_weight_limit:
+        #             self.player1.pos.y = calc.cerp(self.posCopy.y, cst.WINHEIGHT // 2, weight * 4)
+        #             for sprite in self._get_sprites_to_recenter():
+        #                 sprite.pos.y = calc.cerp(sprite.pos_copy.y,
+        #                                          sprite.pos_copy.y - self.offsetY,
+        #                                          weight * (1 / self.recenter_weight_limit))
+        #         else:
+        #             self.player1.pos.y = cst.WINHEIGHT // 2
+        #             self.centering_y = False
+        if self.player1.pos.y != cst.WINHEIGHT // 2:
+            self.posCopy = self.player1.pos.copy()
+            self.offsetY = self.posCopy.y - cst.WINHEIGHT // 2
+            for sprite in self._get_sprites_to_recenter():
+                sprite.pos_copy = sprite.pos.copy()
+                sprite.pos.y = sprite.pos_copy.y - self.offsetY
+            self.player1.pos.y = cst.WINHEIGHT // 2
 
     def _get_sprites_to_recenter(self) -> list:
         """Returns a list containing all sprites that should be relocated when the player is centered.
@@ -241,13 +252,20 @@ class Room(cb.AbstractBase):
         for sprite in self.sprites():
             output_list.append(sprite)
 
+        for bullet in groups.all_projs:
+            output_list.append(bullet)
+
         for drop in groups.all_drops:
             if drop.visible:
                 output_list.append(drop)
 
+        for portal in groups.all_portals:
+            if portal.visible:
+                output_list.append(portal)
+
         for container in groups.all_containers:
             if container.room == self.room:
-                for sprite in container:
+                for sprite in [s for s in container if s not in groups.all_enemies]:
                     output_list.append(sprite)
 
         return output_list
@@ -302,7 +320,7 @@ class Room(cb.AbstractBase):
         # Actually teleporting the player
         self._align_player_after_tp(distance_offset, direction_out, portal_out, combined_width, combined_height)
 
-        if self.isScrollingX and self.isScrollingY:
+        if self.is_scrolling_x and self.is_scrolling_y:
             if direction_in == cst.EAST:
                 direction_angles.update({cst.EAST: 180, cst.NORTH: 90, cst.WEST: 0, cst.SOUTH: 270})
             elif direction_in == cst.NORTH:
@@ -311,7 +329,7 @@ class Room(cb.AbstractBase):
                 direction_angles.update({cst.WEST: 180, cst.SOUTH: 90, cst.EAST: 0, cst.NORTH: 270})
             self._sprites_rotate_trajectory(direction_angles[direction_out])
 
-        elif self.isScrollingX and not self.isScrollingY:
+        elif self.is_scrolling_x and not self.is_scrolling_y:
             if direction_in == cst.SOUTH:
                 direction_angles.update({cst.SOUTH: 180, cst.EAST: 270, cst.NORTH: 0, cst.WEST: 90})
                 if direction_out == direction_in:
@@ -344,7 +362,7 @@ class Room(cb.AbstractBase):
                     self._translate_trajectory(False, direction_angles[direction_out])
                     self.vel.x = 0
 
-        elif not self.isScrollingX and self.isScrollingY:
+        elif not self.is_scrolling_x and self.is_scrolling_y:
             if direction_in == cst.SOUTH:
                 direction_angles.update({cst.SOUTH: 180, cst.EAST: 270, cst.NORTH: 0, cst.WEST: 90})
                 if direction_out == direction_in:
@@ -377,7 +395,7 @@ class Room(cb.AbstractBase):
                     self._translate_trajectory(True, direction_angles[direction_out])
                     self.player1.vel.x = 0
 
-        elif not self.isScrollingX and not self.isScrollingY:
+        elif not self.is_scrolling_x and not self.is_scrolling_y:
             if direction_in == cst.EAST:
                 direction_angles.update({cst.EAST: 180, cst.NORTH: 90, cst.WEST: 0, cst.SOUTH: 270})
             elif direction_in == cst.NORTH:
@@ -385,6 +403,9 @@ class Room(cb.AbstractBase):
             elif direction_in == cst.WEST:
                 direction_angles.update({cst.WEST: 180, cst.SOUTH: 90, cst.EAST: 0, cst.NORTH: 270})
             self.player1.vel = self.player1.vel.rotate(direction_angles[direction_out])
+
+        self.__recenter_player_x()
+        self.__recenter_player_y()
 
     def _sprites_rotate_trajectory(self, angle: float) -> None:
         """Rotates the velocities and accelerations of all the sprites within the room's sprites.
@@ -439,38 +460,33 @@ class Room(cb.AbstractBase):
         if instig.hitbox.colliderect(sprite.hitbox):
             width = (instig.hitbox.width + sprite.hitbox.width) // 2
             height = (instig.hitbox.height + sprite.hitbox.height) // 2
-
             if calc.triangle_collide(instig, sprite) == cst.SOUTH and (
                     instig.vel.y < 0 or sprite.vel.y > 0) and instig.pos.y <= sprite.pos.y + height:
-                self.accel.y = 0
-                self.vel.y = 0
+                self.__set_vel(self.vel.x, 0)
                 self.player1.vel.y = 0
                 instig.pos.y = sprite.pos.y + height
-                # self.__recenter_player_y()
+                self.__recenter_player_y()
 
             if calc.triangle_collide(instig, sprite) == cst.EAST and (
                     instig.vel.x < 0 or sprite.vel.x > 0) and instig.pos.x <= sprite.pos.x + width:
-                self.accel.x = 0
-                self.vel.x = 0
+                self.__set_vel(0, self.vel.y)
                 self.player1.vel.x = 0
                 instig.pos.x = sprite.pos.x + width
-                # self.__recenter_player_x()
+                self.__recenter_player_x()
 
             if calc.triangle_collide(instig, sprite) == cst.NORTH and (
                     instig.vel.y > 0 or sprite.vel.y < 0) and instig.pos.y >= sprite.pos.y - height:
-                self.accel.y = 0
-                self.vel.y = 0
+                self.__set_vel(self.vel.x, 0)
                 self.player1.vel.y = 0
                 instig.pos.y = sprite.pos.y - height
-                # self.__recenter_player_y()
+                self.__recenter_player_y()
 
             if calc.triangle_collide(instig, sprite) == cst.WEST and (
                     instig.vel.x > 0 or sprite.vel.x < 0) and instig.pos.x >= sprite.pos.x - width:
-                self.accel.x = 0
-                self.vel.x = 0
+                self.__set_vel(0, self.vel.y)
                 self.player1.vel.x = 0
                 instig.pos.x = sprite.pos.x - width
-                # self.__recenter_player_x()
+                self.__recenter_player_x()
 
     @staticmethod
     def _sprite_block_from_side(instig, sprite) -> None:
@@ -534,7 +550,7 @@ class Room(cb.AbstractBase):
     def _check_room_change(self) -> None:
         """If the player touches a room border, he/she will change rooms.
         """
-        if not self.centeringX and not self.centeringY:
+        if not self.centering_x and not self.centering_y:
             self._change_room()
 
     def _set_room_borders(self, room_width: int, room_height: int) -> None:
@@ -602,12 +618,12 @@ class Room(cb.AbstractBase):
         self.player1.vel = vec(0, 0)
         self.size = vec((room_size_x, room_size_y))
 
-        scroll_copy_x = copy.copy(self.isScrollingX)
-        scroll_copy_y = copy.copy(self.isScrollingY)
-        self.isScrollingX = can_scroll_x
-        self.isScrollingY = can_scroll_y
+        scroll_copy_x = copy.copy(self.is_scrolling_x)
+        scroll_copy_y = copy.copy(self.is_scrolling_y)
+        self.is_scrolling_x = can_scroll_x
+        self.is_scrolling_y = can_scroll_y
 
-        self._get_room_change_trajectory(scroll_copy_x, scroll_copy_y, self.isScrollingX, self.isScrollingY,
+        self._get_room_change_trajectory(scroll_copy_x, scroll_copy_y, self.is_scrolling_x, self.is_scrolling_y,
                                          player_vel_copy)
 
     def _get_room_change_trajectory(self, prev_room_scroll_x: bool, prev_room_scroll_y: bool, new_room_scroll_x: bool,
@@ -649,7 +665,8 @@ class Room(cb.AbstractBase):
         # ------------------------------- Room Layouts ------------------------------- #
         if self.room == vec(0, 0):
             self.add(
-                tiles.Wall(32, cst.WINHEIGHT // 2, 4, cst.WINHEIGHT // 16)
+                tiles.Wall(32, cst.WINHEIGHT // 2, 4, cst.WINHEIGHT // 16),
+                tiles.Floor(cst.WINWIDTH // 2, cst.WINHEIGHT // 2, 80, 80)
             )
 
             try:
@@ -662,9 +679,8 @@ class Room(cb.AbstractBase):
                         self.room.x, self.room.y,
                         trinkets.Button(1, 14, 16),
                         trinkets.Box(cst.WINWIDTH // 2, cst.WINHEIGHT // 2),
-                        trinkets.LockedWall(64, 64, 120, 120, 1, 4, 4),
+                        trinkets.LockedWall(128, 64, 256, 100, 1, 4, 4),
                         standardgrunt.StandardGrunt(200, 200),
-                        # enemies.Ambusher(500, 500),
                     )
                 )
             self._init_room(cst.WINWIDTH, cst.WINHEIGHT, True, True)

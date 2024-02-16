@@ -48,7 +48,6 @@ class TextBox(cb.ActorBase):
         self.last_char = ' '
 
         self.text_speed = 32
-        self.text_color = (0, 0, 1)
 
         self.set_images('sprites/ui/textbox.png', 800, 128, 1, 1)
         self.set_rects(self.pos.x, self.pos.y, 800, 128, 800, 128)

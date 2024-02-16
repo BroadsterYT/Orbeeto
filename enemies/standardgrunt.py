@@ -5,6 +5,7 @@ import random as rand
 import pygame
 from pygame.math import Vector2 as vec
 
+import text.display_text
 from enemies import enemybase
 
 import bullets
@@ -43,19 +44,19 @@ class StandardGrunt(enemybase.EnemyBase):
 # --------------------------------- Movement --------------------------------- #
     def movement(self, can_shoot: bool = True):
         if self.can_update and self.hp > 0:
-            self.__set_rand_pos()
+            self._set_rand_pos()
             self.accel = self.get_accel()
             self.set_room_pos()
 
             if can_shoot:
-                self.shoot(calc.get_closest_player(self), 6, rand.uniform(0.4, 0.9))
+                self.shoot(calc.get_closest_player(self), 0, rand.uniform(0.4, 0.9))
 
             self.accel_movement()
 
-    def __set_rand_pos(self):
+    def _set_rand_pos(self):
         """Assigns a random value within the proper range for the enemy to travel to.
         """
-        if calc.get_time_diff(self.last_relocate) > rand.uniform(2.5, 5.0):
+        if calc.get_time_diff(self.last_relocate) > rand.uniform(2.5, 5):
             self.rand_pos.x = rand.randint(self.image.get_width(), cst.WINWIDTH - self.image.get_width())
             self.rand_pos.y = rand.randint(self.image.get_height(), cst.WINHEIGHT - self.image.get_height())
 
@@ -70,26 +71,30 @@ class StandardGrunt(enemybase.EnemyBase):
                     pass_check = False
 
             if pass_check:
-                self.lastRelocate = time.time()
+                self.last_relocate = time.time()
 
     def get_accel(self) -> pygame.math.Vector2:
-        room = cb.get_room()
         final_accel = vec(0, 0)
 
-        final_accel += room.get_accel()
+        room = cb.get_room()
+        room_accel_value = room.get_accel()
+        if not room.centering_x:  # Allows the enemy to move freely even when room is being re-centered
+            final_accel.x += room_accel_value.x
+        if not room.centering_y:
+            final_accel.y += room_accel_value.y
 
-        if self.pos.x != self.rand_pos.x or self.pos.y != self.rand_pos.y:
-            # Moving to proper x-position
-            if self.pos.x < self.rand_pos.x - self.hitbox.width // 2:
-                final_accel.x += self.accel_const
-            if self.pos.x > self.rand_pos.x + self.hitbox.width // 2:
-                final_accel.x -= self.accel_const
+        adjust_loc_x = self.rand_pos.x + room.pos.x
+        adjust_loc_y = self.rand_pos.y + room.pos.y
 
-            # Moving to proper y-position
-            if self.pos.y < self.rand_pos.y - self.hitbox.height // 2:
-                final_accel.y += self.accel_const
-            if self.pos.y > self.rand_pos.y + self.hitbox.height // 2:
-                final_accel.y -= self.accel_const
+        if self.pos.x < adjust_loc_x - self.hitbox.width // 2:
+            final_accel.x += self.accel_const
+        if self.pos.x > adjust_loc_x + self.hitbox.width // 2:
+            final_accel.x -= self.accel_const
+
+        if self.pos.y < adjust_loc_y - self.hitbox.height // 2:
+            final_accel.y += self.accel_const
+        if self.pos.y > adjust_loc_y + self.hitbox.height // 2:
+            final_accel.y -= self.accel_const
 
         return final_accel
 
@@ -122,10 +127,11 @@ class StandardGrunt(enemybase.EnemyBase):
 
 # --------------------------------- Updating --------------------------------- #
     def update(self):
-        if self.visible and self.hp > 0:
+        if self.hp > 0:
+            self.movement()
             self.collide_check(groups.all_players, groups.all_walls)
+            text.display_text.draw_text(f'{self.rand_pos}', 0, 200)
 
-            # Animation
             self.__animate()
             self.rotate_image(calc.get_angle(self, calc.get_closest_player(self)))
 
@@ -138,10 +144,10 @@ class StandardGrunt(enemybase.EnemyBase):
                 if self.index > 4:
                     self.index = 0
                     self.isShooting = False
-            self.lastFrame = time.time()
+            self.last_frame = time.time()
 
     def __str__(self):
         return f'StandardGrunt at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\nxp worth: {self.xp}'
 
     def __repr__(self):
-        return f'StandardGrunt({self.pos}, {self.vel}, {self.accel}, {self.xp})'
+        return f'StandardGrunt({self.pos}, {self.rand_pos}, {self.vel}, {self.accel}, {self.xp})'

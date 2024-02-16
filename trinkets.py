@@ -136,7 +136,6 @@ class LockedWall(tiles.Wall):
         super().__init__(start_pos_x, start_pos_y, block_width, block_height)
         self.layer = cst.LAYER['wall']
         self.show(self.layer)
-        groups.all_walls.add(self)
         groups.all_trinkets.add(self)
         self.id_value = id_value
 
@@ -170,8 +169,8 @@ class LockedWall(tiles.Wall):
 
     def movement(self):
         if self.can_update:
-            self.set_room_pos()
             self._set_room_points()
+            self.set_room_pos()
 
             # Controls movement of wall when activator is activated/deactivated
             if self.last_state is not self.activator.get_state():

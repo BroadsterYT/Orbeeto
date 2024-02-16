@@ -318,6 +318,10 @@ class ActorBase(pygame.sprite.Sprite):
             Returns:
                 None
             """
+            # Makes sure that sprites don't repeatedly get thrown back into the portals b/c of room velocity
+            room = get_room()
+            vel_adjust = room.vel.copy()
+
             if direction == cst.SOUTH:
                 self.pos.x = portal_out.pos.x - offset
                 self.pos.y = portal_out.pos.y + height + abs(vel_adjust.y)
@@ -339,10 +343,6 @@ class ActorBase(pygame.sprite.Sprite):
             self.vel_const = self.vel_const.rotate(dir_list[dir_out])
             self.vel = self.vel.rotate(dir_list[dir_out])
 
-        # Makes sure that sprites don't repeatedly get thrown back into the portals b/c of room velocity
-        room = get_room()
-        vel_adjust = room.vel.copy()
-
         dir_list = {cst.SOUTH: 180, cst.EAST: 90, cst.NORTH: 0, cst.WEST: 270}
 
         if dir_in == cst.SOUTH:
@@ -363,11 +363,6 @@ class ActorBase(pygame.sprite.Sprite):
             dist_offset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
             dir_list.update({cst.WEST: 180, cst.SOUTH: 90, cst.EAST: 0, cst.NORTH: 270})
             rotate_vel()
-
-    def __animate(self) -> None:
-        """Runs the animation sequence of the sprite.
-        """
-        pass
 
 
 class AbstractBase(pygame.sprite.AbstractGroup):

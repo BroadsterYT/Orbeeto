@@ -3,8 +3,6 @@ import math
 import random as rand
 import time
 
-import controls.key_trackers as kt
-from controls.keybinds import *
 from text import display_text
 
 import classbases as cb
@@ -259,12 +257,12 @@ class PlayerStdBullet(BulletBase):
 
             if calc.get_time_diff(self.start_time) <= 10:
                 self.vel = self.get_vel()
-                self.vel_movement(True)
+                self.vel_movement(False)
             else:
                 self.kill()
 
     def update(self):
-        self.movement()
+        # self.movement()
         super().update()
 
     def __repr__(self):
@@ -296,7 +294,7 @@ class PlayerLaserBullet(BulletBase):  # TODO: Add docstring
 
             if calc.get_time_diff(self.start_time) <= 10:
                 self.vel = self.get_vel()
-                self.vel_movement(True)
+                self.vel_movement(False)
             else:
                 self.kill()
 
@@ -591,7 +589,7 @@ class EnemyStdBullet(BulletBase):
 
             if calc.get_time_diff(self.start_time) <= 10:
                 self.vel = self.get_vel()
-                self.vel_movement(True)
+                self.vel_movement(False)
             else:
                 self.kill()
 
