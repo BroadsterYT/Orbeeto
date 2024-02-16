@@ -179,28 +179,6 @@ class Room(cb.AbstractBase):
     def __recenter_player_x(self) -> None:
         """Moves all the objects in the room so that the player is centered along the x-axis.
         """
-        # if self.is_scrolling_x:
-        #     if not self.centering_x:
-        #         if self.player1.pos.x != cst.WINWIDTH // 2:
-        #             self.posCopy = self.player1.pos.copy()
-        #             self.offsetX = self.posCopy.x - cst.WINWIDTH // 2
-        #             for sprite in self._get_sprites_to_recenter():
-        #                 sprite.pos_copy = sprite.pos.copy()
-        #
-        #             self.last_recenter_x = time.time()
-        #             self.centering_x = True
-        #
-        #     if self.centering_x:
-        #         weight = calc.get_time_diff(self.last_recenter_x)
-        #         if weight <= self.recenter_weight_limit:
-        #             self.player1.pos.x = calc.cerp(self.posCopy.x, cst.WINWIDTH // 2, weight * 4)
-        #             for sprite in self._get_sprites_to_recenter():
-        #                 sprite.pos.x = calc.cerp(sprite.pos_copy.x,
-        #                                          sprite.pos_copy.x - self.offsetX,
-        #                                          weight * (1 / self.recenter_weight_limit))
-        #         else:
-        #             self.player1.pos.x = cst.WINWIDTH // 2
-        #             self.centering_x = False
         if self.player1.pos.x != cst.WINWIDTH // 2:
             self.posCopy = self.player1.pos.copy()
             self.offsetX = self.posCopy.x - cst.WINWIDTH // 2
@@ -212,28 +190,6 @@ class Room(cb.AbstractBase):
     def __recenter_player_y(self) -> None:
         """Moves all the objects in the room so that the player is centered along the y-axis.
         """
-        # if self.is_scrolling_y:
-        #     if not self.centering_y:
-        #         if self.player1.pos.y != cst.WINHEIGHT // 2:
-        #             self.posCopy = self.player1.pos.copy()
-        #             self.offsetY = self.posCopy.y - cst.WINHEIGHT // 2
-        #             for sprite in self._get_sprites_to_recenter():
-        #                 sprite.pos_copy = sprite.pos.copy()
-        #
-        #             self.last_recenter_y = time.time()
-        #             self.centering_y = True
-        #
-        #     if self.centering_y:
-        #         weight = calc.get_time_diff(self.last_recenter_y)
-        #         if weight <= self.recenter_weight_limit:
-        #             self.player1.pos.y = calc.cerp(self.posCopy.y, cst.WINHEIGHT // 2, weight * 4)
-        #             for sprite in self._get_sprites_to_recenter():
-        #                 sprite.pos.y = calc.cerp(sprite.pos_copy.y,
-        #                                          sprite.pos_copy.y - self.offsetY,
-        #                                          weight * (1 / self.recenter_weight_limit))
-        #         else:
-        #             self.player1.pos.y = cst.WINHEIGHT // 2
-        #             self.centering_y = False
         if self.player1.pos.y != cst.WINHEIGHT // 2:
             self.posCopy = self.player1.pos.copy()
             self.offsetY = self.posCopy.y - cst.WINHEIGHT // 2
