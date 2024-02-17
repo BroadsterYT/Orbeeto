@@ -346,6 +346,23 @@ def get_rand_components(max_value: int | float) -> vec:
     return vec(x, y)
 
 
+def get_scroll_weight(obj) -> vec:
+    """Returns the weight an object's acceleration should use when centering the screen.
+
+    Args:
+        obj: The object being centered on the screen
+
+    Returns:
+        The acceleration weight vector to use during a room scroll
+    """
+    mult = 2
+    scroll_weight = vec(
+        (cst.WINWIDTH // 2 - obj.pos.x) / (cst.WINWIDTH // 2) * mult,
+        (cst.WINHEIGHT // 2 - obj.pos.y) / (cst.WINHEIGHT // 2) * mult
+    )
+    return scroll_weight
+
+
 class ScreenShakeQueue:
     """An object that handles screen-shaking capabilities."""
     def __init__(self):

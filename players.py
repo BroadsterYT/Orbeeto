@@ -12,7 +12,7 @@ import controls.key_trackers as kt
 from controls.keybinds import *
 from text import textbox
 
-import bullets
+from projectiles import player_bullets as pb
 import calculations as calc
 import classbases as cb
 import constants as cst
@@ -180,7 +180,7 @@ class Player(cb.ActorBase):
         if time_hit < regen_delay:
             regens_per_sec = 0
         elif time_hit >= regen_delay:
-            regens_per_sec = pow(0.95, -(time_hit - regen_delay + 1)) - (1/regen_delay)
+            regens_per_sec = pow(0.95, -(time_hit - regen_delay + 1)) - (1 / regen_delay)
 
         if regens_per_sec == 0:
             pass
@@ -208,6 +208,15 @@ class Player(cb.ActorBase):
             final_accel.x += self._get_x_axis_output()
         if not self.room.is_scrolling_y:
             final_accel.y += self._get_y_axis_output()
+
+        # Centering player in scrolling room
+        scroll_weight = calc.get_scroll_weight(self)
+        if self.room.is_scrolling_x:
+            if self.pos.x != cst.WINWIDTH // 2:
+                final_accel.x += scroll_weight.x
+        if self.room.is_scrolling_y:
+            if self.pos.y != cst.WINHEIGHT // 2:
+                final_accel.y += scroll_weight.y
 
         return final_accel
 
@@ -269,23 +278,23 @@ class Player(cb.ActorBase):
             # Standard bullets
             if self.bullet_type == cst.PROJ_STD:
                 groups.all_projs.add(
-                    bullets.PlayerStdBullet(self.pos.x - (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
-                                            self.pos.y + (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
-                                            vel_x, vel_y, 1),
-                    bullets.PlayerStdBullet(self.pos.x + (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
-                                            self.pos.y - (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
-                                            vel_x, vel_y, 1)
+                    pb.PlayerStdBullet(self.pos.x - (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
+                                       self.pos.y + (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
+                                       vel_x, vel_y, 1),
+                    pb.PlayerStdBullet(self.pos.x + (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
+                                       self.pos.y - (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)), vel_x,
+                                       vel_y, 1)
                 )
 
             # Laser bullets
             elif self.bullet_type == cst.PROJ_LASER:
                 groups.all_projs.add(
-                    bullets.PlayerLaserBullet(self.pos.x - (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
-                                              self.pos.y + (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
-                                              vel_x * 2, vel_y * 2, 1),
-                    bullets.PlayerLaserBullet(self.pos.x + (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
-                                              self.pos.y - (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
-                                              vel_x * 2, vel_y * 2, 1)
+                    pb.PlayerLaserBullet(self.pos.x - (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
+                                         self.pos.y + (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
+                                         vel_x * 2, vel_y * 2, 1),
+                    pb.PlayerLaserBullet(self.pos.x + (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
+                                         self.pos.y - (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
+                                         vel_x * 2, vel_y * 2, 1)
                 )
 
             self.ammo -= 1
@@ -293,16 +302,16 @@ class Player(cb.ActorBase):
 
         # ------------------------------ Firing Portals ------------------------------ #
         if kt.key_released[3] % 2 == 0 and self.can_portal:
-            groups.all_projs.add(bullets.PortalBullet(self.pos.x, self.pos.y, vel_x * 0.75, vel_y * 0.75))
+            groups.all_projs.add(pb.PortalBullet(self.pos.x, self.pos.y, vel_x * 0.75, vel_y * 0.75))
             self.can_portal = False
 
         elif kt.key_released[3] % 2 != 0 and not self.can_portal:
-            groups.all_projs.add(bullets.PortalBullet(self.pos.x, self.pos.y, vel_x * 0.75, vel_y * 0.75))
+            groups.all_projs.add(pb.PortalBullet(self.pos.x, self.pos.y, vel_x * 0.75, vel_y * 0.75))
             self.can_portal = True
 
         # --------------------------- Firing Grappling Hook -------------------------- #
         if self.grapple_input_copy != kt.key_released[K_GRAPPLE] and self.can_grapple:
-            self.grapple = bullets.GrappleBullet(self, self.pos.x, self.pos.y, vel_x, vel_y)
+            self.grapple = pb.GrappleBullet(self, self.pos.x, self.pos.y, vel_x, vel_y)
             self.can_grapple = False
             self.grapple_input_copy = kt.key_released[K_GRAPPLE]
 
@@ -320,7 +329,6 @@ class Player(cb.ActorBase):
         try:
             shortest_dist = min(sprite_dists.values())
             closest_sprites = [key for key in sprite_dists if sprite_dists[key] == shortest_dist]
-            the_sprite = closest_sprites[0]
             if shortest_dist <= 128:  # TODO: Calculate proper radius to activate
                 return closest_sprites[0]
             else:

@@ -8,7 +8,7 @@ from pygame.math import Vector2 as vec
 import text.display_text
 from enemies import enemybase
 
-import bullets
+from projectiles import enemy_bullets
 import calculations as calc
 import classbases as cb
 import constants as cst
@@ -41,7 +41,7 @@ class StandardGrunt(enemybase.EnemyBase):
         # ---------------------- Game stats & UI ----------------------#
         self._set_stats(15, 5, 40)
 
-# --------------------------------- Movement --------------------------------- #
+    # --------------------------------- Movement --------------------------------- #
     def movement(self, can_shoot: bool = True):
         if self.can_update and self.hp > 0:
             self._set_rand_pos()
@@ -49,7 +49,7 @@ class StandardGrunt(enemybase.EnemyBase):
             self.set_room_pos()
 
             if can_shoot:
-                self.shoot(calc.get_closest_player(self), 0, rand.uniform(0.4, 0.9))
+                self.shoot(calc.get_closest_player(self), 6, rand.uniform(0.4, 0.9))
 
             self.accel_movement()
 
@@ -98,7 +98,7 @@ class StandardGrunt(enemybase.EnemyBase):
 
         return final_accel
 
-# ---------------------------------- Actions --------------------------------- #
+    # ---------------------------------- Actions --------------------------------- #
     def shoot(self, target, vel: float, shoot_time: float) -> None:
         """Shoots a bullet at a specific velocity at a specified interval.
 
@@ -119,13 +119,13 @@ class StandardGrunt(enemybase.EnemyBase):
             offset = vec(21, 30)
 
             groups.all_projs.add(
-                bullets.EnemyStdBullet(self.pos.x - (offset.x * cos_angle) - (offset.y * sin_angle),
-                                       self.pos.y + (offset.x * sin_angle) - (offset.y * cos_angle),
-                                       vel_x, vel_y)
+                enemy_bullets.EnemyStdBullet(self.pos.x - (offset.x * cos_angle) - (offset.y * sin_angle),
+                                             self.pos.y + (offset.x * sin_angle) - (offset.y * cos_angle),
+                                             vel_x, vel_y)
             )
             self.last_shot = time.time()
 
-# --------------------------------- Updating --------------------------------- #
+    # --------------------------------- Updating --------------------------------- #
     def update(self):
         if self.hp > 0:
             self.movement()
