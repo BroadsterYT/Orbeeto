@@ -99,8 +99,6 @@ def main():
 
         screen.buffer_screen.fill((255, 255, 255))
 
-        display_text.draw_text(f'{main_room.player1}', 0, 0)
-
         # ------------------------------ Game Operation ------------------------------ #
         for portals in groups.all_portals:
             pygame.draw.rect(screen.viewport, cst.RED, portals.hitbox, 3)

@@ -11,6 +11,7 @@ from pygame.math import Vector2 as vec
 import controls.key_trackers as kt
 from controls.keybinds import *
 from enemies import standardgrunt
+from text import display_text
 
 import calculations as calc
 import classbases as cb
@@ -53,8 +54,6 @@ class Room(cb.AbstractBase):
 
         self.centering_x = False
         self.centering_y = False
-        self.last_recenter_x = time.time()
-        self.last_recenter_y = time.time()
         self.recenter_weight_limit = 0.25
 
         self.offsetX = self.player1.pos.x - cst.WINWIDTH // 2
@@ -86,19 +85,28 @@ class Room(cb.AbstractBase):
     def get_accel(self) -> vec:
         final_accel = vec(0, 0)
         if self.is_scrolling_x:
-            final_accel.x += self.__get_x_axis_output()
+            final_accel.x += self._get_x_axis_output()
         if self.is_scrolling_y:
-            final_accel.y += self.__get_y_axis_output()
+            final_accel.y += self._get_y_axis_output()
+
+        # Centering player in scrolling room
+        scroll_weight = calc.get_scroll_weight(self.player1)
+        if self.is_scrolling_x:
+            if self.player1.pos.x != cst.WINWIDTH // 2:
+                final_accel.x += scroll_weight.x
+        if self.is_scrolling_y:
+            if self.player1.pos.y != cst.WINHEIGHT // 2:
+                final_accel.y += scroll_weight.y
 
         return final_accel
 
-    def __get_x_axis_output(self) -> float:
+    def _get_x_axis_output(self) -> float:
         """Determines the amount of acceleration the room's x-axis component should have
 
         Returns:
             float: The room's acceleration's x-axis component
         """
-        output: float = 0.0
+        output = 0.0
         if kt.is_input_held[K_MOVE_LEFT]:
             output += self.player1.accel_const
         if kt.is_input_held[K_MOVE_RIGHT]:
@@ -110,13 +118,13 @@ class Room(cb.AbstractBase):
 
         return output
 
-    def __get_y_axis_output(self) -> float:
+    def _get_y_axis_output(self) -> float:
         """Determines the amount of acceleration the room's y-axis component should have
 
         Returns:
             float: The room's acceleration's y-axis component
         """
-        output: float = 0.0
+        output = 0.0
         if kt.is_input_held[K_MOVE_UP]:
             output += self.player1.accel_const
         if kt.is_input_held[K_MOVE_DOWN]:
@@ -150,14 +158,10 @@ class Room(cb.AbstractBase):
                     if len(groups.all_portals) == 2:
                         self._teleport_player(portal_in, portal_out)
 
-            # TODO: Find a way to implement these without having to call them every frame
-            # self.__recenter_player_x()
-            # self.__recenter_player_y()
-
             for sprite in self._get_sprites_to_recenter():
                 sprite.movement()
 
-    def __set_vel(self, value_x: int | float, value_y: int | float, is_additive: bool = False) -> None:
+    def _set_vel(self, value_x: int | float, value_y: int | float, is_additive: bool = False) -> None:
         """Sets the velocity components of the room, as well as all the sprites within the room, to zero.
 
         Args:
@@ -176,7 +180,7 @@ class Room(cb.AbstractBase):
                 sprite.vel.x += value_x
                 sprite.vel.y += value_y
 
-    def __recenter_player_x(self) -> None:
+    def _recenter_player_x(self) -> None:
         """Moves all the objects in the room so that the player is centered along the x-axis.
         """
         if self.player1.pos.x != cst.WINWIDTH // 2:
@@ -187,7 +191,7 @@ class Room(cb.AbstractBase):
                 sprite.pos.x = sprite.pos_copy.x - self.offsetX
             self.player1.pos.x = cst.WINWIDTH // 2
 
-    def __recenter_player_y(self) -> None:
+    def _recenter_player_y(self) -> None:
         """Moves all the objects in the room so that the player is centered along the y-axis.
         """
         if self.player1.pos.y != cst.WINHEIGHT // 2:
@@ -360,8 +364,8 @@ class Room(cb.AbstractBase):
                 direction_angles.update({cst.WEST: 180, cst.SOUTH: 90, cst.EAST: 0, cst.NORTH: 270})
             self.player1.vel = self.player1.vel.rotate(direction_angles[direction_out])
 
-        self.__recenter_player_x()
-        self.__recenter_player_y()
+        # self._recenter_player_x()
+        # self._recenter_player_y()
 
     def _sprites_rotate_trajectory(self, angle: float) -> None:
         """Rotates the velocities and accelerations of all the sprites within the room's sprites.
@@ -418,31 +422,31 @@ class Room(cb.AbstractBase):
             height = (instig.hitbox.height + sprite.hitbox.height) // 2
             if calc.triangle_collide(instig, sprite) == cst.SOUTH and (
                     instig.vel.y < 0 or sprite.vel.y > 0) and instig.pos.y <= sprite.pos.y + height:
-                self.__set_vel(self.vel.x, 0)
+                self._set_vel(self.vel.x, 0)
                 self.player1.vel.y = 0
                 instig.pos.y = sprite.pos.y + height
-                self.__recenter_player_y()
+                self._recenter_player_y()
 
             if calc.triangle_collide(instig, sprite) == cst.EAST and (
                     instig.vel.x < 0 or sprite.vel.x > 0) and instig.pos.x <= sprite.pos.x + width:
-                self.__set_vel(0, self.vel.y)
+                self._set_vel(0, self.vel.y)
                 self.player1.vel.x = 0
                 instig.pos.x = sprite.pos.x + width
-                self.__recenter_player_x()
+                self._recenter_player_x()
 
             if calc.triangle_collide(instig, sprite) == cst.NORTH and (
                     instig.vel.y > 0 or sprite.vel.y < 0) and instig.pos.y >= sprite.pos.y - height:
-                self.__set_vel(self.vel.x, 0)
+                self._set_vel(self.vel.x, 0)
                 self.player1.vel.y = 0
                 instig.pos.y = sprite.pos.y - height
-                self.__recenter_player_y()
+                self._recenter_player_y()
 
             if calc.triangle_collide(instig, sprite) == cst.WEST and (
                     instig.vel.x > 0 or sprite.vel.x < 0) and instig.pos.x >= sprite.pos.x - width:
-                self.__set_vel(0, self.vel.y)
+                self._set_vel(0, self.vel.y)
                 self.player1.vel.x = 0
                 instig.pos.x = sprite.pos.x - width
-                self.__recenter_player_x()
+                self._recenter_player_x()
 
     @staticmethod
     def _sprite_block_from_side(instig, sprite) -> None:
@@ -582,6 +586,11 @@ class Room(cb.AbstractBase):
         self._get_room_change_trajectory(scroll_copy_x, scroll_copy_y, self.is_scrolling_x, self.is_scrolling_y,
                                          player_vel_copy)
 
+        if self.is_scrolling_x:
+            self._recenter_player_x()
+        if self.is_scrolling_y:
+            self._recenter_player_y()
+
     def _get_room_change_trajectory(self, prev_room_scroll_x: bool, prev_room_scroll_y: bool, new_room_scroll_x: bool,
                                     new_room_scroll_y: bool, player_vel: pygame.math.Vector2) -> None:
         """Transfers the velocity from the room to the player or vice versa when changing rooms.
@@ -599,7 +608,7 @@ class Room(cb.AbstractBase):
 
         elif not prev_room_scroll_x:
             if new_room_scroll_x:
-                self.__set_vel(-player_vel.x, 0)
+                self._set_vel(-player_vel.x, 0)
 
         if prev_room_scroll_y:
             if not new_room_scroll_y:
@@ -607,7 +616,7 @@ class Room(cb.AbstractBase):
 
         elif not prev_room_scroll_y:
             if new_room_scroll_y:
-                self.__set_vel(0, -player_vel.y)
+                self._set_vel(0, -player_vel.y)
 
     def layout_update(self) -> None:
         """Updates the layout of the room
@@ -676,6 +685,7 @@ class Room(cb.AbstractBase):
             self._init_room(cst.WINWIDTH, cst.WINHEIGHT, False, False)
 
     def update(self):
+
         self._check_room_change()
         self.movement()
 
