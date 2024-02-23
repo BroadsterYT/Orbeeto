@@ -5,6 +5,7 @@ Contains the player class.
 import time
 import math
 
+import itertools
 import pygame
 from pygame.math import Vector2 as vec
 
@@ -25,7 +26,6 @@ import trinkets
 class Player(cb.ActorBase):
     """A player sprite that can move and shoot.
     """
-
     def __init__(self):
         super().__init__()
         self.layer = cst.LAYER['player']
@@ -39,22 +39,22 @@ class Player(cb.ActorBase):
         self.set_images("sprites/orbeeto/orbeeto.png", 64, 64, 5, 5)
         self.set_rects(0, 0, 64, 64, 32, 32)
 
-        self.pos = vec((800, 800))
+        self.pos = vec((cst.WINWIDTH // 2, cst.WINHEIGHT // 2))
         self.accel_const = 0.58
 
         # -------------------------------- Game Stats -------------------------------- #
         self._xp = 0
-        self._level = 0
+        self.level = 0
         self.max_level = 249
 
-        self._max_hp = 50
-        self._hp = 50
-        self._max_defense = 10
-        self._defense = 10
+        self.max_hp = 50
+        self.hp = 50
+        self.max_defense = 10
+        self.defense = 10
 
         self.last_regen = time.time()  # Used for timing passive regeneration
 
-        self.max_ammo: int = 40
+        self.max_ammo = 40
         self.ammo = self.max_ammo
         self.bullet_vel = 12
         self.gun_cooldown = 0.12
@@ -100,54 +100,6 @@ class Player(cb.ActorBase):
             self._xp = 582803
         else:
             self._xp = value
-
-    @property
-    def level(self):
-        """The level the player is. This determines how "strong" he/she is."""
-        return self._level
-
-    @level.setter
-    def level(self, value: int):
-        self._level = value
-
-    @property
-    def max_hp(self):
-        """The maximum amount of health the player can "naturally" reach."""
-        return self._max_hp
-
-    @max_hp.setter
-    def max_hp(self, value: int):
-        self._max_hp = value
-
-    @property
-    def hp(self):
-        """The amount of health the player has. When the player's health reaches 0, the game is over."""
-        return self._hp
-
-    @hp.setter
-    def hp(self, value: int):
-        self._hp = value
-
-    @property
-    def max_defense(self):
-        """The maximum amount of defense the player can "naturally" have."""
-        return self._max_defense
-
-    @max_defense.setter
-    def max_defense(self, value: int):
-        if value < 0:
-            self._max_defense = 0
-        self._max_defense = value
-
-    @property
-    def defense(self):
-        """The damage reduction value of the player. The higher the player's defense, the less damage he/she
-        will take."""
-        return self._defense
-
-    @defense.setter
-    def defense(self, value: int):
-        self._defense = value
 
     # ----------------------------------- Stats ---------------------------------- #
     def update_max_stats(self):
@@ -324,7 +276,7 @@ class Player(cb.ActorBase):
 
     def _get_closest_interact(self):
         sprite_dists = {}
-        for sprite in [s for s in calc.chain(groups.all_movable, groups.all_trinkets) if s.visible]:
+        for sprite in [s for s in itertools.chain(groups.all_movable, groups.all_trinkets) if s.visible]:
             sprite_dists.update({sprite: calc.get_dist(self, sprite)})
         try:
             shortest_dist = min(sprite_dists.values())

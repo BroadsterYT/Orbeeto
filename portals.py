@@ -1,12 +1,8 @@
-import pygame
+from pygame.math import Vector2 as vec
 
 import classbases as cb
 import constants as cst
-
 import groups
-
-# Aliases
-vec = pygame.math.Vector2
 
 
 class Portal(cb.ActorBase):  # TODO: Update docstring
@@ -25,7 +21,8 @@ class Portal(cb.ActorBase):  # TODO: Update docstring
         groups.all_portals.add(self)
 
         room = cb.get_room()
-        room.add(self)
+        match_container = [c for c in groups.all_containers if c.room == room.room][0]
+        match_container.add(self)
 
         self.pos = vec((pos_x, pos_y))
         self.facing = facing
@@ -59,7 +56,7 @@ class Portal(cb.ActorBase):  # TODO: Update docstring
         self.center_rects()
 
     def update(self):
-        pass
+        print(self.pos)
 
     def __repr__(self):
         return f'Portal({self.landedOn}, {self.facing}, {self.pos})'

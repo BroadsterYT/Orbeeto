@@ -310,23 +310,6 @@ def triangle_collide(instig, sprite) -> str:
 
 
 # ============================================================================ #
-#                               Returns iterator                               #
-# ============================================================================ #
-def chain(*iterables):
-    """Given multiple iterables, will return a generator containing all elements of all iterables.
-
-    Args:
-        *iterables: The iterables to chain together
-
-    Returns:
-        A generator containing all elements of all iterables
-    """
-    for it in iterables:
-        for element in it:
-            yield element
-
-
-# ============================================================================ #
 #                                Returns Vector2                               #
 # ============================================================================ #
 def get_rand_components(max_value: int | float) -> vec:
@@ -481,25 +464,14 @@ def text_to_image(text: str, a_font: fontinfo.Font) -> pygame.Surface:
 # ============================================================================ #
 #                                Returns Sprite                                #
 # ============================================================================ #
-def get_closest_player(check_sprite):
+def get_closest_player():
     """Checks for the closest player to a given sprite.
-
-    Args:
-        check_sprite: The sprite checking for the closest player
 
     Returns:
         Player: The closest player to the sprite
     """
-    player_coords = {}
-    for a_player in groups.all_players:
-        player_coords[a_player] = get_dist(check_sprite, a_player)
-
-    try:
-        temp = min(player_coords.values())
-        result = [key for key in player_coords if player_coords[key] == temp]
-        return result[0]
-    except IndexError:
-        return check_sprite
+    for sprite in groups.all_players:  # No need to do full linear search, there's only one player
+        return sprite
 
 
 def get_other_portal(portal_in):

@@ -49,7 +49,7 @@ class StandardGrunt(enemybase.EnemyBase):
             self.set_room_pos()
 
             if can_shoot:
-                self.shoot(calc.get_closest_player(self), 6, rand.uniform(0.4, 0.9))
+                self.shoot(calc.get_closest_player(), 6, rand.uniform(0.4, 0.9))
 
             self.accel_movement()
 
@@ -128,12 +128,11 @@ class StandardGrunt(enemybase.EnemyBase):
     # --------------------------------- Updating --------------------------------- #
     def update(self):
         if self.hp > 0:
-            # self.movement()
             self.collide_check(groups.all_players, groups.all_walls)
             text.display_text.draw_text(f'{self.rand_pos}', 0, 200)
 
             self.__animate()
-            self.rotate_image(calc.get_angle(self, calc.get_closest_player(self)))
+            self.rotate_image(calc.get_angle(self, calc.get_closest_player()))
 
         self._destroy_check(6, 75, 0)
 
@@ -163,7 +162,7 @@ class Ambusher(enemybase.EnemyBase):
         self.set_room_pos()
 
         self.movement_timer = time.time()
-        self.movement_angle = calc.get_angle(self, calc.get_closest_player(self))
+        self.movement_angle = calc.get_angle(self, calc.get_closest_player())
 
         self.set_images('sprites/enemies/ambusher.png', 64, 64, 1, 1, 0, 0)
         self.set_rects(0, 0, 64, 64, 32, 32)
@@ -174,7 +173,7 @@ class Ambusher(enemybase.EnemyBase):
         room = cb.get_room()
         final_accel = vec(0, 0)
 
-        self.movement_angle = calc.get_angle(self, calc.get_closest_player(self))
+        self.movement_angle = calc.get_angle(self, calc.get_closest_player())
         dash_timer = calc.eerp(0.5, 0.8, self.hp / self._max_hp)  # Moves for longer as health gets lower
 
         # Rush towards the nearest player
@@ -198,5 +197,5 @@ class Ambusher(enemybase.EnemyBase):
             self.accel_movement()
 
     def update(self):
-        self.rotate_image(calc.get_angle(self, calc.get_closest_player(self)))
+        self.rotate_image(calc.get_angle(self, calc.get_closest_player()))
         self._destroy_check(6, 75, 2)

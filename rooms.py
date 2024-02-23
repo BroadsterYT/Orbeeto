@@ -5,6 +5,7 @@ import time
 import copy
 import math
 
+import itertools
 import pygame
 from pygame.math import Vector2 as vec
 
@@ -210,6 +211,12 @@ class Room(cb.AbstractBase):
             list: A list containing all sprites that should be relocated when the player is centered
         """
         output_list = []
+
+        # for sprite in itertools.chain(
+        #         self.sprites(), groups.all_projs, groups.all_drops, groups.all_portals
+        # ):
+        #     output_list.append(sprite)
+
         for sprite in self.sprites():
             output_list.append(sprite)
 
@@ -220,9 +227,9 @@ class Room(cb.AbstractBase):
             if drop.visible:
                 output_list.append(drop)
 
-        for portal in groups.all_portals:
-            if portal.visible:
-                output_list.append(portal)
+        # for portal in groups.all_portals:
+        #     if portal.visible:
+        #         output_list.append(portal)
 
         for container in groups.all_containers:
             if container.room == self.room:

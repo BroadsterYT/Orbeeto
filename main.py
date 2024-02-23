@@ -101,7 +101,7 @@ def main():
 
         # ------------------------------ Game Operation ------------------------------ #
         for portals in groups.all_portals:
-            pygame.draw.rect(screen.viewport, cst.RED, portals.hitbox, 3)
+            pygame.draw.rect(screen.buffer_screen, cst.RED, portals.hitbox, 3)
 
         # ------------------------------- Redraw Window ------------------------------ #
         redraw_game_window()
