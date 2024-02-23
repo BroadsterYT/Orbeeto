@@ -47,7 +47,7 @@ class TextBox(cb.ActorBase):
         self.generation_count = 1
         self.last_char = ' '
 
-        self.text_speed = 32
+        self.text_speed = 64
 
         self.set_images('sprites/ui/textbox.png', 800, 128, 1, 1)
         self.set_rects(self.pos.x, self.pos.y, 800, 128, 800, 128)
@@ -56,6 +56,8 @@ class TextBox(cb.ActorBase):
     def style_character(char: pygame.Surface, style: str):
         if style == dg.RED:
             styled_char = calc.swap_color(char, (69, 40, 60), cst.RED)
+        elif style == dg.YELLOW:
+            styled_char = calc.swap_color(char, (69, 40, 60), cst.YELLOW)
         else:
             styled_char = char
         return styled_char
@@ -70,14 +72,18 @@ class TextBox(cb.ActorBase):
             if calc.get_time_diff(self.last_generation) >= (1 / self.text_speed):
                 # Drawing each letter onto the text box
                 char = self.convo[self.convo_index][self.char_index]
+                print(char)
                 char_image = calc.text_to_image(char, fontinfo.dialogue_font)
                 final_image = self.style_character(char_image, self.last_char)
                 self.image = visuals.stack_images(
                     self.image, final_image, self.text_cushion.x, self.text_cushion.y
                 )
 
-                if char == ' ' or char not in dg.SKIP:  # Skips typing wait time if char is a special character
-                    self.last_generation = time.time()
+                if char not in dg.SKIP:  # Skips typing wait time if char is a special character
+                    if char == ' ':
+                        print("SPACE")
+                    else:
+                        self.last_generation = time.time()
 
                 # Shifting the following letter's position over
                 self.char_index += 1

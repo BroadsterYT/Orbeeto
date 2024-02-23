@@ -29,8 +29,7 @@ class Box(cb.ActorBase):
         self.pos = vec((pos_x, pos_y))
         self.accel_const = 0.58
 
-        room = cb.get_room()
-        self.roomPos = vec((self.pos.x - room.pos.x, self.pos.y - room.pos.y))
+        self.set_room_pos()
 
         self.set_images("sprites/textures/box.png", 64, 64, 5, 1, 0, 0)
         self.set_rects(0, 0, 64, 64, 64, 64, True)
@@ -145,8 +144,7 @@ class LockedWall(tiles.Wall):
         self.start_pos = vec((start_pos_x, start_pos_y))
         self.end_pos = vec((end_pos_x, end_pos_y))
 
-        self.start_room_pos = vec((0, 0))
-        self.end_room_pos = vec((0, 0))
+        self._set_room_points()
 
         self._is_moving = False
 

@@ -28,6 +28,10 @@ class ItemDrop(cb.ActorBase):
         self.dropped_from = dropped_from
         self.mat = item_name
 
+        # room = cb.get_room()
+        # container_match = [c for c in groups.all_containers if c.room == room.room][0]
+        # container_match.add(self)
+
         self.start_time = time.time()
 
         self.accel_const = 0.8

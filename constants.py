@@ -12,8 +12,8 @@ cos = math.cos
 pi = math.pi
 
 # ---------------------------------- Window ---------------------------------- #
-WINWIDTH = 1280  # noqa
-WINHEIGHT = 720  # noqa
+WINWIDTH = 1920  # noqa
+WINHEIGHT = 1080  # noqa
 FPS = 60
 SPF = 0.0167
 
@@ -38,6 +38,7 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
 
 # -------------------------------- Directions -------------------------------- #
 WEST = 'loc_west'

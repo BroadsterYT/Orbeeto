@@ -8,7 +8,6 @@ from pygame.locals import QUIT
 
 import controls.key_trackers as kt
 from controls.keybinds import *
-from text import display_text
 
 import calculations as calc
 import constants as cst
@@ -21,9 +20,10 @@ pygame.init()
 clock = pygame.time.Clock()
 
 screen.buffer_screen = pygame.Surface((cst.WINWIDTH, cst.WINHEIGHT))
-screen.viewport = pygame.display.set_mode((cst.WINWIDTH, cst.WINHEIGHT), pygame.SCALED, 0, 0, 2)
+screen.viewport = pygame.display.set_mode((cst.WINWIDTH, cst.WINHEIGHT), pygame.SCALED | pygame.RESIZABLE, 0, 0, 2)
 pygame.display.set_caption('Orbeeto')
 
+print(pygame.display.get_desktop_sizes())
 
 def redraw_game_window():
     """Draws all sprites every frame.

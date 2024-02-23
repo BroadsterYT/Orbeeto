@@ -39,7 +39,7 @@ class Player(cb.ActorBase):
         self.set_images("sprites/orbeeto/orbeeto.png", 64, 64, 5, 5)
         self.set_rects(0, 0, 64, 64, 32, 32)
 
-        self.pos = vec((cst.WINWIDTH // 2, cst.WINHEIGHT // 2))
+        self.pos = vec((800, 800))
         self.accel_const = 0.58
 
         # -------------------------------- Game Stats -------------------------------- #

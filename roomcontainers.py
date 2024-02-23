@@ -32,4 +32,6 @@ class RoomContainer(cb.AbstractBase):
             sprite.show(sprite.layer)
             sprite.accel = vec(0, 0)
             sprite.vel = vec(0, 0)
+
+            room = cb.get_room()
             sprite.pos = sprite.room_pos

@@ -63,25 +63,21 @@ class BulletBase(cb.ActorBase):
                 self.pos.y = self.hit.pos.y + self.hit.hitbox.height // 2 + self.hitbox.height // 2 + abs(room_vel.y)
                 self.vel_const.y = -self.vel_const.y
                 self.vel.y = -self.vel.y
-                print(cst.SOUTH)
 
             elif self.sideHit == cst.EAST:
                 self.pos.x = self.hit.pos.x + self.hit.hitbox.width // 2 + self.hitbox.width // 2 + abs(room_vel.x)
                 self.vel_const.x = -self.vel_const.x
                 self.vel.x = -self.vel.x
-                print(cst.EAST)
 
             elif self.sideHit == cst.NORTH:
                 self.pos.y = self.hit.pos.y - self.hit.hitbox.height // 2 - self.hitbox.height // 2 - abs(room_vel.y)
                 self.vel_const.y = -self.vel_const.y
                 self.vel.y = -self.vel.y
-                print(cst.NORTH)
 
             elif self.sideHit == cst.WEST:
                 self.pos.x = self.hit.pos.x - self.hit.hitbox.width // 2 - self.hitbox.width // 2 - abs(room_vel.x)
                 self.vel_const.x = -self.vel_const.x
                 self.vel.x = -self.vel.x
-                print(cst.WEST)
 
             self.rotate_image(calc.get_vec_angle(self.vel.x, self.vel.y))
 

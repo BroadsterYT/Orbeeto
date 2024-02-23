@@ -1,8 +1,5 @@
 import random as rand
-import math
-import time
 
-import pygame
 from pygame.math import Vector2 as vec
 
 import constants as cst

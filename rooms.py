@@ -9,9 +9,9 @@ import pygame
 from pygame.math import Vector2 as vec
 
 import controls.key_trackers as kt
+import text.display_text
 from controls.keybinds import *
-from enemies import standardgrunt
-from text import display_text
+from enemies import henchmen
 
 import calculations as calc
 import classbases as cb
@@ -169,6 +169,7 @@ class Room(cb.AbstractBase):
             value_y: Y-axis component
             is_additive: Should the values be added to the current vel or override it?
         """
+        # TODO: Make an exception for enemies when the player is pushing up against something
         if not is_additive:
             self.vel = vec(value_x, value_y)
             for sprite in self._get_sprites_to_recenter():
@@ -183,7 +184,7 @@ class Room(cb.AbstractBase):
     def _recenter_player_x(self) -> None:
         """Moves all the objects in the room so that the player is centered along the x-axis.
         """
-        if self.player1.pos.x != cst.WINWIDTH // 2:
+        if self.is_scrolling_x and self.player1.pos.x != cst.WINWIDTH // 2:
             self.posCopy = self.player1.pos.copy()
             self.offsetX = self.posCopy.x - cst.WINWIDTH // 2
             for sprite in self._get_sprites_to_recenter():
@@ -194,7 +195,7 @@ class Room(cb.AbstractBase):
     def _recenter_player_y(self) -> None:
         """Moves all the objects in the room so that the player is centered along the y-axis.
         """
-        if self.player1.pos.y != cst.WINHEIGHT // 2:
+        if self.is_scrolling_y and self.player1.pos.y != cst.WINHEIGHT // 2:
             self.posCopy = self.player1.pos.copy()
             self.offsetY = self.posCopy.y - cst.WINHEIGHT // 2
             for sprite in self._get_sprites_to_recenter():
@@ -225,7 +226,7 @@ class Room(cb.AbstractBase):
 
         for container in groups.all_containers:
             if container.room == self.room:
-                for sprite in [s for s in container if s not in groups.all_enemies]:
+                for sprite in container:
                     output_list.append(sprite)
 
         return output_list
@@ -630,8 +631,7 @@ class Room(cb.AbstractBase):
         # ------------------------------- Room Layouts ------------------------------- #
         if self.room == vec(0, 0):
             self.add(
-                tiles.Wall(32, cst.WINHEIGHT // 2, 4, cst.WINHEIGHT // 16),
-                tiles.Floor(cst.WINWIDTH // 2, cst.WINHEIGHT // 2, 80, 80)
+                tiles.Floor(cst.WINWIDTH // 2, cst.WINHEIGHT // 2, 80, 80),
             )
 
             try:
@@ -645,14 +645,15 @@ class Room(cb.AbstractBase):
                         trinkets.Button(1, 14, 16),
                         trinkets.Box(cst.WINWIDTH // 2, cst.WINHEIGHT // 2),
                         trinkets.LockedWall(128, 64, 256, 100, 1, 4, 4),
-                        standardgrunt.StandardGrunt(200, 200),
+                        henchmen.StandardGrunt(0, 0),
+                        henchmen.Ambusher(600, 600)
                     )
                 )
-            self._init_room(cst.WINWIDTH, cst.WINHEIGHT, True, True)
+            self._init_room(1920, 1080, True, True)
 
         if self.room == vec(0, 1):
             self.add(
-                tiles.Wall(cst.WINWIDTH // 4 + 32, cst.WINHEIGHT // 4 + 32, 4, 4)
+                tiles.Wall(cst.WINWIDTH // 4 + 32, cst.WINHEIGHT // 4 + 32, 4, 4),
             )
 
             try:
@@ -663,29 +664,12 @@ class Room(cb.AbstractBase):
                 groups.all_containers.append(
                     roomcontainers.RoomContainer(
                         self.room.x, self.room.y,
-                        # Box(300, 400)
                     )
                 )
-            self._init_room(cst.WINWIDTH // 2, cst.WINHEIGHT // 2, False, False)
-
-        if self.room == vec(1, 0):
-            self.add()
-
-            try:
-                container = next(c for c in groups.all_containers if c.room == self.room)
-                container.show_sprites()
-
-            except StopIteration:
-                groups.all_containers.append(
-                    roomcontainers.RoomContainer(
-                        self.room.x, self.room.y,
-                        # Box(300, 400)
-                    )
-                )
-            self._init_room(cst.WINWIDTH, cst.WINHEIGHT, False, False)
+            self._init_room(640, 360, True, True)
 
     def update(self):
-
+        text.display_text.draw_text(self.__repr__(), 0, 0)
         self._check_room_change()
         self.movement()
 

@@ -2,9 +2,10 @@
 Contains all the dialogue in the game.
 """
 RED = '\u2764'
+YELLOW = '💛'
 
 SKIP = {
-    RED,
+    RED, YELLOW
 }
 
 
@@ -26,12 +27,13 @@ def style_text(text: str, *styles: str) -> str:
 
 all_dialogue_lines = {
     'error': [
-        'The dialog function\nencountered an ' + style_text('error', RED) + '.',
+        'The dialog function\nencountered an ' +
+        style_text('error', RED) + '.',
         'Check your code.'
     ],
 
     'default': [
-            '> There\'s nothing to \nobserve.'
+        '> There\'s nothing to ' + style_text('observe.', RED)
     ],
 
     'box_test': [
@@ -41,4 +43,4 @@ all_dialogue_lines = {
 
 
 if __name__ == '__main__':
-    print(style_text('error', RED))
+    print(style_text('error', YELLOW))
