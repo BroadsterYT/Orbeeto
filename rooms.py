@@ -211,30 +211,14 @@ class Room(cb.AbstractBase):
             list: A list containing all sprites that should be relocated when the player is centered
         """
         output_list = []
-
-        # for sprite in itertools.chain(
-        #         self.sprites(), groups.all_projs, groups.all_drops, groups.all_portals
-        # ):
-        #     output_list.append(sprite)
-
-        for sprite in self.sprites():
+        for sprite in [s for s in
+                       itertools.chain(self.sprites(), groups.all_projs, groups.all_drops)
+                       if s.visible]:
             output_list.append(sprite)
 
-        for bullet in groups.all_projs:
-            output_list.append(bullet)
-
-        for drop in groups.all_drops:
-            if drop.visible:
-                output_list.append(drop)
-
-        # for portal in groups.all_portals:
-        #     if portal.visible:
-        #         output_list.append(portal)
-
-        for container in groups.all_containers:
-            if container.room == self.room:
-                for sprite in container:
-                    output_list.append(sprite)
+        for container in [c for c in groups.all_containers if c.room == self.room]:
+            for sprite in container:
+                output_list.append(sprite)
 
         return output_list
 
@@ -405,7 +389,6 @@ class Room(cb.AbstractBase):
         elif not is_player_to_room:
             self.player1.vel = self.vel.rotate(angle)
 
-    # ----------------------------- Sprite Collisions ---------------------------- #
     # noinspection SpellCheckingInspection
     def _sprite_collide_check(self, instig, *contact_list) -> None:
         """Collide check for when the room is scrolling.
@@ -417,17 +400,16 @@ class Room(cb.AbstractBase):
         Returns:
             None
         """
-        for group in contact_list:
-            for sprite in group:
-                if sprite.visible and isinstance(instig, players.Player):
-                    self._player_block_from_side(instig, sprite)
-                elif sprite.visible:
-                    self._sprite_block_from_side(instig, sprite)
+        for sprite in [s
+                       for group in contact_list
+                       for s in group
+                       if s.visible]:
+            self._sprite_block_from_side(instig, sprite)
 
-    def _player_block_from_side(self, instig, sprite):
-        if instig.hitbox.colliderect(sprite.hitbox):
-            width = (instig.hitbox.width + sprite.hitbox.width) // 2
-            height = (instig.hitbox.height + sprite.hitbox.height) // 2
+    def _sprite_block_from_side(self, instig, sprite) -> None:
+        width = (instig.hitbox.width + sprite.hitbox.width) // 2
+        height = (instig.hitbox.height + sprite.hitbox.height) // 2
+        if isinstance(instig, players.Player) and instig.hitbox.colliderect(sprite.hitbox):
             if calc.triangle_collide(instig, sprite) == cst.SOUTH and (
                     instig.vel.y < 0 or sprite.vel.y > 0) and instig.pos.y <= sprite.pos.y + height:
                 self._set_vel(self.vel.x, 0)
@@ -456,12 +438,7 @@ class Room(cb.AbstractBase):
                 instig.pos.x = sprite.pos.x - width
                 self._recenter_player_x()
 
-    @staticmethod
-    def _sprite_block_from_side(instig, sprite) -> None:
-        if instig.hitbox.colliderect(sprite.hitbox):
-            width = (instig.hitbox.width + sprite.hitbox.width) // 2
-            height = (instig.hitbox.height + sprite.hitbox.height) // 2
-
+        elif instig.hitbox.colliderect(sprite.hitbox):
             if (calc.triangle_collide(instig, sprite) == cst.SOUTH and
                     instig.pos.y <= sprite.pos.y + height and (
                     instig.vel.y < 0 or sprite.vel.y > 0)):
@@ -490,7 +467,6 @@ class Room(cb.AbstractBase):
     def _change_room(self) -> None:
         width = self.player1.hitbox.width // 2
         height = self.player1.hitbox.height // 2
-
         if self.player1.pos.y >= self.borderSouth.pos.y - height:
             self.room.y -= 1
             self.lastEntranceDir = cst.SOUTH
@@ -514,12 +490,6 @@ class Room(cb.AbstractBase):
             self.lastEntranceDir = cst.WEST
             self.layout_update()
             calc.kill_groups(groups.all_projs)
-
-    def _check_room_change(self) -> None:
-        """If the player touches a room border, he/she will change rooms.
-        """
-        if not self.centering_x and not self.centering_y:
-            self._change_room()
 
     def _set_room_borders(self, room_width: int, room_height: int) -> None:
         """Sets the borders of the room.
@@ -638,6 +608,7 @@ class Room(cb.AbstractBase):
         # ------------------------------- Room Layouts ------------------------------- #
         if self.room == vec(0, 0):
             self.add(
+                tiles.Wall(32, 512, 4, 64),
                 tiles.Floor(cst.WINWIDTH // 2, cst.WINHEIGHT // 2, 80, 80),
             )
 
@@ -677,7 +648,7 @@ class Room(cb.AbstractBase):
 
     def update(self):
         text.display_text.draw_text(self.__repr__(), 0, 0)
-        self._check_room_change()
+        self._change_room()
         self.movement()
 
     def __repr__(self):

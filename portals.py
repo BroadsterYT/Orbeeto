@@ -5,7 +5,7 @@ import constants as cst
 import groups
 
 
-class Portal(cb.ActorBase):  # TODO: Update docstring
+class Portal(cb.ActorBase):
     def __init__(self, spawned_from, pos_x: int | float, pos_y: int | float, facing: str = cst.SOUTH):
         """A portal that can teleport any moving object
 

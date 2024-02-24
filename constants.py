@@ -12,8 +12,8 @@ cos = math.cos
 pi = math.pi
 
 # ---------------------------------- Window ---------------------------------- #
-WINWIDTH = 1920  # noqa
-WINHEIGHT = 1080  # noqa
+WINWIDTH = 1280  # noqa
+WINHEIGHT = 720  # noqa
 FPS = 60
 SPF = 0.0167
 
