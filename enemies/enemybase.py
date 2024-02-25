@@ -2,12 +2,12 @@ import random as rand
 
 from pygame.math import Vector2 as vec
 
-import constants as cst
 import calculations as calc
-import groups
 import classbases as cb
-import statbars
+import constants as cst
+import groups
 import itemdrops
+import statbars
 
 
 class EnemyBase(cb.ActorBase):

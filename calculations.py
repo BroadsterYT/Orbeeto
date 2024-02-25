@@ -1,10 +1,14 @@
-import random as rand
+"""
+Contains all important global calculations.
+"""
 import math
+import random as rand
 import time
 
 import pygame
 from pygame.math import Vector2 as vec
-from text import fontinfo
+
+import text
 
 import constants as cst
 import groups
@@ -416,11 +420,11 @@ def combine_images(base_img: pygame.Surface, top_img: pygame.Surface) -> pygame.
     return new_img
 
 
-def text_to_image(text: str, a_font: fontinfo.Font) -> pygame.Surface:
+def text_to_image(any_text: str, a_font: text.Font) -> pygame.Surface:
     """Converts a string of text into an image with a given font.
 
     Args:
-        text: The text string to convert into an image
+        any_text: The text string to convert into an image
         a_font: The font object to retrieve font data from
 
     Returns:
@@ -430,11 +434,11 @@ def text_to_image(text: str, a_font: fontinfo.Font) -> pygame.Surface:
     images = sheet.get_images(a_font.char_width, a_font.char_height, a_font.char_count)
     char_list = []
 
-    final_image = pygame.Surface(vec(len(text) * a_font.char_width, a_font.char_height))
+    final_image = pygame.Surface(vec(len(any_text) * a_font.char_width, a_font.char_height))
 
     # TODO: Make all fonts follow the same text-to-image logic
     if a_font.path == 'sprites/ui/font.png' or a_font.path == 'sprites/ui/small_font.png':
-        for char in text:
+        for char in any_text:
             if char in cst.LETTERS.keys():
                 char_list.append(images[cst.LETTERS[char]])
             elif char in cst.NUMBERS:
@@ -442,7 +446,7 @@ def text_to_image(text: str, a_font: fontinfo.Font) -> pygame.Surface:
             elif char in cst.SYMBOLS:
                 char_list.append(images[cst.SYMBOLS[char] + 36])
     else:
-        for char in text:
+        for char in any_text:
             if char in cst.UPPERCASE.keys():
                 char_list.append(images[cst.UPPERCASE[char]])
             elif char in cst.LOWERCASE.keys():

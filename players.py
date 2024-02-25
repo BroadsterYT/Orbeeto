@@ -1,7 +1,6 @@
 """
 Contains the player class.
 """
-
 import time
 import math
 
@@ -13,7 +12,7 @@ import controls.key_trackers as kt
 from controls.keybinds import *
 from text import textbox
 
-from projectiles import player_bullets as pb
+import projectiles as proj
 import calculations as calc
 import classbases as cb
 import constants as cst
@@ -230,23 +229,23 @@ class Player(cb.ActorBase):
             # Standard bullets
             if self.bullet_type == cst.PROJ_STD:
                 groups.all_projs.add(
-                    pb.PlayerStdBullet(self.pos.x - (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
-                                       self.pos.y + (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
-                                       vel_x, vel_y, 1),
-                    pb.PlayerStdBullet(self.pos.x + (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
-                                       self.pos.y - (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)), vel_x,
-                                       vel_y, 1)
+                    proj.PlayerStdBullet(self.pos.x - (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
+                                         self.pos.y + (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
+                                         vel_x, vel_y, 1),
+                    proj.PlayerStdBullet(self.pos.x + (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
+                                         self.pos.y - (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
+                                         vel_x, vel_y, 1)
                 )
 
             # Laser bullets
             elif self.bullet_type == cst.PROJ_LASER:
                 groups.all_projs.add(
-                    pb.PlayerLaserBullet(self.pos.x - (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
-                                         self.pos.y + (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
-                                         vel_x * 2, vel_y * 2, 1),
-                    pb.PlayerLaserBullet(self.pos.x + (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
-                                         self.pos.y - (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
-                                         vel_x * 2, vel_y * 2, 1)
+                    proj.PlayerLaserBullet(self.pos.x - (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
+                                           self.pos.y + (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
+                                           vel_x * 2, vel_y * 2, 1),
+                    proj.PlayerLaserBullet(self.pos.x + (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
+                                           self.pos.y - (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
+                                           vel_x * 2, vel_y * 2, 1)
                 )
 
             self.ammo -= 1
@@ -254,16 +253,16 @@ class Player(cb.ActorBase):
 
         # ------------------------------ Firing Portals ------------------------------ #
         if kt.key_released[3] % 2 == 0 and self.can_portal:
-            groups.all_projs.add(pb.PortalBullet(self.pos.x, self.pos.y, vel_x * 0.75, vel_y * 0.75))
+            groups.all_projs.add(proj.PortalBullet(self.pos.x, self.pos.y, vel_x * 0.75, vel_y * 0.75))
             self.can_portal = False
 
         elif kt.key_released[3] % 2 != 0 and not self.can_portal:
-            groups.all_projs.add(pb.PortalBullet(self.pos.x, self.pos.y, vel_x * 0.75, vel_y * 0.75))
+            groups.all_projs.add(proj.PortalBullet(self.pos.x, self.pos.y, vel_x * 0.75, vel_y * 0.75))
             self.can_portal = True
 
         # --------------------------- Firing Grappling Hook -------------------------- #
         if self.grapple_input_copy != kt.key_released[K_GRAPPLE] and self.can_grapple:
-            self.grapple = pb.GrappleBullet(self, self.pos.x, self.pos.y, vel_x, vel_y)
+            self.grapple = proj.GrappleBullet(self, self.pos.x, self.pos.y, vel_x, vel_y)
             self.can_grapple = False
             self.grapple_input_copy = kt.key_released[K_GRAPPLE]
 

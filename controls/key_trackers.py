@@ -1,5 +1,5 @@
 """
-Holds all control-related constants
+Module containing all control-related constants.
 """
 
 # Keeps track of whether each input is held or not

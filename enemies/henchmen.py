@@ -8,7 +8,7 @@ from pygame.math import Vector2 as vec
 import text.display_text
 from enemies import enemybase
 
-from projectiles import enemy_bullets
+import projectiles as proj
 import calculations as calc
 import classbases as cb
 import constants as cst
@@ -119,9 +119,9 @@ class StandardGrunt(enemybase.EnemyBase):
             offset = vec(21, 30)
 
             groups.all_projs.add(
-                enemy_bullets.EnemyStdBullet(self.pos.x - (offset.x * cos_angle) - (offset.y * sin_angle),
-                                             self.pos.y + (offset.x * sin_angle) - (offset.y * cos_angle),
-                                             vel_x, vel_y)
+                proj.EnemyStdBullet(self.pos.x - (offset.x * cos_angle) - (offset.y * sin_angle),
+                                    self.pos.y + (offset.x * sin_angle) - (offset.y * cos_angle),
+                                    vel_x, vel_y)
             )
             self.last_shot = time.time()
 
@@ -137,7 +137,7 @@ class StandardGrunt(enemybase.EnemyBase):
         self._destroy_check(6, 75, 0)
 
     def __animate(self):
-        if calc.get_time_diff(self.last_frame) > 0.1:  # TODO: Use SPF to standardize animations
+        if calc.get_time_diff(self.last_frame) > 0.1:
             if self.is_shooting:
                 self.index += 1
                 if self.index > 4:

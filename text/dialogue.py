@@ -2,7 +2,7 @@
 Contains all the dialogue in the game.
 """
 RED = '\u2764'
-YELLOW = '💛'
+YELLOW = '\U0001F49B'
 
 SKIP = {
     RED, YELLOW
