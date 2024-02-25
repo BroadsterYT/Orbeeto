@@ -7,7 +7,7 @@ import classbases as cb
 
 
 class RoomContainer(cb.AbstractBase):
-    def __init__(self, room_x: int | float, room_y: int | float, *sprites):
+    def __init__(self, room_x: int, room_y: int, *sprites):
         """A container for sprites within a room. Contains data about all enemies in a room.
 
         Args:
@@ -33,5 +33,7 @@ class RoomContainer(cb.AbstractBase):
             sprite.accel = vec(0, 0)
             sprite.vel = vec(0, 0)
 
-            room = cb.get_room()
             sprite.pos = sprite.room_pos
+
+    def __repr__(self):
+        return f'RoomContainer({self.room}, {self.sprites()})'

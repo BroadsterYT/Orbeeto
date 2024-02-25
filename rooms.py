@@ -12,11 +12,11 @@ from pygame.math import Vector2 as vec
 import controls.key_trackers as kt
 import text.display_text
 from controls.keybinds import *
-from enemies import henchmen
 
 import calculations as calc
 import classbases as cb
 import constants as cst
+import enemies
 import groups
 import players
 import roomcontainers
@@ -80,8 +80,19 @@ class Room(cb.AbstractBase):
         self.accel.x += self.vel.x * cst.FRIC
         self.accel.y += self.vel.y * cst.FRIC
         self.vel += self.accel
+
         self.pos = vec(self.borderWest.pos.x + self.borderWest.hitbox.width // 2,
                        self.borderNorth.pos.y + self.borderNorth.height // 2)
+
+        # if self.size.x >= cst.WINWIDTH:
+        #     self.pos.x = self.borderWest.pos.x + self.borderWest.hitbox.width // 2
+        # else:
+        #     pass
+        #
+        # if self.size.y >= cst.WINHEIGHT:
+        #     self.pos.y = self.borderNorth.pos.y + self.borderNorth.height // 2
+        # else:
+        #     pass
 
     def get_accel(self) -> vec:
         final_accel = vec(0, 0)
@@ -356,9 +367,6 @@ class Room(cb.AbstractBase):
                 direction_angles.update({cst.WEST: 180, cst.SOUTH: 90, cst.EAST: 0, cst.NORTH: 270})
             self.player1.vel = self.player1.vel.rotate(direction_angles[direction_out])
 
-        # self._recenter_player_x()
-        # self._recenter_player_y()
-
     def _sprites_rotate_trajectory(self, angle: float) -> None:
         """Rotates the velocities and accelerations of all the sprites within the room's sprites.
 
@@ -467,6 +475,8 @@ class Room(cb.AbstractBase):
     def _change_room(self) -> None:
         width = self.player1.hitbox.width // 2
         height = self.player1.hitbox.height // 2
+
+        # TODO: Reset room position after changing rooms
         if self.player1.pos.y >= self.borderSouth.pos.y - height:
             self.room.y -= 1
             self.lastEntranceDir = cst.SOUTH
@@ -564,10 +574,10 @@ class Room(cb.AbstractBase):
         self._get_room_change_trajectory(scroll_copy_x, scroll_copy_y, self.is_scrolling_x, self.is_scrolling_y,
                                          player_vel_copy)
 
-        if self.is_scrolling_x:
-            self._recenter_player_x()
-        if self.is_scrolling_y:
-            self._recenter_player_y()
+        # if self.is_scrolling_x:
+        #     self._recenter_player_x()
+        # if self.is_scrolling_y:
+        #     self._recenter_player_y()
 
     def _get_room_change_trajectory(self, prev_room_scroll_x: bool, prev_room_scroll_y: bool, new_room_scroll_x: bool,
                                     new_room_scroll_y: bool, player_vel: pygame.math.Vector2) -> None:
@@ -607,11 +617,6 @@ class Room(cb.AbstractBase):
 
         # ------------------------------- Room Layouts ------------------------------- #
         if self.room == vec(0, 0):
-            self.add(
-                tiles.Wall(32, 512, 4, 64),
-                tiles.Floor(cst.WINWIDTH // 2, cst.WINHEIGHT // 2, 80, 80),
-            )
-
             try:
                 container = next(c for c in groups.all_containers if c.room == self.room)
                 container.show_sprites()
@@ -620,20 +625,20 @@ class Room(cb.AbstractBase):
                 groups.all_containers.append(
                     roomcontainers.RoomContainer(
                         self.room.x, self.room.y,
+                        # tiles.Wall(32, 512, 4, 64),
+                        # tiles.Wall(self.pos.x, self.pos.y, 4, 64),
+                        # tiles.Floor(cst.WINWIDTH // 2, cst.WINHEIGHT // 2, 80, 80),
+
                         trinkets.Button(1, 14, 16),
                         trinkets.Box(cst.WINWIDTH // 2, cst.WINHEIGHT // 2),
                         trinkets.LockedWall(128, 64, 256, 100, 1, 4, 4),
-                        henchmen.StandardGrunt(0, 0),
-                        henchmen.Ambusher(600, 600)
+                        enemies.StandardGrunt(0, 0),
+                        enemies.Ambusher(600, 600)
                     )
                 )
-            self._init_room(1920, 1080, True, True)
+            self._init_room(1280, 720, True, True)
 
         if self.room == vec(0, 1):
-            self.add(
-                tiles.Wall(cst.WINWIDTH // 4 + 32, cst.WINHEIGHT // 4 + 32, 4, 4),
-            )
-
             try:
                 container = next(c for c in groups.all_containers if c.room == self.room)
                 container.show_sprites()
@@ -642,9 +647,35 @@ class Room(cb.AbstractBase):
                 groups.all_containers.append(
                     roomcontainers.RoomContainer(
                         self.room.x, self.room.y,
+                        tiles.Wall(0, 0, 4, 4),
+                        enemies.StandardGrunt(0, 0),
                     )
                 )
             self._init_room(640, 360, True, True)
+            # print(self.borderWest.pos.x, self.pos.x, self.borderWest.pos.x - self.pos.x)
+            print(self.borderSouth.pos.y)
+
+    def generate_room(self, *sprites) -> None:
+        """
+
+        Args:
+            *sprites:
+
+        Returns:
+            None
+        """
+        try:
+            container = next(c for c in groups.all_containers if c.room == self.room)
+            container.show_sprites()
+            print(f'Found container for room {self.room}')
+
+        except StopIteration:
+            print(f'Failed search for room {self.room}')
+            new_container = roomcontainers.RoomContainer(
+                self.room.x, self.room.y,
+                *sprites
+            )
+            groups.all_containers.append(new_container)
 
     def update(self):
         text.display_text.draw_text(self.__repr__(), 0, 0)

@@ -40,10 +40,11 @@ class TileBase(cb.ActorBase):
             tile_size: The size of each individual tile (in pixels)
         """
         super().__init__()
-        self.tileSize = tile_size
+        self.tile_size = tile_size
 
-        self.blockWidth, self.blockHeight = block_width, block_height
-        self.width, self.height = self.blockWidth * self.tileSize, self.blockHeight * self.tileSize
+        self.block_width, self.block_height = block_width, block_height
+        self.width, self.height = self.block_width * self.tile_size, self.block_height * self.tile_size
+
         self.pos = vec(pos_x, pos_y)
 
         self.accel_const = 0.58
@@ -51,6 +52,7 @@ class TileBase(cb.ActorBase):
     def movement(self):
         if self.can_update:
             self.accel = self.get_accel()
+            # self.set_room_pos()
             self.accel_movement()
 
     def __repr__(self):
@@ -70,7 +72,8 @@ class Wall(TileBase):
             image_row: The row of images to use from the sprite sheet
             style: The tiling style to use on the wall
         """
-        super().__init__(pos_x, pos_y, block_width, block_height)
+        room = cb.get_room()
+        super().__init__(pos_x + room.pos.x, pos_y + room.pos.y, block_width, block_height)
         self.layer = cst.LAYER['wall']
         self.show(self.layer)
         groups.all_walls.add(self)
@@ -80,7 +83,7 @@ class Wall(TileBase):
         self.index = 0
 
         self.texture = self.textures[self.index]
-        self.image: pygame.Surface = fancy_tile_texture(self.blockWidth, self.blockHeight,
+        self.image: pygame.Surface = fancy_tile_texture(self.block_width, self.block_height,
                                                         self.textures, cst.BLACK, style)
 
         self.set_rects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
@@ -101,7 +104,7 @@ class Floor(TileBase):
         self.index = 0
 
         self.texture = self.textures[self.index]
-        self.image = fancy_tile_texture(self.blockWidth, self.blockHeight, self.textures, cst.BLACK, 0)
+        self.image = fancy_tile_texture(self.block_width, self.block_height, self.textures, cst.BLACK, 0)
 
         self.set_rects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
 
@@ -113,7 +116,7 @@ class Floor(TileBase):
     def __animate(self):
         if calc.get_time_diff(self.last_frame) >= 0.235:
             self.texture = self.textures[self.index]
-            self.image = fancy_tile_texture(self.blockWidth, self.blockHeight, self.textures, cst.BLACK, 0)
+            self.image = fancy_tile_texture(self.block_width, self.block_height, self.textures, cst.BLACK, 0)
 
             self.index += 1
             if self.index > 3:
