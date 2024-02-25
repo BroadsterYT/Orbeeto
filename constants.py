@@ -2,8 +2,8 @@
 Contains all global constants, like the size of the window, sprite layers, materials, loot tables, etc.
 """
 # ---------------------------------- Window ---------------------------------- #
-WINWIDTH = 1920  # noqa
-WINHEIGHT = 1080  # noqa
+WINWIDTH = 1280  # noqa
+WINHEIGHT = 720  # noqa
 FPS = 60
 SPF = 0.0167
 

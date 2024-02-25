@@ -45,14 +45,14 @@ class TileBase(cb.ActorBase):
         self.block_width, self.block_height = block_width, block_height
         self.width, self.height = self.block_width * self.tile_size, self.block_height * self.tile_size
 
-        self.pos = vec(pos_x, pos_y)
+        self.pos = vec((pos_x, pos_y))
 
         self.accel_const = 0.58
 
     def movement(self):
         if self.can_update:
+            self.set_room_pos()
             self.accel = self.get_accel()
-            # self.set_room_pos()
             self.accel_movement()
 
     def __repr__(self):
@@ -72,11 +72,12 @@ class Wall(TileBase):
             image_row: The row of images to use from the sprite sheet
             style: The tiling style to use on the wall
         """
-        room = cb.get_room()
-        super().__init__(pos_x + room.pos.x, pos_y + room.pos.y, block_width, block_height)
+        super().__init__(pos_x, pos_y, block_width, block_height)
         self.layer = cst.LAYER['wall']
         self.show(self.layer)
         groups.all_walls.add(self)
+
+        self.pivot = vec((pos_x, pos_y))
 
         self.spritesheet = spritesheet.Spritesheet('sprites/tiles/wall.png', 16)
         self.textures = self.spritesheet.get_images(16, 16, 16, image_row * 16)

@@ -84,16 +84,6 @@ class Room(cb.AbstractBase):
         self.pos = vec(self.borderWest.pos.x + self.borderWest.hitbox.width // 2,
                        self.borderNorth.pos.y + self.borderNorth.height // 2)
 
-        # if self.size.x >= cst.WINWIDTH:
-        #     self.pos.x = self.borderWest.pos.x + self.borderWest.hitbox.width // 2
-        # else:
-        #     pass
-        #
-        # if self.size.y >= cst.WINHEIGHT:
-        #     self.pos.y = self.borderNorth.pos.y + self.borderNorth.height // 2
-        # else:
-        #     pass
-
     def get_accel(self) -> vec:
         final_accel = vec(0, 0)
         if self.is_scrolling_x:
@@ -423,28 +413,28 @@ class Room(cb.AbstractBase):
                 self._set_vel(self.vel.x, 0)
                 self.player1.vel.y = 0
                 instig.pos.y = sprite.pos.y + height
-                self._recenter_player_y()
+                # self._recenter_player_y()
 
             if calc.triangle_collide(instig, sprite) == cst.EAST and (
                     instig.vel.x < 0 or sprite.vel.x > 0) and instig.pos.x <= sprite.pos.x + width:
                 self._set_vel(0, self.vel.y)
                 self.player1.vel.x = 0
                 instig.pos.x = sprite.pos.x + width
-                self._recenter_player_x()
+                # self._recenter_player_x()
 
             if calc.triangle_collide(instig, sprite) == cst.NORTH and (
                     instig.vel.y > 0 or sprite.vel.y < 0) and instig.pos.y >= sprite.pos.y - height:
                 self._set_vel(self.vel.x, 0)
                 self.player1.vel.y = 0
                 instig.pos.y = sprite.pos.y - height
-                self._recenter_player_y()
+                # self._recenter_player_y()
 
             if calc.triangle_collide(instig, sprite) == cst.WEST and (
                     instig.vel.x > 0 or sprite.vel.x < 0) and instig.pos.x >= sprite.pos.x - width:
                 self._set_vel(0, self.vel.y)
                 self.player1.vel.x = 0
                 instig.pos.x = sprite.pos.x - width
-                self._recenter_player_x()
+                # self._recenter_player_x()
 
         elif instig.hitbox.colliderect(sprite.hitbox):
             if (calc.triangle_collide(instig, sprite) == cst.SOUTH and
@@ -476,7 +466,6 @@ class Room(cb.AbstractBase):
         width = self.player1.hitbox.width // 2
         height = self.player1.hitbox.height // 2
 
-        # TODO: Reset room position after changing rooms
         if self.player1.pos.y >= self.borderSouth.pos.y - height:
             self.room.y -= 1
             self.lastEntranceDir = cst.SOUTH
@@ -513,17 +502,19 @@ class Room(cb.AbstractBase):
         south_coords = vec(north_coords.x, north_coords.y + room_height + 16)
         east_coords = vec(west_coords.x + room_width + 16, room_height // 2)
 
-        if room_width < cst.WINWIDTH:
-            west_coords.x = cst.WINWIDTH / 2 - room_width / 2 - 8
-            east_coords.x = west_coords.x + room_width + 16
-            south_coords.x = west_coords.x + room_width / 2 + 8
-            north_coords.x = south_coords.x
-
-        if room_height < cst.WINHEIGHT:
-            north_coords.y = cst.WINHEIGHT / 2 - room_height / 2 - 8
-            south_coords.y = north_coords.y + room_height + 16
-            east_coords.y = north_coords.y + room_height / 2 + 8
-            west_coords.y = east_coords.y
+        # TODO: Integrate this with a room scrolling check to fix object placement
+        #  (must combine this func with _init_room is because the order of operation currently impossible
+        # if room_width < cst.WINWIDTH:
+        #     west_coords.x = cst.WINWIDTH / 2 - room_width / 2 - 8
+        #     east_coords.x = west_coords.x + room_width + 16
+        #     south_coords.x = west_coords.x + room_width / 2 + 8
+        #     north_coords.x = south_coords.x
+        #
+        # if room_height < cst.WINHEIGHT:
+        #     north_coords.y = cst.WINHEIGHT / 2 - room_height / 2 - 8
+        #     south_coords.y = north_coords.y + room_height + 16
+        #     east_coords.y = north_coords.y + room_height / 2 + 8
+        #     west_coords.y = east_coords.y
 
         self.borderSouth = tiles.RoomBorder(south_coords.x, south_coords.y, room_width / 16, 1)
         self.borderEast = tiles.RoomBorder(east_coords.x, east_coords.y, 1, room_height / 16)
@@ -625,7 +616,7 @@ class Room(cb.AbstractBase):
                 groups.all_containers.append(
                     roomcontainers.RoomContainer(
                         self.room.x, self.room.y,
-                        # tiles.Wall(32, 512, 4, 64),
+                        tiles.Wall(32, 512, 4, 64),
                         # tiles.Wall(self.pos.x, self.pos.y, 4, 64),
                         # tiles.Floor(cst.WINWIDTH // 2, cst.WINHEIGHT // 2, 80, 80),
 
@@ -636,9 +627,10 @@ class Room(cb.AbstractBase):
                         enemies.Ambusher(600, 600)
                     )
                 )
-            self._init_room(1280, 720, True, True)
+            self._init_room(1920, 1080, True, True)
 
         if self.room == vec(0, 1):
+            self._init_room(640, 360, False, False)
             try:
                 container = next(c for c in groups.all_containers if c.room == self.room)
                 container.show_sprites()
@@ -647,13 +639,10 @@ class Room(cb.AbstractBase):
                 groups.all_containers.append(
                     roomcontainers.RoomContainer(
                         self.room.x, self.room.y,
-                        tiles.Wall(0, 0, 4, 4),
+                        tiles.Wall(32, 32, 4, 4),
                         enemies.StandardGrunt(0, 0),
                     )
                 )
-            self._init_room(640, 360, True, True)
-            # print(self.borderWest.pos.x, self.pos.x, self.borderWest.pos.x - self.pos.x)
-            print(self.borderSouth.pos.y)
 
     def generate_room(self, *sprites) -> None:
         """
