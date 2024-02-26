@@ -183,27 +183,27 @@ class Room(cb.AbstractBase):
                 sprite.vel.x += value_x
                 sprite.vel.y += value_y
 
-    def _recenter_player_x(self) -> None:
-        """Moves all the objects in the room so that the player is centered along the x-axis.
-        """
-        if self.is_scrolling_x and self.player1.pos.x != cst.WINWIDTH // 2:
-            self.posCopy = self.player1.pos.copy()
-            self.offsetX = self.posCopy.x - cst.WINWIDTH // 2
-            for sprite in self._get_sprites_to_recenter():
-                sprite.pos_copy = sprite.pos.copy()
-                sprite.pos.x = sprite.pos_copy.x - self.offsetX
-            self.player1.pos.x = cst.WINWIDTH // 2
-
-    def _recenter_player_y(self) -> None:
-        """Moves all the objects in the room so that the player is centered along the y-axis.
-        """
-        if self.is_scrolling_y and self.player1.pos.y != cst.WINHEIGHT // 2:
-            self.posCopy = self.player1.pos.copy()
-            self.offsetY = self.posCopy.y - cst.WINHEIGHT // 2
-            for sprite in self._get_sprites_to_recenter():
-                sprite.pos_copy = sprite.pos.copy()
-                sprite.pos.y = sprite.pos_copy.y - self.offsetY
-            self.player1.pos.y = cst.WINHEIGHT // 2
+    # def _recenter_player_x(self) -> None:
+    #     """Moves all the objects in the room so that the player is centered along the x-axis.
+    #     """
+    #     if self.is_scrolling_x and self.player1.pos.x != cst.WINWIDTH // 2:
+    #         self.posCopy = self.player1.pos.copy()
+    #         self.offsetX = self.posCopy.x - cst.WINWIDTH // 2
+    #         for sprite in self._get_sprites_to_recenter():
+    #             sprite.pos_copy = sprite.pos.copy()
+    #             sprite.pos.x = sprite.pos_copy.x - self.offsetX
+    #         self.player1.pos.x = cst.WINWIDTH // 2
+    #
+    # def _recenter_player_y(self) -> None:
+    #     """Moves all the objects in the room so that the player is centered along the y-axis.
+    #     """
+    #     if self.is_scrolling_y and self.player1.pos.y != cst.WINHEIGHT // 2:
+    #         self.posCopy = self.player1.pos.copy()
+    #         self.offsetY = self.posCopy.y - cst.WINHEIGHT // 2
+    #         for sprite in self._get_sprites_to_recenter():
+    #             sprite.pos_copy = sprite.pos.copy()
+    #             sprite.pos.y = sprite.pos_copy.y - self.offsetY
+    #         self.player1.pos.y = cst.WINHEIGHT // 2
 
     def _get_sprites_to_recenter(self) -> list:
         """Returns a list containing all sprites that should be relocated when the player is centered.
@@ -224,7 +224,7 @@ class Room(cb.AbstractBase):
         return output_list
 
     # -------------------------------- Teleporting ------------------------------- #
-    def _align_player_after_tp(self, offset: float, direction: str, portal_out, width, height) -> None:
+    def _align_player_tp(self, offset: float, direction: str, portal_out, width, height) -> None:
         """Sets the player at the proper position after teleporting when the room can scroll.
 
         Args:
@@ -271,7 +271,7 @@ class Room(cb.AbstractBase):
             distance_offset = self.player1.pos.y - portal_in.pos.y
 
         # Actually teleporting the player
-        self._align_player_after_tp(distance_offset, direction_out, portal_out, combined_width, combined_height)
+        self._align_player_tp(distance_offset, direction_out, portal_out, combined_width, combined_height)
 
         if self.is_scrolling_x and self.is_scrolling_y:
             if direction_in == cst.EAST:
@@ -490,20 +490,23 @@ class Room(cb.AbstractBase):
             self.layout_update()
             calc.kill_groups(groups.all_projs)
 
-    def _set_room_borders(self, room_width: int, room_height: int) -> None:
-        """Sets the borders of the room.
+    def _init_room(self, room_size_x: int, room_size_y: int, can_scroll_x: bool, can_scroll_y: bool) -> None:
+        """Initializes a room's properties. This function must be called once for every room iteration.
 
         Args:
-            room_width: The width of the room (in pixels)
-            room_height: The height of the room (in pixels)
+            room_size_x: The width of the room (in pixels).
+            room_size_y: The height of the room (in pixels).
+            can_scroll_x: Should the room scroll with the player along the x-axis?
+            can_scroll_y: Should the room scroll with the player along the y-axis?
         """
-        west_coords = vec(-8, room_height // 2)
-        north_coords = vec(room_width // 2, -8)
-        south_coords = vec(north_coords.x, north_coords.y + room_height + 16)
-        east_coords = vec(west_coords.x + room_width + 16, room_height // 2)
+        # Placing borders in correct spots in room
+        west_coords = vec(-8, room_size_y // 2)
+        north_coords = vec(room_size_x // 2, -8)
+        south_coords = vec(north_coords.x, north_coords.y + room_size_y + 16)
+        east_coords = vec(west_coords.x + room_size_x + 16, room_size_y // 2)
 
         # TODO: Integrate this with a room scrolling check to fix object placement
-        #  (must combine this func with _init_room is because the order of operation currently impossible
+        #  (must combine this func with _init_room because the order of operation is currently impossible
         # if room_width < cst.WINWIDTH:
         #     west_coords.x = cst.WINWIDTH / 2 - room_width / 2 - 8
         #     east_coords.x = west_coords.x + room_width + 16
@@ -516,41 +519,32 @@ class Room(cb.AbstractBase):
         #     east_coords.y = north_coords.y + room_height / 2 + 8
         #     west_coords.y = east_coords.y
 
-        self.borderSouth = tiles.RoomBorder(south_coords.x, south_coords.y, room_width / 16, 1)
-        self.borderEast = tiles.RoomBorder(east_coords.x, east_coords.y, 1, room_height / 16)
-        self.borderNorth = tiles.RoomBorder(north_coords.x, north_coords.y, room_width / 16, 1)
-        self.borderWest = tiles.RoomBorder(west_coords.x, west_coords.y, 1, room_height / 16)
+        self.borderSouth = tiles.RoomBorder(south_coords.x, south_coords.y, room_size_x / 16, 1)
+        self.borderEast = tiles.RoomBorder(east_coords.x, east_coords.y, 1, room_size_y / 16)
+        self.borderNorth = tiles.RoomBorder(north_coords.x, north_coords.y, room_size_x / 16, 1)
+        self.borderWest = tiles.RoomBorder(west_coords.x, west_coords.y, 1, room_size_y / 16)
 
         self.add(self.borderSouth, self.borderEast, self.borderNorth, self.borderWest)
 
-    def _init_room(self, room_size_x: int, room_size_y: int, can_scroll_x: bool, can_scroll_y: bool) -> None:
-        """Initializes a room's properties. This function must be called once for every room iteration.
-
-        Args:
-            room_size_x: The width of the room (in pixels).
-            room_size_y: The height of the room (in pixels).
-            can_scroll_x: Should the room scroll with the player along the x-axis?
-            can_scroll_y: Should the room scroll with the player along the y-axis?
-        """
-        self._set_room_borders(room_size_x, room_size_y)
+        # Setting player at correct spot in room
         if self.lastEntranceDir == cst.SOUTH:
             self.player1.pos.x = self.borderNorth.pos.x
             self.player1.pos.y = (self.borderNorth.pos.y + self.borderNorth.hitbox.height // 2
                                   + self.player1.hitbox.height // 2)
 
         elif self.lastEntranceDir == cst.EAST:
-            self.player1.pos.x = (self.borderWest.pos.x +
-                                  self.borderWest.hitbox.width // 2 + self.player1.hitbox.width // 2)
+            self.player1.pos.x = (self.borderWest.pos.x
+                                  + self.borderWest.hitbox.width // 2 + self.player1.hitbox.width // 2)
             self.player1.pos.y = self.borderWest.pos.y
 
         elif self.lastEntranceDir == cst.NORTH:
             self.player1.pos.x = self.borderSouth.pos.x
-            self.player1.pos.y = (self.borderSouth.pos.y -
-                                  self.borderSouth.hitbox.height // 2 - self.player1.hitbox.height // 2)
+            self.player1.pos.y = (self.borderSouth.pos.y
+                                  - self.borderSouth.hitbox.height // 2 - self.player1.hitbox.height // 2)
 
         elif self.lastEntranceDir == cst.WEST:
-            self.player1.pos.x = (self.borderEast.pos.x -
-                                  self.borderEast.hitbox.width // 2 - self.player1.hitbox.width // 2)
+            self.player1.pos.x = (self.borderEast.pos.x
+                                  - self.borderEast.hitbox.width // 2 - self.player1.hitbox.width // 2)
             self.player1.pos.y = self.borderEast.pos.y
 
         player_vel_copy = self.player1.vel.copy()
