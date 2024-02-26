@@ -44,18 +44,14 @@ class Room(cb.AbstractBase):
         self.posCopy = self.player1.pos.copy()
         self.offset = vec(self.player1.pos.x - 608, self.player1.pos.y - cst.WINHEIGHT // 2)
 
-        self.borderSouth = tiles.RoomBorder(0, self.size.y // 16, self.size.x // 16, 1)
-        self.borderEast = tiles.RoomBorder(cst.WINWIDTH // 16, 0, 1, self.size.y // 16)
-        self.borderNorth = tiles.RoomBorder(0, -1, self.size.x // 16, 1)
-        self.borderWest = tiles.RoomBorder(-1, 0, 1, self.size.y // 16)
-        self.add(self.borderSouth, self.borderEast, self.borderNorth, self.borderWest)
+        self.border_south = tiles.RoomBorder(0, self.size.y // 16, self.size.x // 16, 1)
+        self.border_east = tiles.RoomBorder(cst.WINWIDTH // 16, 0, 1, self.size.y // 16)
+        self.border_north = tiles.RoomBorder(0, -1, self.size.x // 16, 1)
+        self.border_west = tiles.RoomBorder(-1, 0, 1, self.size.y // 16)
+        self.add(self.border_south, self.border_east, self.border_north, self.border_west)
 
         self.is_scrolling_x = True
         self.is_scrolling_y = True
-
-        self.centering_x = False
-        self.centering_y = False
-        self.recenter_weight_limit = 0.25
 
         self.offsetX = self.player1.pos.x - cst.WINWIDTH // 2
         self.offsetY = self.player1.pos.y - cst.WINHEIGHT // 2
@@ -73,7 +69,6 @@ class Room(cb.AbstractBase):
 
         self.layout_update()
 
-    # ------------------------------- Room Movement ------------------------------ #
     def accel_movement(self) -> None:
         """Calculates the room's acceleration, velocity, and position
         """
@@ -81,8 +76,8 @@ class Room(cb.AbstractBase):
         self.accel.y += self.vel.y * cst.FRIC
         self.vel += self.accel
 
-        self.pos = vec(self.borderWest.pos.x + self.borderWest.hitbox.width // 2,
-                       self.borderNorth.pos.y + self.borderNorth.height // 2)
+        self.pos = vec(self.border_west.pos.x + self.border_west.hitbox.width // 2,
+                       self.border_north.pos.y + self.border_north.height // 2)
 
     def get_accel(self) -> vec:
         final_accel = vec(0, 0)
@@ -466,25 +461,25 @@ class Room(cb.AbstractBase):
         width = self.player1.hitbox.width // 2
         height = self.player1.hitbox.height // 2
 
-        if self.player1.pos.y >= self.borderSouth.pos.y - height:
+        if self.player1.pos.y >= self.border_south.pos.y - height:
             self.room.y -= 1
             self.lastEntranceDir = cst.SOUTH
             self.layout_update()
             calc.kill_groups(groups.all_projs)
 
-        elif self.player1.pos.x >= self.borderEast.pos.x - width:
+        elif self.player1.pos.x >= self.border_east.pos.x - width:
             self.room.x += 1
             self.lastEntranceDir = cst.EAST
             self.layout_update()
             calc.kill_groups(groups.all_projs)
 
-        elif self.player1.pos.y <= self.borderNorth.pos.y + height:
+        elif self.player1.pos.y <= self.border_north.pos.y + height:
             self.room.y += 1
             self.lastEntranceDir = cst.NORTH
             self.layout_update()
             calc.kill_groups(groups.all_projs)
 
-        elif self.player1.pos.x <= self.borderWest.pos.x + width:
+        elif self.player1.pos.x <= self.border_west.pos.x + width:
             self.room.x -= 1
             self.lastEntranceDir = cst.WEST
             self.layout_update()
@@ -519,33 +514,33 @@ class Room(cb.AbstractBase):
         #     east_coords.y = north_coords.y + room_height / 2 + 8
         #     west_coords.y = east_coords.y
 
-        self.borderSouth = tiles.RoomBorder(south_coords.x, south_coords.y, room_size_x / 16, 1)
-        self.borderEast = tiles.RoomBorder(east_coords.x, east_coords.y, 1, room_size_y / 16)
-        self.borderNorth = tiles.RoomBorder(north_coords.x, north_coords.y, room_size_x / 16, 1)
-        self.borderWest = tiles.RoomBorder(west_coords.x, west_coords.y, 1, room_size_y / 16)
+        self.border_south = tiles.RoomBorder(south_coords.x, south_coords.y, room_size_x / 16, 1)
+        self.border_east = tiles.RoomBorder(east_coords.x, east_coords.y, 1, room_size_y / 16)
+        self.border_north = tiles.RoomBorder(north_coords.x, north_coords.y, room_size_x / 16, 1)
+        self.border_west = tiles.RoomBorder(west_coords.x, west_coords.y, 1, room_size_y / 16)
 
-        self.add(self.borderSouth, self.borderEast, self.borderNorth, self.borderWest)
+        self.add(self.border_south, self.border_east, self.border_north, self.border_west)
 
         # Setting player at correct spot in room
         if self.lastEntranceDir == cst.SOUTH:
-            self.player1.pos.x = self.borderNorth.pos.x
-            self.player1.pos.y = (self.borderNorth.pos.y + self.borderNorth.hitbox.height // 2
+            self.player1.pos.x = self.border_north.pos.x
+            self.player1.pos.y = (self.border_north.pos.y + self.border_north.hitbox.height // 2
                                   + self.player1.hitbox.height // 2)
 
         elif self.lastEntranceDir == cst.EAST:
-            self.player1.pos.x = (self.borderWest.pos.x
-                                  + self.borderWest.hitbox.width // 2 + self.player1.hitbox.width // 2)
-            self.player1.pos.y = self.borderWest.pos.y
+            self.player1.pos.x = (self.border_west.pos.x
+                                  + self.border_west.hitbox.width // 2 + self.player1.hitbox.width // 2)
+            self.player1.pos.y = self.border_west.pos.y
 
         elif self.lastEntranceDir == cst.NORTH:
-            self.player1.pos.x = self.borderSouth.pos.x
-            self.player1.pos.y = (self.borderSouth.pos.y
-                                  - self.borderSouth.hitbox.height // 2 - self.player1.hitbox.height // 2)
+            self.player1.pos.x = self.border_south.pos.x
+            self.player1.pos.y = (self.border_south.pos.y
+                                  - self.border_south.hitbox.height // 2 - self.player1.hitbox.height // 2)
 
         elif self.lastEntranceDir == cst.WEST:
-            self.player1.pos.x = (self.borderEast.pos.x
-                                  - self.borderEast.hitbox.width // 2 - self.player1.hitbox.width // 2)
-            self.player1.pos.y = self.borderEast.pos.y
+            self.player1.pos.x = (self.border_east.pos.x
+                                  - self.border_east.hitbox.width // 2 - self.player1.hitbox.width // 2)
+            self.player1.pos.y = self.border_east.pos.y
 
         player_vel_copy = self.player1.vel.copy()
         self.player1.vel = vec(0, 0)

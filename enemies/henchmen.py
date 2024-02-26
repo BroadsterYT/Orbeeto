@@ -77,11 +77,6 @@ class StandardGrunt(enemybase.EnemyBase):
         final_accel = vec(0, 0)
 
         room = cb.get_room()
-        room_accel_value = room.get_accel()
-        if not room.centering_x:  # Allows the enemy to move freely even when room is being re-centered
-            final_accel.x += room_accel_value.x
-        if not room.centering_y:
-            final_accel.y += room_accel_value.y
 
         adjust_loc_x = self.rand_pos.x + room.pos.x
         adjust_loc_y = self.rand_pos.y + room.pos.y

@@ -154,9 +154,9 @@ class BulletBase(cb.ActorBase):
     def update(self):
         room = cb.get_room()
         if (
-                self.pos.y > room.borderSouth.pos.y or
-                self.pos.x > room.borderEast.pos.x or
-                self.pos.y < room.borderNorth.pos.y or
-                self.pos.x < room.borderWest.pos.x
+                self.pos.y > room.border_south.pos.y or
+                self.pos.x > room.border_east.pos.x or
+                self.pos.y < room.border_north.pos.y or
+                self.pos.x < room.border_west.pos.x
         ):
             self.kill()
