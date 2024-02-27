@@ -56,10 +56,10 @@ class Portal(cb.ActorBase):
         self.center_rects()
 
     def update(self):
-        print(self.pos)
+        pass
 
     def __repr__(self):
-        return f'Portal({self.landedOn}, {self.facing}, {self.pos})'
+        return f'Portal({self.pos}, {self.landedOn}, {self.facing})'
 
 
 def portal_count_check():

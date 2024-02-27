@@ -1,11 +1,14 @@
-import time
+"""
+Module containing the ItemDrop class.
+"""
 import math
 import random as rand
+import time
 
 import pygame
 from pygame.math import Vector2 as vec
 
-from text import display_text
+import text
 
 import classbases as cb
 import constants as cst
@@ -56,6 +59,8 @@ class ItemDrop(cb.ActorBase):
 
     def movement(self):
         if self.can_update:
+            self.collide_check(groups.all_walls)
+
             exist_time = calc.get_time_diff(self.start_time)
             self.accel = self.get_accel()
             
@@ -78,11 +83,10 @@ class ItemDrop(cb.ActorBase):
         return final_accel
 
     def update(self):
-        self.collide_check(groups.all_walls)
         for a_player in groups.all_players:
             if self.hitbox.colliderect(a_player):
                 groups.all_font_chars.add(
-                    display_text.IndicatorText(a_player.pos.x, a_player.pos.y - a_player.rect.height // 2, self.mat, 1)
+                    text.IndicatorText(a_player.pos.x, a_player.pos.y - a_player.rect.height // 2, self.mat, 1)
                 )
                 a_player.inventory[self.mat] += 1
                 self.kill()

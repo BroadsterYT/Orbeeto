@@ -1,27 +1,43 @@
 """
 Contains the room class.
 """
-import time
 import copy
 import math
 
 import itertools
+
 import pygame
 from pygame.math import Vector2 as vec
 
-import controls.key_trackers as kt
-import text.display_text
+import controls as ctrl
 from controls.keybinds import *
-from enemies import henchmen
+import text.display_text
 
 import calculations as calc
 import classbases as cb
 import constants as cst
+import enemies
 import groups
 import players
 import roomcontainers
 import tiles
 import trinkets
+
+
+class RoomSpecs:
+    """Contains all information regarding the details of a room."""
+    def __init__(self, room_width, room_height, scroll_x, scroll_y):
+        """Contains all information regarding the details of a room.
+
+        Args:
+            room_width: The width of the room (in pixels)
+            room_height: The height of the room (in pixels)
+            scroll_x: Can the room scroll along the x-axis? (True if yes)
+            scroll_y: Can the room scroll along the y-axis? (True if yes)
+        """
+        self.width = room_width
+        self.height = room_height
+        self.scroll = vec(scroll_x, scroll_y)
 
 
 # noinspection PyTypeChecker
@@ -36,52 +52,42 @@ class Room(cb.AbstractBase):
         super().__init__()
         groups.all_rooms.append(self)
         self.room = vec((room_x, room_y))
-        self.size = vec((1280, 720))
+        self.size = vec((0, 0))
 
         self.lastEntranceDir = None
 
         self.player1 = players.Player()
-        self.posCopy = self.player1.pos.copy()
-        self.offset = vec(self.player1.pos.x - 608, self.player1.pos.y - cst.WINHEIGHT // 2)
 
-        self.borderSouth = tiles.RoomBorder(0, self.size.y // 16, self.size.x // 16, 1)
-        self.borderEast = tiles.RoomBorder(cst.WINWIDTH // 16, 0, 1, self.size.y // 16)
-        self.borderNorth = tiles.RoomBorder(0, -1, self.size.x // 16, 1)
-        self.borderWest = tiles.RoomBorder(-1, 0, 1, self.size.y // 16)
-        self.add(self.borderSouth, self.borderEast, self.borderNorth, self.borderWest)
+        self.border_south = tiles.RoomBorder(0, self.size.y // 16, self.size.x // 16, 1)
+        self.border_east = tiles.RoomBorder(cst.WINWIDTH // 16, 0, 1, self.size.y // 16)
+        self.border_north = tiles.RoomBorder(0, -1, self.size.x // 16, 1)
+        self.border_west = tiles.RoomBorder(-1, 0, 1, self.size.y // 16)
+        self.add(self.border_south, self.border_east, self.border_north, self.border_west)
 
         self.is_scrolling_x = True
         self.is_scrolling_y = True
 
-        self.centering_x = False
-        self.centering_y = False
-        self.recenter_weight_limit = 0.25
-
-        self.offsetX = self.player1.pos.x - cst.WINWIDTH // 2
-        self.offsetY = self.player1.pos.y - cst.WINHEIGHT // 2
-
-        # --------------------------------- Movement --------------------------------- #
         self.pos = vec(0, 0)
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
         self.accel_const = self.player1.accel_const
 
-        self.dashCooldown = time.time()
-        self.dashTimer = time.time()
-        self.dashCheck = True
-        self.lastPresses = copy.copy(kt.key_released)
+        self._room_specs = {
+            (0, 0): RoomSpecs(1280, 720, True, True),
+            (0, 1): RoomSpecs(640, 360, True, False),
+        }
 
         self.layout_update()
 
-    # ------------------------------- Room Movement ------------------------------ #
     def accel_movement(self) -> None:
         """Calculates the room's acceleration, velocity, and position
         """
         self.accel.x += self.vel.x * cst.FRIC
         self.accel.y += self.vel.y * cst.FRIC
         self.vel += self.accel
-        self.pos = vec(self.borderWest.pos.x + self.borderWest.hitbox.width // 2,
-                       self.borderNorth.pos.y + self.borderNorth.height // 2)
+
+        self.pos = vec(self.border_west.pos.x + self.border_west.hitbox.width // 2,
+                       self.border_north.pos.y + self.border_north.height // 2)
 
     def get_accel(self) -> vec:
         final_accel = vec(0, 0)
@@ -108,9 +114,9 @@ class Room(cb.AbstractBase):
             float: The room's acceleration's x-axis component
         """
         output = 0.0
-        if kt.is_input_held[K_MOVE_LEFT]:
+        if ctrl.is_input_held[K_MOVE_LEFT]:
             output += self.player1.accel_const
-        if kt.is_input_held[K_MOVE_RIGHT]:
+        if ctrl.is_input_held[K_MOVE_RIGHT]:
             output -= self.player1.accel_const
 
         if self.player1.is_swinging():
@@ -126,9 +132,9 @@ class Room(cb.AbstractBase):
             float: The room's acceleration's y-axis component
         """
         output = 0.0
-        if kt.is_input_held[K_MOVE_UP]:
+        if ctrl.is_input_held[K_MOVE_UP]:
             output += self.player1.accel_const
-        if kt.is_input_held[K_MOVE_DOWN]:
+        if ctrl.is_input_held[K_MOVE_DOWN]:
             output -= self.player1.accel_const
 
         if self.player1.is_swinging():
@@ -182,28 +188,6 @@ class Room(cb.AbstractBase):
                 sprite.vel.x += value_x
                 sprite.vel.y += value_y
 
-    def _recenter_player_x(self) -> None:
-        """Moves all the objects in the room so that the player is centered along the x-axis.
-        """
-        if self.is_scrolling_x and self.player1.pos.x != cst.WINWIDTH // 2:
-            self.posCopy = self.player1.pos.copy()
-            self.offsetX = self.posCopy.x - cst.WINWIDTH // 2
-            for sprite in self._get_sprites_to_recenter():
-                sprite.pos_copy = sprite.pos.copy()
-                sprite.pos.x = sprite.pos_copy.x - self.offsetX
-            self.player1.pos.x = cst.WINWIDTH // 2
-
-    def _recenter_player_y(self) -> None:
-        """Moves all the objects in the room so that the player is centered along the y-axis.
-        """
-        if self.is_scrolling_y and self.player1.pos.y != cst.WINHEIGHT // 2:
-            self.posCopy = self.player1.pos.copy()
-            self.offsetY = self.posCopy.y - cst.WINHEIGHT // 2
-            for sprite in self._get_sprites_to_recenter():
-                sprite.pos_copy = sprite.pos.copy()
-                sprite.pos.y = sprite.pos_copy.y - self.offsetY
-            self.player1.pos.y = cst.WINHEIGHT // 2
-
     def _get_sprites_to_recenter(self) -> list:
         """Returns a list containing all sprites that should be relocated when the player is centered.
 
@@ -223,7 +207,7 @@ class Room(cb.AbstractBase):
         return output_list
 
     # -------------------------------- Teleporting ------------------------------- #
-    def _align_player_after_tp(self, offset: float, direction: str, portal_out, width, height) -> None:
+    def _align_player_tp(self, offset: float, direction: str, portal_out, width, height) -> None:
         """Sets the player at the proper position after teleporting when the room can scroll.
 
         Args:
@@ -270,7 +254,7 @@ class Room(cb.AbstractBase):
             distance_offset = self.player1.pos.y - portal_in.pos.y
 
         # Actually teleporting the player
-        self._align_player_after_tp(distance_offset, direction_out, portal_out, combined_width, combined_height)
+        self._align_player_tp(distance_offset, direction_out, portal_out, combined_width, combined_height)
 
         if self.is_scrolling_x and self.is_scrolling_y:
             if direction_in == cst.EAST:
@@ -356,9 +340,6 @@ class Room(cb.AbstractBase):
                 direction_angles.update({cst.WEST: 180, cst.SOUTH: 90, cst.EAST: 0, cst.NORTH: 270})
             self.player1.vel = self.player1.vel.rotate(direction_angles[direction_out])
 
-        # self._recenter_player_x()
-        # self._recenter_player_y()
-
     def _sprites_rotate_trajectory(self, angle: float) -> None:
         """Rotates the velocities and accelerations of all the sprites within the room's sprites.
 
@@ -415,28 +396,28 @@ class Room(cb.AbstractBase):
                 self._set_vel(self.vel.x, 0)
                 self.player1.vel.y = 0
                 instig.pos.y = sprite.pos.y + height
-                self._recenter_player_y()
+                # self._recenter_player_y()
 
             if calc.triangle_collide(instig, sprite) == cst.EAST and (
                     instig.vel.x < 0 or sprite.vel.x > 0) and instig.pos.x <= sprite.pos.x + width:
                 self._set_vel(0, self.vel.y)
                 self.player1.vel.x = 0
                 instig.pos.x = sprite.pos.x + width
-                self._recenter_player_x()
+                # self._recenter_player_x()
 
             if calc.triangle_collide(instig, sprite) == cst.NORTH and (
                     instig.vel.y > 0 or sprite.vel.y < 0) and instig.pos.y >= sprite.pos.y - height:
                 self._set_vel(self.vel.x, 0)
                 self.player1.vel.y = 0
                 instig.pos.y = sprite.pos.y - height
-                self._recenter_player_y()
+                # self._recenter_player_y()
 
             if calc.triangle_collide(instig, sprite) == cst.WEST and (
                     instig.vel.x > 0 or sprite.vel.x < 0) and instig.pos.x >= sprite.pos.x - width:
                 self._set_vel(0, self.vel.y)
                 self.player1.vel.x = 0
                 instig.pos.x = sprite.pos.x - width
-                self._recenter_player_x()
+                # self._recenter_player_x()
 
         elif instig.hitbox.colliderect(sprite.hitbox):
             if (calc.triangle_collide(instig, sprite) == cst.SOUTH and
@@ -467,60 +448,30 @@ class Room(cb.AbstractBase):
     def _change_room(self) -> None:
         width = self.player1.hitbox.width // 2
         height = self.player1.hitbox.height // 2
-        if self.player1.pos.y >= self.borderSouth.pos.y - height:
+
+        if self.player1.pos.y >= self.border_south.pos.y - height:
             self.room.y -= 1
             self.lastEntranceDir = cst.SOUTH
             self.layout_update()
             calc.kill_groups(groups.all_projs)
 
-        elif self.player1.pos.x >= self.borderEast.pos.x - width:
+        elif self.player1.pos.x >= self.border_east.pos.x - width:
             self.room.x += 1
             self.lastEntranceDir = cst.EAST
             self.layout_update()
             calc.kill_groups(groups.all_projs)
 
-        elif self.player1.pos.y <= self.borderNorth.pos.y + height:
+        elif self.player1.pos.y <= self.border_north.pos.y + height:
             self.room.y += 1
             self.lastEntranceDir = cst.NORTH
             self.layout_update()
             calc.kill_groups(groups.all_projs)
 
-        elif self.player1.pos.x <= self.borderWest.pos.x + width:
+        elif self.player1.pos.x <= self.border_west.pos.x + width:
             self.room.x -= 1
             self.lastEntranceDir = cst.WEST
             self.layout_update()
             calc.kill_groups(groups.all_projs)
-
-    def _set_room_borders(self, room_width: int, room_height: int) -> None:
-        """Sets the borders of the room.
-
-        Args:
-            room_width: The width of the room (in pixels)
-            room_height: The height of the room (in pixels)
-        """
-        west_coords = vec(-8, room_height // 2)
-        north_coords = vec(room_width // 2, -8)
-        south_coords = vec(north_coords.x, north_coords.y + room_height + 16)
-        east_coords = vec(west_coords.x + room_width + 16, room_height // 2)
-
-        if room_width < cst.WINWIDTH:
-            west_coords.x = cst.WINWIDTH / 2 - room_width / 2 - 8
-            east_coords.x = west_coords.x + room_width + 16
-            south_coords.x = west_coords.x + room_width / 2 + 8
-            north_coords.x = south_coords.x
-
-        if room_height < cst.WINHEIGHT:
-            north_coords.y = cst.WINHEIGHT / 2 - room_height / 2 - 8
-            south_coords.y = north_coords.y + room_height + 16
-            east_coords.y = north_coords.y + room_height / 2 + 8
-            west_coords.y = east_coords.y
-
-        self.borderSouth = tiles.RoomBorder(south_coords.x, south_coords.y, room_width / 16, 1)
-        self.borderEast = tiles.RoomBorder(east_coords.x, east_coords.y, 1, room_height / 16)
-        self.borderNorth = tiles.RoomBorder(north_coords.x, north_coords.y, room_width / 16, 1)
-        self.borderWest = tiles.RoomBorder(west_coords.x, west_coords.y, 1, room_height / 16)
-
-        self.add(self.borderSouth, self.borderEast, self.borderNorth, self.borderWest)
 
     def _init_room(self, room_size_x: int, room_size_y: int, can_scroll_x: bool, can_scroll_y: bool) -> None:
         """Initializes a room's properties. This function must be called once for every room iteration.
@@ -531,26 +482,53 @@ class Room(cb.AbstractBase):
             can_scroll_x: Should the room scroll with the player along the x-axis?
             can_scroll_y: Should the room scroll with the player along the y-axis?
         """
-        self._set_room_borders(room_size_x, room_size_y)
+        # Placing borders in correct spots in room
+        west_coords = vec(-8, room_size_y // 2)
+        north_coords = vec(room_size_x // 2, -8)
+        south_coords = vec(north_coords.x, north_coords.y + room_size_y + 16)
+        east_coords = vec(west_coords.x + room_size_x + 16, room_size_y // 2)
+
+        # TODO: Integrate this with a room scrolling check to fix object placement
+        #  (must combine this func with _init_room because the order of operation is currently impossible
+        # if room_width < cst.WINWIDTH:
+        #     west_coords.x = cst.WINWIDTH / 2 - room_width / 2 - 8
+        #     east_coords.x = west_coords.x + room_width + 16
+        #     south_coords.x = west_coords.x + room_width / 2 + 8
+        #     north_coords.x = south_coords.x
+        #
+        # if room_height < cst.WINHEIGHT:
+        #     north_coords.y = cst.WINHEIGHT / 2 - room_height / 2 - 8
+        #     south_coords.y = north_coords.y + room_height + 16
+        #     east_coords.y = north_coords.y + room_height / 2 + 8
+        #     west_coords.y = east_coords.y
+
+        self.border_south = tiles.RoomBorder(south_coords.x, south_coords.y, room_size_x / 16, 1)
+        self.border_east = tiles.RoomBorder(east_coords.x, east_coords.y, 1, room_size_y / 16)
+        self.border_north = tiles.RoomBorder(north_coords.x, north_coords.y, room_size_x / 16, 1)
+        self.border_west = tiles.RoomBorder(west_coords.x, west_coords.y, 1, room_size_y / 16)
+
+        self.add(self.border_south, self.border_east, self.border_north, self.border_west)
+
+        # Setting player at correct spot in room
         if self.lastEntranceDir == cst.SOUTH:
-            self.player1.pos.x = self.borderNorth.pos.x
-            self.player1.pos.y = (self.borderNorth.pos.y + self.borderNorth.hitbox.height // 2
+            self.player1.pos.x = self.border_north.pos.x
+            self.player1.pos.y = (self.border_north.pos.y + self.border_north.hitbox.height // 2
                                   + self.player1.hitbox.height // 2)
 
         elif self.lastEntranceDir == cst.EAST:
-            self.player1.pos.x = (self.borderWest.pos.x +
-                                  self.borderWest.hitbox.width // 2 + self.player1.hitbox.width // 2)
-            self.player1.pos.y = self.borderWest.pos.y
+            self.player1.pos.x = (self.border_west.pos.x
+                                  + self.border_west.hitbox.width // 2 + self.player1.hitbox.width // 2)
+            self.player1.pos.y = self.border_west.pos.y
 
         elif self.lastEntranceDir == cst.NORTH:
-            self.player1.pos.x = self.borderSouth.pos.x
-            self.player1.pos.y = (self.borderSouth.pos.y -
-                                  self.borderSouth.hitbox.height // 2 - self.player1.hitbox.height // 2)
+            self.player1.pos.x = self.border_south.pos.x
+            self.player1.pos.y = (self.border_south.pos.y
+                                  - self.border_south.hitbox.height // 2 - self.player1.hitbox.height // 2)
 
         elif self.lastEntranceDir == cst.WEST:
-            self.player1.pos.x = (self.borderEast.pos.x -
-                                  self.borderEast.hitbox.width // 2 - self.player1.hitbox.width // 2)
-            self.player1.pos.y = self.borderEast.pos.y
+            self.player1.pos.x = (self.border_east.pos.x
+                                  - self.border_east.hitbox.width // 2 - self.player1.hitbox.width // 2)
+            self.player1.pos.y = self.border_east.pos.y
 
         player_vel_copy = self.player1.vel.copy()
         self.player1.vel = vec(0, 0)
@@ -564,10 +542,10 @@ class Room(cb.AbstractBase):
         self._get_room_change_trajectory(scroll_copy_x, scroll_copy_y, self.is_scrolling_x, self.is_scrolling_y,
                                          player_vel_copy)
 
-        if self.is_scrolling_x:
-            self._recenter_player_x()
-        if self.is_scrolling_y:
-            self._recenter_player_y()
+        # if self.is_scrolling_x:
+        #     self._recenter_player_x()
+        # if self.is_scrolling_y:
+        #     self._recenter_player_y()
 
     def _get_room_change_trajectory(self, prev_room_scroll_x: bool, prev_room_scroll_y: bool, new_room_scroll_x: bool,
                                     new_room_scroll_y: bool, player_vel: pygame.math.Vector2) -> None:
@@ -605,49 +583,63 @@ class Room(cb.AbstractBase):
         for container in groups.all_containers:
             container.hide_sprites()
 
-        # ------------------------------- Room Layouts ------------------------------- #
+        this_room = self._room_specs[tuple(self.room)]  # Retrieve room specs
+        self.generate_room()
+        self._init_room(this_room.width, this_room.height, this_room.scroll.x, this_room.scroll.y)
+
+    def generate_room(self) -> None:
+        """Searches for the correct room container for the given room and un-hides all sprites within it. If no room
+        container is found, a new one will be created.
+
+        Returns:
+            None
+        """
+        try:
+            container = next(c for c in groups.all_containers if c.room == self.room)
+            container.show_sprites()
+
+        except StopIteration:
+            new_container = roomcontainers.RoomContainer(
+                self.room.x, self.room.y,
+                self._get_room_layout()
+            )
+            groups.all_containers.append(new_container)
+
+    def _get_room_layout(self) -> list:
+        """Returns the layout of the current room.
+
+        Returns:
+            list: A list of all the sprites that should be in the room. This includes walls, floors, enemies, and
+            puzzle mechanisms.
+        """
         if self.room == vec(0, 0):
-            self.add(
-                tiles.Wall(32, 512, 4, 64),
+            return [
+                tiles.Wall(0, 0, 4, 32),
                 tiles.Floor(cst.WINWIDTH // 2, cst.WINHEIGHT // 2, 80, 80),
-            )
 
-            try:
-                container = next(c for c in groups.all_containers if c.room == self.room)
-                container.show_sprites()
+                trinkets.Button(1, 14, 16),
+                trinkets.Box(cst.WINWIDTH // 2, cst.WINHEIGHT // 2),
 
-            except StopIteration:
-                groups.all_containers.append(
-                    roomcontainers.RoomContainer(
-                        self.room.x, self.room.y,
-                        trinkets.Button(1, 14, 16),
-                        trinkets.Box(cst.WINWIDTH // 2, cst.WINHEIGHT // 2),
-                        trinkets.LockedWall(128, 64, 256, 100, 1, 4, 4),
-                        henchmen.StandardGrunt(0, 0),
-                        henchmen.Ambusher(600, 600)
-                    )
-                )
-            self._init_room(1920, 1080, True, True)
+                trinkets.LockedWall(128, 64, 256, 100, 1, 4, 4),
+                enemies.StandardGrunt(80, 100),
+                enemies.StandardGrunt(80, 110),
+                enemies.StandardGrunt(80, 120),
+                enemies.StandardGrunt(80, 130),
+                enemies.StandardGrunt(80, 140),
+                enemies.StandardGrunt(80, 150),
+                # enemies.Ambusher(600, 600)
+            ]
 
-        if self.room == vec(0, 1):
-            self.add(
-                tiles.Wall(cst.WINWIDTH // 4 + 32, cst.WINHEIGHT // 4 + 32, 4, 4),
-            )
+        elif self.room == vec(0, 1):
+            return [
+                tiles.Wall(0, 0, 4, 4)
+            ]
 
-            try:
-                container = next(c for c in groups.all_containers if c.room == self.room)
-                container.show_sprites()
-
-            except StopIteration:
-                groups.all_containers.append(
-                    roomcontainers.RoomContainer(
-                        self.room.x, self.room.y,
-                    )
-                )
-            self._init_room(640, 360, True, True)
+        else:
+            raise RuntimeError(f'No room layout associated with room {self.room}.')
 
     def update(self):
-        text.display_text.draw_text(self.__repr__(), 0, 0)
+        text.display_text.draw_text(repr(self), 0, 0)
         self._change_room()
         self.movement()
 

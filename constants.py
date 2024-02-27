@@ -1,16 +1,6 @@
-import pygame
-import math
-
-# ---------------------------------- Aliases --------------------------------- #
-vec = pygame.math.Vector2
-
-rad = math.radians
-deg = math.degrees
-
-sin = math.sin
-cos = math.cos
-pi = math.pi
-
+"""
+Contains all global constants, like the size of the window, sprite layers, materials, loot tables, etc.
+"""
 # ---------------------------------- Window ---------------------------------- #
 WINWIDTH = 1280  # noqa
 WINHEIGHT = 720  # noqa

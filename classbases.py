@@ -1,13 +1,16 @@
-import pygame
-import time
+"""
+Module containing ActorBase and AbstractBase.
+"""
 import copy
+import time
+
+import pygame
+from pygame.math import Vector2 as vec
 
 import calculations as calc
 import constants as cst
 import groups
-from spritesheet import Spritesheet
-
-vec = pygame.math.Vector2
+import spritesheet
 
 
 def get_room():
@@ -34,15 +37,19 @@ class ActorBase(pygame.sprite.Sprite):
 
         self.last_frame = time.time()
 
-        self._pos = vec((0, 0))
-        self.pos_copy = self._pos.copy()  # For adjusting sprites within the scrolling rooms
+        self.pos = vec((0, 0))
+        self.pos_copy = self.pos.copy()  # For adjusting sprites within the scrolling rooms
         
         self.room_pos = vec(0, 0)  # For maintaining position within a moving room
         
-        self._vel = vec(0, 0)
-        self._vel_const = vec(0, 0)  # Only for bullets; otherwise this will stay (0, 0)
-        self._accel = vec(0, 0)
-        self._accel_const = 0.3
+        self.vel = vec(0, 0)
+        """The velocity constant of the sprite. It determines how fast a sprite moving with a constant velocity
+            should move along the x-axis and y-axis. If the sprite moves according to acceleration and not velocity
+            alone, then this value will not be used."""
+        self.vel_const = vec(0, 0)
+
+        self.accel = vec(0, 0)
+        self.accel_const = 0.3
 
         self.spritesheet = None
         self.orig_images = None
@@ -65,62 +72,17 @@ class ActorBase(pygame.sprite.Sprite):
 
     @layer.setter
     def layer(self, value: int):
-        self._layer = value
-
-    @property
-    def pos(self):
-        """The position of the sprite according to the bounds of the screen. (0, 0) is the top left of the screen."""
-        return self._pos
-
-    @pos.setter
-    def pos(self, value: pygame.math.Vector2):
-        self._pos = value
-
-    @property
-    def vel(self):
-        """The velocity of the sprite."""
-        return self._vel
-
-    @vel.setter
-    def vel(self, value: pygame.math.Vector2):
-        self._vel = value
-
-    @property
-    def vel_const(self):
-        """The velocity constant of the sprite. It determines how fast a sprite moving with a constant velocity
-        should move along the x-axis and y-axis. If the sprite moves according to acceleration and not velocity alone,
-        then this value will not be used."""
-        return self._vel_const
-
-    @vel_const.setter
-    def vel_const(self, value: pygame.math.Vector2):
-        self._vel_const = value
-
-    @property
-    def accel(self):
-        """The acceleration of the sprite."""
-        return self._accel
-
-    @accel.setter
-    def accel(self, value: pygame.math.Vector2):
-        self._accel = value
-
-    @property
-    def accel_const(self):
-        """The acceleration constant to use when accelerating the sprite. The higher this value, the faster
-        the sprite will move."""
-        return self._accel_const
-
-    @accel_const.setter
-    def accel_const(self, value: int | float):
-        self._accel_const = value
+        if value > 0:
+            self._layer = value
+        else:
+            raise ValueError(f"ERROR: Assigning layer of value {value} has no effect.")
 
     # -------------------------------- Visibility -------------------------------- #
     def hide(self) -> None:
         """Makes the sprite invisible. The sprite's ``update()`` method cannot be called.
         """
         self.visible = False
-        if hasattr(self, 'health_bar'):
+        if hasattr(self, 'health_bar'):  # TODO: Remove need for hasattr check
             self.health_bar.hide()
             self.health_bar.number.hide()
         groups.all_sprites.remove(self)
@@ -156,7 +118,7 @@ class ActorBase(pygame.sprite.Sprite):
         Returns:
             None
         """
-        self.spritesheet = Spritesheet(image_file, sprites_per_row)
+        self.spritesheet = spritesheet.Spritesheet(image_file, sprites_per_row)
         self.orig_images = self.spritesheet.get_images(frame_width, frame_height, image_count, image_offset)
         self.images = self.spritesheet.get_images(frame_width, frame_height, image_count, image_offset)
         self.index = index

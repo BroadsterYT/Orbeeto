@@ -6,14 +6,14 @@ import sys
 import pygame
 from pygame.locals import QUIT
 
-import controls.key_trackers as kt
+import controls as ctrl
 from controls.keybinds import *
+import screen
 
 import calculations as calc
 import constants as cst
 import groups
 import rooms
-import screen
 
 pygame.init()
 
@@ -23,11 +23,9 @@ screen.buffer_screen = pygame.Surface((cst.WINWIDTH, cst.WINHEIGHT))
 screen.viewport = pygame.display.set_mode((cst.WINWIDTH, cst.WINHEIGHT), pygame.SCALED | pygame.RESIZABLE, 0, 0, 2)
 pygame.display.set_caption('Orbeeto')
 
-print(pygame.display.get_desktop_sizes())
 
 def redraw_game_window():
-    """Draws all sprites every frame.
-    """
+    """Draws all sprites every frame."""
     groups.all_sprites.update()
     groups.all_sprites.draw(screen.buffer_screen)
     main_room.update()
@@ -53,13 +51,13 @@ def check_key_release(is_mouse) -> None:
         None
     """
     if not is_mouse:
-        for input_key in kt.key_released.keys():
+        for input_key in ctrl.key_released.keys():
             if event.type == pygame.KEYUP and event.key == input_key:
-                kt.key_released[input_key] += 1
+                ctrl.key_released[input_key] += 1
     else:
-        for button in kt.key_released.keys():
+        for button in ctrl.key_released.keys():
             if event.type == pygame.MOUSEBUTTONUP and event.button == button:
-                kt.key_released[button] += 1
+                ctrl.key_released[button] += 1
 
 
 # ============================================================================ #
@@ -74,7 +72,7 @@ def main():
                 pygame.quit()
                 sys.exit()
 
-        global event
+        global event  # noqa
         for event in pygame.event.get():
             key_pressed = pygame.key.get_pressed()
 
@@ -82,11 +80,11 @@ def main():
                 sys.exit()
 
             # Key input updating
-            for key in kt.is_input_held.keys():
+            for key in ctrl.is_input_held.keys():
                 if key in [1, 2, 3]:
-                    kt.is_input_held[key] = pygame.mouse.get_pressed(5)[key - 1]
+                    ctrl.is_input_held[key] = pygame.mouse.get_pressed(5)[key - 1]
                 else:
-                    kt.is_input_held[key] = key_pressed[key]
+                    ctrl.is_input_held[key] = key_pressed[key]
 
             # Key release updating
             check_key_release(False)
@@ -96,8 +94,6 @@ def main():
                 # Player ammo refill
                 if main_room.player1.ammo < main_room.player1.max_ammo:
                     main_room.player1.ammo += 1
-
-        screen.buffer_screen.fill((255, 255, 255))
 
         # ------------------------------ Game Operation ------------------------------ #
         for portals in groups.all_portals:
