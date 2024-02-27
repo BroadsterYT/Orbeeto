@@ -59,6 +59,8 @@ class ItemDrop(cb.ActorBase):
 
     def movement(self):
         if self.can_update:
+            self.collide_check(groups.all_walls)
+
             exist_time = calc.get_time_diff(self.start_time)
             self.accel = self.get_accel()
             
@@ -81,7 +83,6 @@ class ItemDrop(cb.ActorBase):
         return final_accel
 
     def update(self):
-        self.collide_check(groups.all_walls)
         for a_player in groups.all_players:
             if self.hitbox.colliderect(a_player):
                 groups.all_font_chars.add(

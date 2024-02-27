@@ -1,17 +1,17 @@
 """
 Contains the room class.
 """
-import time
 import copy
 import math
 
 import itertools
+
 import pygame
 from pygame.math import Vector2 as vec
 
-import controls.key_trackers as kt
-import text.display_text
+import controls as ctrl
 from controls.keybinds import *
+import text.display_text
 
 import calculations as calc
 import classbases as cb
@@ -22,6 +22,22 @@ import players
 import roomcontainers
 import tiles
 import trinkets
+
+
+class RoomSpecs:
+    """Contains all information regarding the details of a room."""
+    def __init__(self, room_width, room_height, scroll_x, scroll_y):
+        """Contains all information regarding the details of a room.
+
+        Args:
+            room_width: The width of the room (in pixels)
+            room_height: The height of the room (in pixels)
+            scroll_x: Can the room scroll along the x-axis? (True if yes)
+            scroll_y: Can the room scroll along the y-axis? (True if yes)
+        """
+        self.width = room_width
+        self.height = room_height
+        self.scroll = vec(scroll_x, scroll_y)
 
 
 # noinspection PyTypeChecker
@@ -36,13 +52,11 @@ class Room(cb.AbstractBase):
         super().__init__()
         groups.all_rooms.append(self)
         self.room = vec((room_x, room_y))
-        self.size = vec((1280, 720))
+        self.size = vec((0, 0))
 
         self.lastEntranceDir = None
 
         self.player1 = players.Player()
-        self.posCopy = self.player1.pos.copy()
-        self.offset = vec(self.player1.pos.x - 608, self.player1.pos.y - cst.WINHEIGHT // 2)
 
         self.border_south = tiles.RoomBorder(0, self.size.y // 16, self.size.x // 16, 1)
         self.border_east = tiles.RoomBorder(cst.WINWIDTH // 16, 0, 1, self.size.y // 16)
@@ -53,19 +67,15 @@ class Room(cb.AbstractBase):
         self.is_scrolling_x = True
         self.is_scrolling_y = True
 
-        self.offsetX = self.player1.pos.x - cst.WINWIDTH // 2
-        self.offsetY = self.player1.pos.y - cst.WINHEIGHT // 2
-
-        # --------------------------------- Movement --------------------------------- #
         self.pos = vec(0, 0)
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
         self.accel_const = self.player1.accel_const
 
-        self.dashCooldown = time.time()
-        self.dashTimer = time.time()
-        self.dashCheck = True
-        self.lastPresses = copy.copy(kt.key_released)
+        self._room_specs = {
+            (0, 0): RoomSpecs(1280, 720, True, True),
+            (0, 1): RoomSpecs(640, 360, True, False),
+        }
 
         self.layout_update()
 
@@ -104,9 +114,9 @@ class Room(cb.AbstractBase):
             float: The room's acceleration's x-axis component
         """
         output = 0.0
-        if kt.is_input_held[K_MOVE_LEFT]:
+        if ctrl.is_input_held[K_MOVE_LEFT]:
             output += self.player1.accel_const
-        if kt.is_input_held[K_MOVE_RIGHT]:
+        if ctrl.is_input_held[K_MOVE_RIGHT]:
             output -= self.player1.accel_const
 
         if self.player1.is_swinging():
@@ -122,9 +132,9 @@ class Room(cb.AbstractBase):
             float: The room's acceleration's y-axis component
         """
         output = 0.0
-        if kt.is_input_held[K_MOVE_UP]:
+        if ctrl.is_input_held[K_MOVE_UP]:
             output += self.player1.accel_const
-        if kt.is_input_held[K_MOVE_DOWN]:
+        if ctrl.is_input_held[K_MOVE_DOWN]:
             output -= self.player1.accel_const
 
         if self.player1.is_swinging():
@@ -177,28 +187,6 @@ class Room(cb.AbstractBase):
             for sprite in self._get_sprites_to_recenter():
                 sprite.vel.x += value_x
                 sprite.vel.y += value_y
-
-    # def _recenter_player_x(self) -> None:
-    #     """Moves all the objects in the room so that the player is centered along the x-axis.
-    #     """
-    #     if self.is_scrolling_x and self.player1.pos.x != cst.WINWIDTH // 2:
-    #         self.posCopy = self.player1.pos.copy()
-    #         self.offsetX = self.posCopy.x - cst.WINWIDTH // 2
-    #         for sprite in self._get_sprites_to_recenter():
-    #             sprite.pos_copy = sprite.pos.copy()
-    #             sprite.pos.x = sprite.pos_copy.x - self.offsetX
-    #         self.player1.pos.x = cst.WINWIDTH // 2
-    #
-    # def _recenter_player_y(self) -> None:
-    #     """Moves all the objects in the room so that the player is centered along the y-axis.
-    #     """
-    #     if self.is_scrolling_y and self.player1.pos.y != cst.WINHEIGHT // 2:
-    #         self.posCopy = self.player1.pos.copy()
-    #         self.offsetY = self.posCopy.y - cst.WINHEIGHT // 2
-    #         for sprite in self._get_sprites_to_recenter():
-    #             sprite.pos_copy = sprite.pos.copy()
-    #             sprite.pos.y = sprite.pos_copy.y - self.offsetY
-    #         self.player1.pos.y = cst.WINHEIGHT // 2
 
     def _get_sprites_to_recenter(self) -> list:
         """Returns a list containing all sprites that should be relocated when the player is centered.
@@ -595,49 +583,13 @@ class Room(cb.AbstractBase):
         for container in groups.all_containers:
             container.hide_sprites()
 
-        # ------------------------------- Room Layouts ------------------------------- #
-        if self.room == vec(0, 0):
-            try:
-                container = next(c for c in groups.all_containers if c.room == self.room)
-                container.show_sprites()
+        this_room = self._room_specs[tuple(self.room)]  # Retrieve room specs
+        self.generate_room()
+        self._init_room(this_room.width, this_room.height, this_room.scroll.x, this_room.scroll.y)
 
-            except StopIteration:
-                groups.all_containers.append(
-                    roomcontainers.RoomContainer(
-                        self.room.x, self.room.y,
-                        tiles.Wall(32, 512, 4, 64),
-                        # tiles.Wall(self.pos.x, self.pos.y, 4, 64),
-                        # tiles.Floor(cst.WINWIDTH // 2, cst.WINHEIGHT // 2, 80, 80),
-
-                        trinkets.Button(1, 14, 16),
-                        trinkets.Box(cst.WINWIDTH // 2, cst.WINHEIGHT // 2),
-                        trinkets.LockedWall(128, 64, 256, 100, 1, 4, 4),
-                        enemies.StandardGrunt(0, 0),
-                        enemies.Ambusher(600, 600)
-                    )
-                )
-            self._init_room(1920, 1080, True, True)
-
-        if self.room == vec(0, 1):
-            self._init_room(640, 360, False, False)
-            try:
-                container = next(c for c in groups.all_containers if c.room == self.room)
-                container.show_sprites()
-
-            except StopIteration:
-                groups.all_containers.append(
-                    roomcontainers.RoomContainer(
-                        self.room.x, self.room.y,
-                        tiles.Wall(32, 32, 4, 4),
-                        enemies.StandardGrunt(0, 0),
-                    )
-                )
-
-    def generate_room(self, *sprites) -> None:
-        """
-
-        Args:
-            *sprites:
+    def generate_room(self) -> None:
+        """Searches for the correct room container for the given room and un-hides all sprites within it. If no room
+        container is found, a new one will be created.
 
         Returns:
             None
@@ -645,18 +597,49 @@ class Room(cb.AbstractBase):
         try:
             container = next(c for c in groups.all_containers if c.room == self.room)
             container.show_sprites()
-            print(f'Found container for room {self.room}')
 
         except StopIteration:
-            print(f'Failed search for room {self.room}')
             new_container = roomcontainers.RoomContainer(
                 self.room.x, self.room.y,
-                *sprites
+                self._get_room_layout()
             )
             groups.all_containers.append(new_container)
 
+    def _get_room_layout(self) -> list:
+        """Returns the layout of the current room.
+
+        Returns:
+            list: A list of all the sprites that should be in the room. This includes walls, floors, enemies, and
+            puzzle mechanisms.
+        """
+        if self.room == vec(0, 0):
+            return [
+                tiles.Wall(0, 0, 4, 32),
+                tiles.Floor(cst.WINWIDTH // 2, cst.WINHEIGHT // 2, 80, 80),
+
+                trinkets.Button(1, 14, 16),
+                trinkets.Box(cst.WINWIDTH // 2, cst.WINHEIGHT // 2),
+
+                trinkets.LockedWall(128, 64, 256, 100, 1, 4, 4),
+                enemies.StandardGrunt(80, 100),
+                enemies.StandardGrunt(80, 110),
+                enemies.StandardGrunt(80, 120),
+                enemies.StandardGrunt(80, 130),
+                enemies.StandardGrunt(80, 140),
+                enemies.StandardGrunt(80, 150),
+                # enemies.Ambusher(600, 600)
+            ]
+
+        elif self.room == vec(0, 1):
+            return [
+                tiles.Wall(0, 0, 4, 4)
+            ]
+
+        else:
+            raise RuntimeError(f'No room layout associated with room {self.room}.')
+
     def update(self):
-        text.display_text.draw_text(self.__repr__(), 0, 0)
+        text.display_text.draw_text(repr(self), 0, 0)
         self._change_room()
         self.movement()
 

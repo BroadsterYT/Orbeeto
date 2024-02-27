@@ -8,9 +8,9 @@ import itertools
 import pygame
 from pygame.math import Vector2 as vec
 
-import controls.key_trackers as kt
+import controls as ctrl
 from controls.keybinds import *
-from text import textbox
+import text
 
 import projectiles as proj
 import calculations as calc
@@ -31,7 +31,7 @@ class Player(cb.ActorBase):
         self.show(self.layer)
         groups.all_players.add(self)
 
-        self.last_textbox_release = kt.key_released[K_DIALOGUE]
+        self.last_textbox_release = ctrl.key_released[K_DIALOGUE]
 
         self.room = cb.get_room()
 
@@ -85,7 +85,7 @@ class Player(cb.ActorBase):
 
         self.grapple = None
         self.can_grapple = True
-        self.grapple_input_copy = kt.key_released[K_GRAPPLE]
+        self.grapple_input_copy = ctrl.key_released[K_GRAPPLE]
 
     @property
     def xp(self):
@@ -173,9 +173,9 @@ class Player(cb.ActorBase):
 
     def _get_x_axis_output(self) -> float:
         output = 0.0
-        if kt.is_input_held[K_MOVE_LEFT]:
+        if ctrl.is_input_held[K_MOVE_LEFT]:
             output -= self.accel_const
-        if kt.is_input_held[K_MOVE_RIGHT]:
+        if ctrl.is_input_held[K_MOVE_RIGHT]:
             output += self.accel_const
 
         if self.is_swinging():
@@ -186,9 +186,9 @@ class Player(cb.ActorBase):
 
     def _get_y_axis_output(self) -> float:
         output = 0.0
-        if kt.is_input_held[K_MOVE_UP]:
+        if ctrl.is_input_held[K_MOVE_UP]:
             output -= self.accel_const
-        if kt.is_input_held[K_MOVE_DOWN]:
+        if ctrl.is_input_held[K_MOVE_DOWN]:
             output += self.accel_const
 
         if self.is_swinging():
@@ -223,7 +223,7 @@ class Player(cb.ActorBase):
 
         offset = vec((21, 30))
 
-        if (kt.is_input_held[1] and
+        if (ctrl.is_input_held[1] and
                 self.ammo > 0 and
                 calc.get_time_diff(self.last_shot_time) >= self.gun_cooldown):
             # Standard bullets
@@ -252,26 +252,26 @@ class Player(cb.ActorBase):
             self.last_shot_time = time.time()
 
         # ------------------------------ Firing Portals ------------------------------ #
-        if kt.key_released[3] % 2 == 0 and self.can_portal:
+        if ctrl.key_released[3] % 2 == 0 and self.can_portal:
             groups.all_projs.add(proj.PortalBullet(self.pos.x, self.pos.y, vel_x * 0.75, vel_y * 0.75))
             self.can_portal = False
 
-        elif kt.key_released[3] % 2 != 0 and not self.can_portal:
+        elif ctrl.key_released[3] % 2 != 0 and not self.can_portal:
             groups.all_projs.add(proj.PortalBullet(self.pos.x, self.pos.y, vel_x * 0.75, vel_y * 0.75))
             self.can_portal = True
 
         # --------------------------- Firing Grappling Hook -------------------------- #
-        if self.grapple_input_copy != kt.key_released[K_GRAPPLE] and self.can_grapple:
+        if self.grapple_input_copy != ctrl.key_released[K_GRAPPLE] and self.can_grapple:
             self.grapple = proj.GrappleBullet(self, self.pos.x, self.pos.y, vel_x, vel_y)
             self.can_grapple = False
-            self.grapple_input_copy = kt.key_released[K_GRAPPLE]
+            self.grapple_input_copy = ctrl.key_released[K_GRAPPLE]
 
-        if self.grapple_input_copy != kt.key_released[K_GRAPPLE] and not self.can_grapple:
+        if self.grapple_input_copy != ctrl.key_released[K_GRAPPLE] and not self.can_grapple:
             if self.grapple is not None:
                 self.grapple.returning = True
             else:
                 self.can_grapple = True
-                self.grapple_input_copy = kt.key_released[K_GRAPPLE]
+                self.grapple_input_copy = ctrl.key_released[K_GRAPPLE]
 
     def _get_closest_interact(self):
         sprite_dists = {}
@@ -307,12 +307,12 @@ class Player(cb.ActorBase):
 
     def generate_text_box(self) -> None:
         """Generates dialogue based on specific conditions."""
-        if self.last_textbox_release != kt.key_released[K_DIALOGUE]:
+        if self.last_textbox_release != ctrl.key_released[K_DIALOGUE]:
             if len(groups.all_text_boxes) < 1:
                 groups.all_text_boxes.add(
-                    textbox.TextBox(cst.WINWIDTH // 2, cst.WINHEIGHT - 90, self._get_dialogue())
+                    text.TextBox(cst.WINWIDTH // 2, cst.WINHEIGHT - 90, self._get_dialogue())
                 )
-            self.last_textbox_release = kt.key_released[K_DIALOGUE]
+            self.last_textbox_release = ctrl.key_released[K_DIALOGUE]
 
     def update(self):
         if self.can_update and self.visible:
@@ -337,7 +337,7 @@ class Player(cb.ActorBase):
 
     def _animate(self):
         if calc.get_time_diff(self.last_frame) > 0.05:
-            if kt.is_input_held[1]:
+            if ctrl.is_input_held[1]:
                 self.index += 1
                 if self.index > 4:
                     self.index = 0

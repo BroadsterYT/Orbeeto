@@ -77,6 +77,7 @@ class StandardGrunt(enemybase.EnemyBase):
         final_accel = vec(0, 0)
 
         room = cb.get_room()
+        final_accel += room.get_accel()
 
         adjust_loc_x = self.rand_pos.x + room.pos.x
         adjust_loc_y = self.rand_pos.y + room.pos.y

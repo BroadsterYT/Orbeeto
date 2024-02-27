@@ -49,6 +49,21 @@ class TileBase(cb.ActorBase):
 
         self.accel_const = 0.58
 
+    def place_top_left(self, top_left_x, top_left_y) -> vec:
+        """Returns the position of the tile's center given the position to place its top-left corner.
+
+        Args:
+            top_left_x: The x-axis position of the top-left corner
+            top_left_y: The y-axis position of the top-left corner
+
+        Returns:
+            Vector2: The position of the tile's center
+        """
+        center = vec(0, 0)
+        center.x = top_left_x + self.width // 2
+        center.y = top_left_y + self.height // 2
+        return center
+
     def movement(self):
         if self.can_update:
             self.set_room_pos()
@@ -77,7 +92,7 @@ class Wall(TileBase):
         self.show(self.layer)
         groups.all_walls.add(self)
 
-        self.pivot = vec((pos_x, pos_y))
+        self.pos = self.place_top_left(pos_x, pos_y)
 
         self.spritesheet = spritesheet.Spritesheet('sprites/tiles/wall.png', 16)
         self.textures = self.spritesheet.get_images(16, 16, 16, image_row * 16)
