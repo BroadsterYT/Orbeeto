@@ -9,6 +9,7 @@ all_sprites = pygame.sprite.LayeredUpdates()
 # --------------------------------- Character groups ---------------------------------#
 all_players = Group()
 all_enemies = Group()
+all_sentries = Group()
 
 # --------------------------------- Interactive groups ---------------------------------#
 all_movable = Group()
@@ -19,7 +20,7 @@ all_drops = Group()
 all_slots = Group()
 
 # --------------------------------- Projectile groups ---------------------------------#
-all_projs = Group()
+all_projs = Group()  # noqa
 all_explosions = Group()
 all_portals = Group()
 

@@ -61,10 +61,9 @@ class Player(cb.ActorBase):
 
         self.grapple_speed = 2.0
 
-        self.dodge_charge_up_time = 1200  # TODO: Make dodge charge using time, not ticks
-        self.dodge_time = 0
-
         self.last_hit = time.time()
+        self.dodge_charge_up_time = 12  # TODO: Make dodge charge using time, not ticks
+        self.dodge_time = 0
 
         self.update_level()
 
@@ -325,7 +324,7 @@ class Player(cb.ActorBase):
 
             # Dodge charge up
             if self.dodge_time < self.dodge_charge_up_time:
-                self.dodge_time += 1
+                self.dodge_time = math.trunc(calc.get_time_diff(self.last_hit))
 
         self.menu.update()
         self._passive_hp_regen()

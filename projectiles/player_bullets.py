@@ -3,7 +3,7 @@ import time
 
 from pygame.math import Vector2 as vec
 
-from projectiles import bulletbase as bb
+import projectiles as proj
 
 import classbases as cb
 import calculations as calc
@@ -17,7 +17,7 @@ import visuals
 # ============================================================================ #
 #                                Player Bullets                                #
 # ============================================================================ #
-class PlayerStdBullet(bb.BulletBase):
+class PlayerStdBullet(proj.BulletBase):
     def __init__(self, pos_x: float, pos_y: float, vel_x: float, vel_y: float, bounce_count: int = 1):
         """A projectile fired by a player that moves at a constant velocity.
 
@@ -45,6 +45,7 @@ class PlayerStdBullet(bb.BulletBase):
     def movement(self):
         if self.can_update:
             self.proj_collide(groups.all_enemies, True)
+            self.proj_collide(groups.all_sentries, True)
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)
 
@@ -62,7 +63,7 @@ class PlayerStdBullet(bb.BulletBase):
         return f'PlayerStdBullet({self.pos}, {self.vel}, {self.ricCount})'
 
 
-class PlayerLaserBullet(bb.BulletBase):
+class PlayerLaserBullet(proj.BulletBase):
     def __init__(self, pos_x: float, pos_y: float, vel_x: float, vel_y: float, bounce_count: int = 1):
         super().__init__(cst.PROJ_DAMAGE[cst.PROJ_LASER])
         self.layer = cst.LAYER['proj']
@@ -96,7 +97,7 @@ class PlayerLaserBullet(bb.BulletBase):
 
 
 # ------------------------------ Utility Bullets ----------------------------- #
-class PortalBullet(bb.BulletBase):
+class PortalBullet(proj.BulletBase):
     def __init__(self, pos_x, pos_y, vel_x, vel_y):
         super().__init__()
         self.layer = cst.LAYER['proj']
@@ -190,7 +191,7 @@ class PortalBullet(bb.BulletBase):
         return f'PortalBullet({self.pos}, {self.vel}, {self.ric_count})'
 
 
-class GrappleBullet(bb.BulletBase):
+class GrappleBullet(proj.BulletBase):
     def __init__(self, shot_from, pos_x: float, pos_y: float, vel_x: float, vel_y: float):
         super().__init__()
         self.layer = cst.LAYER['grapple']

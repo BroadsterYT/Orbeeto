@@ -156,7 +156,7 @@ class Turret(enemybase.EnemyBase):
         """
         super().__init__()
         self.show(self.layer)
-        groups.all_enemies.add(self)
+        groups.all_sentries.add(self)
 
         self.bullet_vel = vec(0, 6)
         self.bullet_angle = math.degrees(0.3)
@@ -220,12 +220,11 @@ class Turret(enemybase.EnemyBase):
                     self.is_shooting = False
             self.last_frame = time.time()
 
-
     def __str__(self):
-        return f'StandardGrunt at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\nxp worth: {self.xp}'
+        return f'Turret at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\nxp worth: {self.xp}'
 
     def __repr__(self):
-        return f'StandardGrunt({self.pos}, {self.vel}, {self.accel}, {self.xp})'
+        return f'Turret({self.pos}, {self.vel}, {self.accel}, {self.xp})'
 
 
 class Ambusher(enemybase.EnemyBase):

@@ -108,9 +108,8 @@ class DodgeBar(StatBarBase):
     def update(self):
         self.movement()
         if self.owner.hp > 0:
-            if self.owner.dodge_time < self.owner.dodge_charge_up_time:
-                self.index = math.ceil((16 * self.owner.dodge_time) / self.owner.dodge_charge_up_time)
-                self.render_images()
+            self.index = math.floor((16 * self.owner.dodge_time) / self.owner.dodge_charge_up_time)
+            self.render_images()
         else:
             self.kill()
 
