@@ -169,7 +169,6 @@ class LockedWall(tiles.Wall):
         if self.can_update:
             self._set_room_points()
             self.set_room_pos()
-            print(self.start_room_pos)
 
             # Controls movement of wall when activator is activated/deactivated
             if self.last_state is not self.activator.get_state():

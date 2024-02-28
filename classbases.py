@@ -112,7 +112,7 @@ class ActorBase(pygame.sprite.Sprite):
             frame_height: The height of each individual frame
             sprites_per_row: The number of sprites within each row of the sprite sheet
             image_count: The number of images in the sprite's animation
-            image_offset: The index of the frame to begin the snip from
+            image_offset: The index of the frame to begin the snip from (0 = no offset, use first image)
             index: The index of the sprite's animation to start from
 
         Returns:

@@ -72,7 +72,6 @@ class TextBox(cb.ActorBase):
             if calc.get_time_diff(self.last_generation) >= (1 / self.text_speed):
                 # Drawing each letter onto the text box
                 char = self.convo[self.convo_index][self.char_index]
-                print(char)
                 char_image = calc.text_to_image(char, fontinfo.dialogue_font)
                 final_image = self.style_character(char_image, self.last_char)
                 self.image = visuals.stack_images(
@@ -81,7 +80,7 @@ class TextBox(cb.ActorBase):
 
                 if char not in dg.SKIP:  # Skips typing wait time if char is a special character
                     if char == ' ':
-                        print("SPACE")
+                        pass
                     else:
                         self.last_generation = time.time()
 

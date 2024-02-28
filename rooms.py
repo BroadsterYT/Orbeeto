@@ -53,8 +53,7 @@ class Room(cb.AbstractBase):
         groups.all_rooms.append(self)
         self.room = vec((room_x, room_y))
         self.size = vec((0, 0))
-
-        self.lastEntranceDir = None
+        self.last_dir_entered = None
 
         self.player1 = players.Player()
 
@@ -74,7 +73,7 @@ class Room(cb.AbstractBase):
 
         self._room_specs = {
             (0, 0): RoomSpecs(1280, 720, True, True),
-            (0, 1): RoomSpecs(640, 360, True, False),
+            (0, 1): RoomSpecs(640, 360, False, False),
         }
 
         self.layout_update()
@@ -396,28 +395,24 @@ class Room(cb.AbstractBase):
                 self._set_vel(self.vel.x, 0)
                 self.player1.vel.y = 0
                 instig.pos.y = sprite.pos.y + height
-                # self._recenter_player_y()
 
             if calc.triangle_collide(instig, sprite) == cst.EAST and (
                     instig.vel.x < 0 or sprite.vel.x > 0) and instig.pos.x <= sprite.pos.x + width:
                 self._set_vel(0, self.vel.y)
                 self.player1.vel.x = 0
                 instig.pos.x = sprite.pos.x + width
-                # self._recenter_player_x()
 
             if calc.triangle_collide(instig, sprite) == cst.NORTH and (
                     instig.vel.y > 0 or sprite.vel.y < 0) and instig.pos.y >= sprite.pos.y - height:
                 self._set_vel(self.vel.x, 0)
                 self.player1.vel.y = 0
                 instig.pos.y = sprite.pos.y - height
-                # self._recenter_player_y()
 
             if calc.triangle_collide(instig, sprite) == cst.WEST and (
                     instig.vel.x > 0 or sprite.vel.x < 0) and instig.pos.x >= sprite.pos.x - width:
                 self._set_vel(0, self.vel.y)
                 self.player1.vel.x = 0
                 instig.pos.x = sprite.pos.x - width
-                # self._recenter_player_x()
 
         elif instig.hitbox.colliderect(sprite.hitbox):
             if (calc.triangle_collide(instig, sprite) == cst.SOUTH and
@@ -451,25 +446,25 @@ class Room(cb.AbstractBase):
 
         if self.player1.pos.y >= self.border_south.pos.y - height:
             self.room.y -= 1
-            self.lastEntranceDir = cst.SOUTH
+            self.last_dir_entered = cst.SOUTH
             self.layout_update()
             calc.kill_groups(groups.all_projs)
 
         elif self.player1.pos.x >= self.border_east.pos.x - width:
             self.room.x += 1
-            self.lastEntranceDir = cst.EAST
+            self.last_dir_entered = cst.EAST
             self.layout_update()
             calc.kill_groups(groups.all_projs)
 
         elif self.player1.pos.y <= self.border_north.pos.y + height:
             self.room.y += 1
-            self.lastEntranceDir = cst.NORTH
+            self.last_dir_entered = cst.NORTH
             self.layout_update()
             calc.kill_groups(groups.all_projs)
 
         elif self.player1.pos.x <= self.border_west.pos.x + width:
             self.room.x -= 1
-            self.lastEntranceDir = cst.WEST
+            self.last_dir_entered = cst.WEST
             self.layout_update()
             calc.kill_groups(groups.all_projs)
 
@@ -489,7 +484,6 @@ class Room(cb.AbstractBase):
         east_coords = vec(west_coords.x + room_size_x + 16, room_size_y // 2)
 
         # TODO: Integrate this with a room scrolling check to fix object placement
-        #  (must combine this func with _init_room because the order of operation is currently impossible
         # if room_width < cst.WINWIDTH:
         #     west_coords.x = cst.WINWIDTH / 2 - room_width / 2 - 8
         #     east_coords.x = west_coords.x + room_width + 16
@@ -510,22 +504,22 @@ class Room(cb.AbstractBase):
         self.add(self.border_south, self.border_east, self.border_north, self.border_west)
 
         # Setting player at correct spot in room
-        if self.lastEntranceDir == cst.SOUTH:
+        if self.last_dir_entered == cst.SOUTH:
             self.player1.pos.x = self.border_north.pos.x
             self.player1.pos.y = (self.border_north.pos.y + self.border_north.hitbox.height // 2
                                   + self.player1.hitbox.height // 2)
 
-        elif self.lastEntranceDir == cst.EAST:
+        elif self.last_dir_entered == cst.EAST:
             self.player1.pos.x = (self.border_west.pos.x
                                   + self.border_west.hitbox.width // 2 + self.player1.hitbox.width // 2)
             self.player1.pos.y = self.border_west.pos.y
 
-        elif self.lastEntranceDir == cst.NORTH:
+        elif self.last_dir_entered == cst.NORTH:
             self.player1.pos.x = self.border_south.pos.x
             self.player1.pos.y = (self.border_south.pos.y
                                   - self.border_south.hitbox.height // 2 - self.player1.hitbox.height // 2)
 
-        elif self.lastEntranceDir == cst.WEST:
+        elif self.last_dir_entered == cst.WEST:
             self.player1.pos.x = (self.border_east.pos.x
                                   - self.border_east.hitbox.width // 2 - self.player1.hitbox.width // 2)
             self.player1.pos.y = self.border_east.pos.y
@@ -541,11 +535,6 @@ class Room(cb.AbstractBase):
 
         self._get_room_change_trajectory(scroll_copy_x, scroll_copy_y, self.is_scrolling_x, self.is_scrolling_y,
                                          player_vel_copy)
-
-        # if self.is_scrolling_x:
-        #     self._recenter_player_x()
-        # if self.is_scrolling_y:
-        #     self._recenter_player_y()
 
     def _get_room_change_trajectory(self, prev_room_scroll_x: bool, prev_room_scroll_y: bool, new_room_scroll_x: bool,
                                     new_room_scroll_y: bool, player_vel: pygame.math.Vector2) -> None:
@@ -575,35 +564,22 @@ class Room(cb.AbstractBase):
                 self._set_vel(0, -player_vel.y)
 
     def layout_update(self) -> None:
-        """Updates the layout of the room
-        """
+        """Updates the layout of the room"""
         for sprite in self.sprites():
             sprite.kill()
 
         for container in groups.all_containers:
             container.hide_sprites()
 
-        this_room = self._room_specs[tuple(self.room)]  # Retrieve room specs
-        self.generate_room()
-        self._init_room(this_room.width, this_room.height, this_room.scroll.x, this_room.scroll.y)
-
-    def generate_room(self) -> None:
-        """Searches for the correct room container for the given room and un-hides all sprites within it. If no room
-        container is found, a new one will be created.
-
-        Returns:
-            None
-        """
-        try:
+        try:  # Searching for the room container. If container isn't found, one will be generated
             container = next(c for c in groups.all_containers if c.room == self.room)
             container.show_sprites()
-
         except StopIteration:
-            new_container = roomcontainers.RoomContainer(
-                self.room.x, self.room.y,
-                self._get_room_layout()
-            )
+            new_container = roomcontainers.RoomContainer(self.room.x, self.room.y, self._get_room_layout())
             groups.all_containers.append(new_container)
+
+        this_room = self._room_specs[tuple(self.room)]  # Retrieve room specs
+        self._init_room(this_room.width, this_room.height, this_room.scroll.x, this_room.scroll.y)
 
     def _get_room_layout(self) -> list:
         """Returns the layout of the current room.
@@ -619,15 +595,9 @@ class Room(cb.AbstractBase):
 
                 trinkets.Button(1, 14, 16),
                 trinkets.Box(cst.WINWIDTH // 2, cst.WINHEIGHT // 2),
-
                 trinkets.LockedWall(128, 64, 256, 100, 1, 4, 4),
-                enemies.StandardGrunt(80, 100),
-                enemies.StandardGrunt(80, 110),
-                enemies.StandardGrunt(80, 120),
-                enemies.StandardGrunt(80, 130),
-                enemies.StandardGrunt(80, 140),
-                enemies.StandardGrunt(80, 150),
-                # enemies.Ambusher(600, 600)
+
+                enemies.Turret(500, 300),
             ]
 
         elif self.room == vec(0, 1):

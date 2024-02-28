@@ -18,27 +18,21 @@ import spritesheet
 
 
 class ItemDrop(cb.ActorBase):
-    def __init__(self, dropped_from, item_name: str):
+    def __init__(self, pos_x: int | float, pos_y: int | float, item_name: str):
         """An item or material dropped by an enemy that can be collected.
 
         Args:
-            dropped_from: The enemy that the item was dropped from
             item_name: The item to drop
         """
+        print(f'I GOT {pos_x} AND {pos_y}')
         super().__init__(cst.LAYER['drops'])
         self.show(self.layer)
-        
-        self.dropped_from = dropped_from
         self.mat = item_name
-
-        # room = cb.get_room()
-        # container_match = [c for c in groups.all_containers if c.room == room.room][0]
-        # container_match.add(self)
 
         self.start_time = time.time()
 
         self.accel_const = 0.8
-        self.pos = vec(self.dropped_from.pos.x, self.dropped_from.pos.y)
+        self.pos = vec((pos_x, pos_y))
         self.rand_accel = calc.get_rand_components(self.accel_const)
         
         self.spritesheet = spritesheet.Spritesheet("sprites/textures/item_drops.png", 8)
@@ -59,7 +53,8 @@ class ItemDrop(cb.ActorBase):
 
     def movement(self):
         if self.can_update:
-            self.collide_check(groups.all_walls)
+            if calc.get_time_diff(self.start_time) > 0.1:
+                self.collide_check(groups.all_walls)
 
             exist_time = calc.get_time_diff(self.start_time)
             self.accel = self.get_accel()
@@ -90,3 +85,6 @@ class ItemDrop(cb.ActorBase):
                 )
                 a_player.inventory[self.mat] += 1
                 self.kill()
+
+    def __repr__(self):
+        return f'ItemDrop({self.pos})'

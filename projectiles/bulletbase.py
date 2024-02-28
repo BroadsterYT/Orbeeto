@@ -13,11 +13,19 @@ import groups
 
 
 class BulletBase(cb.ActorBase):
-    def __init__(self):
-        """The base class for all projectiles"""
+    def __init__(self, damage: int = 0, dmg_mod: int = 1):
+        """The base class for all projectiles
+
+        Args:
+            damage: The amount of damage the projectile should inflict (if any)
+            dmg_mod: The multiplier to give to the damage field
+        """
         super().__init__()
         self.ric_count = 1
         self.start_time = time.time()
+
+        self.damage = damage
+        self.dmg_mod = dmg_mod
 
         self.hit = None
         self.sideHit = None

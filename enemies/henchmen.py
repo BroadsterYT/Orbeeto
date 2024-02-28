@@ -5,10 +5,9 @@ import random as rand
 import pygame
 from pygame.math import Vector2 as vec
 
-import text.display_text
 from enemies import enemybase
-
 import projectiles as proj
+
 import calculations as calc
 import classbases as cb
 import constants as cst
@@ -125,20 +124,19 @@ class StandardGrunt(enemybase.EnemyBase):
     def update(self):
         if self.hp > 0:
             self.collide_check(groups.all_players, groups.all_walls)
-            text.display_text.draw_text(f'{self.rand_pos}', 0, 200)
 
-            self.__animate()
+            self._animate()
             self.rotate_image(calc.get_angle(self, calc.get_closest_player()))
 
         self._destroy_check(6, 75, 0)
 
-    def __animate(self):
+    def _animate(self):
         if calc.get_time_diff(self.last_frame) > 0.1:
             if self.is_shooting:
                 self.index += 1
                 if self.index > 4:
                     self.index = 0
-                    self.isShooting = False
+                    self.is_shooting = False
             self.last_frame = time.time()
 
     def __str__(self):
@@ -146,6 +144,88 @@ class StandardGrunt(enemybase.EnemyBase):
 
     def __repr__(self):
         return f'StandardGrunt({self.pos}, {self.rand_pos}, {self.vel}, {self.accel}, {self.xp})'
+
+
+class Turret(enemybase.EnemyBase):
+    def __init__(self, pos_x: float, pos_y: float):
+        """An enemy that stays in place and shoots volleys of bullets.
+
+        Args:
+            pos_x: The x-position to spawn at
+            pos_y: The y-position to spawn at
+        """
+        super().__init__()
+        self.show(self.layer)
+        groups.all_enemies.add(self)
+
+        self.bullet_vel = vec(0, 6)
+        self.bullet_angle = math.degrees(0.3)
+        self.last_shot = time.time()
+
+        self.pos = vec((pos_x, pos_y))
+        self.set_room_pos()
+
+        self.set_images('sprites/enemies/standard_grunt.png', 64, 64, 5, 5, 0, 0)
+        self.set_rects(0, 0, 64, 64, 32, 32)
+
+        self._set_stats(34, 10, 68)
+
+    def movement(self, can_shoot: bool = True):
+        if self.can_update and self.hp > 0:
+            self.accel = self.get_accel()
+            self.set_room_pos()
+
+            if can_shoot:
+                self.shoot(0.15)
+
+            self.accel_movement()
+
+    def get_accel(self) -> pygame.math.Vector2:
+        final_accel = vec(0, 0)
+        room = cb.get_room()
+        final_accel += room.get_accel()
+        return final_accel
+
+    def shoot(self, shoot_time: float) -> None:
+        """Shoots a volley of bullets.
+
+        Args:
+            shoot_time: How often the volleys should be fired
+        """
+        if calc.get_time_diff(self.last_shot) > shoot_time:
+            self.is_shooting = True
+
+            vel_rot1 = self.bullet_vel.rotate(90)
+
+            groups.all_projs.add(
+                proj.EnemyStdBullet(self.pos.x, self.pos.y, self.bullet_vel.x, self.bullet_vel.y),
+                proj.EnemyStdBullet(self.pos.x, self.pos.y, -self.bullet_vel.x, -self.bullet_vel.y),
+                proj.EnemyStdBullet(self.pos.x, self.pos.y, vel_rot1.x, vel_rot1.y),
+                proj.EnemyStdBullet(self.pos.x, self.pos.y, -vel_rot1.x, -vel_rot1.y),
+            )
+            self.bullet_vel = self.bullet_vel.rotate(self.bullet_angle)
+            self.last_shot = time.time()
+
+    def update(self):
+        if self.hp > 0:
+            self._animate()
+        self._destroy_check(10, 120, 0)
+
+    def _animate(self):
+        if calc.get_time_diff(self.last_frame) > cst.SPF:
+            if self.is_shooting:
+                self.index += 1
+                if self.index > 4:
+                    self.index = 0
+                    self.is_shooting = False
+            self.last_frame = time.time()
+
+
+    def __str__(self):
+        return f'StandardGrunt at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\nxp worth: {self.xp}'
+
+    def __repr__(self):
+        return f'StandardGrunt({self.pos}, {self.vel}, {self.accel}, {self.xp})'
 
 
 class Ambusher(enemybase.EnemyBase):

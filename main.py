@@ -96,8 +96,12 @@ def main():
                     main_room.player1.ammo += 1
 
         # ------------------------------ Game Operation ------------------------------ #
-        for portals in groups.all_portals:
-            pygame.draw.rect(screen.buffer_screen, cst.RED, portals.hitbox, 3)
+        for enemy in groups.all_enemies:
+            pygame.draw.rect(screen.buffer_screen, cst.RED, enemy.hitbox, 3)
+            print(repr(enemy))
+
+        for drop in groups.all_drops:
+            print(repr(drop))
 
         # ------------------------------- Redraw Window ------------------------------ #
         redraw_game_window()

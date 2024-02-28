@@ -43,4 +43,4 @@ all_dialogue_lines = {
 
 
 if __name__ == '__main__':
-    print(style_text('error', YELLOW))
+    pass

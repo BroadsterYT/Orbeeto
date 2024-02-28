@@ -95,7 +95,7 @@ class EnemyBase(cb.ActorBase):
 
         for item in drops[row][column]:
             groups.all_drops.add(
-                itemdrops.ItemDrop(self, item)
+                itemdrops.ItemDrop(self.pos.x, self.pos.y, item)
             )
 
     def _destroy_check(self, amplitude, duration, loot_table_index: int) -> None:

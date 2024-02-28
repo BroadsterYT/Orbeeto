@@ -28,10 +28,9 @@ class PlayerStdBullet(bb.BulletBase):
             vel_y: The y-axis component of the bullet's velocity
             bounce_count: The amount of times the bullet should bounce. (1 = no bounce)
         """
-        super().__init__()
+        super().__init__(cst.PROJ_DAMAGE[cst.PROJ_STD])
         self.layer = cst.LAYER['proj']
         self.show(self.layer)
-        self.damage = cst.PROJ_DAMAGE[cst.PROJ_STD]
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
@@ -63,12 +62,11 @@ class PlayerStdBullet(bb.BulletBase):
         return f'PlayerStdBullet({self.pos}, {self.vel}, {self.ricCount})'
 
 
-class PlayerLaserBullet(bb.BulletBase):  # TODO: Add docstring
+class PlayerLaserBullet(bb.BulletBase):
     def __init__(self, pos_x: float, pos_y: float, vel_x: float, vel_y: float, bounce_count: int = 1):
-        super().__init__()
+        super().__init__(cst.PROJ_DAMAGE[cst.PROJ_LASER])
         self.layer = cst.LAYER['proj']
         self.show(self.layer)
-        self.damage = cst.PROJ_DAMAGE[cst.PROJ_LASER]
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
@@ -109,7 +107,6 @@ class PortalBullet(bb.BulletBase):
         self.vel_const = self.vel
 
         self.hitbox_adjust = vec(0, 0)
-        self.damage = cst.PROJ_DAMAGE[cst.PROJ_PORTAL]
 
         self.set_images("sprites/bullets/bullets.png", 32, 32, 8, 5, 8)
         self.set_rects(-24, -24, 8, 8, 8, 8)

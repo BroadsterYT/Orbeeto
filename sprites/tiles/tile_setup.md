@@ -9,9 +9,9 @@ below:
 
 ## Example
 
-| Tile |      Frame 1       |      Frame 2       |       Frame 3       |       Frame 4       |      Frame 5       |       Frame 6       |       Frame 7       |       Frame 8       | ... |
-|:-----|:------------------:|:------------------:|:-------------------:|:-------------------:|:------------------:|:-------------------:|:-------------------:|:-------------------:|-----|
-| 1    | Tile 1<br/>Frame 1 | Tile 1<br/>Frame 2 | Tile 1 <br/>Frame 3 | Tile 1 <br/>Frame 4 | Tile 1 <br/>Frame5 | Tile 1 <br/>Frame 6 | Tile 1 <br/>Frame 7 | Tile 1 <br/>Frame 8 | ... |
-| 2    | Tile 2<br/>Frame 1 | Tile 2<br/>Frame 2 | Tile 2 <br/>Frame 3 | Tile 2 <br/>Frame 4 | Tile 2 <br/>Frame5 | Tile 2 <br/>Frame 6 | Tile 2 <br/>Frame 7 | Tile 2 <br/>Frame 8 | ... |
-| 3    | Tile 3<br/>Frame 1 | Tile 3<br/>Frame 2 | Tile 3 <br/>Frame 3 | Tile 3 <br/>Frame 4 | Tile 3 <br/>Frame5 | Tile 3 <br/>Frame 6 | Tile 3 <br/>Frame 7 | Tile 3 <br/>Frame 8 | ... |
-| ...  |        ...         |        ...         |         ...         |         ...         |        ...         |         ...         |         ...         |         ...         | ... |
+| Tile |      Frame 1       |      Frame 2       |       Frame 3       |       Frame 4       |       Frame 5       |       Frame 6       |       Frame 7       |       Frame 8       | ... |
+|:-----|:------------------:|:------------------:|:-------------------:|:-------------------:|:-------------------:|:-------------------:|:-------------------:|:-------------------:|-----|
+| 1    | Tile 1<br/>Frame 1 | Tile 1<br/>Frame 2 | Tile 1 <br/>Frame 3 | Tile 1 <br/>Frame 4 | Tile 1 <br/>Frame 5 | Tile 1 <br/>Frame 6 | Tile 1 <br/>Frame 7 | Tile 1 <br/>Frame 8 | ... |
+| 2    | Tile 2<br/>Frame 1 | Tile 2<br/>Frame 2 | Tile 2 <br/>Frame 3 | Tile 2 <br/>Frame 4 | Tile 2 <br/>Frame 5 | Tile 2 <br/>Frame 6 | Tile 2 <br/>Frame 7 | Tile 2 <br/>Frame 8 | ... |
+| 3    | Tile 3<br/>Frame 1 | Tile 3<br/>Frame 2 | Tile 3 <br/>Frame 3 | Tile 3 <br/>Frame 4 | Tile 3 <br/>Frame 5 | Tile 3 <br/>Frame 6 | Tile 3 <br/>Frame 7 | Tile 3 <br/>Frame 8 | ... |
+| ...  |        ...         |        ...         |         ...         |         ...         |         ...         |         ...         |         ...         |         ...         | ... |
