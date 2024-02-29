@@ -1,5 +1,8 @@
+import time
+
 from pygame.math import Vector2 as vec
 
+import calculations as calc
 import classbases as cb
 import constants as cst
 import groups
@@ -30,14 +33,15 @@ class Portal(cb.ActorBase):
         self.landedOn = spawned_from.hit
         self.posOffset = vec(self.pos.x - self.landedOn.pos.x, self.pos.y - self.landedOn.pos.y)
 
-        self.set_images("sprites/portals/portals.png", 64, 64, 1, 1)
+        self.direction_angles = {cst.SOUTH: 0, cst.EAST: 90, cst.NORTH: 180, cst.WEST: 270}
+
+        self.set_images("sprites/portals/portals.png", 64, 64, 8, 16)
         self.set_rects(self.pos.x, self.pos.y, 64, 64, 54, 20)
 
         self._get_face()
 
     def _get_face(self) -> None:
-        direction_angles = {cst.SOUTH: 0, cst.EAST: 90, cst.NORTH: 180, cst.WEST: 270}
-        self.rotate_image(direction_angles[self.facing])
+        self.rotate_image(self.direction_angles[self.facing])
         if self.facing == cst.SOUTH:
             self.set_rects(self.pos.x, self.pos.y, 64, 64, 54, 20)
 
@@ -56,7 +60,16 @@ class Portal(cb.ActorBase):
         self.center_rects()
 
     def update(self):
-        pass
+        self._animate()
+        self.rotate_image(self.direction_angles[self.facing])
+
+    def _animate(self):
+        if calc.get_time_diff(self.last_frame) > 0.1:
+            self.index += 1
+            if self.index > 15:
+                self.index = 0
+
+            self.last_frame = time.time()
 
     def __repr__(self):
         return f'Portal({self.pos}, {self.landedOn}, {self.facing})'

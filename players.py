@@ -343,7 +343,7 @@ class Player(cb.ActorBase):
             else:  # Idle animation
                 self.index = 0
 
-            self.lastFrame = time.time()
+            self.last_frame = time.time()
 
     def __str__(self):
         return (f'Player at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\ncurrent bullet: {self.bullet_type}\n'

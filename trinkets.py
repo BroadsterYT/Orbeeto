@@ -1,6 +1,8 @@
 """
 Contains the object classes that the player can interact with/manipulate within the game.
 """
+import time
+
 import pygame
 from pygame.math import Vector2 as vec
 
@@ -139,10 +141,15 @@ class LockedWall(tiles.Wall):
         self.id_value = id_value
 
         self.activator = self._get_activator()
-        self.last_state = self.activator.get_state()
+        self.last_state = False
+        self.last_state_change = time.time()
+        self.speed_mult = 2
 
-        self.start_pos = vec((start_pos_x, start_pos_y))
-        self.end_pos = vec((end_pos_x, end_pos_y))
+        self.switch_diff = calc.get_time_diff(self.last_state_change)
+
+        self.pos = self.place_top_left(start_pos_x, start_pos_y)
+        self.start_pos = self.place_top_left(start_pos_x, start_pos_y)
+        self.end_pos = self.place_top_left(end_pos_x, end_pos_y)
 
         self._set_room_points()
 
@@ -155,7 +162,7 @@ class LockedWall(tiles.Wall):
             The trinket that activates the locked wall
         """
         try:
-            activator = next(s for s in groups.all_trinkets if s.id_value == self.id_value)
+            activator = next(t for t in groups.all_trinkets if t.id_value == self.id_value)
             return activator
         except StopIteration:
             raise IndexError
@@ -171,17 +178,44 @@ class LockedWall(tiles.Wall):
             self.set_room_pos()
 
             # Controls movement of wall when activator is activated/deactivated
-            if self.last_state is not self.activator.get_state():
-                if self.activator.get_state():
-                    self.pos = self.end_room_pos
-                else:
-                    self.pos = self.start_room_pos
-                self.last_state = self.activator.get_state()
+            if self.activator.get_state():
+                if not self._is_moving and self.activator.get_state() is not self.last_state:
+                    print('Switched on!')
+                    self.last_state = self.activator.get_state()
+                    self.last_state_change = time.time()
+                    self._is_moving = True
+
+                elif self._is_moving:
+                    self.pos.x = calc.cerp(self.pos.x, self.end_room_pos.x, self.switch_diff / self.speed_mult)
+                    self.pos.y = calc.cerp(self.pos.y, self.end_room_pos.y, self.switch_diff / self.speed_mult)
+                    if self.switch_diff >= self.speed_mult:
+                        self._is_moving = False
+
+            else:
+                if not self._is_moving and self.activator.get_state() is not self.last_state:
+                    print('Switched off!')
+                    self.last_state = self.activator.get_state()
+                    self.last_state_change = time.time()
+                    self._is_moving = True
+
+                elif self._is_moving:
+                    self.pos.x = calc.cerp(self.pos.x, self.start_room_pos.x, self.switch_diff / self.speed_mult)
+                    self.pos.y = calc.cerp(self.pos.y, self.start_room_pos.y, self.switch_diff / self.speed_mult)
+                    if self.switch_diff >= self.speed_mult:
+                        self._is_moving = False
+
+            # print(self.switch_diff)
 
             self.accel = self.get_accel()
             self.accel_movement()
 
     def update(self):
+        # if self.activator.get_state() is not self.last_state:
+        #     self.last_state = self.activator.get_state()
+        #     self.last_state_change = time.time()
+        #     self._is_moving = True
+
+        self.switch_diff = calc.get_time_diff(self.last_state_change)
         display_text.draw_text(str(self), 0, 64)
 
     def __repr__(self):
