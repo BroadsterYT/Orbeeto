@@ -2,6 +2,7 @@
 Contains the ``TextBox`` class.
 """
 import time
+import os
 
 import pygame
 from pygame.math import Vector2 as vec
@@ -9,8 +10,7 @@ from pygame.math import Vector2 as vec
 import controls.key_trackers as kt
 from controls.keybinds import *
 
-from text import dialogue as dg
-from text import fontinfo
+import text
 
 import calculations as calc
 import classbases as cb
@@ -35,7 +35,7 @@ class TextBox(cb.ActorBase):
         self.pos = vec((pos_x, pos_y))
         self.last_release_value = kt.key_released[K_DIALOGUE]
 
-        self.convo: dict = dg.all_dialogue_lines[convo]
+        self.convo: dict = text.all_dialogue_lines[convo]
         self.convo_index = 0
         self.char_index = 0
 
@@ -49,14 +49,14 @@ class TextBox(cb.ActorBase):
 
         self.text_speed = 64
 
-        self.set_images('sprites/ui/textbox.png', 800, 128, 1, 1)
+        self.set_images(os.path.join(os.getcwd(), 'sprites/ui/textbox.png'), 800, 128, 1, 1)
         self.set_rects(self.pos.x, self.pos.y, 800, 128, 800, 128)
 
     @staticmethod
     def style_character(char: pygame.Surface, style: str):
-        if style == dg.RED:
+        if style == text.RED:
             styled_char = calc.swap_color(char, (69, 40, 60), cst.RED)
-        elif style == dg.YELLOW:
+        elif style == text.YELLOW:
             styled_char = calc.swap_color(char, (69, 40, 60), cst.YELLOW)
         else:
             styled_char = char
@@ -72,13 +72,13 @@ class TextBox(cb.ActorBase):
             if calc.get_time_diff(self.last_generation) >= (1 / self.text_speed):
                 # Drawing each letter onto the text box
                 char = self.convo[self.convo_index][self.char_index]
-                char_image = calc.text_to_image(char, fontinfo.dialogue_font)
+                char_image = text.text_to_image(char, text.dialogue_font)
                 final_image = self.style_character(char_image, self.last_char)
                 self.image = visuals.stack_images(
                     self.image, final_image, self.text_cushion.x, self.text_cushion.y
                 )
 
-                if char not in dg.SKIP:  # Skips typing wait time if char is a special character
+                if char not in text.SKIP:  # Skips typing wait time if char is a special character
                     if char == ' ':
                         pass
                     else:
@@ -88,15 +88,15 @@ class TextBox(cb.ActorBase):
                 self.char_index += 1
                 self.generation_count += 1
 
-                if char not in dg.SKIP:
-                    self.text_cushion.x += fontinfo.dialogue_font.char_width - 10
+                if char not in text.SKIP:
+                    self.text_cushion.x += text.dialogue_font.char_width - 10
 
                 if char == '\n':
                     self.text_cushion.x = self.text_top.x
-                    self.text_cushion.y += fontinfo.dialogue_font.char_height
+                    self.text_cushion.y += text.dialogue_font.char_height
                 if self.text_cushion.x > self.image.get_width() - 16:
                     self.text_cushion.x = 8
-                    self.text_cushion.y += fontinfo.dialogue_font.char_height
+                    self.text_cushion.y += text.dialogue_font.char_height
 
                 if self.last_release_value != kt.key_released[K_DIALOGUE]:  # Prevents text skip mid-sentence
                     self.last_release_value = kt.key_released[K_DIALOGUE]

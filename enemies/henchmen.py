@@ -1,6 +1,7 @@
-import time
 import math
+import os
 import random as rand
+import time
 
 import pygame
 from pygame.math import Vector2 as vec
@@ -34,7 +35,7 @@ class StandardGrunt(enemybase.EnemyBase):
 
         self.set_room_pos()
 
-        self.set_images('sprites/enemies/standard_grunt.png', 64, 64, 5, 5, 0, 0)
+        self.set_images(os.path.join(os.getcwd(), 'sprites/enemies/standard_grunt.png'), 64, 64, 5, 5, 0, 0)
         self.set_rects(0, 0, 64, 64, 32, 32)
 
         # ---------------------- Game stats & UI ----------------------#
@@ -165,7 +166,7 @@ class Turret(enemybase.EnemyBase):
         self.pos = vec((pos_x, pos_y))
         self.set_room_pos()
 
-        self.set_images('sprites/enemies/standard_grunt.png', 64, 64, 5, 5, 0, 0)
+        self.set_images(os.path.join(os.getcwd(), 'sprites/enemies/standard_grunt.png'), 64, 64, 5, 5, 0, 0)
         self.set_rects(0, 0, 64, 64, 32, 32)
 
         self._set_stats(34, 10, 68)

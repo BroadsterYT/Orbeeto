@@ -2,12 +2,14 @@
 Module containing the ItemDrop class.
 """
 import math
+import os
 import random as rand
 import time
 
 import pygame
 from pygame.math import Vector2 as vec
 
+import items
 import text
 
 import classbases as cb
@@ -24,7 +26,6 @@ class ItemDrop(cb.ActorBase):
         Args:
             item_name: The item to drop
         """
-        print(f'I GOT {pos_x} AND {pos_y}')
         super().__init__(cst.LAYER['drops'])
         self.show(self.layer)
         self.mat = item_name
@@ -35,13 +36,13 @@ class ItemDrop(cb.ActorBase):
         self.pos = vec((pos_x, pos_y))
         self.rand_accel = calc.get_rand_components(self.accel_const)
         
-        self.spritesheet = spritesheet.Spritesheet("sprites/textures/item_drops.png", 8)
+        self.spritesheet = spritesheet.Spritesheet(os.path.join(os.getcwd(), 'sprites/textures/item_drops.png'), 8)
         self.index = 0
 
-        if self.mat == cst.MAT[0]:
+        if self.mat == items.MATERIALS[0]:
             self.orig_images = self.spritesheet.get_images(32, 32, 1, 0)
             self.images = self.spritesheet.get_images(32, 32, 1, 0)
-        elif self.mat == cst.MAT[1]:
+        elif self.mat == items.MATERIALS[1]:
             self.orig_images = self.spritesheet.get_images(32, 32, 1, 1)
             self.images = self.spritesheet.get_images(32, 32, 1, 1)
 

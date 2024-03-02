@@ -590,12 +590,13 @@ class Room(cb.AbstractBase):
         """
         if self.room == vec(0, 0):
             return [
-                tiles.Wall(0, 0, 4, 45),
+                # tiles.Wall(0, 0, 4, 45),
                 tiles.Floor(cst.WINWIDTH // 2, cst.WINHEIGHT // 2, 80, 80),
 
                 trinkets.Button(1, 14, 16),
                 trinkets.Box(cst.WINWIDTH // 2, cst.WINHEIGHT // 2),
-                trinkets.LockedWall(64, 0, 512, 0, 1, 64, 4),
+                trinkets.LockedWall(64, 0, 1028, 0, 1, 76, 4),
+                trinkets.PortalBlocker(0, 0, 1, 4, 45),
 
                 # enemies.Turret(500, 300),
             ]

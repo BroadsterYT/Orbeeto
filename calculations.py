@@ -420,51 +420,6 @@ def combine_images(base_img: pygame.Surface, top_img: pygame.Surface) -> pygame.
     return new_img
 
 
-def text_to_image(any_text: str, a_font: text.Font) -> pygame.Surface:
-    """Converts a string of text into an image with a given font.
-
-    Args:
-        any_text: The text string to convert into an image
-        a_font: The font object to retrieve font data from
-
-    Returns:
-        pygame.Surface: The converted image
-    """
-    sheet = spritesheet.Spritesheet(a_font.path, a_font.chars_per_row)
-    images = sheet.get_images(a_font.char_width, a_font.char_height, a_font.char_count)
-    char_list = []
-
-    final_image = pygame.Surface(vec(len(any_text) * a_font.char_width, a_font.char_height))
-
-    # TODO: Make all fonts follow the same text-to-image logic
-    if a_font.path == 'sprites/ui/font.png' or a_font.path == 'sprites/ui/small_font.png':
-        for char in any_text:
-            if char in cst.LETTERS.keys():
-                char_list.append(images[cst.LETTERS[char]])
-            elif char in cst.NUMBERS:
-                char_list.append(images[int(char) + 26])
-            elif char in cst.SYMBOLS:
-                char_list.append(images[cst.SYMBOLS[char] + 36])
-    else:
-        for char in any_text:
-            if char in cst.UPPERCASE.keys():
-                char_list.append(images[cst.UPPERCASE[char]])
-            elif char in cst.LOWERCASE.keys():
-                char_list.append(images[cst.LOWERCASE[char]])
-            elif char in cst.NEW_NUMBERS.keys():
-                char_list.append(images[cst.NEW_NUMBERS[char]])
-            elif char in cst.NEW_SYMBOLS.keys():
-                char_list.append(images[cst.NEW_SYMBOLS[char]])
-
-    count = 0
-    for _ in char_list:
-        final_image.blit(char_list[count], vec(count * a_font.char_width, 0))
-        count += 1
-
-    final_image.set_colorkey(cst.BLACK)
-    return final_image
-
-
 # ============================================================================ #
 #                                Returns Sprite                                #
 # ============================================================================ #

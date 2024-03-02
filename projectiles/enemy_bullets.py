@@ -1,13 +1,15 @@
+import os
+
 from pygame.math import Vector2 as vec
 
-from projectiles import bulletbase as bb
+import projectiles as proj
 
 import calculations as calc
 import constants as cst
 import groups
 
 
-class EnemyStdBullet(bb.BulletBase):
+class EnemyStdBullet(proj.BulletBase):
     def __init__(self, pos_x: float, pos_y: float, vel_x: float, vel_y: float, dmg_mod: int = 1, bounce_count: int = 1):
         """A projectile fired by an enemy that moves at a constant velocity
 
@@ -26,9 +28,9 @@ class EnemyStdBullet(bb.BulletBase):
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
         self.vel_const = self.vel
-        self.ricCount = bounce_count
+        self.ric_count = bounce_count
 
-        self.set_images("sprites/bullets/bullets.png", 32, 32, 8, 1, 1)
+        self.set_images(os.path.join(os.getcwd(), 'sprites/bullets/bullets.png'), 32, 32, 8, 1, 1)
         self.set_rects(self.pos.x, self.pos.y, 8, 8, 6, 6)
 
         self.rotate_image(calc.get_vec_angle(self.vel.x, self.vel.y))
@@ -49,4 +51,4 @@ class EnemyStdBullet(bb.BulletBase):
         pass
 
     def __repr__(self):
-        return f'EnemyStdBullet({self.pos}, {self.vel}, {self.ricCount})'
+        return f'EnemyStdBullet({self.pos}, {self.vel}, {self.ric_count})'

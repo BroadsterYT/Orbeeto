@@ -2,6 +2,8 @@ import random as rand
 
 from pygame.math import Vector2 as vec
 
+import items
+
 import calculations as calc
 import classbases as cb
 import constants as cst
@@ -89,7 +91,7 @@ class EnemyBase(cb.ActorBase):
             a_player.update_level()
 
     def _drop_items(self, table_index):
-        drops = cst.LOOT_DROPS[table_index]
+        drops = items.ENEMY_LOOT_TABLES[table_index]
         row = rand.randint(0, 2)
         column = rand.randint(0, 2)
 

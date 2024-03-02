@@ -1,11 +1,11 @@
 import math
+import os
 
 from pygame.math import Vector2 as vec
 
-from text import fontinfo
+import text
 
 import classbases as cb
-import calculations as calc
 import constants as cst
 import groups
 
@@ -62,14 +62,14 @@ class BarNumbers(cb.ActorBase):
 
     def render_images(self):
         if isinstance(self.bar, HealthBar):
-            self.image = calc.text_to_image(str(self.owner.hp) + '/' + str(self.owner.max_hp), fontinfo.font_small)
+            self.image = text.text_to_image(str(self.owner.hp) + '/' + str(self.owner.max_hp), text.font_small)
 
         elif isinstance(self.bar, DodgeBar):
-            self.image = calc.text_to_image(str(self.owner.dodge_time) + '/' + str(self.owner.dodge_charge_up_time),
-                                            fontinfo.font_small)
+            self.image = text.text_to_image(str(self.owner.dodge_time) + '/' + str(self.owner.dodge_charge_up_time),
+                                            text.font_small)
 
         elif isinstance(self.bar, AmmoBar):
-            self.image = calc.text_to_image(str(self.owner.ammo) + '/' + str(self.owner.max_ammo), fontinfo.font_small)
+            self.image = text.text_to_image(str(self.owner.ammo) + '/' + str(self.owner.max_ammo), text.font_small)
 
         else:
             raise TypeError()
@@ -89,7 +89,7 @@ class BarNumbers(cb.ActorBase):
 class HealthBar(StatBarBase):
     def __init__(self, owner):
         super().__init__(owner, 0)
-        self.set_images('sprites/stat_bars/health_bar.png', 128, 16, 1, 17, 0, 16)
+        self.set_images(os.path.join(os.getcwd(), 'sprites/stat_bars/health_bar.png'), 128, 16, 1, 17, 0, 16)
 
     def update(self):
         self.movement()
@@ -103,7 +103,7 @@ class HealthBar(StatBarBase):
 class DodgeBar(StatBarBase):
     def __init__(self, owner):
         super().__init__(owner, 2)
-        self.set_images('sprites/stat_bars/dodge_bar.png', 128, 16, 1, 17, 0, 16)
+        self.set_images(os.path.join(os.getcwd(), 'sprites/stat_bars/dodge_bar.png'), 128, 16, 1, 17, 0, 16)
 
     def update(self):
         self.movement()
@@ -117,7 +117,7 @@ class DodgeBar(StatBarBase):
 class AmmoBar(StatBarBase):
     def __init__(self, owner):
         super().__init__(owner, 1)
-        self.set_images('sprites/stat_bars/ammo_bar.png', 128, 16, 1, 17, 0, 16)
+        self.set_images(os.path.join(os.getcwd(), 'sprites/stat_bars/ammo_bar.png'), 128, 16, 1, 17, 0, 16)
 
     def update(self):
         self.movement()

@@ -14,7 +14,6 @@ all_sentries = Group()
 # --------------------------------- Interactive groups ---------------------------------#
 all_movable = Group()
 all_trinkets = Group()
-all_invisible = Group()
 
 all_drops = Group()
 all_slots = Group()
@@ -26,10 +25,11 @@ all_portals = Group()
 
 # --------------------------------- Room groups ---------------------------------#
 all_walls = Group()
+all_portal_blockers = Group()
 all_floors = Group()
 all_borders = Group()
-all_rooms = []
 
+all_rooms = []
 all_containers = []
 
 # --------------------------------- UI groups ---------------------------------#

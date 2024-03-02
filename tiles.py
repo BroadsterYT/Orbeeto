@@ -1,3 +1,4 @@
+import os
 import time
 
 import pygame
@@ -94,7 +95,7 @@ class Wall(TileBase):
 
         self.pos = self.place_top_left(pos_x, pos_y)
 
-        self.spritesheet = spritesheet.Spritesheet('sprites/tiles/wall.png', 16)
+        self.spritesheet = spritesheet.Spritesheet(os.path.join(os.getcwd(), 'sprites/tiles/wall.png'), 16)
         self.textures = self.spritesheet.get_images(16, 16, 16, image_row * 16)
         self.index = 0
 
@@ -115,7 +116,7 @@ class Floor(TileBase):
         self.show(self.layer)
         groups.all_floors.add(self)
 
-        self.spritesheet = spritesheet.Spritesheet('sprites/tiles/floor.png', 4)
+        self.spritesheet = spritesheet.Spritesheet(os.path.join(os.getcwd(), 'sprites/tiles/floor.png'), 4)
         self.textures = self.spritesheet.get_images(16, 16, 4)
         self.index = 0
 
@@ -126,10 +127,10 @@ class Floor(TileBase):
 
     def update(self):
         if self.visible:
-            # self.__animate()
+            # self._animate()
             pass
 
-    def __animate(self):
+    def _animate(self):
         if calc.get_time_diff(self.last_frame) >= 0.235:
             self.texture = self.textures[self.index]
             self.image = fancy_tile_texture(self.block_width, self.block_height, self.textures, cst.BLACK, 0)

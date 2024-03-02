@@ -1,4 +1,5 @@
 import math
+import os
 import time
 
 from pygame.math import Vector2 as vec
@@ -14,9 +15,6 @@ import portals
 import visuals
 
 
-# ============================================================================ #
-#                                Player Bullets                                #
-# ============================================================================ #
 class PlayerStdBullet(proj.BulletBase):
     def __init__(self, pos_x: float, pos_y: float, vel_x: float, vel_y: float, bounce_count: int = 1):
         """A projectile fired by a player that moves at a constant velocity.
@@ -26,7 +24,6 @@ class PlayerStdBullet(proj.BulletBase):
             pos_y: The y-position where the bullet should be spawned
             vel_x: The x-axis component of the bullet's velocity
             vel_y: The y-axis component of the bullet's velocity
-            bounce_count: The amount of times the bullet should bounce. (1 = no bounce)
         """
         super().__init__(cst.PROJ_DAMAGE[cst.PROJ_STD])
         self.layer = cst.LAYER['proj']
@@ -35,9 +32,9 @@ class PlayerStdBullet(proj.BulletBase):
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
         self.vel_const = self.vel
-        self.ricCount = bounce_count
+        self.ric_count = bounce_count
 
-        self.set_images("sprites/bullets/bullets.png", 32, 32, 8, 1)
+        self.set_images(os.path.join(os.getcwd(), 'sprites/bullets/bullets.png'), 32, 32, 8, 1)
         self.set_rects(self.pos.x, self.pos.y, 8, 8, 6, 6)
 
         self.rotate_image(calc.get_vec_angle(self.vel.x, self.vel.y))
@@ -60,7 +57,7 @@ class PlayerStdBullet(proj.BulletBase):
         super().update()
 
     def __repr__(self):
-        return f'PlayerStdBullet({self.pos}, {self.vel}, {self.ricCount})'
+        return f'PlayerStdBullet({self.pos}, {self.vel})'
 
 
 class PlayerLaserBullet(proj.BulletBase):
@@ -72,9 +69,9 @@ class PlayerLaserBullet(proj.BulletBase):
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
         self.vel_const = self.vel
-        self.ricCount = bounce_count
+        self.ric_count = bounce_count
 
-        self.set_images("sprites/bullets/bullets.png", 32, 32, 8, 1, 4)
+        self.set_images(os.path.join(os.getcwd(), 'sprites/bullets/bullets.png'), 32, 32, 8, 1, 4)
         self.set_rects(self.pos.x, self.pos.y, 8, 8, 10, 10)
 
         self.rotate_image(calc.get_vec_angle(self.vel.x, self.vel.y))
@@ -109,7 +106,7 @@ class PortalBullet(proj.BulletBase):
 
         self.hitbox_adjust = vec(0, 0)
 
-        self.set_images("sprites/bullets/bullets.png", 32, 32, 8, 5, 8)
+        self.set_images(os.path.join(os.getcwd(), 'sprites/bullets/bullets.png'), 32, 32, 8, 5, 8)
         self.set_rects(-24, -24, 8, 8, 8, 8)
 
         # Rotate sprite to trajectory
@@ -168,6 +165,7 @@ class PortalBullet(proj.BulletBase):
     def movement(self):
         if self.can_update:
             self.proj_collide(groups.all_walls, False)
+            self.proj_collide(groups.all_portal_blockers, False)
             self.proj_collide(groups.all_portals, False)
 
             if calc.get_time_diff(self.start_time) <= 5:
@@ -177,7 +175,7 @@ class PortalBullet(proj.BulletBase):
                 self.kill()
 
     def update(self):
-        if calc.get_time_diff(self.last_frame) > 0.1:  # TODO: Use SPF to standardize animation
+        if calc.get_time_diff(self.last_frame) > 0.1:
             self.index += 1
             if self.index > 4:
                 self.index = 0
@@ -185,7 +183,6 @@ class PortalBullet(proj.BulletBase):
 
         rotate_angle = int(calc.get_vec_angle(self.vel_const.x, self.vel_const.y))
         self.rotate_image(rotate_angle)
-        # self.movement()
 
     def __repr__(self):
         return f'PortalBullet({self.pos}, {self.vel}, {self.ric_count})'

@@ -51,7 +51,7 @@ class IndicatorText(cb.ActorBase):
 
         self.duration = duration
 
-        self.image = calc.text_to_image(str(message), text.font1)
+        self.image = text.text_to_image(str(message), text.font1)
         self.set_rects(self.pos.x, self.pos.y, 9, 14, 9, 14)
 
     def get_accel(self):

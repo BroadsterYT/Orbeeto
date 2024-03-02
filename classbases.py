@@ -31,7 +31,7 @@ class ActorBase(pygame.sprite.Sprite):
             layer: The layer the sprite should be drawn on
         """
         super().__init__()
-        self.visible = True
+        self.visible = False
         self.can_update = True
         self._layer = layer
 
@@ -43,6 +43,7 @@ class ActorBase(pygame.sprite.Sprite):
         self.room_pos = vec(0, 0)  # For maintaining position within a moving room
         
         self.vel = vec(0, 0)
+
         """The velocity constant of the sprite. It determines how fast a sprite moving with a constant velocity
             should move along the x-axis and y-axis. If the sprite moves according to acceleration and not velocity
             alone, then this value will not be used."""

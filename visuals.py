@@ -1,4 +1,5 @@
 import math
+import os
 
 import pygame
 from pygame.math import Vector2 as vec
@@ -59,7 +60,7 @@ class Beam(cb.ActorBase):
         ### Arguments
             - frameOffset (``int``): The frame from "beams.png" to build the beam from
         """        
-        self.spritesheet = spritesheet.Spritesheet("sprites/textures/beams.png", 1)
+        self.spritesheet = spritesheet.Spritesheet(os.path.join(os.getcwd(), 'sprites/textures/beams.png'), 1)
         base_images = self.spritesheet.get_images(12, 12, 1, frame_offset)
         base_image: pygame.Surface = base_images[self.index]
 

@@ -1,3 +1,4 @@
+import os
 import random as rand
 import time
 
@@ -25,7 +26,7 @@ class StdBulletExplode(cb.ActorBase):
 
         self.pos = vec((pos_x, pos_y))
         self.posOffset = vec(self.pos.x - self.owner.hit.pos.x, self.pos.y - self.owner.hit.pos.y)
-        self.set_images('sprites/textures/explosions.png', 32, 32, 8, 4, 0, 1)
+        self.set_images(os.path.join(os.getcwd(), 'sprites/textures/explosions.png'), 32, 32, 8, 4, 0, 1)
         self.set_rects(self.pos.x, self.pos.y, 32, 32, 32, 32)
 
         self.render_images()

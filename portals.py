@@ -1,4 +1,5 @@
 import time
+import os
 
 from pygame.math import Vector2 as vec
 
@@ -35,7 +36,7 @@ class Portal(cb.ActorBase):
 
         self.direction_angles = {cst.SOUTH: 0, cst.EAST: 90, cst.NORTH: 180, cst.WEST: 270}
 
-        self.set_images("sprites/portals/portals.png", 64, 64, 8, 16)
+        self.set_images(os.path.join(os.getcwd(), 'sprites/portals/portals.png'), 64, 64, 8, 16)
         self.set_rects(self.pos.x, self.pos.y, 64, 64, 54, 20)
 
         self._get_face()

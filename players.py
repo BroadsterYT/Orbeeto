@@ -3,6 +3,7 @@ Contains the player class.
 """
 import time
 import math
+import os
 
 import itertools
 import pygame
@@ -10,6 +11,7 @@ from pygame.math import Vector2 as vec
 
 import controls as ctrl
 from controls.keybinds import *
+import items
 import text
 
 import projectiles as proj
@@ -35,7 +37,7 @@ class Player(cb.ActorBase):
 
         self.room = cb.get_room()
 
-        self.set_images("sprites/orbeeto/orbeeto.png", 64, 64, 5, 5)
+        self.set_images(os.path.join(os.getcwd(), 'sprites/orbeeto/orbeeto.png'), 64, 64, 5, 5)
         self.set_rects(0, 0, 64, 64, 32, 32)
 
         self.pos = vec((cst.WINWIDTH // 2, cst.WINHEIGHT // 2))
@@ -62,7 +64,7 @@ class Player(cb.ActorBase):
         self.grapple_speed = 2.0
 
         self.last_hit = time.time()
-        self.dodge_charge_up_time = 12  # TODO: Make dodge charge using time, not ticks
+        self.dodge_charge_up_time = 12
         self.dodge_time = 0
 
         self.update_level()
@@ -75,7 +77,7 @@ class Player(cb.ActorBase):
         self.menu = menu.InventoryMenu(self)
 
         self.inventory = {}
-        for item in cst.MAT.values():
+        for item in items.MATERIALS.values():
             self.inventory.update({item: 0})
 
         # ---------------------- Bullets, Portals, and Grapples ---------------------- #
@@ -230,10 +232,10 @@ class Player(cb.ActorBase):
                 groups.all_projs.add(
                     proj.PlayerStdBullet(self.pos.x - (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
                                          self.pos.y + (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
-                                         vel_x, vel_y, 1),
+                                         vel_x, vel_y),
                     proj.PlayerStdBullet(self.pos.x + (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
                                          self.pos.y - (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
-                                         vel_x, vel_y, 1)
+                                         vel_x, vel_y)
                 )
 
             # Laser bullets
@@ -241,10 +243,10 @@ class Player(cb.ActorBase):
                 groups.all_projs.add(
                     proj.PlayerLaserBullet(self.pos.x - (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
                                            self.pos.y + (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
-                                           vel_x * 2, vel_y * 2, 1),
+                                           vel_x * 2, vel_y * 2),
                     proj.PlayerLaserBullet(self.pos.x + (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
                                            self.pos.y - (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
-                                           vel_x * 2, vel_y * 2, 1)
+                                           vel_x * 2, vel_y * 2)
                 )
 
             self.ammo -= 1

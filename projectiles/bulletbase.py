@@ -28,7 +28,7 @@ class BulletBase(cb.ActorBase):
         self.dmg_mod = dmg_mod
 
         self.hit = None
-        self.sideHit = None
+        self.side_hit = None
 
     def get_vel(self) -> pygame.math.Vector2:
         room = cb.get_room()
@@ -38,7 +38,7 @@ class BulletBase(cb.ActorBase):
 
     def land(self, target) -> None:
         self.hit = target
-        self.sideHit = calc.triangle_collide(self, self.hit)
+        self.side_hit = calc.triangle_collide(self, self.hit)
         self.ric_count -= 1
 
         boom_pos_x = 0
@@ -46,43 +46,44 @@ class BulletBase(cb.ActorBase):
 
         # Bullet explodes
         if self.ric_count <= 0 or self.hit in groups.all_enemies:
-            if self.sideHit == cst.SOUTH:
+            if self.side_hit == cst.SOUTH:
                 boom_pos_x = self.pos.x
                 boom_pos_y = self.hit.pos.y + self.hit.hitbox.height // 2
-            if self.sideHit == cst.EAST:
+            if self.side_hit == cst.EAST:
                 boom_pos_x = self.hit.pos.x + self.hit.hitbox.width // 2
                 boom_pos_y = self.pos.y
-            if self.sideHit == cst.NORTH:
+            if self.side_hit == cst.NORTH:
                 boom_pos_x = self.pos.x
                 boom_pos_y = self.hit.pos.y - self.hit.hitbox.height // 2
-            if self.sideHit == cst.WEST:
+            if self.side_hit == cst.WEST:
                 boom_pos_x = self.hit.pos.x - self.hit.hitbox.width // 2
                 boom_pos_y = self.pos.y
 
-            groups.all_explosions.add(explosions.StdBulletExplode(self, boom_pos_x, boom_pos_y))
             self.kill()
+            groups.all_explosions.add(explosions.StdBulletExplode(self, boom_pos_x, boom_pos_y))
+            # TODO: Fix extra explosion spawns on player bullets that hit portals
 
         # Bullet ricochets
         else:
             room = cb.get_room()
             room_vel = room.vel
 
-            if self.sideHit == cst.SOUTH:
+            if self.side_hit == cst.SOUTH:
                 self.pos.y = self.hit.pos.y + self.hit.hitbox.height // 2 + self.hitbox.height // 2 + abs(room_vel.y)
                 self.vel_const.y = -self.vel_const.y
                 self.vel.y = -self.vel.y
 
-            elif self.sideHit == cst.EAST:
+            elif self.side_hit == cst.EAST:
                 self.pos.x = self.hit.pos.x + self.hit.hitbox.width // 2 + self.hitbox.width // 2 + abs(room_vel.x)
                 self.vel_const.x = -self.vel_const.x
                 self.vel.x = -self.vel.x
 
-            elif self.sideHit == cst.NORTH:
+            elif self.side_hit == cst.NORTH:
                 self.pos.y = self.hit.pos.y - self.hit.hitbox.height // 2 - self.hitbox.height // 2 - abs(room_vel.y)
                 self.vel_const.y = -self.vel_const.y
                 self.vel.y = -self.vel.y
 
-            elif self.sideHit == cst.WEST:
+            elif self.side_hit == cst.WEST:
                 self.pos.x = self.hit.pos.x - self.hit.hitbox.width // 2 - self.hitbox.width // 2 - abs(room_vel.x)
                 self.vel_const.x = -self.vel_const.x
                 self.vel.x = -self.vel.x
@@ -122,11 +123,12 @@ class BulletBase(cb.ActorBase):
                         return
 
                     elif len(groups.all_portals) < 2:
-                        self.land(collidingSprite)
+                        self.land(self)
                         return
 
                 else:
                     self.land(collidingSprite)
+                    return
 
     def inflict_damage(self, sprite_group, receiver) -> None:
         """Executes the subtraction of ``hp`` after a sprite is struck by a projectile

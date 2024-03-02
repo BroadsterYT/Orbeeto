@@ -1,6 +1,7 @@
 """
 Main program. Contains the game loop.
 """
+import os
 import sys
 
 import pygame
@@ -16,16 +17,21 @@ import groups
 import rooms
 
 pygame.init()
+pygame.display.set_caption('Orbeeto')
+pygame.display.set_icon(pygame.image.load(os.path.join(os.getcwd(), 'other/orbeeto.png')))
 
 clock = pygame.time.Clock()
 
 screen.buffer_screen = pygame.Surface((cst.WINWIDTH, cst.WINHEIGHT))
-screen.viewport = pygame.display.set_mode((cst.WINWIDTH, cst.WINHEIGHT), pygame.SCALED | pygame.RESIZABLE, 0, 0, 2)
-pygame.display.set_caption('Orbeeto')
+screen.viewport = pygame.display.set_mode((cst.WINWIDTH, cst.WINHEIGHT), pygame.SCALED | pygame.RESIZABLE, 0, 0, 1)
 
 
-def redraw_game_window():
-    """Draws all sprites every frame."""
+def redraw_game_window() -> None:
+    """Draws all sprites onto the screen
+
+    Returns:
+        None
+    """
     groups.all_sprites.update()
     groups.all_sprites.draw(screen.buffer_screen)
     main_room.update()
@@ -90,18 +96,12 @@ def main():
             check_key_release(False)
             check_key_release(True)
 
-            if event.type == pygame.MOUSEWHEEL:
+            if event.type == pygame.MOUSEWHEEL:  # TODO: Implement this in players.py
                 # Player ammo refill
                 if main_room.player1.ammo < main_room.player1.max_ammo:
                     main_room.player1.ammo += 1
 
         # ------------------------------ Game Operation ------------------------------ #
-        for enemy in groups.all_enemies:
-            pygame.draw.rect(screen.buffer_screen, cst.RED, enemy.hitbox, 3)
-            print(repr(enemy))
-
-        for drop in groups.all_drops:
-            print(repr(drop))
 
         # ------------------------------- Redraw Window ------------------------------ #
         redraw_game_window()
