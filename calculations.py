@@ -8,11 +8,8 @@ import time
 import pygame
 from pygame.math import Vector2 as vec
 
-import text
-
 import constants as cst
 import groups
-import spritesheet
 
 
 # ============================================================================ #

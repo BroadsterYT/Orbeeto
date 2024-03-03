@@ -1,9 +1,9 @@
 """
 Contains the player class.
 """
+import os
 import time
 import math
-import os
 
 import itertools
 import pygame
@@ -13,8 +13,8 @@ import controls as ctrl
 from controls.keybinds import *
 import items
 import text
-
 import projectiles as proj
+
 import calculations as calc
 import classbases as cb
 import constants as cst

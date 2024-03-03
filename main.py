@@ -105,7 +105,7 @@ def main():
 
         # ------------------------------- Redraw Window ------------------------------ #
         redraw_game_window()
-        clock.tick_busy_loop(cst.FPS)
+        clock.tick(cst.FPS)
 
 
 if __name__ == '__main__':

@@ -40,11 +40,11 @@ class ItemDrop(cb.ActorBase):
         self.index = 0
 
         if self.mat == items.MATERIALS[0]:
-            self.orig_images = self.spritesheet.get_images(32, 32, 1, 0)
-            self.images = self.spritesheet.get_images(32, 32, 1, 0)
+            self.orig_images = self.spritesheet.get_images(32, 32, 3, 0)
+            self.images = self.spritesheet.get_images(32, 32, 3, 0)
         elif self.mat == items.MATERIALS[1]:
-            self.orig_images = self.spritesheet.get_images(32, 32, 1, 1)
-            self.images = self.spritesheet.get_images(32, 32, 1, 1)
+            self.orig_images = self.spritesheet.get_images(32, 32, 1, 3)
+            self.images = self.spritesheet.get_images(32, 32, 1, 3)
 
         self.image = self.images[self.index]
         self.rect = pygame.Rect(0, 0, 32, 32)
@@ -86,6 +86,14 @@ class ItemDrop(cb.ActorBase):
                 )
                 a_player.inventory[self.mat] += 1
                 self.kill()
+
+    def _animate(self):
+        if self.mat == items.MATERIALS[0] and calc.get_time_diff(self.last_frame) > 0.1:
+            self.images = self.image[self.index]
+            self.index += 1
+            if self.index > 2:
+                self.index = 0
+            self.last_frame = time.time()
 
     def __repr__(self):
         return f'ItemDrop({self.pos})'

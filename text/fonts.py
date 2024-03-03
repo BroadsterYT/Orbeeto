@@ -31,6 +31,23 @@ class Font:
         self.char_count = char_count
 
 
+font1 = Font(os.path.join(os.getcwd(), 'sprites/ui/font.png'), 9, 14, 26, 81)
+font_small = Font(os.path.join(os.getcwd(), 'sprites/ui/small_font.png'), 5, 7, 26, 81)
+
+dialogue_font = Font(os.path.join(os.getcwd(), 'sprites/fonts/dialogue_font1.png'), 32, 32, 26, 81)
+
+
+UPPERCASE = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9, 'K': 10, 'L': 11,
+             'M': 12, 'N': 13, 'O': 14, 'P': 15, 'Q': 16, 'R': 17, 'S': 18, 'T': 19, 'U': 20, 'V': 21, 'W': 22,
+             'X': 23, 'Y': 24, 'Z': 25}
+LOWERCASE = {'a': 26, 'b': 27, 'c': 28, 'd': 29, 'e': 30, 'f': 31, 'g': 32, 'h': 33, 'i': 34, 'j': 35, 'k': 36, 'l': 37,
+             'm': 38, 'n': 39, 'o': 40, 'p': 41, 'q': 42, 'r': 43, 's': 44, 't': 45, 'u': 46, 'v': 47, 'w': 48, 'x': 49,
+             'y': 50, 'z': 51}
+NUMBERS = {'0': 52, '1': 53, '2': 54, '3': 55, '4': 56, '5': 57, '6': 58, '7': 59, '8': 60, '9': 61}
+SYMBOLS = {'.': 62, '!': 63, '\'': 64, ',': 65, ';': 66, ':': 67, '/': 68, '\\': 69, '\"': 70, '~': 71, '?': 72,
+           '(': 73, ')': 74, '[': 75, ']': 76, '{': 77, '}': 78, '<': 79, '>': 80}
+
+
 def text_to_image(any_text: str, a_font: Font) -> pygame.Surface:
     """Converts a string of text into an image with a given font.
 
@@ -48,25 +65,15 @@ def text_to_image(any_text: str, a_font: Font) -> pygame.Surface:
     final_image = pygame.Surface(vec(len(any_text) * a_font.char_width, a_font.char_height))
 
     # TODO: Make all fonts follow the same text-to-image logic
-    if (a_font.path == os.path.join(os.getcwd(), 'sprites/ui/font.png') or
-            a_font.path == os.path.join(os.getcwd(), 'sprites/ui/small_font.png')):
-        for char in any_text:
-            if char in cst.LETTERS.keys():
-                char_list.append(images[cst.LETTERS[char]])
-            elif char in cst.NUMBERS:
-                char_list.append(images[int(char) + 26])
-            elif char in cst.SYMBOLS:
-                char_list.append(images[cst.SYMBOLS[char] + 36])
-    else:
-        for char in any_text:
-            if char in cst.UPPERCASE.keys():
-                char_list.append(images[cst.UPPERCASE[char]])
-            elif char in cst.LOWERCASE.keys():
-                char_list.append(images[cst.LOWERCASE[char]])
-            elif char in cst.NEW_NUMBERS.keys():
-                char_list.append(images[cst.NEW_NUMBERS[char]])
-            elif char in cst.NEW_SYMBOLS.keys():
-                char_list.append(images[cst.NEW_SYMBOLS[char]])
+    for char in any_text:
+        if char in UPPERCASE.keys():
+            char_list.append(images[UPPERCASE[char]])
+        elif char in LOWERCASE.keys():
+            char_list.append(images[LOWERCASE[char]])
+        elif char in NUMBERS.keys():
+            char_list.append(images[NUMBERS[char]])
+        elif char in SYMBOLS.keys():
+            char_list.append(images[SYMBOLS[char]])
 
     count = 0
     for _ in char_list:
@@ -75,13 +82,6 @@ def text_to_image(any_text: str, a_font: Font) -> pygame.Surface:
 
     final_image.set_colorkey(cst.BLACK)
     return final_image
-
-
-# -------------------- Initialized Fonts -------------------- #
-font1 = Font(os.path.join(os.getcwd(), 'sprites/ui/font.png'), 9, 14, 37, 37)
-font_small = Font(os.path.join(os.getcwd(), 'sprites/ui/small_font.png'), 5, 7, 37, 37)
-
-dialogue_font = Font(os.path.join(os.getcwd(), 'sprites/fonts/dialogue_font1.png'), 32, 32, 26, 81)
 
 
 if __name__ == '__main__':

@@ -275,7 +275,7 @@ class MenuSlot(cb.ActorBase):
         self.count = 0
 
         self.menuSheet = spritesheet.Spritesheet("sprites/ui/menu_item_slot.png", 1)
-        self.itemSheet = spritesheet.Spritesheet("sprites/textures/item_drops.png", 8)
+        self.itemSheet = spritesheet.Spritesheet("sprites/textures/item_drops.png", 3)
         self.menuImages = self.menuSheet.get_images(64, 64, 1)
 
         self.index = 0
@@ -313,11 +313,11 @@ class MenuSlot(cb.ActorBase):
             list: A list containing the images of the item the slot holds
         """
         if self.holding == items.MATERIALS[0]:
-            return self.itemSheet.get_images(32, 32, 1, 0)
+            return self.itemSheet.get_images(32, 32, 3, 0)
         elif self.holding == items.MATERIALS[1]:
-            return self.itemSheet.get_images(32, 32, 1, 1)
+            return self.itemSheet.get_images(32, 32, 1, 3)
         elif self.holding == items.MATERIALS[2]:
-            return self.itemSheet.get_images(32, 32, 1, 2)
+            return self.itemSheet.get_images(32, 32, 1, 4)
         else:
             return self.itemSheet.get_images(32, 32, 1, 0)
 
@@ -355,8 +355,16 @@ class MenuSlot(cb.ActorBase):
     def update(self):
         self.center_rects()
 
-        if self.holding is not None:
-            self.count = self.owner.inventory[self.holding]
-
+        self.count = self.owner.inventory[self.holding]
         self.images = self.create_slot_images()
+        self._animate()
+
         self.hover()
+
+    def _animate(self):
+        if self.holding == items.MATERIALS[0] and calc.get_time_diff(self.last_frame) > 1:
+            self.image = self.images[self.index]
+            self.index += 1
+            if self.index > 2:
+                self.index = 0
+            self.last_frame = time.time()
