@@ -1,5 +1,5 @@
 """
-Contains the room class.
+Module containing the room class.
 """
 import copy
 import math
@@ -89,6 +89,11 @@ class Room(cb.AbstractBase):
                        self.border_north.pos.y + self.border_north.height // 2)
 
     def get_accel(self) -> vec:
+        """Returns the acceleration value to give to the room
+
+        Returns:
+            pygame.math.Vector2: The acceleration value the room should have
+        """
         final_accel = vec(0, 0)
         if self.is_scrolling_x:
             final_accel.x += self._get_x_axis_output()

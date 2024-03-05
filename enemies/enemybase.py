@@ -23,11 +23,11 @@ class EnemyBase(cb.ActorBase):
         self.is_shooting = False
 
         # -------------------- In-game Stats --------------------#
-        self._max_hp = None
-        self._hp = None
-        self._max_defense = None
-        self._defense = None
-        self._xp = None
+        self.max_hp = None
+        self.hp = None
+        self.max_defense = None
+        self.defense = None
+        self.xp = None
 
         self.health_bar = statbars.HealthBar(self)
 
@@ -37,51 +37,6 @@ class EnemyBase(cb.ActorBase):
         self.max_defense = defense
         self.defense = defense
         self.xp = xp
-
-    @property
-    def max_hp(self):
-        """The maximum amount of health the enemy can "naturally" have."""
-        return self._max_hp
-
-    @max_hp.setter
-    def max_hp(self, value: int):
-        self._max_hp = value
-
-    @property
-    def hp(self):
-        """The amount of health the enemy has. When the enemy's health reaches 0, it dies."""
-        return self._hp
-
-    @hp.setter
-    def hp(self, value: int):
-        if value > self.max_hp:
-            self._hp = self.max_hp
-        else:
-            self._hp = value
-
-    @property
-    def max_defense(self):
-        """The maximum amount of defense the enemy can "naturally" have."""
-        return self._max_defense
-
-    @max_defense.setter
-    def max_defense(self, value: int):
-        if value < 0:
-            self._max_defense = 0
-        else:
-            self._max_defense = value
-
-    @property
-    def defense(self):
-        """The amount of defense the enemy has. The higher its defense, the less damage it will take."""
-        return self._defense
-
-    @defense.setter
-    def defense(self, value: int):
-        if value < 0:
-            self._defense = 0
-        else:
-            self._defense = value
 
     # ------------------------------------------------------------------------------#
 

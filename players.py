@@ -10,7 +10,6 @@ import pygame
 from pygame.math import Vector2 as vec
 
 import controls as ctrl
-from controls.keybinds import *
 import items
 import text
 import projectiles as proj
@@ -19,7 +18,7 @@ import calculations as calc
 import classbases as cb
 import constants as cst
 import groups
-import menu_ui as menu
+import menu_ui
 import statbars
 import trinkets
 
@@ -28,14 +27,12 @@ class Player(cb.ActorBase):
     """A player sprite that can move and shoot.
     """
     def __init__(self):
-        super().__init__()
-        self.layer = cst.LAYER['player']
+        super().__init__(cst.LAYER['player'])
         self.show(self.layer)
         groups.all_players.add(self)
-
-        self.last_textbox_release = ctrl.key_released[K_DIALOGUE]
-
         self.room = cb.get_room()
+
+        self.last_textbox_release = ctrl.key_released[ctrl.K_DIALOGUE]
 
         self.set_images(os.path.join(os.getcwd(), 'sprites/orbeeto/orbeeto.png'), 64, 64, 5, 5)
         self.set_rects(0, 0, 64, 64, 32, 32)
@@ -74,11 +71,18 @@ class Player(cb.ActorBase):
         self.dodge_bar = statbars.DodgeBar(self)
         self.ammo_bar = statbars.AmmoBar(self)
 
-        self.menu = menu.InventoryMenu(self)
+        # ---------------------------- Menu and Inventory ---------------------------- #
+        self.my_menu = menu_ui.InventoryMenu(self)
 
-        self.inventory = {}
+        self.my_materials = {}
         for item in items.MATERIALS.values():
-            self.inventory.update({item: 0})
+            self.my_materials.update({item: 0})
+        self.my_armors = {}
+        for armor in items.ARMOR.values():
+            self.my_armors.update({armor: False})
+        self.my_weapons = {}
+        for weapon in items.WEAPONS.values():
+            self.my_weapons.update({weapon: False})
 
         # ---------------------- Bullets, Portals, and Grapples ---------------------- #
         self.bullet_type = cst.PROJ_STD
@@ -86,7 +90,7 @@ class Player(cb.ActorBase):
 
         self.grapple = None
         self.can_grapple = True
-        self.grapple_input_copy = ctrl.key_released[K_GRAPPLE]
+        self.grapple_input_copy = ctrl.key_released[ctrl.K_GRAPPLE]
 
     @property
     def xp(self):
@@ -174,9 +178,9 @@ class Player(cb.ActorBase):
 
     def _get_x_axis_output(self) -> float:
         output = 0.0
-        if ctrl.is_input_held[K_MOVE_LEFT]:
+        if ctrl.is_input_held[ctrl.K_MOVE_LEFT]:
             output -= self.accel_const
-        if ctrl.is_input_held[K_MOVE_RIGHT]:
+        if ctrl.is_input_held[ctrl.K_MOVE_RIGHT]:
             output += self.accel_const
 
         if self.is_swinging():
@@ -187,9 +191,9 @@ class Player(cb.ActorBase):
 
     def _get_y_axis_output(self) -> float:
         output = 0.0
-        if ctrl.is_input_held[K_MOVE_UP]:
+        if ctrl.is_input_held[ctrl.K_MOVE_UP]:
             output -= self.accel_const
-        if ctrl.is_input_held[K_MOVE_DOWN]:
+        if ctrl.is_input_held[ctrl.K_MOVE_DOWN]:
             output += self.accel_const
 
         if self.is_swinging():
@@ -262,17 +266,17 @@ class Player(cb.ActorBase):
             self.can_portal = True
 
         # --------------------------- Firing Grappling Hook -------------------------- #
-        if self.grapple_input_copy != ctrl.key_released[K_GRAPPLE] and self.can_grapple:
+        if self.grapple_input_copy != ctrl.key_released[ctrl.K_GRAPPLE] and self.can_grapple:
             self.grapple = proj.GrappleBullet(self, self.pos.x, self.pos.y, vel_x, vel_y)
             self.can_grapple = False
-            self.grapple_input_copy = ctrl.key_released[K_GRAPPLE]
+            self.grapple_input_copy = ctrl.key_released[ctrl.K_GRAPPLE]
 
-        if self.grapple_input_copy != ctrl.key_released[K_GRAPPLE] and not self.can_grapple:
+        if self.grapple_input_copy != ctrl.key_released[ctrl.K_GRAPPLE] and not self.can_grapple:
             if self.grapple is not None:
                 self.grapple.returning = True
             else:
                 self.can_grapple = True
-                self.grapple_input_copy = ctrl.key_released[K_GRAPPLE]
+                self.grapple_input_copy = ctrl.key_released[ctrl.K_GRAPPLE]
 
     def _get_closest_interact(self):
         sprite_dists = {}
@@ -308,12 +312,12 @@ class Player(cb.ActorBase):
 
     def generate_text_box(self) -> None:
         """Generates dialogue based on specific conditions."""
-        if self.last_textbox_release != ctrl.key_released[K_DIALOGUE]:
+        if self.last_textbox_release != ctrl.key_released[ctrl.K_DIALOGUE]:
             if len(groups.all_text_boxes) < 1:
                 groups.all_text_boxes.add(
                     text.TextBox(cst.WINWIDTH // 2, cst.WINHEIGHT - 90, self._get_dialogue())
                 )
-            self.last_textbox_release = ctrl.key_released[K_DIALOGUE]
+            self.last_textbox_release = ctrl.key_released[ctrl.K_DIALOGUE]
 
     def update(self):
         if self.can_update and self.visible:
@@ -328,7 +332,7 @@ class Player(cb.ActorBase):
             if self.dodge_time < self.dodge_charge_up_time:
                 self.dodge_time = math.trunc(calc.get_time_diff(self.last_hit))
 
-        self.menu.update()
+        self.my_menu.update()
         self._passive_hp_regen()
 
         self.generate_text_box()

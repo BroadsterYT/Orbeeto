@@ -169,7 +169,7 @@ class Turret(enemybase.EnemyBase):
         self.set_images(os.path.join(os.getcwd(), 'sprites/enemies/standard_grunt.png'), 64, 64, 5, 5, 0, 0)
         self.set_rects(0, 0, 64, 64, 32, 32)
 
-        self._set_stats(34, 10, 68)
+        self._set_stats(10, 10, 68)
 
     def movement(self, can_shoot: bool = True):
         if self.can_update and self.hp > 0:

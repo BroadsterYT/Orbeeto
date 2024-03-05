@@ -7,9 +7,7 @@ import os
 import pygame
 from pygame.math import Vector2 as vec
 
-import controls.key_trackers as kt
-from controls.keybinds import *
-
+import controls as ctrl
 import text
 
 import calculations as calc
@@ -33,7 +31,7 @@ class TextBox(cb.ActorBase):
         self.show(self.layer)
 
         self.pos = vec((pos_x, pos_y))
-        self.last_release_value = kt.key_released[K_DIALOGUE]
+        self.last_release_value = ctrl.key_released[ctrl.K_DIALOGUE]
 
         self.convo: dict = text.all_dialogue_lines[convo]
         self.convo_index = 0
@@ -53,7 +51,16 @@ class TextBox(cb.ActorBase):
         self.set_rects(self.pos.x, self.pos.y, 800, 128, 800, 128)
 
     @staticmethod
-    def style_character(char: pygame.Surface, style: str):
+    def style_character(char: pygame.Surface, style: str) -> pygame.Surface:
+        """Gives the character a specific color if a unicode "style character" precedes it.
+
+        Args:
+            char: The character being stylized
+            style: The preceding character to check for the style type. (Should be the character before char)
+
+        Returns:
+            Surface: The styled character
+        """
         if style == text.RED:
             styled_char = calc.swap_color(char, (69, 40, 60), cst.RED)
         elif style == text.YELLOW:
@@ -98,8 +105,8 @@ class TextBox(cb.ActorBase):
                     self.text_cushion.x = 8
                     self.text_cushion.y += text.dialogue_font.char_height
 
-                if self.last_release_value != kt.key_released[K_DIALOGUE]:  # Prevents text skip mid-sentence
-                    self.last_release_value = kt.key_released[K_DIALOGUE]
+                if self.last_release_value != ctrl.key_released[ctrl.K_DIALOGUE]:  # Prevents text skip mid-sentence
+                    self.last_release_value = ctrl.key_released[ctrl.K_DIALOGUE]
 
                 self.last_char = char
 
@@ -110,7 +117,7 @@ class TextBox(cb.ActorBase):
             self.char_index = 0
 
             # Continues dialogue after input
-            if self.last_release_value != kt.key_released[K_DIALOGUE]:
+            if self.last_release_value != ctrl.key_released[ctrl.K_DIALOGUE]:
                 self.generation_count = 1
                 self.image = self.orig_image
 
@@ -122,7 +129,7 @@ class TextBox(cb.ActorBase):
                     self.kill()
 
                 self.is_generating = True
-                self.last_release_value = kt.key_released[K_DIALOGUE]
+                self.last_release_value = ctrl.key_released[ctrl.K_DIALOGUE]
 
     def update(self):
         self._render_text()
