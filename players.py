@@ -72,17 +72,21 @@ class Player(cb.ActorBase):
         self.ammo_bar = statbars.AmmoBar(self)
 
         # ---------------------------- Menu and Inventory ---------------------------- #
-        self.my_menu = menu_ui.InventoryMenu(self)
-
         self.my_materials = {}
         for item in items.MATERIALS.values():
             self.my_materials.update({item: 0})
+
         self.my_armors = {}
         for armor in items.ARMOR.values():
             self.my_armors.update({armor: False})
+        self.my_armors.update({items.ARMOR[0]: True})
+
         self.my_weapons = {}
         for weapon in items.WEAPONS.values():
             self.my_weapons.update({weapon: False})
+        self.my_weapons.update({items.WEAPONS[0]: True, items.WEAPONS[1]: True})
+
+        self.my_menu = menu_ui.InventoryMenu(self)
 
         # ---------------------- Bullets, Portals, and Grapples ---------------------- #
         self.bullet_type = cst.PROJ_STD

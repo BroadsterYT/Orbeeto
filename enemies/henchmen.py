@@ -250,7 +250,7 @@ class Ambusher(enemybase.EnemyBase):
         final_accel = vec(0, 0)
 
         self.movement_angle = calc.get_angle(self, calc.get_closest_player())
-        dash_timer = calc.eerp(0.5, 0.8, self.hp / self._max_hp)  # Moves for longer as health gets lower
+        dash_timer = calc.eerp(0.5, 0.8, self.hp / self.max_hp)  # Moves for longer as health gets lower
 
         # Rush towards the nearest player
         if calc.get_time_diff(self.movement_timer) >= dash_timer:

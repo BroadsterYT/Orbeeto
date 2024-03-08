@@ -39,7 +39,8 @@ class InventoryMenu(cb.AbstractBase):
         self.left_arrow = LeftMenuArrow(64, cst.WINHEIGHT / 2)
 
         self.add(
-            self.build_materials_slots()
+            self.build_materials_slots(),
+            self.build_armor_slots()  # noqa
         )
 
     def hide(self):
@@ -97,22 +98,38 @@ class InventoryMenu(cb.AbstractBase):
             list: A list containing the materials slots created
         """
         count = 0
-        space = vec(0, 0)
+        space = vec(64, 64)
         space_cushion = vec(82, 82)
         menu_slots = []
-        slot_count = 0
         offset = 0
         for y in range(5):
             for x in range(5):
                 menu_slots.append(
-                    menus.MaterialSlot(self.owner, 64 + space.x, 64 + space.y, items.MATERIALS[count])
+                    menus.MaterialSlot(self.owner, space.x, space.y, items.MATERIALS[count])
                 )
                 space.x += space_cushion.x
                 offset += 1
-                slot_count += 1
                 count += 1
             space.y += space_cushion.y
-            space.x = 0
+            space.x = 64
+        return menu_slots
+
+    def build_armor_slots(self) -> list:
+        count = 0
+        space = vec(512, 64)
+        space_cushion = vec(82, 82)
+        menu_slots = []
+        offset = 0
+        for y in range(1):
+            for x in range(3):
+                menu_slots.append(
+                    menus.ArmorSlot(self.owner, space.x, space.y, items.ARMOR[count])
+                )
+                space.x += space_cushion.x
+                offset += 1
+                count += 1
+            space.y += space_cushion.y
+            space.x = 512
         return menu_slots
 
     def update(self):

@@ -25,7 +25,6 @@ def stack_images(base_image: pygame.Surface, top_image: pygame.Surface, stack_x:
     output_image = pygame.Surface(vec(base_image.get_width(), base_image.get_height()))
     output_image.blit(base_image, vec(0, 0))
     output_image.blit(top_image, vec(stack_x, stack_y))
-
     return output_image
 
 

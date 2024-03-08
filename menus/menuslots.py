@@ -12,6 +12,7 @@ import classbases as cb
 import constants as cst
 import groups
 import spritesheet
+import visuals
 
 
 class SlotBase(cb.ActorBase):
@@ -76,7 +77,7 @@ class MaterialSlot(SlotBase):
         self.hitbox = pygame.Rect(0, 0, 64, 64)
         self.center_rects()
 
-    def get_item_images(self) -> list:
+    def _get_item_images(self) -> list:
         """Returns the images of the item a menu slot is designated to hold.
 
         Returns:
@@ -91,34 +92,31 @@ class MaterialSlot(SlotBase):
         else:
             return self.item_sheet.get_images(32, 32, 1, 0)
 
-    def create_slot_images(self):
+    def create_slot_images(self) -> list:
         """Combines the menu slot image with the images of the item and adds the player's collected amount of that
         item on top.
 
         Returns:
             list: A list of the created images
         """
-        item_images = self.get_item_images()
+        item_images = self._get_item_images()
         final_images = []
-        if self.holding is not None:
-            for frame in item_images:
-                new_img = calc.combine_images(self.menu_image, frame)
+        for frame in item_images:
+            new_img = calc.combine_images(self.menu_image, frame)
 
-                # Adding the count of the item to its images
-                count_surface = text.text_to_image(str(self.count), text.indicator_font)
-                new_img.set_colorkey((0, 0, 0))
-                center_x = (new_img.get_width() - frame.get_width()) // 2
-                center_y = (new_img.get_height() - frame.get_height()) // 2
+            # Adding the count of the item to its images
+            count_surface = text.text_to_image(str(self.count), text.indicator_font)
+            new_img.set_colorkey((0, 0, 0))
+            center_x = (new_img.get_width() - frame.get_width()) // 2
+            center_y = (new_img.get_height() - frame.get_height()) // 2
 
-                # Changing dark gray to light gray
-                color_swap_1 = calc.swap_color(count_surface, (44, 44, 44), (156, 156, 156))
-                # Changing black to white
-                color_swap_2 = calc.swap_color(color_swap_1, (0, 0, 1), (255, 255, 255))
+            # Changing dark gray to light gray
+            color_swap_1 = calc.swap_color(count_surface, (44, 44, 44), (156, 156, 156))
+            # Changing black to white
+            color_swap_2 = calc.swap_color(color_swap_1, (0, 0, 1), (255, 255, 255))
 
-                new_img.blit(color_swap_2, vec(center_x, center_y))
-                final_images.append(new_img)
-        else:
-            final_images.append(self.menu_image)
+            new_img.blit(color_swap_2, vec(center_x, center_y))
+            final_images.append(new_img)
 
         return final_images
 
@@ -141,6 +139,65 @@ class MaterialSlot(SlotBase):
 
 
 class ArmorSlot(SlotBase):
-    def __init__(self, owner, pos_x, pos_y):
+    def __init__(self, owner, pos_x, pos_y, armor_held: str):
         super().__init__(owner, pos_x, pos_y)
         groups.all_slots.add(self)
+
+        self.holding = armor_held
+        self.armor_sheet = spritesheet.Spritesheet('sprites/textures/armor_items.png', 16)
+
+        self.images = self.create_slot_images()
+        self.image = self.images[self.index]
+
+        self.rect = self.image.get_rect()
+        self.hitbox = pygame.Rect(0, 0, 64, 64)
+        self.center_rects()
+
+    def _get_armor_images(self) -> list:
+        if self.holding == items.ARMOR[0]:
+            return self.armor_sheet.get_images(64, 64, 16, 0)
+        elif self.holding == items.ARMOR[1]:
+            return self.armor_sheet.get_images(64, 64, 16, 16)
+        elif self.holding == items.ARMOR[2]:
+            return self.armor_sheet.get_images(64, 64, 16, 32)
+        else:
+            raise IndexError(f'No armor visual exists with an armor key of {self.holding}.')
+
+    def create_slot_images(self) -> list:
+        final_images = []
+        armor_images = self._get_armor_images()
+
+        for frame in armor_images:
+            menu_image = pygame.Surface(vec(64, 64))
+
+            if self.owner.my_armors[self.holding]:
+                menu_image = visuals.stack_images(self.menu_image, frame, 0, 0)
+
+            elif not self.owner.my_armors[self.holding]:
+                blanked_frame = pygame.Surface(frame.get_size())
+                blanked_frame.fill((0, 0, 1))
+
+                mix_frame: pygame.Surface = frame.copy()
+                mix_frame.blit(blanked_frame, vec(0, 0), special_flags=pygame.BLEND_MULT)
+
+                menu_image = visuals.stack_images(self.menu_image, mix_frame, 0, 0)
+
+            menu_image.set_colorkey((0, 0, 0))
+            final_images.append(menu_image)
+
+        return final_images
+
+    def update(self):
+        self.center_rects()
+        self.images = self.create_slot_images()
+        self._animate()
+
+        self.hover()
+
+    def _animate(self):
+        if calc.get_time_diff(self.last_frame) > 0.1:
+            self.image = self.images[self.index]
+            self.index += 1
+            if self.index >= 16:
+                self.index = 0
+            self.last_frame = time.time()
