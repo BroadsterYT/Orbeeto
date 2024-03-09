@@ -4,21 +4,21 @@ Contains the player class.
 import os
 import time
 import math
-
 import itertools
+
 import pygame
 from pygame.math import Vector2 as vec
 
 import controls as ctrl
 import items
-import text
+import menus
 import projectiles as proj
+import text
 
 import calculations as calc
 import classbases as cb
 import constants as cst
 import groups
-import menu_ui
 import statbars
 import trinkets
 
@@ -86,7 +86,7 @@ class Player(cb.ActorBase):
             self.my_weapons.update({weapon: False})
         self.my_weapons.update({items.WEAPONS[0]: True, items.WEAPONS[1]: True})
 
-        self.my_menu = menu_ui.InventoryMenu(self)
+        self.my_menu = menus.InventoryMenu(self)
 
         # ---------------------- Bullets, Portals, and Grapples ---------------------- #
         self.bullet_type = cst.PROJ_STD

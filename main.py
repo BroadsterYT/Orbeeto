@@ -8,7 +8,6 @@ import pygame
 from pygame.locals import QUIT
 
 import controls as ctrl
-from controls.keybinds import *
 import screen
 
 import calculations as calc
@@ -23,7 +22,7 @@ pygame.display.set_icon(pygame.image.load(os.path.join(os.getcwd(), 'other/orbee
 clock = pygame.time.Clock()
 
 screen.buffer_screen = pygame.Surface((cst.WINWIDTH, cst.WINHEIGHT))
-screen.viewport = pygame.display.set_mode((cst.WINWIDTH, cst.WINHEIGHT), pygame.SCALED | pygame.RESIZABLE, 0, 0, 1)
+screen.viewport = pygame.display.set_mode((cst.WINWIDTH, cst.WINHEIGHT), pygame.SCALED | pygame.RESIZABLE)
 
 
 def redraw_game_window() -> None:
@@ -82,7 +81,7 @@ def main():
         for event in pygame.event.get():
             key_pressed = pygame.key.get_pressed()
 
-            if event.type == QUIT or key_pressed[K_PAUSE]:
+            if event.type == QUIT or key_pressed[ctrl.K_PAUSE]:
                 sys.exit()
 
             # Key input updating
