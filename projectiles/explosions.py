@@ -19,9 +19,8 @@ class StdBulletExplode(cb.ActorBase):
             pos_x: The x-position to spawn the explosion at
             pos_y: The y-position to spawn the explosion at
         """
-        super().__init__()
-        self.layer = cst.LAYER['explosion']
-        self.show(self.layer)
+        super().__init__(cst.LAYER['explosion'])
+        self.show()
         self.owner = owner
 
         self.pos = vec((pos_x, pos_y))

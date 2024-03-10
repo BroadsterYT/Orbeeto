@@ -22,8 +22,7 @@ class EnemyStdBullet(proj.BulletBase):
             bounce_count: The amount of times the bullet should bounce/ricochet
         """
         super().__init__(cst.PROJ_DAMAGE[cst.PROJ_STD])
-        self.layer = cst.LAYER['proj']
-        self.show(self.layer)
+        self.show()
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)

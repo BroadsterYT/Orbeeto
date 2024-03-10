@@ -19,9 +19,8 @@ class Portal(cb.ActorBase):
             pos_y: The y-position where the portal should spawn
             facing: The direction the portal should face. Default is south.
         """
-        super().__init__()
-        self.layer = cst.LAYER['portal']
-        self.show(self.layer)
+        super().__init__(cst.LAYER['portal'])
+        self.show()
         groups.all_portals.add(self)
 
         room = cb.get_room()

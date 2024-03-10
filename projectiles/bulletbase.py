@@ -20,7 +20,7 @@ class BulletBase(cb.ActorBase):
             damage: The amount of damage the projectile should inflict (if any)
             dmg_mod: The multiplier to give to the damage field
         """
-        super().__init__()
+        super().__init__(cst.LAYER['proj'])
         self.ric_count = 1
         self.start_time = time.time()
 

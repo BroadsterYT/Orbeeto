@@ -28,7 +28,7 @@ class Player(cb.ActorBase):
     """
     def __init__(self):
         super().__init__(cst.LAYER['player'])
-        self.show(self.layer)
+        self.show()
         groups.all_players.add(self)
         self.room = cb.get_room()
 
@@ -67,9 +67,10 @@ class Player(cb.ActorBase):
         self.update_level()
 
         # --------------------------------- Stat Bars -------------------------------- #
-        self.health_bar = statbars.HealthBar(self)
-        self.dodge_bar = statbars.DodgeBar(self)
-        self.ammo_bar = statbars.AmmoBar(self)
+        self.health_bar = statbars.StatBar(self, 0, 'hp', 'max_hp', 'sprites/stat_bars/health_bar.png')
+        self.ammo_bar = statbars.StatBar(self, 1, 'ammo', 'max_ammo', 'sprites/stat_bars/ammo_bar.png')
+        self.dodge_bar = statbars.StatBar(self, 2, 'dodge_time', 'dodge_charge_up_time',
+                                          'sprites/stat_bars/dodge_bar.png')
 
         # ---------------------------- Menu and Inventory ---------------------------- #
         self.my_materials = {}

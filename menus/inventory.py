@@ -135,8 +135,8 @@ class InventoryMenu(cb.AbstractBase):
     def update(self):
         if self.last_release_value != ctrl.key_released[ctrl.K_MENU] and not self.is_open:
             self.show()
-            self.right_arrow.show(cst.LAYER['ui_1'])
-            self.left_arrow.show(cst.LAYER['ui_1'])
+            self.right_arrow.show()
+            self.left_arrow.show()
 
             self.can_update = False
             for sprite in groups.all_sprites:
@@ -172,8 +172,7 @@ class RightMenuArrow(cb.ActorBase):
             pos_x: The x-position the element should be displayed at
             pos_y: The y-position the element should be displayed at
         """
-        super().__init__()
-        self.layer = cst.LAYER['ui_1']
+        super().__init__(cst.LAYER['ui_1'])
         self.pos = vec((pos_x, pos_y))
         self.return_pos = vec((pos_x, pos_y))
 
@@ -220,8 +219,7 @@ class LeftMenuArrow(cb.ActorBase):
             pos_x: The x-position the element should be displayed at
             pos_y: The y-position the element should be displayed at
         """
-        super().__init__()
-        self.layer = cst.LAYER['ui_1']
+        super().__init__(cst.LAYER['ui_1'])
         self.pos = vec((pos_x, pos_y))
         self.return_pos = vec((pos_x, pos_y))
 

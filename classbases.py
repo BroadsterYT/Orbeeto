@@ -85,22 +85,18 @@ class ActorBase(pygame.sprite.Sprite):
         self.visible = False
         if hasattr(self, 'health_bar'):  # TODO: Remove need for hasattr check
             self.health_bar.hide()
-            self.health_bar.number.hide()
         groups.all_sprites.remove(self)
 
-    def show(self, layer_send: int) -> None:
+    def show(self) -> None:
         """Makes the sprite visible. The sprite's ``update()`` method can be called.
-
-        Args:
-            layer_send: The layer to draw the sprite onto. (Higher values are drawn on top of lower values.)
 
         Returns:
             None
         """
         self.visible = True
         if hasattr(self, 'health_bar'):
-            self.health_bar.show(cst.LAYER['statbar'])
-        groups.all_sprites.add(self, layer=layer_send)
+            self.health_bar.show()
+        groups.all_sprites.add(self, layer=self.layer)
 
     # ----------------------------- Images and Rects ----------------------------- #
     def set_images(self, image_file: str, frame_width: int, frame_height: int, sprites_per_row: int,

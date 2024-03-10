@@ -22,14 +22,13 @@ class EnemyBase(cb.ActorBase):
 
         self.is_shooting = False
 
-        # -------------------- In-game Stats --------------------#
-        self.max_hp = None
-        self.hp = None
-        self.max_defense = None
-        self.defense = None
-        self.xp = None
+        self.max_hp = 1
+        self.hp = 1
+        self.max_defense = 1
+        self.defense = 1
+        self.xp = 1
 
-        self.health_bar = statbars.HealthBar(self)
+        self.health_bar = statbars.StatBar(self, 1, 'hp', 'max_hp', 'sprites/stat_bars/health_bar.png')
 
     def _set_stats(self, hp: int, defense: int, xp: int):
         self.max_hp = hp

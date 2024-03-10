@@ -26,9 +26,8 @@ class TextBox(cb.ActorBase):
             pos_y: The y-position to spawn the text box
             convo: The dialogue sequence to initiate upon creation
         """
-        super().__init__()
-        self.layer = cst.LAYER['textbox']
-        self.show(self.layer)
+        super().__init__(cst.LAYER['textbox'])
+        self.show()
 
         self.pos = vec((pos_x, pos_y))
         self.last_release_value = ctrl.key_released[ctrl.K_DIALOGUE]

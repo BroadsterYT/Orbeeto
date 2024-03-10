@@ -29,7 +29,7 @@ class RoomContainer(cb.AbstractBase):
 
     def show_sprites(self):
         for sprite in self.sprites():
-            sprite.show(sprite.layer)
+            sprite.show()
             sprite.accel = vec(0, 0)
             sprite.vel = vec(0, 0)
 

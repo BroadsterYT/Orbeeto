@@ -30,9 +30,8 @@ def stack_images(base_image: pygame.Surface, top_image: pygame.Surface, stack_x:
 
 class Beam(cb.ActorBase):
     def __init__(self, from_sprite, to_sprite):
-        super().__init__()
-        self.layer = cst.LAYER['floor']
-        self.show(self.layer)
+        super().__init__(cst.LAYER['floor'])
+        self.show()
 
         self.from_sprite, self.to_sprite = from_sprite, to_sprite
         self.index = 0

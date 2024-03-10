@@ -27,7 +27,7 @@ class ItemDrop(cb.ActorBase):
             item_name: The item to drop
         """
         super().__init__(cst.LAYER['drops'])
-        self.show(self.layer)
+        self.show()
         self.mat = item_name
 
         self.start_time = time.time()

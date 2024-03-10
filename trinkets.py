@@ -23,9 +23,8 @@ class Box(cb.ActorBase):
             pos_x: The position on the x-axis to spawn the box
             pos_y: The position on the y-axis to spawn the box
         """
-        super().__init__()
-        self.layer = cst.LAYER['trinket']
-        self.show(self.layer)
+        super().__init__(cst.LAYER['trinket'])
+        self.show()
         groups.all_movable.add(self)
 
         self.pos = vec((pos_x, pos_y))
@@ -82,9 +81,8 @@ class Button(cb.ActorBase):
             block_pos_x: The x-axis position of the button (in blocks)
             block_pos_y: The y-axis position of the button (in blocks)
         """
-        super().__init__()
-        self.layer = cst.LAYER['button']
-        self.show(self.layer)
+        super().__init__(cst.LAYER['button'])
+        self.show()
         groups.all_trinkets.add(self)
 
         self.id_value = id_value
@@ -136,7 +134,7 @@ class LockedWall(tiles.Wall):
                  block_width: int, block_height: int):
         super().__init__(start_pos_x, start_pos_y, block_width, block_height)
         self.layer = cst.LAYER['wall']
-        self.show(self.layer)
+        self.show()
         groups.all_trinkets.add(self)
         self.id_value = id_value
 
@@ -222,7 +220,7 @@ class PortalBlocker(tiles.TileBase):
     def __init__(self, pos_x: int | float, pos_y: int | float, id_value: int, block_width: int, block_height: int):
         super().__init__(pos_x, pos_y, block_width, block_height)
         self.layer = cst.LAYER['wall']
-        self.show(self.layer)
+        self.show()
         groups.all_portal_blockers.add(self)
 
         self.id_value = id_value

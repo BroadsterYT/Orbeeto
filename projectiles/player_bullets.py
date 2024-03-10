@@ -26,8 +26,7 @@ class PlayerStdBullet(proj.BulletBase):
             vel_y: The y-axis component of the bullet's velocity
         """
         super().__init__(cst.PROJ_DAMAGE[cst.PROJ_STD])
-        self.layer = cst.LAYER['proj']
-        self.show(self.layer)
+        self.show()
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
@@ -63,8 +62,7 @@ class PlayerStdBullet(proj.BulletBase):
 class PlayerLaserBullet(proj.BulletBase):
     def __init__(self, pos_x: float, pos_y: float, vel_x: float, vel_y: float, bounce_count: int = 1):
         super().__init__(cst.PROJ_DAMAGE[cst.PROJ_LASER])
-        self.layer = cst.LAYER['proj']
-        self.show(self.layer)
+        self.show()
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
@@ -97,8 +95,7 @@ class PlayerLaserBullet(proj.BulletBase):
 class PortalBullet(proj.BulletBase):
     def __init__(self, pos_x, pos_y, vel_x, vel_y):
         super().__init__()
-        self.layer = cst.LAYER['proj']
-        self.show(self.layer)
+        self.show()
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
@@ -192,7 +189,7 @@ class GrappleBullet(proj.BulletBase):
     def __init__(self, shot_from, pos_x: float, pos_y: float, vel_x: float, vel_y: float):
         super().__init__()
         self.layer = cst.LAYER['grapple']
-        self.show(self.layer)
+        self.show()
         self.damage = cst.PROJ_DAMAGE[cst.PROJ_GRAPPLE]
         
         self.shot_from = shot_from

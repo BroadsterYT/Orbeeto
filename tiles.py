@@ -90,7 +90,7 @@ class Wall(TileBase):
         """
         super().__init__(pos_x, pos_y, block_width, block_height)
         self.layer = cst.LAYER['wall']
-        self.show(self.layer)
+        self.show()
         groups.all_walls.add(self)
 
         self.pos = self.place_top_left(pos_x, pos_y)
@@ -113,7 +113,7 @@ class Floor(TileBase):
     def __init__(self, pos_x: int | float, pos_y: int | float, block_width: int, block_height: int):
         super().__init__(pos_x, pos_y, block_width, block_height)
         self.layer = cst.LAYER['floor']
-        self.show(self.layer)
+        self.show()
         groups.all_floors.add(self)
 
         self.spritesheet = spritesheet.Spritesheet(os.path.join(os.getcwd(), 'sprites/tiles/floor.png'), 4)
@@ -146,7 +146,7 @@ class RoomBorder(TileBase):
     def __init__(self, pos_x: float, pos_y: float, block_width: int | float, block_height: int | float):
         super().__init__(pos_x, pos_y, block_width, block_height)
         self.layer = cst.LAYER['wall']
-        self.show(self.layer)
+        self.show()
         groups.all_borders.add(self)
 
         self.image = pygame.Surface(vec(block_width * 16, block_height * 16))
