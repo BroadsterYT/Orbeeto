@@ -7,6 +7,8 @@ import time
 import pygame
 from pygame.math import Vector2 as vec
 
+import screen
+
 import calculations as calc
 import constants as cst
 import groups
@@ -196,8 +198,8 @@ class ActorBase(pygame.sprite.Sprite):
         """
         self.accel.x += self.vel.x * cst.FRIC
         self.accel.y += self.vel.y * cst.FRIC
-        self.vel += self.accel
-        self.pos += self.vel + self.accel_const * self.accel
+        self.vel += self.accel * screen.dt * cst.FPS
+        self.pos += self.vel * screen.dt * cst.FPS + self.accel_const * self.accel
 
         self.center_rects()
 

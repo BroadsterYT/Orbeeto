@@ -3,6 +3,7 @@ Module containing the room class.
 """
 import copy
 import math
+import time
 
 import itertools
 
@@ -11,7 +12,8 @@ from pygame.math import Vector2 as vec
 
 import controls as ctrl
 from controls.keybinds import *
-import text.display_text
+import text
+import screen
 
 import calculations as calc
 import classbases as cb
@@ -615,7 +617,7 @@ class Room(cb.AbstractBase):
             raise RuntimeError(f'No room layout associated with room {self.room}.')
 
     def update(self):
-        text.display_text.draw_text(repr(self), 0, 0)
+        # text.display_text.draw_text(repr(self), 0, 0)
         self._change_room()
         self.movement()
 

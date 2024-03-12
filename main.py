@@ -11,6 +11,7 @@ from pygame.locals import QUIT
 
 import controls as ctrl
 import screen
+import text
 
 import calculations as calc
 import constants as cst
@@ -20,8 +21,6 @@ import rooms
 pygame.init()
 pygame.display.set_caption('Orbeeto')
 pygame.display.set_icon(pygame.image.load(os.path.join(os.getcwd(), 'other/orbeeto.png')))
-
-clock = pygame.time.Clock()
 
 screen.buffer_screen = pygame.Surface((cst.WINWIDTH, cst.WINHEIGHT))
 screen.viewport = pygame.display.set_mode((cst.WINWIDTH, cst.WINHEIGHT), pygame.SCALED | pygame.RESIZABLE)
@@ -52,6 +51,7 @@ def check_key_release(event, is_mouse) -> None:
     """Checks if any input(s) has been released. If one has, then its count in key_released will be updated to match.
 
     Args:
+        event:
         is_mouse: Are the inputs mouse buttons? True if yes, false if no.
 
     Returns:
@@ -70,8 +70,10 @@ def check_key_release(event, is_mouse) -> None:
 # ============================================================================ #
 #                                   Main Loop                                  #
 # ============================================================================ #
+prev_time = time.time()  # Used for delta time
+
+
 async def main(max_frame_rate):
-    """Main sequence"""
     loop = asyncio.get_event_loop()
     next_frame_target = 0.0
     sec_per_frame = 1 / max_frame_rate
@@ -79,41 +81,24 @@ async def main(max_frame_rate):
     running = True
     while running:
         if sec_per_frame:
-            # Frame rate limiter
+            # Framerate limiter
             delay = next_frame_target - time.time()
             if delay > 0:
                 await asyncio.sleep(delay)
             next_frame_target = time.time() + sec_per_frame
 
+        # Delta time
+        global prev_time
+        now = time.time()
+        screen.dt = now - prev_time
+        prev_time = now
+
+        text.draw_text(f'{screen.dt}', 0, 0)
+
         for a_player in groups.all_players:
             if a_player.hp <= 0:
                 pygame.quit()
                 sys.exit()
-
-        # global event  # noqa
-        # for event in pygame.event.get():
-            # key_pressed = pygame.key.get_pressed()
-            #
-            # if event.type == QUIT or key_pressed[ctrl.K_PAUSE]:
-            #     sys.exit()
-            #
-            # # Key input updating
-            # for key in ctrl.is_input_held.keys():
-            #     if key in [1, 2, 3]:
-            #         ctrl.is_input_held[key] = pygame.mouse.get_pressed(5)[key - 1]
-            #     else:
-            #         ctrl.is_input_held[key] = key_pressed[key]
-            #
-            # # Key release updating
-            # check_key_release(False)
-            # check_key_release(True)
-            #
-            # if event.type == pygame.MOUSEWHEEL:  # TODO: Implement this in players.py
-            #     # Player ammo refill
-            #     if main_room.player1.ammo < main_room.player1.max_ammo:
-            #         main_room.player1.ammo += 1
-
-        # ------------------------------ Game Operation ------------------------------ #
 
         # ------------------------------- Redraw Window ------------------------------ #
         redraw_game_window()
@@ -146,6 +131,7 @@ async def handle_events(events_to_handle):
             # Player ammo refill
             if main_room.player1.ammo < main_room.player1.max_ammo:
                 main_room.player1.ammo += 1
+
 
 if __name__ == '__main__':
     asyncio.run(main(cst.FPS))
