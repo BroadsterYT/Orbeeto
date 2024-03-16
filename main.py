@@ -10,6 +10,7 @@ import pygame
 from pygame.locals import QUIT
 
 import controls as ctrl
+import menus
 import screen
 import text
 
@@ -45,31 +46,10 @@ def redraw_game_window() -> None:
 #                         Initialization for Main Loop                         #
 # ============================================================================ #
 main_room = rooms.Room(0, 0)
+pause_menu = menus.PauseMenu()
+inventory_menu = menus.InventoryMenu()
 
-
-def check_key_release(event, is_mouse) -> None:
-    """Checks if any input(s) has been released. If one has, then its count in key_released will be updated to match.
-
-    Args:
-        event:
-        is_mouse: Are the inputs mouse buttons? True if yes, false if no.
-
-    Returns:
-        None
-    """
-    if not is_mouse:
-        for input_key in ctrl.key_released.keys():
-            if event.type == pygame.KEYUP and event.key == input_key:
-                ctrl.key_released[input_key] += 1
-    else:
-        for button in ctrl.key_released.keys():
-            if event.type == pygame.MOUSEBUTTONUP and event.button == button:
-                ctrl.key_released[button] += 1
-
-
-# ============================================================================ #
-#                                   Main Loop                                  #
-# ============================================================================ #
+last_pause_release = ctrl.key_released[ctrl.K_PAUSE]
 prev_time = time.time()  # Used for delta time
 
 
@@ -93,6 +73,15 @@ async def main(max_frame_rate):
         screen.dt = now - prev_time
         prev_time = now
 
+        # Open pause menu
+        global last_pause_release
+        if last_pause_release != ctrl.key_released[ctrl.K_PAUSE]:
+            pause_menu.trigger()
+            last_pause_release = ctrl.key_released[ctrl.K_PAUSE]
+
+        # Update inventory menu
+        inventory_menu.update()
+
         text.draw_text(f'{screen.dt}', 0, 0)
 
         for a_player in groups.all_players:
@@ -109,11 +98,31 @@ async def main(max_frame_rate):
         await events_handled
 
 
+def check_key_release(event, is_mouse) -> None:
+    """Checks if any input(s) has been released. If one has, then its count in key_released will be updated to match.
+
+    Args:
+        event: The Pygame event currently being evaluated
+        is_mouse: Are the inputs mouse buttons? True if yes, false if no.
+
+    Returns:
+        None
+    """
+    if not is_mouse:
+        for input_key in ctrl.key_released.keys():
+            if event.type == pygame.KEYUP and event.key == input_key:
+                ctrl.key_released[input_key] += 1
+    else:
+        for button in ctrl.key_released.keys():
+            if event.type == pygame.MOUSEBUTTONUP and event.button == button:
+                ctrl.key_released[button] += 1
+
+
 async def handle_events(events_to_handle):
     for any_event in events_to_handle:
         key_pressed = pygame.key.get_pressed()
 
-        if any_event.type == QUIT or key_pressed[ctrl.K_PAUSE]:
+        if any_event.type == QUIT:
             sys.exit()
 
         # Key input updating

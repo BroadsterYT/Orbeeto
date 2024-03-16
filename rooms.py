@@ -3,17 +3,12 @@ Module containing the room class.
 """
 import copy
 import math
-import time
 
 import itertools
-
 import pygame
 from pygame.math import Vector2 as vec
 
 import controls as ctrl
-from controls.keybinds import *
-import text
-import screen
 
 import calculations as calc
 import classbases as cb
@@ -120,9 +115,9 @@ class Room(cb.AbstractBase):
             float: The room's acceleration's x-axis component
         """
         output = 0.0
-        if ctrl.is_input_held[K_MOVE_LEFT]:
+        if ctrl.is_input_held[ctrl.K_MOVE_LEFT]:
             output += self.player1.accel_const
-        if ctrl.is_input_held[K_MOVE_RIGHT]:
+        if ctrl.is_input_held[ctrl.K_MOVE_RIGHT]:
             output -= self.player1.accel_const
 
         if self.player1.is_swinging():
@@ -138,9 +133,9 @@ class Room(cb.AbstractBase):
             float: The room's acceleration's y-axis component
         """
         output = 0.0
-        if ctrl.is_input_held[K_MOVE_UP]:
+        if ctrl.is_input_held[ctrl.K_MOVE_UP]:
             output += self.player1.accel_const
-        if ctrl.is_input_held[K_MOVE_DOWN]:
+        if ctrl.is_input_held[ctrl.K_MOVE_DOWN]:
             output -= self.player1.accel_const
 
         if self.player1.is_swinging():
@@ -201,8 +196,8 @@ class Room(cb.AbstractBase):
             list: A list containing all sprites that should be relocated when the player is centered
         """
         output_list = []
-        for sprite in [s for s in
-                       itertools.chain(self.sprites(), groups.all_projs, groups.all_drops)
+        for sprite in [s
+                       for s in itertools.chain(self.sprites(), groups.all_projs, groups.all_drops)
                        if s.visible]:
             output_list.append(sprite)
 
@@ -213,31 +208,30 @@ class Room(cb.AbstractBase):
         return output_list
 
     # -------------------------------- Teleporting ------------------------------- #
-    def _align_player_tp(self, offset: float, direction: str, portal_out, width, height) -> None:
+    def _align_player_tp(self, direction: str, portal_out, width, height) -> None:
         """Sets the player at the proper position after teleporting when the room can scroll.
 
         Args:
-            offset: The distance the player is (on either x or y-axis, not both) from the center of the entering portal
             direction: The direction the exit portal is facing
             portal_out: The exit portal sprite
             width: Half the sum of the player's hitbox width plus the portal's hitbox width
             height: Half the sum of the player's hitbox height plus the portal's hitbox height
         """
         if direction == cst.SOUTH:
-            self.player1.pos.x = portal_out.pos.x - offset
+            self.player1.pos.x = portal_out.pos.x
             self.player1.pos.y = portal_out.pos.y + height
 
         elif direction == cst.EAST:
             self.player1.pos.x = portal_out.pos.x + width
-            self.player1.pos.y = portal_out.pos.y - offset
+            self.player1.pos.y = portal_out.pos.y
 
         elif direction == cst.NORTH:
-            self.player1.pos.x = portal_out.pos.x + offset
+            self.player1.pos.x = portal_out.pos.x
             self.player1.pos.y = portal_out.pos.y - height
 
         elif direction == cst.WEST:
             self.player1.pos.x = portal_out.pos.x - width
-            self.player1.pos.y = portal_out.pos.y + offset
+            self.player1.pos.y = portal_out.pos.y
 
     def _teleport_player(self, portal_in, portal_out) -> None:
         """Teleports the player when the room is scrolling.
@@ -252,15 +246,8 @@ class Room(cb.AbstractBase):
         direction_out = portal_out.facing
         direction_angles = {cst.SOUTH: 180, cst.EAST: 90, cst.NORTH: 0, cst.WEST: 270}
 
-        # Calculating where player should exit portal relative to the position entered
-        distance_offset = 0.0
-        if direction_in in [cst.SOUTH, cst.NORTH]:
-            distance_offset = self.player1.pos.x - portal_in.pos.x
-        elif direction_in in [cst.EAST, cst.WEST]:
-            distance_offset = self.player1.pos.y - portal_in.pos.y
-
         # Actually teleporting the player
-        self._align_player_tp(distance_offset, direction_out, portal_out, combined_width, combined_height)
+        self._align_player_tp(direction_out, portal_out, combined_width, combined_height)
 
         if self.is_scrolling_x and self.is_scrolling_y:
             if direction_in == cst.EAST:
@@ -345,6 +332,9 @@ class Room(cb.AbstractBase):
             elif direction_in == cst.WEST:
                 direction_angles.update({cst.WEST: 180, cst.SOUTH: 90, cst.EAST: 0, cst.NORTH: 270})
             self.player1.vel = self.player1.vel.rotate(direction_angles[direction_out])
+
+        for portal in groups.all_portals:
+            portal.kill()
 
     def _sprites_rotate_trajectory(self, angle: float) -> None:
         """Rotates the velocities and accelerations of all the sprites within the room's sprites.
@@ -598,7 +588,7 @@ class Room(cb.AbstractBase):
         if self.room == vec(0, 0):
             return [
                 # tiles.Wall(0, 0, 4, 45),
-                tiles.Floor(cst.WINWIDTH // 2, cst.WINHEIGHT // 2, 80, 80),
+                tiles.Floor(0, 0, 80, 80),
 
                 trinkets.Button(1, 14, 16),
                 trinkets.Box(cst.WINWIDTH // 2, cst.WINHEIGHT // 2),
@@ -616,8 +606,8 @@ class Room(cb.AbstractBase):
         else:
             raise RuntimeError(f'No room layout associated with room {self.room}.')
 
+    @cb.check_update_state
     def update(self):
-        # text.display_text.draw_text(repr(self), 0, 0)
         self._change_room()
         self.movement()
 

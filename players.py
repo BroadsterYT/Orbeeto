@@ -85,9 +85,7 @@ class Player(cb.ActorBase):
         self.my_weapons = {}
         for weapon in items.WEAPONS.values():
             self.my_weapons.update({weapon: False})
-        self.my_weapons.update({items.WEAPONS[0]: True, items.WEAPONS[1]: True})
-
-        self.my_menu = menus.InventoryMenu(self)
+        self.my_weapons.update({items.WEAPONS[0]: True, items.WEAPONS[1]: True})\
 
         # ---------------------- Bullets, Portals, and Grapples ---------------------- #
         self.bullet_type = cst.PROJ_STD
@@ -151,12 +149,14 @@ class Player(cb.ActorBase):
             self.last_regen = time.time()
 
     # --------------------------------- Movement --------------------------------- #
+    @cb.check_update_state
     def movement(self):
         """When called once every frame, it allows the player to receive input from the user and move accordingly
         """
-        if self.can_update and self.visible:
-            self.accel = self.get_accel()
-            self.accel_movement()
+        self.accel = self.get_accel()
+        self.accel_movement()
+
+        self.shoot()
 
     def get_accel(self) -> pygame.math.Vector2:
         """Returns the acceleration that the player should undergo given specific conditions.
@@ -324,20 +324,18 @@ class Player(cb.ActorBase):
                 )
             self.last_textbox_release = ctrl.key_released[ctrl.K_DIALOGUE]
 
+    @cb.check_update_state
     def update(self):
-        if self.can_update and self.visible:
-            self.movement()
-            self.shoot()
+        self.movement()
 
-            # Animation
-            self._animate()
-            self.rotate_image(calc.get_angle_to_mouse(self))
+        # Animation
+        self._animate()
+        self.rotate_image(calc.get_angle_to_mouse(self))
 
-            # Dodge charge up
-            if self.dodge_time < self.dodge_charge_up_time:
-                self.dodge_time = math.trunc(calc.get_time_diff(self.last_hit))
+        # Dodge charge up
+        if self.dodge_time < self.dodge_charge_up_time:
+            self.dodge_time = math.trunc(calc.get_time_diff(self.last_hit))
 
-        self.my_menu.update()
         self._passive_hp_regen()
 
         self.generate_text_box()
