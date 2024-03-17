@@ -74,7 +74,7 @@ class Player(cb.ActorBase):
 
         # ---------------------------- Menu and Inventory ---------------------------- #
         self.my_materials = {}
-        for item in items.MATERIALS.values():
+        for item in items.MATERIALS:
             self.my_materials.update({item: 0})
 
         self.my_armors = {}

@@ -26,6 +26,8 @@ pygame.display.set_icon(pygame.image.load(os.path.join(os.getcwd(), 'other/orbee
 screen.buffer_screen = pygame.Surface((cst.WINWIDTH, cst.WINHEIGHT))
 screen.viewport = pygame.display.set_mode((cst.WINWIDTH, cst.WINHEIGHT), pygame.SCALED | pygame.RESIZABLE)
 
+# cst.FPS = pygame.display.get_current_refresh_rate()
+
 
 def redraw_game_window() -> None:
     """Draws all sprites onto the screen
@@ -37,7 +39,7 @@ def redraw_game_window() -> None:
     groups.all_sprites.draw(screen.buffer_screen)
     main_room.update()
     screen.viewport.blit(screen.buffer_screen, calc.screen_shake_queue.run())
-    pygame.display.update()
+    pygame.display.flip()
 
     screen.buffer_screen.fill((255, 255, 255))
 
@@ -53,7 +55,12 @@ last_pause_release = ctrl.key_released[ctrl.K_PAUSE]
 prev_time = time.time()  # Used for delta time
 
 
-async def main(max_frame_rate):
+async def main(max_frame_rate) -> None:
+    """The main loop of the program.
+
+    Args:
+        max_frame_rate: The maximum framerate the game should run at
+    """
     loop = asyncio.get_event_loop()
     next_frame_target = 0.0
     sec_per_frame = 1 / max_frame_rate
@@ -118,7 +125,12 @@ def check_key_release(event, is_mouse) -> None:
                 ctrl.key_released[button] += 1
 
 
-async def handle_events(events_to_handle):
+async def handle_events(events_to_handle) -> None:
+    """Handles the list of pygame events given
+
+    Args:
+        events_to_handle: The list of pygame events to handle
+    """
     for any_event in events_to_handle:
         key_pressed = pygame.key.get_pressed()
 

@@ -35,7 +35,7 @@ class BulletBase(cb.ActorBase):
         room = cb.get_room()
         final_vel = self.vel_const + room.vel
 
-        return final_vel * screen.dt * cst.FPS
+        return final_vel * screen.dt * cst.M_FPS
 
     def land(self, target) -> None:
         self.hit = target

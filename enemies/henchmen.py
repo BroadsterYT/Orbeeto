@@ -161,7 +161,7 @@ class Turret(enemybase.EnemyBase):
         groups.all_sentries.add(self)
 
         self.bullet_vel = vec(0, 6)
-        self.bullet_angle = math.degrees(0.3) * screen.dt * cst.FPS
+        self.bullet_angle = math.degrees(0.3) * screen.dt * cst.M_FPS
         self.last_shot = time.time()
 
         self.pos = vec((pos_x, pos_y))

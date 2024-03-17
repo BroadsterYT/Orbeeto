@@ -9,6 +9,7 @@ import pygame
 from pygame.math import Vector2 as vec
 
 import controls as ctrl
+import screen
 
 import calculations as calc
 import classbases as cb
@@ -80,7 +81,7 @@ class Room(cb.AbstractBase):
         """
         self.accel.x += self.vel.x * cst.FRIC
         self.accel.y += self.vel.y * cst.FRIC
-        self.vel += self.accel
+        self.vel += self.accel * (screen.dt * cst.M_FPS)
 
         self.pos = vec(self.border_west.pos.x + self.border_west.hitbox.width // 2,
                        self.border_north.pos.y + self.border_north.height // 2)
