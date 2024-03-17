@@ -17,17 +17,15 @@ import spritesheet
 
 
 class InventoryMenu(cb.AbstractBase):
-    def __init__(self, owner):
+    def __init__(self):
         """A menu used to view collected items and utilize them for various purposes
-
-        Args:
-            owner: The player whom the inventory belongs to
         """
         super().__init__()
         self.cycling_left = False
         self.cycling_right = False
 
-        self.owner = owner
+        room = cb.get_room()
+        self.owner = room.player1
         self.window = 0
 
         self.last_release_value = ctrl.key_released[ctrl.K_MENU]

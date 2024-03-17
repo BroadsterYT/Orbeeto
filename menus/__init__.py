@@ -1,9 +1,13 @@
 """
 Package containing all classes and logic related to menus and menu ui.
 
+menus
 ├-- inventory.py
+├-- menubuttons.py
 ├-- menuslots.py
+└-- pausemenu.py
 """
-# __init__.py
 from .inventory import *
+from .menubuttons import *
 from .menuslots import *
+from .pausemenu import *

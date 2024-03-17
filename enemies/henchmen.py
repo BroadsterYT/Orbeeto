@@ -8,6 +8,7 @@ from pygame.math import Vector2 as vec
 
 from enemies import enemybase
 import projectiles as proj
+import screen
 
 import calculations as calc
 import classbases as cb
@@ -43,7 +44,7 @@ class StandardGrunt(enemybase.EnemyBase):
 
     # --------------------------------- Movement --------------------------------- #
     def movement(self, can_shoot: bool = True):
-        if self.can_update and self.hp > 0:
+        if self.hp > 0:
             self._set_rand_pos()
             self.accel = self.get_accel()
             self.set_room_pos()
@@ -160,7 +161,7 @@ class Turret(enemybase.EnemyBase):
         groups.all_sentries.add(self)
 
         self.bullet_vel = vec(0, 6)
-        self.bullet_angle = math.degrees(0.3)
+        self.bullet_angle = math.degrees(0.3) * screen.dt * cst.M_FPS
         self.last_shot = time.time()
 
         self.pos = vec((pos_x, pos_y))
@@ -172,7 +173,7 @@ class Turret(enemybase.EnemyBase):
         self._set_stats(10, 10, 68)
 
     def movement(self, can_shoot: bool = True):
-        if self.can_update and self.hp > 0:
+        if self.hp > 0:
             self.accel = self.get_accel()
             self.set_room_pos()
 
@@ -194,6 +195,7 @@ class Turret(enemybase.EnemyBase):
             shoot_time: How often the volleys should be fired
         """
         if calc.get_time_diff(self.last_shot) > shoot_time:
+            self.bullet_angle = math.degrees(0.3) * screen.dt * cst.FPS
             self.is_shooting = True
 
             vel_rot1 = self.bullet_vel.rotate(90)
@@ -266,7 +268,7 @@ class Ambusher(enemybase.EnemyBase):
         return final_accel
 
     def movement(self):
-        if self.can_update and self.hp > 0:
+        if self.hp > 0:
             self.accel = self.get_accel()
             self.set_room_pos()
 

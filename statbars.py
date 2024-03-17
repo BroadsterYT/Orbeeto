@@ -24,6 +24,8 @@ class StatBar(cb.ActorBase):
         super().__init__(cst.LAYER['statbar'])
         groups.all_stat_bars.add(self)
         self.order = order  # The order of the stat bars, like which one is on top, which one is below that, etc.
+        self.order_offset = 42
+        self.order_space = 18
 
         self.owner = owner
 
@@ -34,7 +36,8 @@ class StatBar(cb.ActorBase):
 
         self.set_images(os.path.join(os.getcwd(), sheet_file), 128, 16, 1, 17, 0, 16)
 
-        self.pos = vec(self.owner.pos.x, self.owner.pos.y + 42 + self.order * 18)
+        self.pos = vec(self.owner.pos.x,
+                       self.owner.pos.y + self.order_offset + self.order * self.order_space)
         self.accel_const = self.owner.accel_const
         self.set_rects(self.pos.x, self.pos.y, 128, 16, 128, 16)
 
@@ -51,7 +54,8 @@ class StatBar(cb.ActorBase):
         super().hide()
 
     def movement(self):
-        self.pos = vec(self.owner.pos.x, self.owner.pos.y + 42 + self.order * 18)
+        self.pos = vec(self.owner.pos.x,
+                       self.owner.pos.y + 42 + self.order * self.order_space)
 
         self.rect.center = self.pos
         self.hitbox.center = self.pos
@@ -67,7 +71,7 @@ class StatBar(cb.ActorBase):
             try:
                 self.render_images()
             except IndexError:
-                raise IndexError(f'No index of {self.index}')
+                raise IndexError(f'No index of {self.index}.\nself.value = {self.value_name}')
         else:
             self.kill()
 
@@ -90,17 +94,19 @@ class BarNumbers(cb.ActorBase):
                        self.image.get_height())
 
         self.pos = vec(self.bar.pos.x + self.bar.rect.width // 2 + self.rect.width // 2, self.bar.pos.y)
+        self.center_rects()
 
     def render_images(self):
         self.image = text.text_to_image(str(self.bar.value) + '/' + str(self.bar.max_value), text.font_small)
 
     def movement(self):
-        self.pos = vec(self.bar.pos.x + self.bar.rect.width // 2 + self.rect.width // 2, self.bar.pos.y)
+        self.pos = vec(self.bar.owner.pos.x + self.bar.rect.width // 2 + self.rect.width // 2,
+                       self.bar.owner.pos.y + self.bar.order * self.bar.order_space + 42)
         self.center_rects()
 
     def update(self):
-        self.movement()
         if self.bar.owner.hp > 0:
+            self.movement()
             self.render_images()
         else:
             self.kill()

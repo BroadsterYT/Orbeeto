@@ -2,10 +2,13 @@
 Module containing ActorBase and AbstractBase.
 """
 import copy
+import functools
 import time
 
 import pygame
 from pygame.math import Vector2 as vec
+
+import screen
 
 import calculations as calc
 import constants as cst
@@ -22,6 +25,19 @@ def get_room():
     return groups.all_rooms[0]
 
 
+def check_update_state(method):
+    """Only runs the given method if the sprite's can_update field is True
+
+    Args:
+        method: The method to execute if the update check is successfully passed
+    """
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        if self.get_update_state():
+            method(self, *args, **kwargs)
+    return wrapper
+
+
 class ActorBase(pygame.sprite.Sprite):
     """The base class for all actors in the game."""
     def __init__(self, layer=1):
@@ -31,9 +47,12 @@ class ActorBase(pygame.sprite.Sprite):
             layer: The layer the sprite should be drawn on
         """
         super().__init__()
+        self._layer = layer
+
+        # Existence booleans
         self.visible = False
         self.can_update = True
-        self._layer = layer
+        self.is_paused = False
 
         self.last_frame = time.time()
 
@@ -80,7 +99,7 @@ class ActorBase(pygame.sprite.Sprite):
 
     # -------------------------------- Visibility -------------------------------- #
     def hide(self) -> None:
-        """Makes the sprite invisible. The sprite's ``update()`` method cannot be called.
+        """Makes the sprite invisible. The sprite's update() method cannot be called.
         """
         self.visible = False
         if hasattr(self, 'health_bar'):  # TODO: Remove need for hasattr check
@@ -88,15 +107,26 @@ class ActorBase(pygame.sprite.Sprite):
         groups.all_sprites.remove(self)
 
     def show(self) -> None:
-        """Makes the sprite visible. The sprite's ``update()`` method can be called.
+        """Makes the sprite visible. The sprite's update() method can be called.
 
         Returns:
             None
         """
         self.visible = True
-        if hasattr(self, 'health_bar'):
+        if hasattr(self, 'health_bar'):  # TODO: Remove need for hasattr check
             self.health_bar.show()
         groups.all_sprites.add(self, layer=self.layer)
+
+    def get_update_state(self) -> bool:
+        """Returns the update state of the sprite.
+
+        Returns:
+            bool: Whether the sprite can update
+        """
+        state = True
+        if not self.can_update or self.is_paused:
+            state = False
+        return state
 
     # ----------------------------- Images and Rects ----------------------------- #
     def set_images(self, image_file: str, frame_width: int, frame_height: int, sprites_per_row: int,
@@ -196,8 +226,8 @@ class ActorBase(pygame.sprite.Sprite):
         """
         self.accel.x += self.vel.x * cst.FRIC
         self.accel.y += self.vel.y * cst.FRIC
-        self.vel += self.accel
-        self.pos += self.vel + self.accel_const * self.accel
+        self.vel += self.accel * (screen.dt * cst.M_FPS)
+        self.pos += self.vel * (screen.dt * cst.M_FPS) + self.accel_const * self.accel
 
         self.center_rects()
 
@@ -321,3 +351,15 @@ class AbstractBase(pygame.sprite.AbstractGroup):
     def __init__(self):
         super().__init__()
         self.can_update = True
+        self.is_paused = False
+
+    def get_update_state(self) -> bool:
+        """Returns the update state of the abstract group.
+
+        Returns:
+            bool: Whether the abstract group can update
+        """
+        state = True
+        if not self.can_update or self.is_paused:
+            state = False
+        return state

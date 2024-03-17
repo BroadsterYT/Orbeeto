@@ -69,6 +69,8 @@ def text_to_image(any_text: str, a_font: Font) -> pygame.Surface:
     for char in any_text:
         if char in TEXT_MAP.keys():
             char_list.append(images[TEXT_MAP[char]])
+        elif char == ' ':
+            char_list.append(pygame.Surface(vec(a_font.char_width, a_font.char_height)))
         else:
             pass  # TODO: Add underscore, hyphen, and pound to fonts
 

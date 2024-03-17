@@ -5,6 +5,7 @@ import pygame
 
 from projectiles import explosions
 from text import display_text
+import screen
 
 import calculations as calc
 import classbases as cb
@@ -34,7 +35,7 @@ class BulletBase(cb.ActorBase):
         room = cb.get_room()
         final_vel = self.vel_const + room.vel
 
-        return final_vel
+        return final_vel * screen.dt * cst.M_FPS
 
     def land(self, target) -> None:
         self.hit = target

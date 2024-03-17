@@ -116,6 +116,8 @@ class Floor(TileBase):
         self.show()
         groups.all_floors.add(self)
 
+        self.pos = self.place_top_left(0, 0)
+
         self.spritesheet = spritesheet.Spritesheet(os.path.join(os.getcwd(), 'sprites/tiles/floor.png'), 4)
         self.textures = self.spritesheet.get_images(16, 16, 4)
         self.index = 0
