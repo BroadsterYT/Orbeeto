@@ -25,8 +25,11 @@ class PauseMenu(cb.AbstractBase):
             self.resume_button,
             self.close_button,
         )
-        for button in self.sprites():
-            button.hide()
+
+        # TODO: Add settings button
+        # TODO: Add settings menu page
+
+        self.hide()
         self.trigger()
 
     def hide(self):
