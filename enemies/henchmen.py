@@ -161,28 +161,27 @@ class Turret(enemybase.EnemyBase):
         groups.all_sentries.add(self)
 
         self.bullet_vel = vec(0, 6)
-        self.bullet_angle = math.degrees(0.3) * screen.dt * cst.M_FPS
+        self.bullet_angle = math.degrees(1.2) * screen.dt * cst.FPS
         self.last_shot = time.time()
 
         self.pos = vec((pos_x, pos_y))
         self.set_room_pos()
 
-        self.set_images(os.path.join(os.getcwd(), 'sprites/enemies/standard_grunt.png'), 64, 64, 5, 5, 0, 0)
+        self.set_images(os.path.join(os.getcwd(), 'sprites/enemies/standard_grunt.png'), 64, 64, 5, 1, 0, 0)
         self.set_rects(0, 0, 64, 64, 32, 32)
 
         self._set_stats(10, 10, 68)
 
     def movement(self, can_shoot: bool = True):
-        if self.hp > 0:
-            self.accel = self.get_accel()
-            self.set_room_pos()
+        self.set_room_pos()
 
-            if can_shoot:
-                self.shoot(0.15)
+        self.accel = self.get_accel()
+        self.accel_movement()
 
-            self.accel_movement()
+        if can_shoot:
+            self.shoot(0.15)
 
-    def get_accel(self) -> pygame.math.Vector2:
+    def get_accel(self) -> vec:
         final_accel = vec(0, 0)
         room = cb.get_room()
         final_accel += room.get_accel()
@@ -195,7 +194,7 @@ class Turret(enemybase.EnemyBase):
             shoot_time: How often the volleys should be fired
         """
         if calc.get_time_diff(self.last_shot) > shoot_time:
-            self.bullet_angle = math.degrees(0.3) * screen.dt * cst.FPS
+            self.bullet_angle = math.degrees(0.3) * screen.dt * cst.M_FPS
             self.is_shooting = True
 
             vel_rot1 = self.bullet_vel.rotate(90)
@@ -212,7 +211,7 @@ class Turret(enemybase.EnemyBase):
     def update(self):
         if self.hp > 0:
             self._animate()
-        self._destroy_check(10, 120, 0)
+        self._destroy_check(15, 360, 0)
 
     def _animate(self):
         if calc.get_time_diff(self.last_frame) > cst.SPF:

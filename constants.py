@@ -6,8 +6,7 @@ Contains all global constants, like the size of the window, sprite layers, mater
 WINWIDTH = 1280  # noqa
 WINHEIGHT = 720  # noqa
 
-FPS = 240  # The frame rate the game will actually run at
-
+FPS = 480  # The frame rate the game will actually run at
 M_FPS = 60  # The frame speed that anything moving will use to calculate velocity and/or acceleration
 SPF = 0.0167
 

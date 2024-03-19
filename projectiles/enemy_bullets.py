@@ -47,7 +47,7 @@ class EnemyStdBullet(proj.BulletBase):
                 self.kill()
 
     def update(self):
-        pass
+        super().update()
 
     def __repr__(self):
         return f'EnemyStdBullet({self.pos}, {self.vel}, {self.ric_count})'

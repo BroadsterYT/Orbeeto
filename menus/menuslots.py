@@ -67,6 +67,7 @@ class MaterialSlot(SlotBase):
 
         self.holding = item_held
         self.count = 0
+        self.last_count = 0
 
         self.item_sheet = spritesheet.Spritesheet("sprites/textures/item_drops.png", 3)
 
@@ -84,7 +85,7 @@ class MaterialSlot(SlotBase):
             list: A list containing the images of the item the slot holds
         """
         if self.holding == items.MATERIALS[0]:
-            return self.item_sheet.get_images(32, 32, 3, 0)
+            return self.item_sheet.get_images(32, 32, 1, 0)
         elif self.holding == items.MATERIALS[1]:
             return self.item_sheet.get_images(32, 32, 1, 3)
         elif self.holding == items.MATERIALS[2]:
@@ -124,17 +125,18 @@ class MaterialSlot(SlotBase):
         self.center_rects()
 
         self.count = self.owner.my_materials[self.holding]
-        self.images = self.create_slot_images()
-        self._animate()
+        if self.last_count != self.count:
+            self.images = self.create_slot_images()
+            self.last_count = self.count
 
+        self._animate()
         self.hover()
 
     def _animate(self):
-        if self.holding == items.MATERIALS[0] and calc.get_time_diff(self.last_frame) > 1:
-            self.image = self.images[self.index]
-            self.index += 1
-            if self.index > 2:
-                self.index = 0
+        if calc.get_time_diff(self.last_frame) > 1:
+            if self.holding == items.MATERIALS[0]:
+                pass
+
             self.last_frame = time.time()
 
 

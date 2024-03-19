@@ -52,7 +52,6 @@ class PlayerStdBullet(proj.BulletBase):
                 self.kill()
 
     def update(self):
-        # self.movement()
         super().update()
 
     def __repr__(self):
@@ -141,9 +140,6 @@ class PortalBullet(proj.BulletBase):
 
         Args:
             surface: The surface the portal bullet landed on.
-
-        Returns:
-            None
         """
         side = calc.triangle_collide(self, surface)
         if side == cst.SOUTH:
@@ -180,6 +176,7 @@ class PortalBullet(proj.BulletBase):
 
         rotate_angle = int(calc.get_vec_angle(self.vel_const.x, self.vel_const.y))
         self.rotate_image(rotate_angle)
+        super().update()
 
     def __repr__(self):
         return f'PortalBullet({self.pos}, {self.vel}, {self.ric_count})'

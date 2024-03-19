@@ -44,9 +44,6 @@ class PauseMenu(cb.AbstractBase):
 
     def trigger(self) -> None:
         """Triggers the pause menu to open and close
-
-        Returns:
-            None
         """
         if self.last_pause_release != ctrl.key_released[ctrl.K_PAUSE] and not self.is_open:
             self._toggle_pause(True)

@@ -69,7 +69,7 @@ class ActorBase(pygame.sprite.Sprite):
         self.vel_const = vec(0, 0)
 
         self.accel = vec(0, 0)
-        self.accel_const = 0.3
+        self.accel_const = 0.58
 
         self.spritesheet = None
         self.orig_images = None

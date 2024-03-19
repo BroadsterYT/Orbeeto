@@ -352,7 +352,7 @@ class ScreenShakeQueue:
     def __init__(self):
         self.queue = []
 
-    def add(self, amplitude: int | float, duration: int, rate_of_decay: int | float = 1) -> None:
+    def add(self, amplitude: int | float, duration: int, rate_of_decay: int | float = 1.2) -> None:
         """Adds a screen shake to the queue of screen shakes.
 
         Args:
@@ -366,9 +366,9 @@ class ScreenShakeQueue:
             queue_input = vec(rand.uniform(-amplitude, amplitude) * decay, rand.uniform(-amplitude, amplitude) * decay)
             new_queue.append(queue_input)
 
-        self.queue = self.__combine_queues(new_queue)
+        self.queue = self._combine_queues(new_queue)
 
-    def __combine_queues(self, waiting_queue):
+    def _combine_queues(self, waiting_queue):
         combined_list = []
         max_length = max(len(self.queue), len(waiting_queue))
 

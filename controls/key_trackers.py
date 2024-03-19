@@ -7,6 +7,8 @@ is_input_held = {
     1: False,
     2: False,
     3: False,
+    4: False,  # Mouse wheel scroll up
+    5: False,  # Mouse wheel scroll down
 
     8: False,
     9: False,
@@ -85,6 +87,8 @@ key_released = {
     1: 0,
     2: 0,
     3: 0,
+    4: 0,
+    5: 0,
 
     8: 0,
     9: 0,

@@ -49,16 +49,15 @@ class Box(cb.ActorBase):
         final_accel = vec(0, 0)
         final_accel += room.get_accel()
 
-        for a_player in groups.all_players:
-            if self.hitbox.colliderect(a_player.hitbox):
-                if calc.triangle_collide(self, a_player) == cst.SOUTH:
-                    final_accel.y += 0.8
-                if calc.triangle_collide(self, a_player) == cst.EAST:
-                    final_accel.x += 0.8
-                if calc.triangle_collide(self, a_player) == cst.NORTH:
-                    final_accel.y -= 0.8
-                if calc.triangle_collide(self, a_player) == cst.WEST:
-                    final_accel.x -= 0.8
+        if self.hitbox.colliderect(room.player1.hitbox):
+            if calc.triangle_collide(self, room.player1) == cst.SOUTH:
+                final_accel.y += 0.8
+            if calc.triangle_collide(self, room.player1) == cst.EAST:
+                final_accel.x += 0.8
+            if calc.triangle_collide(self, room.player1) == cst.NORTH:
+                final_accel.y -= 0.8
+            if calc.triangle_collide(self, room.player1) == cst.WEST:
+                final_accel.x -= 0.8
 
         return final_accel
 
