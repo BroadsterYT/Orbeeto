@@ -13,6 +13,7 @@ import groups
 
 class PauseMenu(cb.AbstractBase):
     def __init__(self):
+        """The pause menu"""
         super().__init__()
         self.is_open = False
         self.last_pause_release = ctrl.key_released[ctrl.K_PAUSE]
@@ -32,18 +33,28 @@ class PauseMenu(cb.AbstractBase):
         self.hide()
         self.trigger()
 
-    def hide(self):
+    def hide(self) -> None:
+        """Hides all elements of the pause menu
+
+        :return: None
+        """
         for sprite in self.sprites():
             sprite.hide()
         self.is_open = False
 
-    def show(self):
+    def show(self) -> None:
+        """Shows all elements of the pause menu
+
+        :return: None
+        """
         for sprite in self.sprites():
             sprite.show()
         self.is_open = True
 
     def trigger(self) -> None:
         """Triggers the pause menu to open and close
+
+        :return: None
         """
         if self.last_pause_release != ctrl.key_released[ctrl.K_PAUSE] and not self.is_open:
             self._toggle_pause(True)
@@ -58,22 +69,18 @@ class PauseMenu(cb.AbstractBase):
     def _force_unpause(self) -> None:
         """Used to close the pause menu when the "resume" button is clicked
 
-        Returns:
-            None
+        :return: None
         """
         self._toggle_pause(False)
         self.hide()
-        self.last_pause_release -= 1
+        # self.last_pause_release -= 1
 
     @staticmethod
     def _toggle_pause(state: bool) -> None:
         """Sets the pause state for every object in the active game area
 
-        Args:
-            state: The value to give the "is_paused" field for every active object
-
-        Returns:
-            None
+        :param state: The value to give the "is_paused" field for every active object
+        :return: None
         """
         room = cb.get_room()
         for container in [c for c in groups.all_containers if c.room == room.room]:

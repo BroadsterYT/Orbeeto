@@ -11,7 +11,6 @@ from pygame.math import Vector2 as vec
 
 import controls as ctrl
 import items
-import menus
 import projectiles as proj
 import text
 
@@ -271,17 +270,24 @@ class Player(cb.ActorBase):
             self.can_portal = True
 
         # --------------------------- Firing Grappling Hook -------------------------- #
-        if self.grapple_input_copy != ctrl.key_released[ctrl.K_GRAPPLE] and self.can_grapple:
+        if self.grapple_input_copy < ctrl.key_released[ctrl.K_GRAPPLE] and self.can_grapple:
             self.grapple = proj.GrappleBullet(self, self.pos.x, self.pos.y, vel_x, vel_y)
             self.can_grapple = False
             self.grapple_input_copy = ctrl.key_released[ctrl.K_GRAPPLE]
 
-        if self.grapple_input_copy != ctrl.key_released[ctrl.K_GRAPPLE] and not self.can_grapple:
+        elif (ctrl.key_released[ctrl.K_GRAPPLE] - 1 <= self.grapple_input_copy < ctrl.key_released[ctrl.K_GRAPPLE]
+              and not self.can_grapple):
             if self.grapple is not None:
                 self.grapple.returning = True
             else:
                 self.can_grapple = True
                 self.grapple_input_copy = ctrl.key_released[ctrl.K_GRAPPLE]
+
+        # Double-click to destroy grapple immediately
+        if self.grapple_input_copy < ctrl.key_released[ctrl.K_GRAPPLE] - 1:
+            self.grapple.shatter()
+            self.can_grapple = True
+            self.grapple_input_copy = ctrl.key_released[ctrl.K_GRAPPLE]
 
     def _get_closest_interact(self):
         sprite_dists = {}

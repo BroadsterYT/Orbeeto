@@ -102,8 +102,6 @@ class ActorBase(pygame.sprite.Sprite):
         """Makes the sprite invisible. The sprite's update() method cannot be called.
         """
         self.visible = False
-        if hasattr(self, 'health_bar'):  # TODO: Remove need for hasattr check
-            self.health_bar.hide()
         groups.all_sprites.remove(self)
 
     def show(self) -> None:
@@ -113,8 +111,6 @@ class ActorBase(pygame.sprite.Sprite):
             None
         """
         self.visible = True
-        if hasattr(self, 'health_bar'):  # TODO: Remove need for hasattr check
-            self.health_bar.show()
         groups.all_sprites.add(self, layer=self.layer)
 
     def get_update_state(self) -> bool:
@@ -325,6 +321,8 @@ class ActorBase(pygame.sprite.Sprite):
 
         dir_list = {cst.SOUTH: 180, cst.EAST: 90, cst.NORTH: 0, cst.WEST: 270}
 
+        # TODO: Add the rotated velocity of the room to the object's velocity to maintain momentum through portals
+
         if dir_in == cst.SOUTH:
             dist_offset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
             rotate_vel()
@@ -344,10 +342,11 @@ class ActorBase(pygame.sprite.Sprite):
             dir_list.update({cst.WEST: 180, cst.SOUTH: 90, cst.EAST: 0, cst.NORTH: 270})
             rotate_vel()
 
+        print(dir_in, dir_out)
+
 
 class AbstractBase(pygame.sprite.AbstractGroup):
-    """The base class for all standard abstract groups. Contains methods to help manipulate the abstract group.
-    """
+    """The base class for all standard abstract groups. Contains methods to help manipulate the abstract group."""
     def __init__(self):
         super().__init__()
         self.can_update = True

@@ -17,9 +17,8 @@ class BulletBase(cb.ActorBase):
     def __init__(self, damage: int = 0, dmg_mod: int = 1):
         """The base class for all projectiles
 
-        Args:
-            damage: The amount of damage the projectile should inflict (if any)
-            dmg_mod: The multiplier to give to the damage field
+        :param damage: The amount of damage the projectile should inflict (if any)
+        :param dmg_mod: The multiplier to give to the damage field
         """
         super().__init__(cst.LAYER['proj'])
         self.ric_count = 1
@@ -32,12 +31,21 @@ class BulletBase(cb.ActorBase):
         self.side_hit = None
 
     def get_vel(self) -> pygame.math.Vector2:
+        """Returns the velocity the bullet should have
+
+        :return: The velocity vector to assign to the bullet
+        """
         room = cb.get_room()
         final_vel = self.vel_const + room.vel
 
         return final_vel * screen.dt * cst.M_FPS
 
     def land(self, target) -> None:
+        """Destroys the bullet and renders an explosion or bounces the bullet
+
+        :param target: The sprite the bullet collided with
+        :return: None
+        """
         self.hit = target
         self.side_hit = calc.triangle_collide(self, self.hit)
         self.ric_count -= 1
@@ -92,14 +100,12 @@ class BulletBase(cb.ActorBase):
             self.rotate_image(calc.get_vec_angle(self.vel.x, self.vel.y))
 
     def proj_collide(self, sprite_group, can_hurt) -> None:
-        """Destroys the projectile upon a collision and renders an explosion
+        """Checks for a collision with all sprites within a specific sprite group and allows the bullet to act
+        accordingly.
 
-        Args:
-            sprite_group: The group to check for a collision with.
-            can_hurt: Can the projectile damage sprites in the group to check for? True if yes, false if no.
-
-        Returns:
-            None
+        :param sprite_group: The group to check for a collision with
+        :param can_hurt: Can the projectile damage sprites in the group to check for? True if yes, false if no.
+        :return: None
         """
         for collidingSprite in sprite_group:
             if not self.hitbox.colliderect(collidingSprite.hitbox):
@@ -132,12 +138,11 @@ class BulletBase(cb.ActorBase):
                     return
 
     def inflict_damage(self, sprite_group, receiver) -> None:
-        """Executes the subtraction of ``hp`` after a sprite is struck by a projectile
+        """Calculates the damage a bullet should inflict on a sprite and subtracts it from that sprite's HP
 
-        ### Arguments
-            - spriteGroup (``pygame.sprite.Group``): The group that the receiving sprite is a member of
-            - sender (``ActorBase``): The sprite that fired the projectile
-            - receiver (``ActorBase``): The sprite being hit by the projectile
+        :param sprite_group: The group the sprite being shot is in
+        :param receiver: The sprite being hit by the bullet
+        :return: None
         """
         damage = calc.calculate_damage(receiver, self)
         if sprite_group == groups.all_enemies:

@@ -30,6 +30,14 @@ class EnemyBase(cb.ActorBase):
 
         self.health_bar = statbars.StatBar(self, 1, 'hp', 'max_hp', 'sprites/stat_bars/health_bar.png')
 
+    def hide(self):
+        self.health_bar.hide()
+        super().hide()
+
+    def show(self):
+        self.health_bar.show()
+        super().show()
+
     def _set_stats(self, hp: int, defense: int, xp: int):
         self.max_hp = hp
         self.hp = hp
@@ -57,10 +65,10 @@ class EnemyBase(cb.ActorBase):
     def _destroy_check(self, amplitude, duration, loot_table_index: int) -> None:
         """Checks if the enemy's health has been fully depleted and will explode.
 
-        Args:
-            amplitude: The amplitude of the explosion
-            duration: The duration of the explosion
-            loot_table_index: Which loot table to select drops from
+        :param amplitude: The amplitude of the explosion
+        :param duration: The duration of the explosion
+        :param loot_table_index: Which loot table to select drops from
+        :return: None
         """
         if self.hp <= 0:
             calc.screen_shake_queue.add(amplitude, duration)

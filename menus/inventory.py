@@ -18,8 +18,7 @@ import spritesheet
 
 class InventoryMenu(cb.AbstractBase):
     def __init__(self):
-        """A menu used to view collected items and utilize them for various purposes
-        """
+        """A menu used to view collected items and utilize them for various purposes"""
         super().__init__()
         self.cycling_left = False
         self.cycling_right = False
@@ -42,18 +41,20 @@ class InventoryMenu(cb.AbstractBase):
         )
 
     def hide(self):
-        """Makes all the elements of the inventory menu invisible (closes the inventory menu).
-        """
+        """Makes all the elements of the inventory menu invisible (closes the inventory menu)."""
         for sprite in self.sprites():
             groups.all_sprites.remove(sprite)
 
     def show(self):
-        """Makes all the elements of the inventory menu visible.
-        """
+        """Makes all the elements of the inventory menu visible."""
         for sprite in self.sprites():
             groups.all_sprites.add(sprite, layer=sprite.layer)
 
-    def cycle_menu(self):
+    def cycle_menu(self) -> None:
+        """Pans the menu from screen to screen
+
+        :return: None
+        """
         if (not self.cycling_left and
                 not self.cycling_right and
                 not self.can_update):
@@ -92,8 +93,7 @@ class InventoryMenu(cb.AbstractBase):
     def build_materials_slots(self) -> list:
         """Creates and aligns the materials slots of the menu.
 
-        Returns:
-            list: A list containing the materials slots created
+        :return: A list containing the materials slots created
         """
         count = 0
         space = vec(64, 64)
@@ -113,6 +113,10 @@ class InventoryMenu(cb.AbstractBase):
         return menu_slots
 
     def build_armor_slots(self) -> list:
+        """Creates and aligns the armor slots of the menu.
+
+        :return: A list containing the armor slots created
+        """
         count = 0
         space = vec(512, 64)
         space_cushion = vec(82, 82)
@@ -166,9 +170,8 @@ class RightMenuArrow(cb.ActorBase):
     def __init__(self, pos_x, pos_y):
         """A UI element that allows players to cycle through menu screens to the right.
 
-        Args:
-            pos_x: The x-position the element should be displayed at
-            pos_y: The y-position the element should be displayed at
+        :param pos_x: The x-position the element should be displayed at
+        :param pos_y: The y-position the element should be displayed at
         """
         super().__init__(cst.LAYER['ui_1'])
         self.pos = vec((pos_x, pos_y))
@@ -211,11 +214,10 @@ class RightMenuArrow(cb.ActorBase):
 
 class LeftMenuArrow(cb.ActorBase):
     def __init__(self, pos_x, pos_y):
-        """A UI element that allows players to cycle through menu screens to the right.
+        """A UI element that allows players to cycle through menu screens to the left.
 
-        Args:
-            pos_x: The x-position the element should be displayed at
-            pos_y: The y-position the element should be displayed at
+        :param pos_x: The x-position the element should be displayed at
+        :param pos_y: The y-position the element should be displayed at
         """
         super().__init__(cst.LAYER['ui_1'])
         self.pos = vec((pos_x, pos_y))

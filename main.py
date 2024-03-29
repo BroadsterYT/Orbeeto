@@ -1,6 +1,4 @@
-"""
-Main program. Contains the game loop.
-"""
+"""Main program. Contains the game loop."""
 import asyncio
 import os
 import sys
@@ -14,6 +12,7 @@ import menus
 import screen
 import text
 
+import audio as aux
 import calculations as calc
 import constants as cst
 import groups
@@ -25,6 +24,9 @@ pygame.display.set_icon(pygame.image.load(os.path.join(os.getcwd(), 'other/orbee
 
 screen.buffer_screen = pygame.Surface((cst.WINWIDTH, cst.WINHEIGHT))
 screen.viewport = pygame.display.set_mode((cst.WINWIDTH, cst.WINHEIGHT), pygame.SCALED | pygame.RESIZABLE)
+
+# Audio setup
+aux.track_channel = pygame.mixer.Channel(1)
 
 
 def redraw_game_window() -> None:
@@ -79,13 +81,12 @@ async def main(max_frame_rate) -> None:
         screen.dt = now - prev_time
         prev_time = now
 
-        print(len(groups.all_sprites))
-
         # Open pause menu
-        global last_pause_release
-        if last_pause_release != ctrl.key_released[ctrl.K_PAUSE]:
+        if pause_menu.last_pause_release != ctrl.key_released[ctrl.K_PAUSE]:
             pause_menu.trigger()
-            last_pause_release = ctrl.key_released[ctrl.K_PAUSE]
+            pause_menu.last_pause_release = ctrl.key_released[ctrl.K_PAUSE]
+
+        # print(pause_menu.last_pause_release, ctrl.key_released[ctrl.K_PAUSE])
 
         # Update inventory menu
         inventory_menu.update()

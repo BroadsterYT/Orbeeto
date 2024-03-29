@@ -161,7 +161,7 @@ class Turret(enemybase.EnemyBase):
         groups.all_sentries.add(self)
 
         self.bullet_vel = vec(0, 6)
-        self.bullet_angle = math.degrees(1.2) * screen.dt * cst.FPS
+        self.bullet_angle = math.degrees(1) * screen.dt * cst.FPS
         self.last_shot = time.time()
 
         self.pos = vec((pos_x, pos_y))
@@ -194,7 +194,7 @@ class Turret(enemybase.EnemyBase):
             shoot_time: How often the volleys should be fired
         """
         if calc.get_time_diff(self.last_shot) > shoot_time:
-            self.bullet_angle = math.degrees(0.3) * screen.dt * cst.M_FPS
+            self.bullet_angle = math.degrees(1) * screen.dt * cst.M_FPS
             self.is_shooting = True
 
             vel_rot1 = self.bullet_vel.rotate(90)

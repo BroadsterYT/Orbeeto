@@ -140,7 +140,7 @@ class LockedWall(tiles.Wall):
         self.activator = self._get_activator()
         self.last_state = False
         self.last_state_change = time.time()
-        self.speed_mult = 2
+        self.speed_mult = 4
 
         self.switch_diff = calc.get_time_diff(self.last_state_change)
 

@@ -19,10 +19,9 @@ class SlotBase(cb.ActorBase):
     def __init__(self, owner, pos_x, pos_y):
         """The base class for all inventory slots.
 
-        Args:
-            owner: The owner of the inventory menu (should be the player)
-            pos_x: The x-position to spawn the slot at
-            pos_y: The y-position to spawn the slot at
+        :param owner: The owner of the inventory menu (should be the player)
+        :param pos_x: The x-position to spawn the slot at
+        :param pos_y: The y-position to spawn the slot at
         """
         super().__init__(cst.LAYER['ui_1'])
         self.owner = owner
@@ -38,8 +37,7 @@ class SlotBase(cb.ActorBase):
     def hover(self) -> None:
         """Causes the menu slot to oscillate in size when the mouse cursor hovers over it
 
-        Returns:
-            None
+        :return: None
         """
         if self.hitbox.collidepoint(pygame.mouse.get_pos()):
             s_time = time.time()
@@ -56,11 +54,10 @@ class MaterialSlot(SlotBase):
     def __init__(self, owner, pos_x: int | float, pos_y: int | float, item_held: str | None):
         """A menu slot that shows the collected amount of a specific item.
 
-        Args:
-            owner: The owner of the inventory to whom the menu slot belongs to
-            pos_x: The x-position to spawn at
-            pos_y: The y-position to spawn at
-            item_held: The item the menu slot will hold. Items are chosen from MATERIALS dictionary.
+        :param owner: The owner of the inventory to whom the menu slot belongs to
+        :param pos_x: The x-position to spawn at
+        :param pos_y: The y-position to spawn at
+        :param item_held: The item the menu slot will hold. Items are chosen from MATERIALS dictionary.
         """
         super().__init__(owner, pos_x, pos_y)
         groups.all_slots.add(self)
@@ -81,8 +78,7 @@ class MaterialSlot(SlotBase):
     def _get_item_images(self) -> list:
         """Returns the images of the item a menu slot is designated to hold.
 
-        Returns:
-            list: A list containing the images of the item the slot holds
+        :return: A list containing the images of the item the slot holds
         """
         if self.holding == items.MATERIALS[0]:
             return self.item_sheet.get_images(32, 32, 1, 0)
@@ -97,8 +93,7 @@ class MaterialSlot(SlotBase):
         """Combines the menu slot image with the images of the item and adds the player's collected amount of that
         item on top.
 
-        Returns:
-            list: A list of the created images
+        :return: A list of the created slot images
         """
         item_images = self._get_item_images()
         final_images = []
@@ -165,7 +160,7 @@ class ArmorSlot(SlotBase):
         else:
             raise IndexError(f'No armor visual exists with an armor key of {self.holding}.')
 
-    def create_slot_images(self) -> list:
+    def create_slot_images(self) -> list:  # TODO: Add docstring
         final_images = []
         armor_images = self._get_armor_images()
 

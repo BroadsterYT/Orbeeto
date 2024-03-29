@@ -19,13 +19,14 @@ class MenuButton(cb.ActorBase):
                  *args, **kwargs):
         """A button to be used in a menu with varying width and height, with customizable functionality.
 
-        Args:
-            pos_x: The x-position to place the button
-            pos_y: The y-position to place the button
-            width: The width of the button (in pixels)
-            height: The height of the button (in pixels)
-            name: The text to display on the button
-            func_call: The function to call when the button is clicked.
+        :param pos_x: The x-position to place the button
+        :param pos_y: The y-position to place the button
+        :param width: The width of the button (in pixels)
+        :param height: The height of the button (in pixels)
+        :param name: The text to display on the button
+        :param func_call: The function to call when the button is clicked
+        :param args: The arguments to use in the function being called
+        :param kwargs: The keyword arguments to use in the function being called
         """
         super().__init__(cst.LAYER['ui_2'])
         self.show()
@@ -49,8 +50,7 @@ class MenuButton(cb.ActorBase):
     def hover(self) -> None:
         """Causes the button to oscillate in size when the mouse cursor hovers over it
 
-        Returns:
-            None
+        :return: None
         """
         if self.hitbox.collidepoint(pygame.mouse.get_pos()):
             scale = math.sin(time.time()) / 4
@@ -61,7 +61,11 @@ class MenuButton(cb.ActorBase):
             self.image = self.border_image
             self.rect = self.image.get_rect(center=self.rect.center)
 
-    def check_for_click(self):
+    def check_for_click(self) -> None:
+        """Checks if the mouse is clicking the button. If so, the button's designated function will be called.
+
+        :return: None
+        """
         if self.visible and self.last_release_value != ctrl.key_released[1]:
             if self.hitbox.collidepoint(pygame.mouse.get_pos()):
                 self.func(*self.func_args, **self.func_kwargs)
