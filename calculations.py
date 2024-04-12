@@ -105,7 +105,7 @@ def get_dist(first_input, sec_input) -> float:
     length_x = sec_vec.x - first_vec.x
     length_y = sec_vec.y - first_vec.y
 
-    return math.sqrt(length_x**2 + length_y**2)
+    return math.sqrt(length_x ** 2 + length_y ** 2)
 
 
 def get_vec_angle(vec_x: int | float, vec_y: int | float) -> float:
@@ -219,6 +219,26 @@ def calculate_damage(receiver, proj) -> int:
 # ============================================================================ #
 #                                Returns string                                #
 # ============================================================================ #
+def get_opposite(value) -> str:
+    """Returns the value opposite of the input
+
+    :param value: The value to get the opposite of
+    :return: Any
+    """
+    match value:
+        # ---------- String Inputs ---------- #
+        case cst.SOUTH:
+            return cst.NORTH
+        case cst.EAST:
+            return cst.WEST
+        case cst.NORTH:
+            return cst.SOUTH
+        case cst.WEST:
+            return cst.EAST
+
+
+
+
 def triangle_collide(instig, sprite) -> str:
     """Determines where two sprites collide using a triangulation approach.
 
@@ -339,7 +359,7 @@ def get_scroll_weight(obj) -> vec:
     Returns:
         The acceleration weight vector to use during a room scroll
     """
-    mult = 2
+    mult = 2.5
     scroll_weight = vec(
         -mult * math.tan((math.pi / (2 * cst.WINWIDTH)) * obj.pos.x - math.pi / 4),
         -mult * math.tan((math.pi / (2 * cst.WINHEIGHT)) * obj.pos.y - math.pi / 4)
@@ -349,6 +369,7 @@ def get_scroll_weight(obj) -> vec:
 
 class ScreenShakeQueue:
     """An object that handles screen-shaking capabilities."""
+
     def __init__(self):
         self.queue = []
 

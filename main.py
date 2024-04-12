@@ -18,6 +18,7 @@ import constants as cst
 import groups
 import rooms
 
+
 pygame.init()
 pygame.display.set_caption('Orbeeto')
 pygame.display.set_icon(pygame.image.load(os.path.join(os.getcwd(), 'other/orbeeto.png')))

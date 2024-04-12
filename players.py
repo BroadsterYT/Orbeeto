@@ -12,6 +12,7 @@ from pygame.math import Vector2 as vec
 import controls as ctrl
 import items
 import projectiles as proj
+import screen
 import text
 
 import calculations as calc

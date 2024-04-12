@@ -48,6 +48,7 @@ LAYER = {
 # ------------------------------ Object Movement ----------------------------- #
 # The coefficient of friction for all objects with an acceleration parameter
 FRIC = -0.07
+
 # -------------------------------- Projectiles ------------------------------- #
 PROJ_STD = 'proj_StdBullet'
 PROJ_LASER = 'proj_Laser'

@@ -56,15 +56,18 @@ class Room(cb.AbstractBase):
 
         self.player1 = players.Player()
 
-        self.last_up_rel = ctrl.key_released[ctrl.K_MOVE_UP]
-        self.last_down_rel = ctrl.key_released[ctrl.K_MOVE_DOWN]
-        self.last_right_rel = ctrl.key_released[ctrl.K_MOVE_RIGHT]
-        self.last_left_rel = ctrl.key_released[ctrl.K_MOVE_LEFT]
+        self.last_mvm_rel = {
+            cst.SOUTH: ctrl.key_released[ctrl.K_MOVE_DOWN],
+            cst.EAST: ctrl.key_released[ctrl.K_MOVE_RIGHT],
+            cst.NORTH: ctrl.key_released[ctrl.K_MOVE_UP],
+            cst.WEST: ctrl.key_released[ctrl.K_MOVE_LEFT]
+        }
         self.binds = {cst.SOUTH: ctrl.K_MOVE_DOWN,
                       cst.EAST: ctrl.K_MOVE_RIGHT,
                       cst.NORTH: ctrl.K_MOVE_UP,
                       cst.WEST: ctrl.K_MOVE_LEFT}
-        self.keys_thru_portal = []
+
+        self.last_tp_dirs = (cst.SOUTH, cst.SOUTH)
 
         self.border_south = tiles.RoomBorder(0, self.size.y // 16, self.size.x // 16, 1)
         self.border_east = tiles.RoomBorder(cst.WINWIDTH // 16, 0, 1, self.size.y // 16)
@@ -88,49 +91,118 @@ class Room(cb.AbstractBase):
         self.layout_update()
 
     def _update_binds(self, dir_in, dir_out) -> None:
-        new_binds = {cst.SOUTH: ctrl.K_MOVE_DOWN,
-                     cst.EAST: ctrl.K_MOVE_RIGHT,
-                     cst.NORTH: ctrl.K_MOVE_UP,
-                     cst.WEST: ctrl.K_MOVE_LEFT}
+        """Updates the movement binds of the room to smooth movement between portals
+
+        :param dir_in: The direction of the entrance portal
+        :param dir_out: The direction of the exit portal
+        :return: None
+        """
+        new_binds = {cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT,
+                     cst.NORTH: ctrl.K_MOVE_UP, cst.WEST: ctrl.K_MOVE_LEFT}
 
         if dir_in == cst.SOUTH:
             if dir_out == cst.SOUTH:
-                new_binds.update({cst.NORTH: ctrl.K_MOVE_DOWN, cst.SOUTH: ctrl.K_MOVE_UP})
+                new_binds.update({cst.SOUTH: ctrl.K_MOVE_UP, cst.EAST: ctrl.K_MOVE_LEFT,
+                                  cst.NORTH: ctrl.K_MOVE_DOWN, cst.WEST: ctrl.K_MOVE_RIGHT})
             if dir_out == cst.EAST:
-                pass
-            if dir_out == cst.NORTH:
-                pass
+                new_binds.update({cst.SOUTH: ctrl.K_MOVE_RIGHT, cst.EAST: ctrl.K_MOVE_UP,
+                                  cst.NORTH: ctrl.K_MOVE_LEFT, cst.WEST: ctrl.K_MOVE_DOWN})
             if dir_out == cst.WEST:
-                pass
+                new_binds.update({cst.SOUTH: ctrl.K_MOVE_LEFT, cst.EAST: ctrl.K_MOVE_DOWN,
+                                  cst.NORTH: ctrl.K_MOVE_RIGHT, cst.WEST: ctrl.K_MOVE_UP})
         elif dir_in == cst.EAST:
             if dir_out == cst.SOUTH:
                 pass
             if dir_out == cst.EAST:
-                pass
+                new_binds.update({cst.SOUTH: ctrl.K_MOVE_UP, cst.EAST: ctrl.K_MOVE_LEFT,
+                                  cst.NORTH: ctrl.K_MOVE_DOWN, cst.WEST: ctrl.K_MOVE_RIGHT})
             if dir_out == cst.NORTH:
                 pass
-            if dir_out == cst.WEST:
-                pass
         elif dir_in == cst.NORTH:
-            if dir_out == cst.SOUTH:
-                pass
             if dir_out == cst.EAST:
                 pass
             if dir_out == cst.NORTH:
-                pass
+                new_binds.update({cst.SOUTH: ctrl.K_MOVE_UP, cst.EAST: ctrl.K_MOVE_LEFT,
+                                  cst.NORTH: ctrl.K_MOVE_DOWN, cst.WEST: ctrl.K_MOVE_RIGHT})
             if dir_out == cst.WEST:
                 pass
         elif dir_in == cst.WEST:
             if dir_out == cst.SOUTH:
                 pass
-            if dir_out == cst.EAST:
-                pass
             if dir_out == cst.NORTH:
                 pass
             if dir_out == cst.WEST:
-                pass
-
+                new_binds.update({cst.SOUTH: ctrl.K_MOVE_UP, cst.EAST: ctrl.K_MOVE_LEFT,
+                                  cst.NORTH: ctrl.K_MOVE_DOWN, cst.WEST: ctrl.K_MOVE_RIGHT})
         self.binds = new_binds
+
+    def _readjust_binds_after_tp(self, dir_in: str, dir_out: str) -> None:
+        """Readjusts the movement binds set when teleporting to account for keys that were not held.
+        The binds for the keys not held will be reset to their defaults.
+
+        :param dir_in: The direction the entrance portal is facing
+        :param dir_out: The direction the exit portal is facing
+        :return: None
+        """
+        if dir_in == dir_out or dir_in == calc.get_opposite(dir_out):
+            if not ctrl.is_input_held[ctrl.K_MOVE_UP] and not ctrl.is_input_held[ctrl.K_MOVE_DOWN]:
+                self.binds[cst.NORTH] = ctrl.K_MOVE_UP
+                self.binds[cst.SOUTH] = ctrl.K_MOVE_DOWN
+            if not ctrl.is_input_held[ctrl.K_MOVE_LEFT] and not ctrl.is_input_held[ctrl.K_MOVE_RIGHT]:
+                self.binds[cst.EAST] = ctrl.K_MOVE_RIGHT
+                self.binds[cst.WEST] = ctrl.K_MOVE_LEFT
+
+        # ----- Entrance South ----- #
+        if dir_in == cst.SOUTH and dir_out == cst.WEST:
+            if not ctrl.is_input_held[ctrl.K_MOVE_UP]:
+                self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
+                                   cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
+            if ctrl.is_input_held[ctrl.K_MOVE_RIGHT] and not ctrl.is_input_held[ctrl.K_MOVE_UP]:
+                self.binds[cst.EAST] = ctrl.K_MOVE_LEFT
+                self.binds[cst.WEST] = ctrl.K_MOVE_RIGHT
+
+        if dir_in == cst.SOUTH and dir_out == cst.EAST:
+            if not ctrl.is_input_held[ctrl.K_MOVE_UP]:
+                self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
+                                   cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
+            if ctrl.is_input_held[ctrl.K_MOVE_LEFT] and not ctrl.is_input_held[ctrl.K_MOVE_UP]:
+                self.binds[cst.EAST] = ctrl.K_MOVE_LEFT
+                self.binds[cst.WEST] = ctrl.K_MOVE_RIGHT
+
+    def _hard_reset_binds(self):
+        if (self.last_tp_dirs[0] == self.last_tp_dirs[1]
+                or self.last_tp_dirs[0] == calc.get_opposite(self.last_tp_dirs[1])):
+            if self.last_mvm_rel[cst.NORTH] != ctrl.key_released[ctrl.K_MOVE_UP]:
+                self.binds.update({cst.NORTH: ctrl.K_MOVE_UP, cst.SOUTH: ctrl.K_MOVE_DOWN})
+                self.last_mvm_rel[cst.NORTH] = ctrl.key_released[ctrl.K_MOVE_UP]
+
+            if self.last_mvm_rel[cst.SOUTH] != ctrl.key_released[ctrl.K_MOVE_DOWN]:
+                self.binds.update({cst.NORTH: ctrl.K_MOVE_UP, cst.SOUTH: ctrl.K_MOVE_DOWN})
+                self.last_mvm_rel[cst.SOUTH] = ctrl.key_released[ctrl.K_MOVE_DOWN]
+
+            if self.last_mvm_rel[cst.WEST] != ctrl.key_released[ctrl.K_MOVE_LEFT]:
+                self.binds.update({cst.EAST: ctrl.K_MOVE_RIGHT, cst.WEST: ctrl.K_MOVE_LEFT})
+                self.last_mvm_rel[cst.WEST] = ctrl.key_released[ctrl.K_MOVE_LEFT]
+
+            if self.last_mvm_rel[cst.EAST] != ctrl.key_released[ctrl.K_MOVE_RIGHT]:
+                self.binds.update({cst.EAST: ctrl.K_MOVE_RIGHT, cst.WEST: ctrl.K_MOVE_LEFT})
+                self.last_mvm_rel[cst.EAST] = ctrl.key_released[ctrl.K_MOVE_RIGHT]
+
+        # ----- Entrance South ----- #
+        if self.last_tp_dirs[0] == cst.SOUTH and self.last_tp_dirs[1] == cst.WEST:
+            # If up is released, as long as right key isn't held
+            if (self.last_mvm_rel[cst.NORTH] != ctrl.key_released[ctrl.K_MOVE_UP] and
+                    not ctrl.is_input_held[ctrl.K_MOVE_RIGHT]):
+                self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
+                                   cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
+                self.last_mvm_rel[cst.NORTH] = ctrl.key_released[ctrl.K_MOVE_UP]
+
+        if self.last_tp_dirs[0] == cst.SOUTH and self.last_tp_dirs[1] == cst.EAST:
+            # If up is released, as long as left key isn't held
+            if self.last_mvm_rel[cst.NORTH] != ctrl.key_released[ctrl.K_MOVE_UP]:
+                self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
+                                   cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
+                self.last_mvm_rel[cst.NORTH] = ctrl.key_released[ctrl.K_MOVE_UP]
 
     def accel_movement(self) -> None:
         """Calculates the room's acceleration, velocity, and position
@@ -173,9 +245,9 @@ class Room(cb.AbstractBase):
         """
         output = 0.0
 
-        if ctrl.is_input_held[ctrl.K_MOVE_LEFT]:
+        if ctrl.is_input_held[self.binds[cst.WEST]]:
             output += self.player1.accel_const
-        if ctrl.is_input_held[ctrl.K_MOVE_RIGHT]:
+        if ctrl.is_input_held[self.binds[cst.EAST]]:
             output -= self.player1.accel_const
 
         if self.player1.is_swinging():
@@ -268,68 +340,29 @@ class Room(cb.AbstractBase):
         return output_list
 
     # -------------------------------- Teleporting ------------------------------- #
-    def _align_player_tp(self, direction: str, portal_out, width, height) -> None:
+    def _align_player_tp(self, portal_out, width, height) -> None:
         """Sets the player at the proper position after teleporting when the room can scroll.
 
         Args:
-            direction: The direction the exit portal is facing
             portal_out: The exit portal sprite
             width: Half the sum of the player's hitbox width plus the portal's hitbox width
             height: Half the sum of the player's hitbox height plus the portal's hitbox height
         """
-        if direction == cst.SOUTH:
+        if portal_out.facing == cst.SOUTH:
             self.player1.pos.x = portal_out.pos.x
             self.player1.pos.y = portal_out.pos.y + height
 
-        elif direction == cst.EAST:
+        elif portal_out.facing == cst.EAST:
             self.player1.pos.x = portal_out.pos.x + width
             self.player1.pos.y = portal_out.pos.y
 
-        elif direction == cst.NORTH:
+        elif portal_out.facing == cst.NORTH:
             self.player1.pos.x = portal_out.pos.x
             self.player1.pos.y = portal_out.pos.y - height
 
-        elif direction == cst.WEST:
+        elif portal_out.facing == cst.WEST:
             self.player1.pos.x = portal_out.pos.x - width
             self.player1.pos.y = portal_out.pos.y
-
-    def _correct_player_vel_tp(self, dir_in, dir_out):
-        if dir_in == cst.SOUTH:
-            if dir_out == cst.SOUTH:
-                self.player1.vel.x -= self.vel.x * 2
-            if dir_out == cst.EAST:
-                pass
-            if dir_out == cst.NORTH:
-                pass
-            if dir_out == cst.WEST:
-                pass
-        if dir_in == cst.EAST:
-            if dir_out == cst.SOUTH:
-                pass
-            if dir_out == cst.EAST:
-                self.player1.vel.y -= self.vel.y * 2
-            if dir_out == cst.NORTH:
-                pass
-            if dir_out == cst.WEST:
-                pass
-        if dir_in == cst.NORTH:
-            if dir_out == cst.SOUTH:
-                pass
-            if dir_out == cst.EAST:
-                pass
-            if dir_out == cst.NORTH:
-                self.player1.vel.x -= self.vel.x * 2
-            if dir_out == cst.WEST:
-                pass
-        if dir_in == cst.WEST:
-            if dir_out == cst.SOUTH:
-                pass
-            if dir_out == cst.EAST:
-                pass
-            if dir_out == cst.NORTH:
-                pass
-            if dir_out == cst.WEST:
-                self.player1.vel.y -= self.vel.y * 2
 
     def _teleport_player(self, portal_in, portal_out) -> None:
         """Teleports the player when the room is scrolling.
@@ -338,114 +371,101 @@ class Room(cb.AbstractBase):
             portal_in: The portal the player is entering
             portal_out: The portal the player is exiting
         """
-        combined_width = (portal_out.hitbox.width + self.player1.hitbox.width) // 2
-        combined_height = (portal_out.hitbox.height + self.player1.hitbox.height) // 2
-        direction_in = portal_in.facing
-        direction_out = portal_out.facing
-        direction_angles = {cst.SOUTH: 180, cst.EAST: 90, cst.NORTH: 0, cst.WEST: 270}
+        dir_in = portal_in.facing
+        dir_out = portal_out.facing
+        self.last_tp_dirs = (dir_in, dir_out)
+        dir_angles = {cst.SOUTH: 180, cst.EAST: 90, cst.NORTH: 0, cst.WEST: 270}
 
         # Actually teleporting the player
-        self._align_player_tp(direction_out, portal_out, combined_width, combined_height)
-
-        self.keys_thru_portal.clear()
-        for key in [k
-                    for k in ctrl.is_input_held.keys()
-                    if ctrl.is_input_held[k]
-                    and k in [ctrl.K_MOVE_UP, ctrl.K_MOVE_DOWN, ctrl.K_MOVE_LEFT, ctrl.K_MOVE_RIGHT]]:
-            self.keys_thru_portal.append(key)
-
-        self._update_binds(direction_in, direction_out)
-
-        # If the key wasn't held while teleporting, don't reverse binding
-        if not ctrl.is_input_held[ctrl.K_MOVE_UP] and not ctrl.is_input_held[ctrl.K_MOVE_UP]:
-            self.binds.update({cst.NORTH: ctrl.K_MOVE_UP, cst.SOUTH: ctrl.K_MOVE_DOWN})
-        if not ctrl.is_input_held[ctrl.K_MOVE_LEFT] and not ctrl.is_input_held[ctrl.K_MOVE_RIGHT]:
-            self.binds.update({cst.EAST: ctrl.K_MOVE_RIGHT, cst.WEST: ctrl.K_MOVE_LEFT})
+        self._align_player_tp(portal_out,
+                              (portal_out.hitbox.width + self.player1.hitbox.width) // 2,
+                              (portal_out.hitbox.height + self.player1.hitbox.height) // 2)
+        self._update_binds(dir_in, dir_out)
+        self._readjust_binds_after_tp(dir_in, dir_out)  # If the key wasn't held while tp-ing, don't reverse binding
 
         if self.is_scrolling_x and self.is_scrolling_y:
-            if direction_in == cst.EAST:
-                direction_angles.update({cst.EAST: 180, cst.NORTH: 90, cst.WEST: 0, cst.SOUTH: 270})
-            elif direction_in == cst.NORTH:
-                direction_angles.update({cst.NORTH: 180, cst.WEST: 90, cst.SOUTH: 0, cst.EAST: 270})
-            elif direction_in == cst.WEST:
-                direction_angles.update({cst.WEST: 180, cst.SOUTH: 90, cst.EAST: 0, cst.NORTH: 270})
-            self._correct_player_vel_tp(direction_in, direction_out)
-            self._sprites_rotate_trajectory(direction_angles[direction_out])
+            if dir_in == cst.EAST:
+                dir_angles.update({cst.EAST: 180, cst.NORTH: 90, cst.WEST: 0, cst.SOUTH: 270})
+            elif dir_in == cst.NORTH:
+                dir_angles.update({cst.NORTH: 180, cst.WEST: 90, cst.SOUTH: 0, cst.EAST: 270})
+            elif dir_in == cst.WEST:
+                dir_angles.update({cst.WEST: 180, cst.SOUTH: 90, cst.EAST: 0, cst.NORTH: 270})
+            self._sprites_rotate_trajectory(dir_angles[dir_out])
 
         elif self.is_scrolling_x and not self.is_scrolling_y:
-            if direction_in == cst.SOUTH:
-                direction_angles.update({cst.SOUTH: 180, cst.EAST: 270, cst.NORTH: 0, cst.WEST: 90})
-                if direction_out == direction_in:
-                    self.player1.vel = self.player1.vel.rotate(direction_angles[direction_out])
-                if direction_out in [cst.EAST, cst.WEST]:
-                    self._translate_trajectory(True, direction_angles[direction_out])
+            if dir_in == cst.SOUTH:
+                dir_angles.update({cst.SOUTH: 180, cst.EAST: 270, cst.NORTH: 0, cst.WEST: 90})
+                if dir_out == dir_in:
+                    self.player1.vel = self.player1.vel.rotate(dir_angles[dir_out])
+                if dir_out in [cst.EAST, cst.WEST]:
+                    self._translate_trajectory(True, dir_angles[dir_out])
                     self.player1.vel.y = 0
 
-            if direction_in == cst.EAST:
-                direction_angles.update({cst.SOUTH: 90, cst.EAST: 180, cst.NORTH: 270, cst.WEST: 0})
-                if direction_out == direction_in:
-                    self._sprites_rotate_trajectory(direction_angles[direction_out])
-                if direction_out in [cst.SOUTH, cst.NORTH]:
-                    self._translate_trajectory(False, direction_angles[direction_out])
+            if dir_in == cst.EAST:
+                dir_angles.update({cst.SOUTH: 90, cst.EAST: 180, cst.NORTH: 270, cst.WEST: 0})
+                if dir_out == dir_in:
+                    self._sprites_rotate_trajectory(dir_angles[dir_out])
+                if dir_out in [cst.SOUTH, cst.NORTH]:
+                    self._translate_trajectory(False, dir_angles[dir_out])
                     self.vel.x = 0
 
-            if direction_in == cst.NORTH:
-                direction_angles.update({cst.SOUTH: 0, cst.EAST: 90, cst.NORTH: 180, cst.WEST: 270})
-                if direction_out == direction_in:
-                    self.player1.vel = self.player1.vel.rotate(direction_angles[direction_out])
-                if direction_out in [cst.EAST, cst.WEST]:
-                    self._translate_trajectory(True, direction_angles[direction_out])
+            if dir_in == cst.NORTH:
+                dir_angles.update({cst.SOUTH: 0, cst.EAST: 90, cst.NORTH: 180, cst.WEST: 270})
+                if dir_out == dir_in:
+                    self.player1.vel = self.player1.vel.rotate(dir_angles[dir_out])
+                if dir_out in [cst.EAST, cst.WEST]:
+                    self._translate_trajectory(True, dir_angles[dir_out])
                     self.player1.vel.y = 0
 
-            if direction_in == cst.WEST:
-                direction_angles.update({cst.SOUTH: 270, cst.EAST: 0, cst.NORTH: 90, cst.WEST: 180})
-                if direction_out == direction_in:
-                    self._sprites_rotate_trajectory(direction_angles[direction_out])
-                if direction_out in [cst.SOUTH, cst.NORTH]:
-                    self._translate_trajectory(False, direction_angles[direction_out])
+            if dir_in == cst.WEST:
+                dir_angles.update({cst.SOUTH: 270, cst.EAST: 0, cst.NORTH: 90, cst.WEST: 180})
+                if dir_out == dir_in:
+                    self._sprites_rotate_trajectory(dir_angles[dir_out])
+                if dir_out in [cst.SOUTH, cst.NORTH]:
+                    self._translate_trajectory(False, dir_angles[dir_out])
                     self.vel.x = 0
 
         elif not self.is_scrolling_x and self.is_scrolling_y:
-            if direction_in == cst.SOUTH:
-                direction_angles.update({cst.SOUTH: 180, cst.EAST: 270, cst.NORTH: 0, cst.WEST: 90})
-                if direction_out == direction_in:
-                    self._sprites_rotate_trajectory(direction_angles[direction_out])
-                if direction_out in [cst.EAST, cst.WEST]:
-                    self._translate_trajectory(False, direction_angles[direction_out])
+            if dir_in == cst.SOUTH:
+                dir_angles.update({cst.SOUTH: 180, cst.EAST: 270, cst.NORTH: 0, cst.WEST: 90})
+                if dir_out == dir_in:
+                    self._sprites_rotate_trajectory(dir_angles[dir_out])
+                if dir_out in [cst.EAST, cst.WEST]:
+                    self._translate_trajectory(False, dir_angles[dir_out])
                     self.vel.y = 0
 
-            if direction_in == cst.EAST:
-                direction_angles.update({cst.SOUTH: 90, cst.EAST: 180, cst.NORTH: 270, cst.WEST: 0})
-                if direction_out == direction_in:
-                    self.player1.vel = self.player1.vel.rotate(direction_angles[direction_out])
-                if direction_out in [cst.SOUTH, cst.NORTH]:
-                    self._translate_trajectory(True, direction_angles[direction_out])
+            if dir_in == cst.EAST:
+                dir_angles.update({cst.SOUTH: 90, cst.EAST: 180, cst.NORTH: 270, cst.WEST: 0})
+                if dir_out == dir_in:
+                    self.player1.vel = self.player1.vel.rotate(dir_angles[dir_out])
+                if dir_out in [cst.SOUTH, cst.NORTH]:
+                    self._translate_trajectory(True, dir_angles[dir_out])
                     self.player1.vel.x = 0
 
-            if direction_in == cst.NORTH:
-                direction_angles.update({cst.SOUTH: 0, cst.EAST: 90, cst.NORTH: 180, cst.WEST: 270})
-                if direction_out == direction_in:
-                    self._sprites_rotate_trajectory(direction_angles[direction_out])
-                if direction_out in [cst.EAST, cst.WEST]:
-                    self._translate_trajectory(False, direction_angles[direction_out])
+            if dir_in == cst.NORTH:
+                dir_angles.update({cst.SOUTH: 0, cst.EAST: 90, cst.NORTH: 180, cst.WEST: 270})
+                if dir_out == dir_in:
+                    self._sprites_rotate_trajectory(dir_angles[dir_out])
+                if dir_out in [cst.EAST, cst.WEST]:
+                    self._translate_trajectory(False, dir_angles[dir_out])
                     self.vel.y = 0
 
-            if direction_in == cst.WEST:
-                direction_angles.update({cst.SOUTH: 270, cst.EAST: 0, cst.NORTH: 90, cst.WEST: 180})
-                if direction_out == direction_in:
-                    self.player1.vel = self.player1.vel.rotate(direction_angles[direction_out])
-                if direction_out in [cst.SOUTH, cst.NORTH]:
-                    self._translate_trajectory(True, direction_angles[direction_out])
+            if dir_in == cst.WEST:
+                dir_angles.update({cst.SOUTH: 270, cst.EAST: 0, cst.NORTH: 90, cst.WEST: 180})
+                if dir_out == dir_in:
+                    self.player1.vel = self.player1.vel.rotate(dir_angles[dir_out])
+                if dir_out in [cst.SOUTH, cst.NORTH]:
+                    self._translate_trajectory(True, dir_angles[dir_out])
                     self.player1.vel.x = 0
 
         elif not self.is_scrolling_x and not self.is_scrolling_y:
-            if direction_in == cst.EAST:
-                direction_angles.update({cst.EAST: 180, cst.NORTH: 90, cst.WEST: 0, cst.SOUTH: 270})
-            elif direction_in == cst.NORTH:
-                direction_angles.update({cst.NORTH: 180, cst.WEST: 90, cst.SOUTH: 0, cst.EAST: 270})
-            elif direction_in == cst.WEST:
-                direction_angles.update({cst.WEST: 180, cst.SOUTH: 90, cst.EAST: 0, cst.NORTH: 270})
-            self.player1.vel = self.player1.vel.rotate(direction_angles[direction_out])
+            if dir_in == cst.EAST:
+                dir_angles.update({cst.EAST: 180, cst.NORTH: 90, cst.WEST: 0, cst.SOUTH: 270})
+            elif dir_in == cst.NORTH:
+                dir_angles.update({cst.NORTH: 180, cst.WEST: 90, cst.SOUTH: 0, cst.EAST: 270})
+            elif dir_in == cst.WEST:
+                dir_angles.update({cst.WEST: 180, cst.SOUTH: 90, cst.EAST: 0, cst.NORTH: 270})
+            self.player1.vel = self.player1.vel.rotate(dir_angles[dir_out])
 
     def _sprites_rotate_trajectory(self, angle: float) -> None:
         """Rotates the velocities and accelerations of all the sprites within the room's sprites.
@@ -456,11 +476,9 @@ class Room(cb.AbstractBase):
         Returns:
             None
         """
-        self.accel = self.accel.rotate(angle)
         self.vel = self.vel.rotate(angle)
 
         for sprite in self._get_sprites_to_recenter():
-            sprite.accel = sprite.accel.rotate(angle)
             sprite.vel = sprite.vel.rotate(angle)
 
     def _translate_trajectory(self, is_player_to_room: bool, angle: float) -> None:
@@ -698,7 +716,7 @@ class Room(cb.AbstractBase):
         """
         if self.room == vec(0, 0):
             return [
-                tiles.Wall(0, 400, 45, 4),
+                tiles.Wall(0, 400, 25, 4),
                 tiles.Wall(1280 - 64, 0, 4, cst.WINHEIGHT // 16),
                 tiles.Wall(1280 - 256, 400, 4, cst.WINHEIGHT // 16),
                 # tiles.Floor(0, 0, 80, 80),
@@ -708,7 +726,7 @@ class Room(cb.AbstractBase):
                 trinkets.LockedWall(64, 0, 1028, 0, 1, 76, 4),
                 trinkets.PortalBlocker(0, 0, 1, 4, 45),
 
-                enemies.Turret(500, 300),
+                # enemies.Turret(500, 300),
             ]
 
         elif self.room == vec(0, 1):
@@ -721,23 +739,7 @@ class Room(cb.AbstractBase):
 
     @cb.check_update_state
     def update(self):
-        # print(f'Binds: {self.binds}')
-        if self.last_up_rel != ctrl.key_released[ctrl.K_MOVE_UP]:
-            self.binds.update({cst.NORTH: ctrl.K_MOVE_UP, cst.SOUTH: ctrl.K_MOVE_DOWN})
-            self.last_up_rel = ctrl.key_released[ctrl.K_MOVE_UP]
-
-        if self.last_down_rel != ctrl.key_released[ctrl.K_MOVE_DOWN]:
-            self.binds.update({cst.NORTH: ctrl.K_MOVE_UP, cst.SOUTH: ctrl.K_MOVE_DOWN})
-            self.last_down_rel = ctrl.key_released[ctrl.K_MOVE_DOWN]
-
-        if self.last_left_rel != ctrl.key_released[ctrl.K_MOVE_LEFT]:
-            self.binds.update({cst.EAST: ctrl.K_MOVE_RIGHT, cst.WEST: ctrl.K_MOVE_LEFT})
-            self.last_left_rel = ctrl.key_released[ctrl.K_MOVE_LEFT]
-
-        if self.last_right_rel != ctrl.key_released[ctrl.K_MOVE_RIGHT]:
-            self.binds.update({cst.EAST: ctrl.K_MOVE_RIGHT, cst.WEST: ctrl.K_MOVE_LEFT})
-            self.last_right_rel = ctrl.key_released[ctrl.K_MOVE_RIGHT]
-
+        self._hard_reset_binds()
         self._change_room()
         self.movement()
 
