@@ -56,7 +56,7 @@ class Room(cb.AbstractBase):
 
         self.player1 = players.Player()
 
-        self.last_mvm_rel = {
+        self.last_mvm_rel = {  # Last movement key release
             cst.SOUTH: ctrl.key_released[ctrl.K_MOVE_DOWN],
             cst.EAST: ctrl.key_released[ctrl.K_MOVE_RIGHT],
             cst.NORTH: ctrl.key_released[ctrl.K_MOVE_UP],
@@ -112,25 +112,29 @@ class Room(cb.AbstractBase):
                                   cst.NORTH: ctrl.K_MOVE_RIGHT, cst.WEST: ctrl.K_MOVE_UP})
         elif dir_in == cst.EAST:
             if dir_out == cst.SOUTH:
-                pass
+                print('in east out south')
             if dir_out == cst.EAST:
                 new_binds.update({cst.SOUTH: ctrl.K_MOVE_UP, cst.EAST: ctrl.K_MOVE_LEFT,
                                   cst.NORTH: ctrl.K_MOVE_DOWN, cst.WEST: ctrl.K_MOVE_RIGHT})
             if dir_out == cst.NORTH:
                 pass
         elif dir_in == cst.NORTH:
-            if dir_out == cst.EAST:
-                pass
+            if dir_out == cst.EAST:  # Same as (dir_in == cst.SOUTH and dir_out == cst.WEST)
+                new_binds.update({cst.SOUTH: ctrl.K_MOVE_LEFT, cst.EAST: ctrl.K_MOVE_DOWN,
+                                  cst.NORTH: ctrl.K_MOVE_RIGHT, cst.WEST: ctrl.K_MOVE_UP})
             if dir_out == cst.NORTH:
                 new_binds.update({cst.SOUTH: ctrl.K_MOVE_UP, cst.EAST: ctrl.K_MOVE_LEFT,
                                   cst.NORTH: ctrl.K_MOVE_DOWN, cst.WEST: ctrl.K_MOVE_RIGHT})
             if dir_out == cst.WEST:
-                pass
+                new_binds.update({cst.SOUTH: ctrl.K_MOVE_RIGHT, cst.EAST: ctrl.K_MOVE_UP,
+                                  cst.NORTH: ctrl.K_MOVE_LEFT, cst.WEST: ctrl.K_MOVE_DOWN})
         elif dir_in == cst.WEST:
             if dir_out == cst.SOUTH:
-                pass
+                new_binds.update({cst.SOUTH: ctrl.K_MOVE_RIGHT, cst.EAST: ctrl.K_MOVE_UP,
+                                  cst.NORTH: ctrl.K_MOVE_LEFT, cst.WEST: ctrl.K_MOVE_DOWN})
             if dir_out == cst.NORTH:
-                pass
+                new_binds.update({cst.SOUTH: ctrl.K_MOVE_LEFT, cst.EAST: ctrl.K_MOVE_DOWN,
+                                  cst.NORTH: ctrl.K_MOVE_RIGHT, cst.WEST: ctrl.K_MOVE_UP})
             if dir_out == cst.WEST:
                 new_binds.update({cst.SOUTH: ctrl.K_MOVE_UP, cst.EAST: ctrl.K_MOVE_LEFT,
                                   cst.NORTH: ctrl.K_MOVE_DOWN, cst.WEST: ctrl.K_MOVE_RIGHT})
@@ -169,7 +173,47 @@ class Room(cb.AbstractBase):
                 self.binds[cst.EAST] = ctrl.K_MOVE_LEFT
                 self.binds[cst.WEST] = ctrl.K_MOVE_RIGHT
 
-    def _hard_reset_binds(self):
+        # ----- Entrance North ----- #
+        if dir_in == cst.NORTH and dir_out == cst.WEST:
+            if not ctrl.is_input_held[ctrl.K_MOVE_DOWN]:
+                self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
+                                   cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
+            if ctrl.is_input_held[ctrl.K_MOVE_RIGHT] and not ctrl.is_input_held[ctrl.K_MOVE_DOWN]:
+                self.binds[cst.EAST] = ctrl.K_MOVE_LEFT
+                self.binds[cst.WEST] = ctrl.K_MOVE_RIGHT
+
+        if dir_in == cst.NORTH and dir_out == cst.EAST:
+            if not ctrl.is_input_held[ctrl.K_MOVE_DOWN]:
+                self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
+                                   cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
+            if ctrl.is_input_held[ctrl.K_MOVE_LEFT] and not ctrl.is_input_held[ctrl.K_MOVE_DOWN]:
+                self.binds[cst.EAST] = ctrl.K_MOVE_LEFT
+                self.binds[cst.WEST] = ctrl.K_MOVE_RIGHT
+
+        # ----- Entrance West ------ #
+        if dir_in == cst.WEST and dir_out == cst.SOUTH:
+            if not ctrl.is_input_held[ctrl.K_MOVE_RIGHT]:
+                self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
+                                   cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
+            if ctrl.is_input_held[ctrl.K_MOVE_UP] and not ctrl.is_input_held[ctrl.K_MOVE_RIGHT]:
+                self.binds[cst.SOUTH] = ctrl.K_MOVE_UP
+                self.binds[cst.NORTH] = ctrl.K_MOVE_DOWN
+
+        if dir_in == cst.WEST and dir_out == cst.NORTH:
+            if not ctrl.is_input_held[ctrl.K_MOVE_RIGHT]:
+                self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
+                                   cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
+            if ctrl.is_input_held[ctrl.K_MOVE_DOWN] and not ctrl.is_input_held[ctrl.K_MOVE_RIGHT]:
+                self.binds[cst.SOUTH] = ctrl.K_MOVE_UP
+                self.binds[cst.NORTH] = ctrl.K_MOVE_DOWN
+
+        # ----- Entrance East ----- #
+
+    def _hard_reset_binds(self) -> None:
+        """Completely resets the key binds after teleporting
+
+        :return: None
+        """
         if (self.last_tp_dirs[0] == self.last_tp_dirs[1]
                 or self.last_tp_dirs[0] == calc.get_opposite(self.last_tp_dirs[1])):
             if self.last_mvm_rel[cst.NORTH] != ctrl.key_released[ctrl.K_MOVE_UP]:
@@ -191,18 +235,56 @@ class Room(cb.AbstractBase):
         # ----- Entrance South ----- #
         if self.last_tp_dirs[0] == cst.SOUTH and self.last_tp_dirs[1] == cst.WEST:
             # If up is released, as long as right key isn't held
-            if (self.last_mvm_rel[cst.NORTH] != ctrl.key_released[ctrl.K_MOVE_UP] and
-                    not ctrl.is_input_held[ctrl.K_MOVE_RIGHT]):
+            if ((not ctrl.is_input_held[ctrl.K_MOVE_UP] and not ctrl.is_input_held[ctrl.K_MOVE_RIGHT])
+                    or (not ctrl.is_input_held[ctrl.K_MOVE_UP] and ctrl.is_input_held[ctrl.K_MOVE_RIGHT])):
                 self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
                                    cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
-                self.last_mvm_rel[cst.NORTH] = ctrl.key_released[ctrl.K_MOVE_UP]
 
         if self.last_tp_dirs[0] == cst.SOUTH and self.last_tp_dirs[1] == cst.EAST:
             # If up is released, as long as left key isn't held
-            if self.last_mvm_rel[cst.NORTH] != ctrl.key_released[ctrl.K_MOVE_UP]:
+            if ((not ctrl.is_input_held[ctrl.K_MOVE_UP] and not ctrl.is_input_held[ctrl.K_MOVE_LEFT])
+                    or (not ctrl.is_input_held[ctrl.K_MOVE_UP] and ctrl.is_input_held[ctrl.K_MOVE_LEFT])):
                 self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
                                    cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
-                self.last_mvm_rel[cst.NORTH] = ctrl.key_released[ctrl.K_MOVE_UP]
+
+        # ----- Entrance North ----- #
+        if self.last_tp_dirs[0] == cst.NORTH and self.last_tp_dirs[1] == cst.WEST:
+            if ((not ctrl.is_input_held[ctrl.K_MOVE_DOWN] and not ctrl.is_input_held[ctrl.K_MOVE_RIGHT])
+                    or (not ctrl.is_input_held[ctrl.K_MOVE_DOWN] and ctrl.is_input_held[ctrl.K_MOVE_RIGHT])):
+                self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
+                                   cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
+
+        if self.last_tp_dirs[0] == cst.NORTH and self.last_tp_dirs[1] == cst.EAST:
+            if ((not ctrl.is_input_held[ctrl.K_MOVE_DOWN] and not ctrl.is_input_held[ctrl.K_MOVE_LEFT])
+                    or (not ctrl.is_input_held[ctrl.K_MOVE_DOWN] and ctrl.is_input_held[ctrl.K_MOVE_LEFT])):
+                self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
+                                   cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
+
+        # ----- Entrance West ----- #
+        if self.last_tp_dirs[0] == cst.WEST and self.last_tp_dirs[1] == cst.SOUTH:
+            if ((not ctrl.is_input_held[ctrl.K_MOVE_RIGHT] and not ctrl.is_input_held[ctrl.K_MOVE_UP])
+                    or (not ctrl.is_input_held[ctrl.K_MOVE_RIGHT] and ctrl.is_input_held[ctrl.K_MOVE_UP])):
+                self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
+                                   cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
+
+        if self.last_tp_dirs[0] == cst.WEST and self.last_tp_dirs[1] == cst.NORTH:
+            if ((not ctrl.is_input_held[ctrl.K_MOVE_RIGHT] and not ctrl.is_input_held[ctrl.K_MOVE_DOWN])
+                    or (not ctrl.is_input_held[ctrl.K_MOVE_RIGHT] and ctrl.is_input_held[ctrl.K_MOVE_DOWN])):
+                self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
+                                   cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
+
+        # ----- Entrance East ----- #
+        if self.last_tp_dirs[0] == cst.EAST and self.last_tp_dirs[1] == cst.SOUTH:
+            if ((not ctrl.is_input_held[ctrl.K_MOVE_LEFT] and not ctrl.is_input_held[ctrl.K_MOVE_UP])
+                    or (not ctrl.is_input_held[ctrl.K_MOVE_LEFT] and ctrl.is_input_held[ctrl.K_MOVE_UP])):
+                self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
+                                   cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
+
+        if self.last_tp_dirs[0] == cst.EAST and self.last_tp_dirs[1] == cst.NORTH:
+            if ((not ctrl.is_input_held[ctrl.K_MOVE_RIGHT] and not ctrl.is_input_held[ctrl.K_MOVE_DOWN])
+                    or (not ctrl.is_input_held[ctrl.K_MOVE_RIGHT] and ctrl.is_input_held[ctrl.K_MOVE_DOWN])):
+                self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
+                                   cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
 
     def accel_movement(self) -> None:
         """Calculates the room's acceleration, velocity, and position

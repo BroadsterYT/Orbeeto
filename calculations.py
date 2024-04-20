@@ -8,6 +8,8 @@ import time
 import pygame
 from pygame.math import Vector2 as vec
 
+import controls as ctrl
+
 import constants as cst
 import groups
 
@@ -219,14 +221,14 @@ def calculate_damage(receiver, proj) -> int:
 # ============================================================================ #
 #                                Returns string                                #
 # ============================================================================ #
-def get_opposite(value) -> str:
+def get_opposite(value):
     """Returns the value opposite of the input
 
     :param value: The value to get the opposite of
-    :return: Any
+    :return: The opposite of the input
     """
     match value:
-        # ---------- String Inputs ---------- #
+        # ---------- str inputs ---------- #
         case cst.SOUTH:
             return cst.NORTH
         case cst.EAST:
@@ -236,7 +238,15 @@ def get_opposite(value) -> str:
         case cst.WEST:
             return cst.EAST
 
-
+        # ---------- int inputs ---------- #
+        case ctrl.K_MOVE_DOWN:
+            return ctrl.K_MOVE_UP
+        case ctrl.K_MOVE_RIGHT:
+            return ctrl.K_MOVE_LEFT
+        case ctrl.K_MOVE_UP:
+            return ctrl.K_MOVE_DOWN
+        case ctrl.K_MOVE_LEFT:
+            return ctrl.K_MOVE_RIGHT
 
 
 def triangle_collide(instig, sprite) -> str:
