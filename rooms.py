@@ -112,12 +112,14 @@ class Room(cb.AbstractBase):
                                   cst.NORTH: ctrl.K_MOVE_RIGHT, cst.WEST: ctrl.K_MOVE_UP})
         elif dir_in == cst.EAST:
             if dir_out == cst.SOUTH:
-                print('in east out south')
+                new_binds.update({cst.SOUTH: ctrl.K_MOVE_LEFT, cst.EAST: ctrl.K_MOVE_DOWN,
+                                  cst.NORTH: ctrl.K_MOVE_RIGHT, cst.WEST: ctrl.K_MOVE_UP})
             if dir_out == cst.EAST:
                 new_binds.update({cst.SOUTH: ctrl.K_MOVE_UP, cst.EAST: ctrl.K_MOVE_LEFT,
                                   cst.NORTH: ctrl.K_MOVE_DOWN, cst.WEST: ctrl.K_MOVE_RIGHT})
             if dir_out == cst.NORTH:
-                pass
+                new_binds.update({cst.SOUTH: ctrl.K_MOVE_RIGHT, cst.EAST: ctrl.K_MOVE_UP,
+                                  cst.NORTH: ctrl.K_MOVE_LEFT, cst.WEST: ctrl.K_MOVE_DOWN})
         elif dir_in == cst.NORTH:
             if dir_out == cst.EAST:  # Same as (dir_in == cst.SOUTH and dir_out == cst.WEST)
                 new_binds.update({cst.SOUTH: ctrl.K_MOVE_LEFT, cst.EAST: ctrl.K_MOVE_DOWN,
@@ -208,6 +210,21 @@ class Room(cb.AbstractBase):
                 self.binds[cst.NORTH] = ctrl.K_MOVE_DOWN
 
         # ----- Entrance East ----- #
+        if dir_in == cst.EAST and dir_out == cst.SOUTH:
+            if not ctrl.is_input_held[ctrl.K_MOVE_LEFT]:
+                self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
+                                   cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
+            if ctrl.is_input_held[ctrl.K_MOVE_UP] and not ctrl.is_input_held[ctrl.K_MOVE_LEFT]:
+                self.binds[cst.SOUTH] = ctrl.K_MOVE_UP
+                self.binds[cst.NORTH] = ctrl.K_MOVE_DOWN
+
+        if dir_in == cst.EAST and dir_out == cst.NORTH:
+            if not ctrl.is_input_held[ctrl.K_MOVE_LEFT]:
+                self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
+                                   cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
+            if ctrl.is_input_held[ctrl.K_MOVE_DOWN] and not ctrl.is_input_held[ctrl.K_MOVE_LEFT]:
+                self.binds[cst.SOUTH] = ctrl.K_MOVE_UP
+                self.binds[cst.NORTH] = ctrl.K_MOVE_DOWN
 
     def _hard_reset_binds(self) -> None:
         """Completely resets the key binds after teleporting
@@ -275,14 +292,14 @@ class Room(cb.AbstractBase):
 
         # ----- Entrance East ----- #
         if self.last_tp_dirs[0] == cst.EAST and self.last_tp_dirs[1] == cst.SOUTH:
-            if ((not ctrl.is_input_held[ctrl.K_MOVE_LEFT] and not ctrl.is_input_held[ctrl.K_MOVE_UP])
+            if ((not ctrl.is_input_held[ctrl.K_MOVE_LEFT] and not ctrl.is_input_held[ctrl.K_MOVE_DOWN])
                     or (not ctrl.is_input_held[ctrl.K_MOVE_LEFT] and ctrl.is_input_held[ctrl.K_MOVE_UP])):
                 self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
                                    cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
-
+        #
         if self.last_tp_dirs[0] == cst.EAST and self.last_tp_dirs[1] == cst.NORTH:
-            if ((not ctrl.is_input_held[ctrl.K_MOVE_RIGHT] and not ctrl.is_input_held[ctrl.K_MOVE_DOWN])
-                    or (not ctrl.is_input_held[ctrl.K_MOVE_RIGHT] and ctrl.is_input_held[ctrl.K_MOVE_DOWN])):
+            if ((not ctrl.is_input_held[ctrl.K_MOVE_LEFT] and not ctrl.is_input_held[ctrl.K_MOVE_DOWN])
+                    or (not ctrl.is_input_held[ctrl.K_MOVE_LEFT] and ctrl.is_input_held[ctrl.K_MOVE_UP])):
                 self.binds.update({cst.WEST: ctrl.K_MOVE_LEFT, cst.NORTH: ctrl.K_MOVE_UP,
                                    cst.SOUTH: ctrl.K_MOVE_DOWN, cst.EAST: ctrl.K_MOVE_RIGHT})
 
