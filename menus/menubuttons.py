@@ -12,10 +12,11 @@ import text
 
 import classbases as cb
 import constants as cst
+import gamestack as gs
 
 
 class MenuButton(cb.ActorBase):
-    def __init__(self, pos_x: int | float, pos_y: int | float, width: int, height: int, name: str, func_call,
+    def __init__(self, gamestate: gs.GameState, pos_x: int | float, pos_y: int | float, width: int, height: int, name: str, func_call,
                  *args, **kwargs):
         """A button to be used in a menu with varying width and height, with customizable functionality.
 
@@ -28,7 +29,7 @@ class MenuButton(cb.ActorBase):
         :param args: The arguments to use in the function being called
         :param kwargs: The keyword arguments to use in the function being called
         """
-        super().__init__(cst.LAYER['ui_2'])
+        super().__init__(cst.LAYER['ui_2'], gamestate)
         self.show()
 
         self.func = func_call

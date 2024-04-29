@@ -15,6 +15,7 @@ import text
 import audio as aux
 import calculations as calc
 import constants as cst
+import gamestack as gs
 import groups
 import rooms
 
@@ -36,9 +37,7 @@ def redraw_game_window() -> None:
     Returns:
         None
     """
-    groups.all_sprites.update()
-    groups.all_sprites.draw(screen.buffer_screen)
-    main_room.update()
+    gs.gamestack.update()
     screen.viewport.blit(screen.buffer_screen, calc.screen_shake_queue.run())
     pygame.display.flip()
 
@@ -49,8 +48,10 @@ def redraw_game_window() -> None:
 #                         Initialization for Main Loop                         #
 # ============================================================================ #
 main_room = rooms.Room(0, 0)
+gs.s_action.groups.append(main_room)
+
 pause_menu = menus.PauseMenu()
-inventory_menu = menus.InventoryMenu()
+# inventory_menu = menus.InventoryMenu()
 
 last_pause_release = ctrl.key_released[ctrl.K_PAUSE]
 prev_time = time.time()  # Used for delta time
@@ -82,15 +83,16 @@ async def main(max_frame_rate) -> None:
         screen.dt = now - prev_time
         prev_time = now
 
-        # Open pause menu
-        if pause_menu.last_pause_release != ctrl.key_released[ctrl.K_PAUSE]:
-            pause_menu.trigger()
-            pause_menu.last_pause_release = ctrl.key_released[ctrl.K_PAUSE]
+        # # Open pause menu
+        # if pause_menu.last_pause_release != ctrl.key_released[ctrl.K_PAUSE]:
+        #     pause_menu.trigger()
+        #     pause_menu.last_pause_release = ctrl.key_released[ctrl.K_PAUSE]
 
-        # print(pause_menu.last_pause_release, ctrl.key_released[ctrl.K_PAUSE])
+        # # Update inventory menu
+        # inventory_menu.update()
 
-        # Update inventory menu
-        inventory_menu.update()
+        if ctrl.is_input_held[ctrl.K_PAUSE]:
+            gs.gamestack.push(gs.s_pause)
 
         try:
             text.draw_text(f'{pow(screen.dt, -1)}', 0, 0)

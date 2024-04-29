@@ -12,6 +12,7 @@ import screen
 
 import calculations as calc
 import constants as cst
+import gamestack as gs
 import groups
 import spritesheet
 
@@ -40,7 +41,7 @@ def check_update_state(method):
 
 class ActorBase(pygame.sprite.Sprite):
     """The base class for all actors in the game."""
-    def __init__(self, layer=1):
+    def __init__(self, layer=1, gamestate: gs.GameState = gs.s_action):
         """The base class for all actors in the game.
 
         Args:
@@ -48,6 +49,7 @@ class ActorBase(pygame.sprite.Sprite):
         """
         super().__init__()
         self._layer = layer
+        self.gamestate = gamestate
 
         # Existence booleans
         self.visible = False
@@ -102,7 +104,8 @@ class ActorBase(pygame.sprite.Sprite):
         """Makes the sprite invisible. The sprite's update() method cannot be called.
         """
         self.visible = False
-        groups.all_sprites.remove(self)
+        # groups.all_sprites.remove(self)
+        self.gamestate.all_sprites.remove(self)
 
     def show(self) -> None:
         """Makes the sprite visible. The sprite's update() method can be called.
@@ -111,7 +114,8 @@ class ActorBase(pygame.sprite.Sprite):
             None
         """
         self.visible = True
-        groups.all_sprites.add(self, layer=self.layer)
+        # groups.all_sprites.add(self, layer=self.layer)
+        self.gamestate.all_sprites.add(self, layer=self.layer)
 
     def get_update_state(self) -> bool:
         """Returns the update state of the sprite.
