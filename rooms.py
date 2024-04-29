@@ -750,7 +750,6 @@ class Room(cb.AbstractBase):
             self.player1.pos.y = self.border_east.pos.y
 
         player_vel_copy = self.player1.vel.copy()
-        self.player1.vel = vec(0, 0)
         self.size = vec((room_size_x, room_size_y))
 
         scroll_copy_x = copy.copy(self.is_scrolling_x)
@@ -760,6 +759,7 @@ class Room(cb.AbstractBase):
 
         self._get_room_change_trajectory(scroll_copy_x, scroll_copy_y, self.is_scrolling_x, self.is_scrolling_y,
                                          player_vel_copy)
+        self.vel = vec(0, 0)
 
     def _get_room_change_trajectory(self, prev_room_scroll_x: bool, prev_room_scroll_y: bool, new_room_scroll_x: bool,
                                     new_room_scroll_y: bool, player_vel: pygame.math.Vector2) -> None:
