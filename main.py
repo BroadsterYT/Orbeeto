@@ -50,10 +50,13 @@ def redraw_game_window() -> None:
 main_room = rooms.Room(0, 0)
 gs.s_action.groups.append(main_room)
 
+# Pause menu
 pause_menu = menus.PauseMenu()
-# inventory_menu = menus.InventoryMenu()
+pause_release = 0
 
-last_pause_release = ctrl.key_released[ctrl.K_PAUSE]
+inventory_menu = menus.InventoryMenu()
+inventory_release = 0
+
 prev_time = time.time()  # Used for delta time
 
 
@@ -83,17 +86,41 @@ async def main(max_frame_rate) -> None:
         screen.dt = now - prev_time
         prev_time = now
 
-        # # Open pause menu
-        # if pause_menu.last_pause_release != ctrl.key_released[ctrl.K_PAUSE]:
-        #     pause_menu.trigger()
-        #     pause_menu.last_pause_release = ctrl.key_released[ctrl.K_PAUSE]
-
-        # # Update inventory menu
-        # inventory_menu.update()
-
-        if ctrl.is_input_held[ctrl.K_PAUSE]:
+        # ----- Opening and closing pause menu ----- #
+        global pause_release
+        if pause_release == ctrl.key_released[ctrl.K_PAUSE] - 1 and not pause_menu.is_open:
             gs.gamestack.push(gs.s_pause)
+            pause_release = ctrl.key_released[ctrl.K_PAUSE]
+            pause_menu.is_open = True
 
+        elif pause_release == ctrl.key_released[ctrl.K_PAUSE] - 1 and pause_menu.is_open and gs.s_pause in gs.gamestack.stack:
+            gs.gamestack.pop()
+            pause_release = ctrl.key_released[ctrl.K_PAUSE]
+            pause_menu.is_open = False
+
+        elif pause_menu.is_open and gs.s_pause not in gs.gamestack.stack:
+            pause_release = ctrl.key_released[ctrl.K_PAUSE]
+            pause_menu.is_open = False
+        pause_menu.update()
+
+        # ----- Opening and closing inventory menu ----- #
+        global inventory_release
+        if inventory_release == ctrl.key_released[ctrl.K_MENU] - 1 and not inventory_menu.is_open:
+            gs.gamestack.push(gs.s_inventory)
+            inventory_release = ctrl.key_released[ctrl.K_MENU]
+            inventory_menu.is_open = True
+
+        elif inventory_release == ctrl.key_released[ctrl.K_MENU] - 1 and inventory_menu.is_open and gs.s_inventory in gs.gamestack.stack:
+            gs.gamestack.pop()
+            inventory_release = ctrl.key_released[ctrl.K_MENU]
+            inventory_menu.is_open = False
+
+        elif inventory_menu.is_open and gs.s_inventory not in gs.gamestack.stack:
+            inventory_release = ctrl.key_released[ctrl.K_MENU]
+            inventory_menu.is_open = False
+        inventory_menu.update()
+
+        # Draw framerate on screen
         try:
             text.draw_text(f'{pow(screen.dt, -1)}', 0, 0)
         except ZeroDivisionError:

@@ -10,20 +10,22 @@ import text
 import calculations as calc
 import classbases as cb
 import constants as cst
+import gamestack as gs
 import groups
 import spritesheet
 import visuals
 
 
 class SlotBase(cb.ActorBase):
-    def __init__(self, owner, pos_x, pos_y):
+    def __init__(self, gamestate: gs.GameState, owner, pos_x, pos_y):
         """The base class for all inventory slots.
 
+        :param gamestate: The gamestate the slot should be displayed in
         :param owner: The owner of the inventory menu (should be the player)
         :param pos_x: The x-position to spawn the slot at
         :param pos_y: The y-position to spawn the slot at
         """
-        super().__init__(cst.LAYER['ui_1'])
+        super().__init__(cst.LAYER['ui_1'], gamestate)
         self.owner = owner
 
         self.pos = vec(pos_x, pos_y)
@@ -59,7 +61,8 @@ class MaterialSlot(SlotBase):
         :param pos_y: The y-position to spawn at
         :param item_held: The item the menu slot will hold. Items are chosen from MATERIALS dictionary.
         """
-        super().__init__(owner, pos_x, pos_y)
+        super().__init__(gs.s_inventory, owner, pos_x, pos_y)
+        self.show()
         groups.all_slots.add(self)
 
         self.holding = item_held
@@ -137,7 +140,8 @@ class MaterialSlot(SlotBase):
 
 class ArmorSlot(SlotBase):
     def __init__(self, owner, pos_x, pos_y, armor_held: str):
-        super().__init__(owner, pos_x, pos_y)
+        super().__init__(gs.s_inventory, owner, pos_x, pos_y)
+        self.show()
         groups.all_slots.add(self)
 
         self.holding = armor_held
