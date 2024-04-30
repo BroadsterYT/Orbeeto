@@ -79,6 +79,7 @@ class Room(cb.AbstractBase):
         self.is_scrolling_y = True
 
         self.pos = vec(0, 0)
+        self.pos_offset = vec(0, 0)
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
         self.accel_const = self.player1.accel_const
@@ -311,7 +312,7 @@ class Room(cb.AbstractBase):
         self.vel += self.accel * (screen.dt * cst.M_FPS)
 
         self.pos = vec(self.border_west.pos.x + self.border_west.hitbox.width // 2,
-                       self.border_north.pos.y + self.border_north.height // 2)
+                       self.border_north.pos.y + self.border_north.height // 2) - self.pos_offset
 
     def get_accel(self) -> vec:
         """Returns the acceleration value to give to the room
@@ -806,6 +807,27 @@ class Room(cb.AbstractBase):
         this_room = self._room_specs[tuple(self.room)]  # Retrieve room specs
         self._init_room(this_room.width, this_room.height, this_room.scroll.x, this_room.scroll.y)
 
+        # ----- Centering the room when the room is smaller than the window size ----- #
+        if self.border_east.pos.x - 16 < cst.WINWIDTH and not self.is_scrolling_x:
+            self.pos_offset.x = cst.WINWIDTH // 2 - self.border_north.hitbox.width // 2
+            self.border_north.pos.x = cst.WINWIDTH // 2
+            self.border_south.pos.x = cst.WINWIDTH // 2
+            self.border_east.pos.x = cst.WINWIDTH // 2 + self.border_north.hitbox.width // 2 + 8
+            self.border_west.pos.x = cst.WINWIDTH // 2 - self.border_north.hitbox.width // 2 - 8
+            self.player1.pos.x += self.pos_offset.x
+        else:
+            self.pos_offset.x = 0
+
+        if self.border_south.pos.y - 16 < cst.WINHEIGHT and not self.is_scrolling_y:
+            self.pos_offset.y = cst.WINHEIGHT // 2 - self.border_east.hitbox.height // 2
+            self.border_east.pos.y = cst.WINHEIGHT // 2
+            self.border_west.pos.y = cst.WINHEIGHT // 2
+            self.border_south.pos.y = cst.WINHEIGHT // 2 + self.border_east.hitbox.height // 2 + 8
+            self.border_north.pos.y = cst.WINHEIGHT // 2 - self.border_east.hitbox.height // 2 - 8
+            self.player1.pos.y += cst.WINHEIGHT // 2 - self.border_east.hitbox.height // 2
+        else:
+            self.pos_offset.y = 0
+
     def _get_room_layout(self) -> list:
         """Returns the layout of the current room.
 
@@ -830,7 +852,7 @@ class Room(cb.AbstractBase):
 
         elif self.room == vec(0, 1):
             return [
-                tiles.Wall(0, 0, 4, 4)
+                tiles.Wall(64, 0, 4, 4)
             ]
 
         else:
