@@ -36,13 +36,14 @@ class ItemDrop(cb.ActorBase):
         self.pos = vec((pos_x, pos_y))
         self.rand_accel = calc.get_rand_components(self.accel_const)
         
-        self.spritesheet = spritesheet.Spritesheet(os.path.join(os.getcwd(), 'sprites/textures/item_drops.png'), 8)
+        self.spritesheet = spritesheet.Spritesheet(os.path.join(os.getcwd(), 'sprites/textures/item_drops.png'), 3)
         self.index = 0
 
         if self.mat == items.MATERIALS[0]:
             self.orig_images = self.spritesheet.get_images(32, 32, 3, 0)
             self.images = self.spritesheet.get_images(32, 32, 3, 0)
         elif self.mat == items.MATERIALS[1]:
+            print('hello')
             self.orig_images = self.spritesheet.get_images(32, 32, 1, 3)
             self.images = self.spritesheet.get_images(32, 32, 1, 3)
 
@@ -90,6 +91,9 @@ class ItemDrop(cb.ActorBase):
             if self.index > 2:
                 self.index = 0
             self.last_frame = time.time()
+
+        if self.mat == items.MATERIALS[1] and calc.get_time_diff(self.last_frame) > 0.1:
+            self.image = self.images[self.index]
 
         exist_time = calc.get_time_diff(self.start_time)
         if exist_time <= 10:

@@ -434,7 +434,7 @@ class Room(cb.AbstractBase):
             output_list.append(sprite)
 
         for container in [c for c in groups.all_containers if c.room == self.room]:
-            for sprite in container:
+            for sprite in [s for s in container if s not in groups.all_enemies and s not in groups.all_sentries]:
                 output_list.append(sprite)
 
         return output_list
@@ -595,7 +595,6 @@ class Room(cb.AbstractBase):
         elif not is_player_to_room:
             self.player1.vel = self.vel.rotate(angle)
 
-    # noinspection SpellCheckingInspection
     def _sprite_collide_check(self, instig, *contact_list) -> None:
         """Collide check for when the room is scrolling.
 
@@ -794,6 +793,9 @@ class Room(cb.AbstractBase):
         for sprite in self.sprites():
             sprite.kill()
 
+        for portal in groups.all_portals:
+            portal.kill()
+
         for container in groups.all_containers:
             container.hide_sprites()
 
@@ -840,19 +842,24 @@ class Room(cb.AbstractBase):
                 tiles.Wall(0, 400, 25, 4),
                 tiles.Wall(1280 - 64, 0, 4, cst.WINHEIGHT // 16),
                 tiles.Wall(1280 - 256, 400, 4, cst.WINHEIGHT // 16),
-                # tiles.Floor(0, 0, 80, 80),
+                tiles.Floor(0, 0, 80, 80),
 
                 trinkets.Button(1, 14, 16),
                 trinkets.Box(cst.WINWIDTH // 2, cst.WINHEIGHT // 2),
                 trinkets.LockedWall(64, 0, 1028, 0, 1, 76, 4),
                 trinkets.PortalBlocker(0, 0, 1, 4, 45),
 
-                # enemies.Turret(500, 300),
+                enemies.Turret(500, 300),
+                # enemies.StandardGrunt(500, 300)
+                # enemies.Ambusher(cst.WINWIDTH // 2, cst.WINHEIGHT // 2)
             ]
 
         elif self.room == vec(0, 1):
             return [
-                tiles.Wall(64, 0, 4, 4)
+                tiles.Wall(320, 180, 16, 4),
+                tiles.Wall(320, 180, 4, 8),
+                trinkets.Box(cst.WINWIDTH // 2, cst.WINHEIGHT // 2),
+                enemies.Ambusher(cst.WINWIDTH // 2, cst.WINHEIGHT // 2)
             ]
 
         else:

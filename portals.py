@@ -31,7 +31,7 @@ class Portal(cb.ActorBase):
         self.facing = facing
 
         self.landedOn = spawned_from.hit
-        self.posOffset = vec(self.pos.x - self.landedOn.pos.x, self.pos.y - self.landedOn.pos.y)
+        self.pos_offset = vec(self.pos.x - self.landedOn.pos.x, self.pos.y - self.landedOn.pos.y)
 
         self.direction_angles = {cst.SOUTH: 0, cst.EAST: 90, cst.NORTH: 180, cst.WEST: 270}
 
@@ -56,7 +56,7 @@ class Portal(cb.ActorBase):
 
     def movement(self):
         # Setting position to offset of where bullet landed
-        self.pos = self.landedOn.pos + self.posOffset
+        self.pos = self.landedOn.pos + self.pos_offset
         self.center_rects()
 
     def update(self):

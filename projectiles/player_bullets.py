@@ -2,9 +2,11 @@ import math
 import os
 import time
 
+import pygame
 from pygame.math import Vector2 as vec
 
 import projectiles as proj
+import screen
 
 import classbases as cb
 import calculations as calc
@@ -191,10 +193,10 @@ class GrappleBullet(proj.BulletBase):
         
         self.shot_from = shot_from
 
-        self.isHooked = False
-        self.grappledTo = None
-        self.posOffset = vec(0, 0)
-        
+        self.is_hooked = False
+        self.grappled_to = None
+        self.pos_offset = vec(0, 0)
+
         self.returning = False
 
         self.pos = vec((pos_x, pos_y))
@@ -204,7 +206,8 @@ class GrappleBullet(proj.BulletBase):
         self.accel_const = 1.5
 
         self.chain = visuals.Beam(self, self.shot_from)
-        self.portalList = []
+        self.portal_list = []
+        self.portal_check = True
 
         self.set_images("sprites/bullets/bullets.png", 32, 32, 8, 2, 16)
         self.set_rects(0, 0, 32, 32, 16, 16)
@@ -212,22 +215,23 @@ class GrappleBullet(proj.BulletBase):
 
     def land(self, grappled_to):
         if not self.returning:  # Hook won't scoop thing up on the way back to the player
-            self.isHooked = True
-            self.grappledTo = grappled_to
-            self.grappledTo.grappled_by = self
-            if self.grappledTo is not None:
-                self.grappledTo.is_grappled = True
-                self.posOffset = vec(self.pos.x - self.grappledTo.pos.x, self.pos.y - self.grappledTo.pos.y)
+            self.is_hooked = True
+            self.grappled_to = grappled_to
+            self.grappled_to.grappled_by = self
+            if self.grappled_to is not None:
+                self.grappled_to.is_grappled = True
+                self.pos_offset = vec(self.pos.x - self.grappled_to.pos.x, self.pos.y - self.grappled_to.pos.y)
 
     def shatter(self):
         """Completely destroys the grappling hook.
         """
         self.returning = False
         self.shot_from.grapple = None
-        if self.grappledTo is not None:
-            self.grappledTo.is_grappled = False
+        if self.grappled_to is not None:
+            self.grappled_to.is_grappled = False
 
-        self.portalList = []
+        self.portal_list = []
+        self.portal_check = True
 
         self.chain.kill()
         self.kill()
@@ -236,7 +240,7 @@ class GrappleBullet(proj.BulletBase):
         for collidingSprite in sprite_group:
             if not self.hitbox.colliderect(collidingSprite.hitbox):
                 continue
-            
+
             if not collidingSprite.visible:
                 continue
 
@@ -248,9 +252,10 @@ class GrappleBullet(proj.BulletBase):
                 if sprite_group == groups.all_portals:
                     if len(groups.all_portals) == 2:
                         for portal in groups.all_portals:
-                            if self.hitbox.colliderect(portal.hitbox):
-                                self.portalList.append(portal)
-                                self.portalList.append(calc.get_other_portal(portal))
+                            if self.hitbox.colliderect(portal.hitbox) and self.portal_check:
+                                self.portal_list.append(portal)
+                                self.portal_list.append(calc.get_other_portal(portal))
+                                self.portal_check = False
                                 self.teleport(portal)
                                 self.rotate_image(calc.get_vec_angle(self.vel.x, self.vel.y))
                         return
@@ -259,19 +264,20 @@ class GrappleBullet(proj.BulletBase):
                     self.land(collidingSprite)
 
     def send_back(self):
-        if self.grappledTo not in groups.all_walls:
+        if self.grappled_to not in groups.all_walls:
             # Hook returns to portal it entered
-            if len(self.portalList) > 1:
-                angle = calc.get_angle(self, self.portalList[1])
+            if len(self.portal_list) > 1:
+                angle = calc.get_angle(self, self.portal_list[1])
                 room = cb.get_room()
                 room_accel = room.get_accel()
                 self.accel.x = self.accel_const * -math.sin(math.radians(angle)) + room_accel.x
                 self.accel.y = self.accel_const * -math.cos(math.radians(angle)) + room_accel.y
-                # self.pos = self.grappledTo.pos
 
-                if self.hitbox.colliderect(self.portalList[1]):
-                    self.portalList = []
-            
+                if self.hitbox.colliderect(self.portal_list[1]):
+                    print('send to other')
+                    self.pos = self.portal_list[0].pos
+                    self.portal_list = []
+
             # Hook returns to player
             else:
                 angle = calc.get_angle(self, self.shot_from)
@@ -283,33 +289,33 @@ class GrappleBullet(proj.BulletBase):
                 # Hook disappears once it returns
                 if self.hitbox.colliderect(self.shot_from.hitbox):
                     self.shatter()
-            
+
             self.accel_movement()
 
             # Hook follows whatever it has grabbed
-            if self.grappledTo is not None and self.grappledTo not in groups.all_portals:
-                if self.grappledTo not in groups.all_walls:
-                    self.grappledTo.pos = self.pos
+            if self.grappled_to is not None and self.grappled_to not in groups.all_portals:
+                if self.grappled_to not in groups.all_walls:
+                    self.grappled_to.pos = self.pos
 
         # Player should accelerate to the hook
         else:
-            self.pos = self.grappledTo.pos + self.posOffset
+            self.pos = self.grappled_to.pos + self.pos_offset
             if self.hitbox.colliderect(self.shot_from.hitbox):
                 self.shatter()
 
     def movement(self):
         if not self.returning:
-            if not self.isHooked:
+            if not self.is_hooked:
                 self.vel = self.get_vel()
                 self.vel_movement(True)
 
-            elif self.isHooked:
-                if self.grappledTo is not None and self.grappledTo not in groups.all_walls:
-                    self.pos.x = self.grappledTo.pos.x
-                    self.pos.y = self.grappledTo.pos.y
-                
-                elif self.grappledTo is not None and self.grappledTo in groups.all_walls:
-                    self.pos = self.grappledTo.pos + self.posOffset
+            elif self.is_hooked:
+                if self.grappled_to is not None and self.grappled_to not in groups.all_walls:
+                    self.pos.x = self.grappled_to.pos.x
+                    self.pos.y = self.grappled_to.pos.y
+
+                elif self.grappled_to is not None and self.grappled_to in groups.all_walls:
+                    self.pos = self.grappled_to.pos + self.pos_offset
                 
                 else:
                     self.pos = self.pos
@@ -321,7 +327,7 @@ class GrappleBullet(proj.BulletBase):
 
     def bind_proj(self):
         if self.can_update and self.visible:
-            if not self.isHooked:
+            if not self.is_hooked:
                 self.proj_collide(groups.all_enemies, True)
                 self.proj_collide(groups.all_movable, False)
                 self.proj_collide(groups.all_portals, False)

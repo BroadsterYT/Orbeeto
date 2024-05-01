@@ -36,7 +36,7 @@ class BulletBase(cb.ActorBase):
         :return: The velocity vector to assign to the bullet
         """
         room = cb.get_room()
-        final_vel = self.vel_const + room.vel
+        final_vel = self.vel_const + room.vel.copy()
 
         return final_vel * screen.dt * cst.M_FPS
 
@@ -170,9 +170,10 @@ class BulletBase(cb.ActorBase):
     def update(self):
         room = cb.get_room()
         if (
-                self.pos.y > room.border_south.pos.y or
-                self.pos.x > room.border_east.pos.x or
-                self.pos.y < room.border_north.pos.y or
-                self.pos.x < room.border_west.pos.x
+            self.pos.y > room.border_south.pos.y or
+            self.pos.x > room.border_east.pos.x or
+            self.pos.y < room.border_north.pos.y or
+            self.pos.x < room.border_west.pos.x
         ):
             self.kill()
+        pygame.draw.rect(screen.buffer_screen, cst.RED, self.hitbox)

@@ -253,9 +253,9 @@ class ActorBase(pygame.sprite.Sprite):
         for group in contact_lists:
             for sprite in group:
                 if sprite.visible:
-                    self.__block_from_side(sprite)
+                    self._block_from_side(sprite)
 
-    def __block_from_side(self, sprite) -> None:
+    def _block_from_side(self, sprite) -> None:
         if self.hitbox.colliderect(sprite.hitbox):
             width = (self.hitbox.width + sprite.hitbox.width) // 2
             height = (self.hitbox.height + sprite.hitbox.height) // 2
@@ -320,33 +320,30 @@ class ActorBase(pygame.sprite.Sprite):
 
         def rotate_vel() -> None:
             align_sprite(dist_offset, dir_out)
-            self.vel_const = self.vel_const.rotate(dir_list[dir_out])
             self.vel = self.vel.rotate(dir_list[dir_out])
+            self.vel_const = self.vel_const.rotate(dir_list[dir_out])
 
         dir_list = {cst.SOUTH: 180, cst.EAST: 90, cst.NORTH: 0, cst.WEST: 270}
 
-        # TODO: Add the rotated velocity of the room to the object's velocity to maintain momentum through portals
-
+        # print(f'{self} vel before {self.vel}')
         if dir_in == cst.SOUTH:
             dist_offset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
             rotate_vel()
 
         elif dir_in == cst.EAST:
-            dist_offset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
             dir_list.update({cst.EAST: 180, cst.NORTH: 90, cst.WEST: 0, cst.SOUTH: 270})
+            dist_offset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
             rotate_vel()
 
         elif dir_in == cst.NORTH:
-            dist_offset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
             dir_list.update({cst.NORTH: 180, cst.WEST: 90, cst.SOUTH: 0, cst.EAST: 270})
+            dist_offset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
             rotate_vel()
 
         elif dir_in == cst.WEST:
-            dist_offset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
             dir_list.update({cst.WEST: 180, cst.SOUTH: 90, cst.EAST: 0, cst.NORTH: 270})
+            dist_offset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
             rotate_vel()
-
-        print(dir_in, dir_out)
 
 
 class AbstractBase(pygame.sprite.AbstractGroup):

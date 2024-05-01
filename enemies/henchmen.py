@@ -131,6 +131,7 @@ class StandardGrunt(enemybase.EnemyBase):
             self.rotate_image(calc.get_angle(self, calc.get_closest_player()))
 
         self._destroy_check(6, 75, 0)
+        self.movement()
 
     def _animate(self):
         if calc.get_time_diff(self.last_frame) > 0.1:
@@ -211,7 +212,8 @@ class Turret(enemybase.EnemyBase):
     def update(self):
         if self.hp > 0:
             self._animate()
-        self._destroy_check(15, 360, 0)
+        self._destroy_check(15, 360, 2)
+        self.movement()
 
     def _animate(self):
         if calc.get_time_diff(self.last_frame) > cst.SPF:
@@ -251,7 +253,7 @@ class Ambusher(enemybase.EnemyBase):
         final_accel = vec(0, 0)
 
         self.movement_angle = calc.get_angle(self, calc.get_closest_player())
-        dash_timer = calc.eerp(0.5, 0.8, self.hp / self.max_hp)  # Moves for longer as health gets lower
+        dash_timer = calc.eerp(0.6, 0.8, self.hp / self.max_hp)  # Moves for longer as health gets lower
 
         # Rush towards the nearest player
         if calc.get_time_diff(self.movement_timer) >= dash_timer:
@@ -276,3 +278,4 @@ class Ambusher(enemybase.EnemyBase):
     def update(self):
         self.rotate_image(calc.get_angle(self, calc.get_closest_player()))
         self._destroy_check(6, 75, 2)
+        self.movement()

@@ -7,6 +7,8 @@ import time
 import pygame
 from pygame.math import Vector2 as vec
 
+import screen
+
 import classbases as cb
 import constants as cst
 import calculations as calc
@@ -64,7 +66,7 @@ class Box(cb.ActorBase):
     def update(self):
         # Teleporting
         for portal in groups.all_portals:
-            if self.hitbox.colliderect(portal.hitbox) and len(groups.all_portals) == 2:
+            if self.hitbox.colliderect(portal.hitbox) and len(groups.all_portals) == 2 and not self.is_grappled:
                 self.teleport(portal)
 
     def __repr__(self):

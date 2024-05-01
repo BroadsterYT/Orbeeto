@@ -53,7 +53,7 @@ class Player(cb.ActorBase):
 
         self.max_ammo = 40
         self.ammo = self.max_ammo
-        self.bullet_vel = 12
+        self.bullet_vel = 10
         self.gun_cooldown = 0.12
         self.last_shot_time = time.time()
 
@@ -217,7 +217,7 @@ class Player(cb.ActorBase):
             return output
         elif not self.grapple.returning:
             return output
-        elif self.grapple.grappledTo not in groups.all_walls:
+        elif self.grapple.grappled_to not in groups.all_walls:
             return output
         else:
             output = True
@@ -262,11 +262,11 @@ class Player(cb.ActorBase):
 
         # ------------------------------ Firing Portals ------------------------------ #
         if ctrl.key_released[3] % 2 == 0 and self.can_portal:
-            groups.all_projs.add(proj.PortalBullet(self.pos.x, self.pos.y, vel_x * 0.75, vel_y * 0.75))
+            groups.all_projs.add(proj.PortalBullet(self.pos.x, self.pos.y, vel_x, vel_y))
             self.can_portal = False
 
         elif ctrl.key_released[3] % 2 != 0 and not self.can_portal:
-            groups.all_projs.add(proj.PortalBullet(self.pos.x, self.pos.y, vel_x * 0.75, vel_y * 0.75))
+            groups.all_projs.add(proj.PortalBullet(self.pos.x, self.pos.y, vel_x, vel_y))
             self.can_portal = True
 
         # --------------------------- Firing Grappling Hook -------------------------- #
@@ -285,7 +285,10 @@ class Player(cb.ActorBase):
 
         # Double-click to destroy grapple immediately
         if self.grapple_input_copy < ctrl.key_released[ctrl.K_GRAPPLE] - 1:
-            self.grapple.shatter()
+            try:
+                self.grapple.shatter()
+            except AttributeError:
+                pass
             self.can_grapple = True
             self.grapple_input_copy = ctrl.key_released[ctrl.K_GRAPPLE]
 
