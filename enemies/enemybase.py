@@ -46,7 +46,6 @@ class EnemyBase(cb.ActorBase):
         self.xp = xp
 
     # ------------------------------------------------------------------------------#
-
     def _award_xp(self):
         for a_player in groups.all_players:
             a_player.xp += self.xp

@@ -131,7 +131,6 @@ class StandardGrunt(enemybase.EnemyBase):
             self.rotate_image(calc.get_angle(self, calc.get_closest_player()))
 
         self._destroy_check(6, 75, 0)
-        self.movement()
 
     def _animate(self):
         if calc.get_time_diff(self.last_frame) > 0.1:
@@ -213,7 +212,6 @@ class Turret(enemybase.EnemyBase):
         if self.hp > 0:
             self._animate()
         self._destroy_check(15, 360, 2)
-        self.movement()
 
     def _animate(self):
         if calc.get_time_diff(self.last_frame) > cst.SPF:
@@ -278,4 +276,3 @@ class Ambusher(enemybase.EnemyBase):
     def update(self):
         self.rotate_image(calc.get_angle(self, calc.get_closest_player()))
         self._destroy_check(6, 75, 2)
-        self.movement()

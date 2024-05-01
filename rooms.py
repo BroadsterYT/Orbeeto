@@ -409,7 +409,6 @@ class Room(cb.AbstractBase):
             value_y: Y-axis component
             is_additive: Should the values be added to the current vel or override it?
         """
-        # TODO: Make an exception for enemies when the player is pushing up against something
         if not is_additive:
             self.vel = vec(value_x, value_y)
             for sprite in self._get_sprites_to_recenter():
@@ -434,7 +433,7 @@ class Room(cb.AbstractBase):
             output_list.append(sprite)
 
         for container in [c for c in groups.all_containers if c.room == self.room]:
-            for sprite in [s for s in container if s not in groups.all_enemies and s not in groups.all_sentries]:
+            for sprite in container:
                 output_list.append(sprite)
 
         return output_list
@@ -605,64 +604,68 @@ class Room(cb.AbstractBase):
         Returns:
             None
         """
-        for sprite in [s
-                       for group in contact_list
-                       for s in group
-                       if s.visible]:
-            self._sprite_block_from_side(instig, sprite)
+        if instig == self.player1:
+            for sprite in [s
+                           for group in contact_list
+                           for s in group
+                           if s.visible]:
+                self._player_block_from_side(sprite)
+        else:
+            for sprite in [s
+                           for group in contact_list
+                           for s in group
+                           if s.visible]:
+                self._sprite_block_from_side(instig, sprite)
+
+    def _player_block_from_side(self, sprite) -> None:
+        width = (self.player1.hitbox.width + sprite.hitbox.width) // 2
+        height = (self.player1.hitbox.height + sprite.hitbox.height) // 2
+        if calc.triangle_collide(self.player1, sprite) == cst.SOUTH and (
+                self.player1.vel.y < 0 or sprite.vel.y > 0) and self.player1.pos.y <= sprite.pos.y + height:
+            self.player1.vel.y = 0
+            self.player1.pos.y = sprite.pos.y + height
+
+        elif calc.triangle_collide(self.player1, sprite) == cst.EAST and (
+                self.player1.vel.x < 0 or sprite.vel.x > 0) and self.player1.pos.x <= sprite.pos.x + width:
+            self.player1.vel.x = 0
+            self.player1.pos.x = sprite.pos.x + width
+
+        elif calc.triangle_collide(self.player1, sprite) == cst.NORTH and (
+                self.player1.vel.y > 0 or sprite.vel.y < 0) and self.player1.pos.y >= sprite.pos.y - height:
+            self.player1.vel.y = 0
+            self.player1.pos.y = sprite.pos.y - height
+
+        elif calc.triangle_collide(self.player1, sprite) == cst.WEST and (
+                self.player1.vel.x > 0 or sprite.vel.x < 0) and self.player1.pos.x >= sprite.pos.x - width:
+            self.player1.vel.x = 0
+            self.player1.pos.x = sprite.pos.x - width
 
     def _sprite_block_from_side(self, instig, sprite) -> None:
         width = (instig.hitbox.width + sprite.hitbox.width) // 2
         height = (instig.hitbox.height + sprite.hitbox.height) // 2
-        if isinstance(instig, players.Player) and instig.hitbox.colliderect(sprite.hitbox):
-            if calc.triangle_collide(instig, sprite) == cst.SOUTH and (
-                    instig.vel.y < 0 or sprite.vel.y > 0) and instig.pos.y <= sprite.pos.y + height:
-                self._set_vel(self.vel.x, 0)
-                self.player1.vel.y = 0
-                instig.pos.y = sprite.pos.y + height
+        if (calc.triangle_collide(instig, sprite) == cst.SOUTH and
+                instig.pos.y <= sprite.pos.y + height and (
+                instig.vel.y < 0 or sprite.vel.y > 0)):
+            instig.vel.y = 0
+            instig.pos.y = sprite.pos.y + height
 
-            if calc.triangle_collide(instig, sprite) == cst.EAST and (
-                    instig.vel.x < 0 or sprite.vel.x > 0) and instig.pos.x <= sprite.pos.x + width:
-                self._set_vel(0, self.vel.y)
-                self.player1.vel.x = 0
-                instig.pos.x = sprite.pos.x + width
+        elif (calc.triangle_collide(instig, sprite) == cst.EAST and
+                instig.pos.x <= sprite.pos.x + width and (
+                instig.vel.x < 0 or sprite.vel.x > 0)):
+            instig.vel.x = 0
+            instig.pos.x = sprite.pos.x + width
 
-            if calc.triangle_collide(instig, sprite) == cst.NORTH and (
-                    instig.vel.y > 0 or sprite.vel.y < 0) and instig.pos.y >= sprite.pos.y - height:
-                self._set_vel(self.vel.x, 0)
-                self.player1.vel.y = 0
-                instig.pos.y = sprite.pos.y - height
+        elif (calc.triangle_collide(instig, sprite) == cst.NORTH and
+                instig.pos.y >= sprite.pos.y - height and (
+                instig.vel.y > 0 or sprite.vel.y < 0)):
+            instig.vel.y = 0
+            instig.pos.y = sprite.pos.y - height
 
-            if calc.triangle_collide(instig, sprite) == cst.WEST and (
-                    instig.vel.x > 0 or sprite.vel.x < 0) and instig.pos.x >= sprite.pos.x - width:
-                self._set_vel(0, self.vel.y)
-                self.player1.vel.x = 0
-                instig.pos.x = sprite.pos.x - width
-
-        elif instig.hitbox.colliderect(sprite.hitbox):
-            if (calc.triangle_collide(instig, sprite) == cst.SOUTH and
-                    instig.pos.y <= sprite.pos.y + height and (
-                    instig.vel.y < 0 or sprite.vel.y > 0)):
-                instig.vel.y = 0
-                instig.pos.y = sprite.pos.y + height
-
-            if (calc.triangle_collide(instig, sprite) == cst.EAST and
-                    instig.pos.x <= sprite.pos.x + width and (
-                    instig.vel.x < 0 or sprite.vel.x > 0)):
-                instig.vel.x = 0
-                instig.pos.x = sprite.pos.x + width
-
-            if (calc.triangle_collide(instig, sprite) == cst.NORTH and
-                    instig.pos.y >= sprite.pos.y - height and (
-                    instig.vel.y > 0 or sprite.vel.y < 0)):
-                instig.vel.y = 0
-                instig.pos.y = sprite.pos.y - height
-
-            if (calc.triangle_collide(instig, sprite) == cst.WEST and
-                    instig.pos.x >= sprite.pos.x - width and (
-                    instig.vel.x > 0 or sprite.vel.x < 0)):
-                instig.vel.x = 0
-                instig.pos.x = sprite.pos.x - width
+        elif (calc.triangle_collide(instig, sprite) == cst.WEST and
+                instig.pos.x >= sprite.pos.x - width and (
+                instig.vel.x > 0 or sprite.vel.x < 0)):
+            instig.vel.x = 0
+            instig.pos.x = sprite.pos.x - width
 
     # -------------------------------- Room Layout ------------------------------- #
     def _change_room(self) -> None:
@@ -707,19 +710,6 @@ class Room(cb.AbstractBase):
         north_coords = vec(room_size_x // 2, -8)
         south_coords = vec(north_coords.x, north_coords.y + room_size_y + 16)
         east_coords = vec(west_coords.x + room_size_x + 16, room_size_y // 2)
-
-        # TODO: Integrate this with a room scrolling check to fix object placement
-        # if room_width < cst.WINWIDTH:
-        #     west_coords.x = cst.WINWIDTH / 2 - room_width / 2 - 8
-        #     east_coords.x = west_coords.x + room_width + 16
-        #     south_coords.x = west_coords.x + room_width / 2 + 8
-        #     north_coords.x = south_coords.x
-        #
-        # if room_height < cst.WINHEIGHT:
-        #     north_coords.y = cst.WINHEIGHT / 2 - room_height / 2 - 8
-        #     south_coords.y = north_coords.y + room_height + 16
-        #     east_coords.y = north_coords.y + room_height / 2 + 8
-        #     west_coords.y = east_coords.y
 
         self.border_south = tiles.RoomBorder(south_coords.x, south_coords.y, room_size_x / 16, 1)
         self.border_east = tiles.RoomBorder(east_coords.x, east_coords.y, 1, room_size_y / 16)
@@ -850,8 +840,8 @@ class Room(cb.AbstractBase):
                 trinkets.PortalBlocker(0, 0, 1, 4, 45),
 
                 enemies.Turret(500, 300),
-                # enemies.StandardGrunt(500, 300)
-                # enemies.Ambusher(cst.WINWIDTH // 2, cst.WINHEIGHT // 2)
+                enemies.StandardGrunt(500, 300),
+                enemies.Ambusher(cst.WINWIDTH // 2, cst.WINHEIGHT // 2)
             ]
 
         elif self.room == vec(0, 1):
