@@ -640,7 +640,8 @@ class Room(cb.AbstractBase):
             self.player1.vel.x = 0
             self.player1.pos.x = sprite.pos.x - width
 
-    def _sprite_block_from_side(self, instig, sprite) -> None:
+    @staticmethod
+    def _sprite_block_from_side(instig, sprite) -> None:
         width = (instig.hitbox.width + sprite.hitbox.width) // 2
         height = (instig.hitbox.height + sprite.hitbox.height) // 2
         if (calc.triangle_collide(instig, sprite) == cst.SOUTH and
@@ -839,9 +840,9 @@ class Room(cb.AbstractBase):
                 trinkets.LockedWall(64, 0, 1028, 0, 1, 76, 4),
                 trinkets.PortalBlocker(0, 0, 1, 4, 45),
 
-                enemies.Turret(500, 300),
-                enemies.StandardGrunt(500, 300),
-                enemies.Ambusher(cst.WINWIDTH // 2, cst.WINHEIGHT // 2)
+                # enemies.Turret(500, 300),
+                # enemies.StandardGrunt(500, 300),
+                # enemies.Ambusher(cst.WINWIDTH // 2, cst.WINHEIGHT // 2)
             ]
 
         elif self.room == vec(0, 1):

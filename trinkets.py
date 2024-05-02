@@ -1,13 +1,12 @@
 """
 Contains the object classes that the player can interact with/manipulate within the game.
 """
+import copy
 import os
 import time
 
 import pygame
 from pygame.math import Vector2 as vec
-
-import screen
 
 import classbases as cb
 import constants as cst
@@ -63,11 +62,43 @@ class Box(cb.ActorBase):
 
         return final_accel
 
+    def teleport(self, portal_in):
+        portal_out = calc.get_other_portal(portal_in)
+        dir_in = portal_in.facing
+        dir_out = portal_out.facing
+
+        dist_offset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
+        dir_list = {cst.SOUTH: 180, cst.EAST: 90, cst.NORTH: 0, cst.WEST: 270}
+
+        if dir_in == cst.SOUTH:
+            dist_offset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
+
+        elif dir_in == cst.EAST:
+            dir_list.update({cst.EAST: 180, cst.NORTH: 90, cst.WEST: 0, cst.SOUTH: 270})
+            dist_offset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
+
+        elif dir_in == cst.NORTH:
+            dir_list.update({cst.NORTH: 180, cst.WEST: 90, cst.SOUTH: 0, cst.EAST: 270})
+            dist_offset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
+
+        elif dir_in == cst.WEST:
+            dir_list.update({cst.WEST: 180, cst.SOUTH: 90, cst.EAST: 0, cst.NORTH: 270})
+            dist_offset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
+
+        # This part is changed from ActorBase to account for the room's acceleration, as well as the fact that the box
+        # uses acceleration, not velocity, as its movement standard
+        room = cb.get_room()
+        self._align_sprite(portal_out, dist_offset, dir_out)
+        true_vel = self.vel.copy() - room.vel.copy()
+        self.vel = true_vel.rotate(dir_list[dir_out]) + room.vel
+
     def update(self):
         # Teleporting
         for portal in groups.all_portals:
             if self.hitbox.colliderect(portal.hitbox) and len(groups.all_portals) == 2 and not self.is_grappled:
                 self.teleport(portal)
+                print("\nTeleported!\n")
+        print(self)
 
     def __repr__(self):
         return f'Box({self.pos}, {self.vel}, {self.accel})'

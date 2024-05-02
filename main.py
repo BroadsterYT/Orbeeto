@@ -12,7 +12,6 @@ import menus
 import screen
 import text
 
-import audio as aux
 import calculations as calc
 import constants as cst
 import gamestack as gs
@@ -26,9 +25,6 @@ pygame.display.set_icon(pygame.image.load(os.path.join(os.getcwd(), 'other/orbee
 
 screen.buffer_screen = pygame.Surface((cst.WINWIDTH, cst.WINHEIGHT))
 screen.viewport = pygame.display.set_mode((cst.WINWIDTH, cst.WINHEIGHT), pygame.SCALED | pygame.RESIZABLE)
-
-# Audio setup
-aux.track_channel = pygame.mixer.Channel(1)
 
 
 def redraw_game_window() -> None:

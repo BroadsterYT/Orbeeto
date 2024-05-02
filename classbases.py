@@ -282,68 +282,54 @@ class ActorBase(pygame.sprite.Sprite):
 
     def teleport(self, portal_in):
         portal_out = calc.get_other_portal(portal_in)
-        width = (portal_out.hitbox.width + self.hitbox.width) // 2
-        height = (portal_out.hitbox.height + self.hitbox.height) // 2
-
         dir_in = portal_in.facing
         dir_out = portal_out.facing
 
-        def align_sprite(offset: float, direction: str) -> None:
-            """Places the sprite in the correct spot after teleporting.
-
-            Args:
-                offset: The difference between the sprite's position and the entering portal's center
-                direction: The direction the exiting portal is facing
-
-            Returns:
-                None
-            """
-            # Makes sure that sprites don't repeatedly get thrown back into the portals b/c of room velocity
-            room = get_room()
-            vel_adjust = room.vel.copy()
-
-            if direction == cst.SOUTH:
-                self.pos.x = portal_out.pos.x - offset
-                self.pos.y = portal_out.pos.y + height + abs(vel_adjust.y)
-
-            elif direction == cst.EAST:
-                self.pos.x = portal_out.pos.x + width + abs(vel_adjust.x)
-                self.pos.y = portal_out.pos.y - offset
-
-            elif direction == cst.NORTH:
-                self.pos.x = portal_out.pos.x + offset
-                self.pos.y = portal_out.pos.y - height - abs(vel_adjust.y)
-
-            elif direction == cst.WEST:
-                self.pos.x = portal_out.pos.x - width - abs(vel_adjust.x)
-                self.pos.y = portal_out.pos.y + offset
-
-        def rotate_vel() -> None:
-            align_sprite(dist_offset, dir_out)
-            self.vel = self.vel.rotate(dir_list[dir_out])
-            self.vel_const = self.vel_const.rotate(dir_list[dir_out])
-
+        dist_offset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
         dir_list = {cst.SOUTH: 180, cst.EAST: 90, cst.NORTH: 0, cst.WEST: 270}
 
-        # print(f'{self} vel before {self.vel}')
         if dir_in == cst.SOUTH:
             dist_offset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
-            rotate_vel()
 
         elif dir_in == cst.EAST:
             dir_list.update({cst.EAST: 180, cst.NORTH: 90, cst.WEST: 0, cst.SOUTH: 270})
             dist_offset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
-            rotate_vel()
 
         elif dir_in == cst.NORTH:
             dir_list.update({cst.NORTH: 180, cst.WEST: 90, cst.SOUTH: 0, cst.EAST: 270})
             dist_offset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
-            rotate_vel()
 
         elif dir_in == cst.WEST:
             dir_list.update({cst.WEST: 180, cst.SOUTH: 90, cst.EAST: 0, cst.NORTH: 270})
             dist_offset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
-            rotate_vel()
+
+        self._align_sprite(portal_out, dist_offset, dir_out)
+        self.vel = self.vel.rotate(dir_list[dir_out])
+        self.vel_const = self.vel_const.rotate(dir_list[dir_out])
+
+    def _align_sprite(self, portal_out, offset: float, direction: str) -> None:
+        width = (portal_out.hitbox.width + self.hitbox.width) // 2
+        height = (portal_out.hitbox.height + self.hitbox.height) // 2
+
+        # Makes sure that sprites don't repeatedly get thrown back into the portals b/c of room velocity
+        room = get_room()
+        vel_adjust = room.vel.copy()
+
+        if direction == cst.SOUTH:
+            self.pos.x = portal_out.pos.x - offset
+            self.pos.y = portal_out.pos.y + height + abs(vel_adjust.y)
+
+        elif direction == cst.EAST:
+            self.pos.x = portal_out.pos.x + width + abs(vel_adjust.x)
+            self.pos.y = portal_out.pos.y - offset
+
+        elif direction == cst.NORTH:
+            self.pos.x = portal_out.pos.x + offset
+            self.pos.y = portal_out.pos.y - height - abs(vel_adjust.y)
+
+        elif direction == cst.WEST:
+            self.pos.x = portal_out.pos.x - width - abs(vel_adjust.x)
+            self.pos.y = portal_out.pos.y + offset
 
 
 class AbstractBase(pygame.sprite.AbstractGroup):
