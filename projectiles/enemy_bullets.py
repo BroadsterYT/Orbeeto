@@ -4,7 +4,7 @@ from pygame.math import Vector2 as vec
 
 import projectiles as proj
 
-import calculations as calc
+import calc
 import constants as cst
 import groups
 

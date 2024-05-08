@@ -10,7 +10,7 @@ from pygame.math import Vector2 as vec
 
 import classbases as cb
 import constants as cst
-import calculations as calc
+import calc
 import groups
 import spritesheet
 import tiles
@@ -97,8 +97,6 @@ class Box(cb.ActorBase):
         for portal in groups.all_portals:
             if self.hitbox.colliderect(portal.hitbox) and len(groups.all_portals) == 2 and not self.is_grappled:
                 self.teleport(portal)
-                print("\nTeleported!\n")
-        print(self)
 
     def __repr__(self):
         return f'Box({self.pos}, {self.vel}, {self.accel})'

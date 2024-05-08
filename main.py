@@ -12,7 +12,7 @@ import menus
 import screen
 import text
 
-import calculations as calc
+import calc
 import constants as cst
 import gamestack as gs
 import groups

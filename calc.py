@@ -12,6 +12,7 @@ import controls as ctrl
 
 import constants as cst
 import groups
+import timer
 
 
 # ============================================================================ #
@@ -146,6 +147,15 @@ def get_time_diff(time_value: float) -> float:
         float: The difference between the current time and the other time
     """
     return time.time() - time_value
+
+
+def get_game_tdiff(time_value: float) -> float:
+    """Returns the difference between the game time and the given time.
+
+    :param time_value: The value to compare to the game time
+    :return: The difference between the game time and the given time
+    """
+    return timer.g_timer.time - time_value
 
 
 # ------------------------------ Math Functions ------------------------------ #

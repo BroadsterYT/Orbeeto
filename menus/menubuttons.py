@@ -11,7 +11,7 @@ from pygame.math import Vector2 as vec
 import controls as ctrl
 import text
 
-import calculations as calc
+import calc
 import classbases as cb
 import constants as cst
 import gamestack as gs
@@ -19,7 +19,7 @@ import spritesheet
 
 
 class MenuButton(cb.ActorBase):
-    def __init__(self, gamestate: gs.GameState, pos_x: int | float, pos_y: int | float, width: int, height: int, name: str, func_call,
+    def __init__(self, gamestate: gs.GameState, pos_x: float, pos_y: float, width: int, height: int, name: str, func_call,
                  *args, **kwargs):
         """A button to be used in a menu with varying width and height, with customizable functionality.
 
@@ -82,8 +82,6 @@ class MenuButton(cb.ActorBase):
     def update(self):
         self.check_for_click()
         self.hover()
-
-        print(self.last_release_value)
 
 
 class MenuArrow(cb.ActorBase):
@@ -162,4 +160,4 @@ class MenuArrow(cb.ActorBase):
                                                    False)
 
             self.index += 1
-            self.lastFrame = time.time()
+            self.last_frame = time.time()

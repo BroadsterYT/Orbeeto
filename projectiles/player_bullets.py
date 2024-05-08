@@ -9,7 +9,7 @@ import projectiles as proj
 import screen
 
 import classbases as cb
-import calculations as calc
+import calc
 import constants as cst
 import groups
 

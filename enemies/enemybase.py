@@ -4,7 +4,7 @@ from pygame.math import Vector2 as vec
 
 import items
 
-import calculations as calc
+import calc
 import classbases as cb
 import constants as cst
 import groups

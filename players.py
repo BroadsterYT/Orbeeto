@@ -14,12 +14,12 @@ import items
 import projectiles as proj
 import text
 
-import calculations as calc
+import calc
 import classbases as cb
 import constants as cst
 import groups
 import statbars
-import trinkets
+import timer
 
 
 class Player(cb.ActorBase):
@@ -49,7 +49,7 @@ class Player(cb.ActorBase):
         self.max_defense = 10
         self.defense = 10
 
-        self.last_regen = time.time()  # Used for timing passive regeneration
+        self.last_regen = timer.g_timer.time  # Used for timing passive regeneration
 
         self.max_ammo = 40
         self.ammo = self.max_ammo
@@ -142,10 +142,10 @@ class Player(cb.ActorBase):
 
         if regens_per_sec == 0:
             pass
-        elif calc.get_time_diff(self.last_regen) >= 1 / regens_per_sec:
+        elif calc.get_game_tdiff(self.last_regen) >= 1 / regens_per_sec:
             if self.hp < self.max_hp:
                 self.hp += 1
-            self.last_regen = time.time()
+            self.last_regen = timer.g_timer.time
 
     # --------------------------------- Movement --------------------------------- #
     @cb.check_update_state
@@ -234,7 +234,7 @@ class Player(cb.ActorBase):
 
         if (ctrl.is_input_held[1] and
                 self.ammo > 0 and
-                calc.get_time_diff(self.last_shot_time) >= self.gun_cooldown):
+                calc.get_game_tdiff(self.last_shot_time) >= self.gun_cooldown):
             # Standard bullets
             if self.bullet_type == cst.PROJ_STD:
                 groups.all_projs.add(
@@ -258,7 +258,7 @@ class Player(cb.ActorBase):
                 )
 
             self.ammo -= 1
-            self.last_shot_time = time.time()
+            self.last_shot_time = timer.g_timer.time
 
         # ------------------------------ Firing Portals ------------------------------ #
         if ctrl.key_released[3] % 2 == 0 and self.can_portal:

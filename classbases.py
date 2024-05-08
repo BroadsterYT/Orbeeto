@@ -10,7 +10,7 @@ from pygame.math import Vector2 as vec
 
 import screen
 
-import calculations as calc
+import calc
 import constants as cst
 import gamestack as gs
 import groups

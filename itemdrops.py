@@ -14,9 +14,12 @@ import text
 
 import classbases as cb
 import constants as cst
-import calculations as calc
+import calc
 import groups
 import spritesheet
+import time
+
+import timer
 
 
 class ItemDrop(cb.ActorBase):
@@ -30,7 +33,7 @@ class ItemDrop(cb.ActorBase):
         self.show()
         self.mat = item_name
 
-        self.start_time = time.time()
+        self.start_time = timer.g_timer.time
 
         self.accel_const = 0.8
         self.pos = vec((pos_x, pos_y))
@@ -95,7 +98,7 @@ class ItemDrop(cb.ActorBase):
         if self.mat == items.MATERIALS[1] and calc.get_time_diff(self.last_frame) > 0.1:
             self.image = self.images[self.index]
 
-        exist_time = calc.get_time_diff(self.start_time)
+        exist_time = calc.get_game_tdiff(self.start_time)
         if exist_time <= 10:
             angle = math.sin(self.period_mult * math.pi * exist_time) * (1 / exist_time)
             self.rotate_image(int(math.degrees(angle)))

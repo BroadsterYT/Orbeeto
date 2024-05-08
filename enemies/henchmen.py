@@ -10,7 +10,7 @@ from enemies import enemybase
 import projectiles as proj
 import screen
 
-import calculations as calc
+import calc
 import classbases as cb
 import constants as cst
 import groups

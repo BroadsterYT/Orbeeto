@@ -9,7 +9,7 @@ import controls as ctrl
 import items
 import menus
 
-import calculations as calc
+import calc
 import classbases as cb
 import constants as cst
 import gamestack as gs

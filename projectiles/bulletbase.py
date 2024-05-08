@@ -7,7 +7,7 @@ from projectiles import explosions
 from text import display_text
 import screen
 
-import calculations as calc
+import calc
 import classbases as cb
 import constants as cst
 import groups

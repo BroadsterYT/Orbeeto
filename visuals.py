@@ -6,7 +6,7 @@ from pygame.math import Vector2 as vec
 
 import classbases as cb
 import constants as cst
-import calculations as calc
+import calc
 import spritesheet
 
 

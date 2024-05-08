@@ -1,6 +1,7 @@
 """
 Module containing the room class.
 """
+import time
 import copy
 import math
 
@@ -12,7 +13,7 @@ from pygame.math import Vector2 as vec
 import controls as ctrl
 import screen
 
-import calculations as calc
+import calc
 import classbases as cb
 import constants as cst
 import enemies
@@ -83,6 +84,9 @@ class Room(cb.AbstractBase):
         self.vel = vec(0, 0)
         self.accel = vec(0, 0)
         self.accel_const = self.player1.accel_const
+
+        # Test
+        self.testtime = time.time()
 
         self._room_specs = {
             (0, 0): RoomSpecs(1280, 720, True, True),
