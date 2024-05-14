@@ -1,12 +1,10 @@
 """
 Module containing the room class.
 """
-import time
 import copy
 import math
 
 import itertools
-
 import pygame
 from pygame.math import Vector2 as vec
 
@@ -85,12 +83,10 @@ class Room(cb.AbstractBase):
         self.accel = vec(0, 0)
         self.accel_const = self.player1.accel_const
 
-        # Test
-        self.testtime = time.time()
-
         self._room_specs = {
             (0, 0): RoomSpecs(1280, 720, True, True),
             (0, 1): RoomSpecs(640, 360, False, False),
+            (0, 2): RoomSpecs(1280, 720, True, False),
         }
 
         self.layout_update()
@@ -845,8 +841,6 @@ class Room(cb.AbstractBase):
                 trinkets.PortalBlocker(0, 0, 1, 4, 45),
 
                 enemies.Turret(500, 300),
-                # enemies.StandardGrunt(500, 300),
-                # enemies.Ambusher(cst.WINWIDTH // 2, cst.WINHEIGHT // 2)
             ]
 
         elif self.room == vec(0, 1):
@@ -855,6 +849,11 @@ class Room(cb.AbstractBase):
                 tiles.Wall(320, 180, 4, 8),
                 trinkets.Box(cst.WINWIDTH // 2, cst.WINHEIGHT // 2),
                 enemies.Ambusher(cst.WINWIDTH // 2, cst.WINHEIGHT // 2)
+            ]
+
+        elif self.room == vec(0, 2):
+            return [
+                tiles.Wall(0, 0, 16, 4),s
             ]
 
         else:
