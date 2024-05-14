@@ -107,18 +107,18 @@ class BulletBase(cb.ActorBase):
         :param can_hurt: Can the projectile damage sprites in the group to check for? True if yes, false if no.
         :return: None
         """
-        for collidingSprite in sprite_group:
-            if not self.hitbox.colliderect(collidingSprite.hitbox):
+        for colliding_sprite in sprite_group:
+            if not self.hitbox.colliderect(colliding_sprite.hitbox):
                 continue
 
-            if not collidingSprite.visible:
+            if not colliding_sprite.visible:
                 continue
 
             if can_hurt:
-                self.inflict_damage(sprite_group, collidingSprite)
-                if hasattr(collidingSprite, 'last_hit'):
-                    collidingSprite.last_hit = time.time()
-                self.land(collidingSprite)
+                self.inflict_damage(sprite_group, colliding_sprite)
+                if hasattr(colliding_sprite, 'last_hit'):
+                    colliding_sprite.last_hit = time.time()
+                self.land(colliding_sprite)
 
             elif not can_hurt:
                 if sprite_group == groups.all_portals:
@@ -134,7 +134,7 @@ class BulletBase(cb.ActorBase):
                         return
 
                 else:
-                    self.land(collidingSprite)
+                    self.land(colliding_sprite)
                     return
 
     def inflict_damage(self, sprite_group, receiver) -> None:
@@ -159,7 +159,6 @@ class BulletBase(cb.ActorBase):
             receiver.hp -= damage
             if damage > 0:
                 groups.all_font_chars.add(display_text.IndicatorText(receiver.pos.x, receiver.pos.y, damage))
-            receiver.dodge_time = 0
             receiver.last_hit = time.time()
 
         else:

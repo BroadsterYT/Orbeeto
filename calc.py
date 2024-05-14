@@ -149,7 +149,7 @@ def get_time_diff(time_value: float) -> float:
     return time.time() - time_value
 
 
-def get_game_tdiff(time_value: float) -> float:
+def get_game_tdiff(time_value: float) -> float:  # noqa
     """Returns the difference between the game time and the given time.
 
     :param time_value: The value to compare to the game time

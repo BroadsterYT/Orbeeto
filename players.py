@@ -4,7 +4,6 @@ Contains the player class.
 import os
 import time
 import math
-import itertools
 
 import pygame
 from pygame.math import Vector2 as vec
@@ -59,17 +58,13 @@ class Player(cb.ActorBase):
 
         self.grapple_speed = 2.0
 
-        self.last_hit = time.time()
-        self.dodge_charge_up_time = 12
-        self.dodge_time = 0
+        self.last_hit = timer.g_timer.time
 
         self.update_level()
 
         # --------------------------------- Stat Bars -------------------------------- #
         self.health_bar = statbars.StatBar(self, 0, 'hp', 'max_hp', 'sprites/stat_bars/health_bar.png')
         self.ammo_bar = statbars.StatBar(self, 1, 'ammo', 'max_ammo', 'sprites/stat_bars/ammo_bar.png')
-        self.dodge_bar = statbars.StatBar(self, 2, 'dodge_time', 'dodge_charge_up_time',
-                                          'sprites/stat_bars/dodge_bar.png')
 
         # ---------------------------- Menu and Inventory ---------------------------- #
         self.my_materials = {}
@@ -131,7 +126,7 @@ class Player(cb.ActorBase):
     def _passive_hp_regen(self) -> None:
         """Regenerates the player's HP after not being attacked for a period of time.
         """
-        time_hit = calc.get_time_diff(self.last_hit)
+        time_hit = calc.get_game_tdiff(self.last_hit)
         regen_delay = 5
         regens_per_sec = 0
 
@@ -341,10 +336,6 @@ class Player(cb.ActorBase):
         # Animation
         self._animate()
         self.rotate_image(calc.get_angle_to_mouse(self))
-
-        # Dodge charge up
-        if self.dodge_time < self.dodge_charge_up_time:
-            self.dodge_time = math.trunc(calc.get_time_diff(self.last_hit))
 
         self._passive_hp_regen()
 
