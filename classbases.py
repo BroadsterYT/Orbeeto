@@ -29,8 +29,7 @@ def get_room():
 def check_update_state(method):
     """Only runs the given method if the sprite's can_update field is True
 
-    Args:
-        method: The method to execute if the update check is successfully passed
+    :param method: The method to execute if the update check is successfully passed
     """
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
@@ -42,10 +41,10 @@ def check_update_state(method):
 class ActorBase(pygame.sprite.Sprite):
     """The base class for all actors in the game."""
     def __init__(self, layer=1, gamestate: gs.GameState = gs.s_action):
-        """The base class for all actors in the game.
+        """The base class for all actors in the game
 
-        Args:
-            layer: The layer the sprite should be drawn on
+        :param layer: The layer the sprite should be drawn on
+        :param gamestate: The gamestate the sprite should be a part of. Defaults to 'gs.s_action'
         """
         super().__init__()
         self._layer = layer
@@ -78,7 +77,7 @@ class ActorBase(pygame.sprite.Sprite):
         self.orig_image = None
         self.images = None
         self.image = None
-        self.index = None
+        self.index = 0
 
         self.rect = None
         self.hitbox = None
@@ -131,19 +130,16 @@ class ActorBase(pygame.sprite.Sprite):
     # ----------------------------- Images and Rects ----------------------------- #
     def set_images(self, image_file: str, frame_width: int, frame_height: int, sprites_per_row: int,
                    image_count: int, image_offset: int = 0, index: int = 0) -> None:
-        """Initializes the sprite's spritesheet, images, and animations.
+        """Initializes the sprite's spritesheet, images, and animations
 
-        Args:
-            image_file: The path of the spritesheet image
-            frame_width: The width of each individual frame
-            frame_height: The height of each individual frame
-            sprites_per_row: The number of sprites within each row of the sprite sheet
-            image_count: The number of images in the sprite's animation
-            image_offset: The index of the frame to begin the snip from (0 = no offset, use first image)
-            index: The index of the sprite's animation to start from
-
-        Returns:
-            None
+        :param image_file: The path of the spritesheet image
+        :param frame_width: The width of each individual frame
+        :param frame_height: The height of each individual frame
+        :param sprites_per_row: The number of sprites within each row of the sprite sheet
+        :param image_count: The number of images in the sprite's animation
+        :param image_offset: The index of the frame to begin the snip from (0 = no offset, use first image)
+        :param index: The index of the sprite's animation to start from
+        :return: None
         """
         self.spritesheet = spritesheet.Spritesheet(image_file, sprites_per_row)
         self.orig_images = self.spritesheet.get_images(frame_width, frame_height, image_count, image_offset)
@@ -163,19 +159,16 @@ class ActorBase(pygame.sprite.Sprite):
 
     def set_rects(self, rect_pos_x: float, rect_pos_y: float, rect_width: int, rect_height: int,
                   hitbox_width: int, hitbox_height: int, set_pos: bool = True) -> None:
-        """Defines the rect and hitbox of a sprite.
+        """Initializes the rect and hitbox of a sprite.
 
-        Args:
-            rect_pos_x: The x-axis position to spawn the rect and hitbox
-            rect_pos_y: The y-axis position to spawn the rect and hitbox
-            rect_width: The width of the rect
-            rect_height: The height of the rect
-            hitbox_width: The width of the hitbox
-            hitbox_height: The height of the hitbox
-            set_pos: Should the rect and hitbox be snapped to the position of the sprite? Is ``true`` by default.
-
-        Returns:
-            None
+        :param rect_pos_x: The x-axis position to spawn the rect and hitbox
+        :param rect_pos_y: The y-axis position to spawn the rect and hitbox
+        :param rect_width: The width of the rect
+        :param rect_height: The height of the rect
+        :param hitbox_width: The width of the hitbox
+        :param hitbox_height: The height of the hitbox
+        :param set_pos: Should the rect and hitbox be snapped to the position of the sprite? Is True by default.
+        :return: None
         """
         self.rect = pygame.Rect(rect_pos_x, rect_pos_y, rect_width, rect_height)
         self.hitbox = pygame.Rect(rect_pos_x, rect_pos_y, hitbox_width, hitbox_height)
@@ -186,8 +179,8 @@ class ActorBase(pygame.sprite.Sprite):
     def rotate_image(self, angle: float) -> None:
         """Rotates the sprite's image by a specific angle
 
-        Args:
-            angle: The angle to rotate the sprite's image by
+        :param angle: The angle to rotate the sprite's image by
+        :return: None
         """
         self.orig_image = self.orig_images[self.index]
         self.image = pygame.transform.rotate(self.orig_image, int(angle))
@@ -208,8 +201,9 @@ class ActorBase(pygame.sprite.Sprite):
     def vel_movement(self, adjust_centers_first: bool) -> None:
         """Makes a sprite move according to its velocity (self.vel)
 
-        Args:
-            adjust_centers_first: Should rect and hitbox be snapped to its position before or after the vel calculation?
+        :param adjust_centers_first: Should rect and hitbox be snapped to its position before or after the vel
+        calculation?
+        :return: None
         """
         if adjust_centers_first:
             self.center_rects()
@@ -244,11 +238,8 @@ class ActorBase(pygame.sprite.Sprite):
         """Check if the sprite comes into contact with another sprite from a specific group.
         If the sprites do collide, then they will perform a hitbox collision.
 
-        Args:
-            *contact_lists: The sprite group(s) to check for a collision with
-
-        Returns:
-            None
+        :param contact_lists: The sprite group(s) to check for a collision with
+        :return: None
         """
         for group in contact_lists:
             for sprite in group:

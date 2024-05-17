@@ -14,18 +14,17 @@ class StatBar(cb.ActorBase):
     def __init__(self, owner, order: int, value_name: str, max_value_name: str, sheet_file: str):
         """A bar that shows a specific value on-screen
 
-        Args:
-            owner: The owner of the value being displayed
-            order: The order in which the stat bar will be displayed with others
-            value_name: Name of the field to display the value of
-            max_value_name: The maximum value of the field to display
-            sheet_file: The file location of the image to use for the stat bar
+        :param owner: The owner of the value being displayed
+        :param order: The order in which the stat bar will be displayed with others
+        :param value_name: Name of the field to display the value of
+        :param max_value_name: The maximum value of the field to display
+        :param sheet_file: The file location of the image to use for the stat bar
         """
         super().__init__(cst.LAYER['statbar'])
         groups.all_stat_bars.add(self)
         self.order = order  # The order of the stat bars, like which one is on top, which one is below that, etc.
-        self.order_offset = 42
-        self.order_space = 18
+        self.order_offset = 42  # Space between sprite and first stat bar
+        self.order_space = 18  # Space between each stat bar
 
         self.owner = owner
 
@@ -78,10 +77,9 @@ class StatBar(cb.ActorBase):
 
 class BarNumbers(cb.ActorBase):
     def __init__(self, bar: StatBar):
-        """A number indicating the value of a statbar
+        """A number indicating the value of a stat bar
 
-        Args:
-            bar: The bar to display next to
+        :param bar: The bar to display next to
         """
         super().__init__(cst.LAYER['statbar'])
         self.show()

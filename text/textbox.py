@@ -19,12 +19,11 @@ import visuals
 # noinspection PyTypeChecker
 class TextBox(cb.ActorBase):
     def __init__(self, pos_x: int | float, pos_y: int | float, convo: str):
-        """A text box that can cycle through dialogue conversations.
+        """A text box that can cycle through dialogue conversations
 
-        Args:
-            pos_x: The x-position to spawn the text box
-            pos_y: The y-position to spawn the text box
-            convo: The dialogue sequence to initiate upon creation
+        :param pos_x: The x-position to spawn the text box
+        :param pos_y: The y-position to spawn the text box
+        :param convo: The dialogue sequence to initiate upon creation
         """
         super().__init__(cst.LAYER['textbox'])
         self.show()
@@ -53,12 +52,9 @@ class TextBox(cb.ActorBase):
     def style_character(char: pygame.Surface, style: str) -> pygame.Surface:
         """Gives the character a specific color if a unicode "style character" precedes it.
 
-        Args:
-            char: The character being stylized
-            style: The preceding character to check for the style type. (Should be the character before char)
-
-        Returns:
-            Surface: The styled character
+        :param char: The character being stylized
+        :param style: The preceding character to check for the style type. (Should be the character before char)
+        :return: The styled character
         """
         if style == text.RED:
             styled_char = calc.swap_color(char, (69, 40, 60), cst.RED)

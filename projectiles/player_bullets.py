@@ -21,11 +21,11 @@ class PlayerStdBullet(proj.BulletBase):
     def __init__(self, pos_x: float, pos_y: float, vel_x: float, vel_y: float, bounce_count: int = 1):
         """A projectile fired by a player that moves at a constant velocity.
 
-        Args:
-            pos_x: The x-position where the bullet should be spawned
-            pos_y: The y-position where the bullet should be spawned
-            vel_x: The x-axis component of the bullet's velocity
-            vel_y: The y-axis component of the bullet's velocity
+        :param pos_x: The x-position where the bullet should be spawned
+        :param pos_y: The y-position where the bullet should be spawned
+        :param vel_x: The x-axis component of the bullet's velocity
+        :param vel_y: The y-axis component of the bullet's velocity
+        :param bounce_count: The number of times the bullet should bounce. Defaults to 1 (no bounce).
         """
         super().__init__(cst.PROJ_DAMAGE[cst.PROJ_STD])
         self.show()
@@ -140,8 +140,8 @@ class PortalBullet(proj.BulletBase):
     def _spawn_portal(self, surface) -> None:
         """Spawns a portal on the surface that the portal bullet hit.
 
-        Args:
-            surface: The surface the portal bullet landed on.
+        :param surface: The surface the portal bullet landed on.
+        :return: None
         """
         side = calc.triangle_collide(self, surface)
         if side == cst.SOUTH:

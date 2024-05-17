@@ -31,14 +31,13 @@ def fancy_tile_texture(block_width: int, block_height: int, textures: list, colo
 class TileBase(cb.ActorBase):
     def __init__(self, pos_x: int | float, pos_y: int | float, block_width: int, block_height: int,
                  tile_size: int = 16):
-        """The base class for all tile sprites.
+        """The base class for all tile sprites
 
-        Args:
-            pos_x: The x-axis position of the tile (in tiles)
-            pos_y: The y-axis position of the tile (in tiles)
-            block_width: The width of the tile (in tiles)
-            block_height: The height of the tile (in tiles)
-            tile_size: The size of each individual tile (in pixels)
+        :param pos_x: The x-axis position of the tile (in pixels)
+        :param pos_y: The y-axis position of the tile (in pixels)
+        :param block_width: The width of the tile (in tiles)
+        :param block_height: The height of the tile (in tiles)
+        :param tile_size: The size of each individual tile (in pixels). Default is 16.
         """
         super().__init__()
         self.tile_size = tile_size
@@ -51,14 +50,11 @@ class TileBase(cb.ActorBase):
         self.accel_const = 0.58
 
     def place_top_left(self, top_left_x, top_left_y) -> vec:
-        """Returns the position of the tile's center given the position to place its top-left corner.
+        """Returns the position of the tile's center given the position to place its top-left corner
 
-        Args:
-            top_left_x: The x-axis position of the top-left corner
-            top_left_y: The y-axis position of the top-left corner
-
-        Returns:
-            Vector2: The position of the tile's center
+        :param top_left_x: The x-axis position of the top-left corner
+        :param top_left_y: The y-axis position of the top-left corner
+        :return: The position of the tile's center
         """
         center = vec(0, 0)
         center.x = top_left_x + self.width // 2
@@ -80,13 +76,12 @@ class Wall(TileBase):
                  image_row: int = 0, style: int = 0):
         """A wall that cannot be passed or obstructed.
 
-        Args:
-            pos_x: The x-axis position to spawn the wall on the block grid (1 block = 16 pixels)
-            pos_y: The y-axis position to spawn the wall on the block grid (1 block = 16 pixels)
-            block_width: The width of the wall (in blocks)
-            block_height: The height of the wall (in blocks)
-            image_row: The row of images to use from the sprite sheet
-            style: The tiling style to use on the wall
+        :param pos_x: The x-axis position to spawn the wall on the block grid (1 block = 16 pixels)
+        :param pos_y: The y-axis position to spawn the wall on the block grid (1 block = 16 pixels)
+        :param block_width: The width of the wall (in blocks)
+        :param block_height: The height of the wall (in blocks)
+        :param image_row: The row of images to use from the sprite sheet
+        :param style: The tiling style to use on the wall
         """
         super().__init__(pos_x, pos_y, block_width, block_height)
         self.layer = cst.LAYER['wall']

@@ -14,9 +14,8 @@ class Box(cb.ActorBase):
     def __init__(self, pos_x, pos_y):
         """A box that can be pushed around and activate buttons.
 
-        Args:
-            pos_x: The position on the x-axis to spawn the box
-            pos_y: The position on the y-axis to spawn the box
+        :param pos_x: The position on the x-axis to spawn the box
+        :param pos_y: The position on the y-axis to spawn the box
         """
         super().__init__(cst.LAYER['trinket'])
         self.show()

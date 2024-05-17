@@ -18,13 +18,10 @@ import groups
 def draw_text(any_text: str, pos_x, pos_y) -> None:
     """Draws text on to the screen.
 
-    Args:
-        any_text: The text to display
-        pos_x: The x-position to display the text (top-left corner)
-        pos_y: The y-position to display the text (top-left corner)
-
-    Returns:
-        None
+    :param any_text: The text to display
+    :param pos_x: The x-position to display the text (top-left corner)
+    :param pos_y: The y-position to display the text (top-left corner)
+    :return: None
     """
     font = pygame.font.SysFont('Arial', 24)
     image = font.render(any_text, True, (0, 0, 0))
@@ -35,11 +32,10 @@ class IndicatorText(cb.ActorBase):
     def __init__(self, pos_x: int | float, pos_y: int | float, message, duration=0.6):
         """A number that pops up after a player or enemy is hit that indicates how much damage that entity has taken.
 
-        Args:
-            pos_x: The x-position to spawn
-            pos_y: The y-position to spawn
-            message: The text to display
-            duration: The amount of time (in seconds) for the text to last for
+        :param pos_x: The x-position to spawn
+        :param pos_y: The y-position to spawn
+        :param message: The text to display
+        :param duration: The amount of time (in seconds) for the text to last for
         """
         super().__init__(cst.LAYER['text'])
         self.show()

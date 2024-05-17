@@ -11,13 +11,12 @@ import groups
 
 class Portal(cb.ActorBase):
     def __init__(self, spawned_from, pos_x: int | float, pos_y: int | float, facing: str = cst.SOUTH):
-        """A portal that can teleport any moving object
+        """A portal that can teleport objects
 
-        Args:
-            spawned_from: The bullet the portal should spawn from
-            pos_x: The x-position where the portal should spawn
-            pos_y: The y-position where the portal should spawn
-            facing: The direction the portal should face. Default is south.
+        :param spawned_from: The bullet the portal is spawning from
+        :param pos_x: The x-position where the portal should spawn
+        :param pos_y: The y-position where the portal should spawn
+        :param facing: The direction the portal should face. Default is cst.SOUTH.
         """
         super().__init__(cst.LAYER['portal'])
         self.show()

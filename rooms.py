@@ -25,13 +25,12 @@ import trinkets
 class RoomSpecs:
     """Contains all information regarding the details of a room."""
     def __init__(self, room_width, room_height, scroll_x, scroll_y):
-        """Contains all information regarding the details of a room.
+        """Contains all information regarding the details of a room
 
-        Args:
-            room_width: The width of the room (in pixels)
-            room_height: The height of the room (in pixels)
-            scroll_x: Can the room scroll along the x-axis? (True if yes)
-            scroll_y: Can the room scroll along the y-axis? (True if yes)
+        :param room_width: The width of the room (in pixels)
+        :param room_height: The height of the room (in pixels)
+        :param scroll_x: Can the room scroll along the x-axis? (True if yes)
+        :param scroll_y: Can the room scroll along the y-axis? (True if yes)
         """
         self.width = room_width
         self.height = room_height
@@ -43,9 +42,8 @@ class Room(cb.AbstractBase):
     def __init__(self, room_x: float, room_y: float):
         """The room where all the current action is taking place
 
-        Args:
-            room_x: The room's x-axis location in the grid of the room layout
-            room_y: The room's y-axis location in the grid of the room layout
+        :param room_x: The room's x-axis location in the grid of the room layout
+        :param room_y: The room's y-axis location in the grid of the room layout
         """
         super().__init__()
         groups.all_rooms.append(self)
@@ -402,12 +400,12 @@ class Room(cb.AbstractBase):
                 sprite.movement()
 
     def _set_vel(self, value_x: int | float, value_y: int | float, is_additive: bool = False) -> None:
-        """Sets the velocity components of the room, as well as all the sprites within the room, to zero.
+        """Sets the velocity components of the room, as well as all the sprites within the room, to specified values
 
-        Args:
-            value_x: X-axis component
-            value_y: Y-axis component
-            is_additive: Should the values be added to the current vel or override it?
+        :param value_x: X-axis component
+        :param value_y: Y-axis component
+        :param is_additive: Should the values be added to the current vel or override it? Defaults to False
+        :return: None
         """
         if not is_additive:
             self.vel = vec(value_x, value_y)
@@ -442,10 +440,10 @@ class Room(cb.AbstractBase):
     def _align_player_tp(self, portal_out, width, height) -> None:
         """Sets the player at the proper position after teleporting when the room can scroll.
 
-        Args:
-            portal_out: The exit portal sprite
-            width: Half the sum of the player's hitbox width plus the portal's hitbox width
-            height: Half the sum of the player's hitbox height plus the portal's hitbox height
+        :param portal_out: The exit portal sprite
+        :param width: Half the sum of the player's hitbox width plus the portal's hitbox width
+        :param height: Half the sum of the player's hitbox height plus the portal's hitbox height
+        :return: None
         """
         if portal_out.facing == cst.SOUTH:
             self.player1.pos.x = portal_out.pos.x
@@ -466,9 +464,9 @@ class Room(cb.AbstractBase):
     def _teleport_player(self, portal_in, portal_out) -> None:
         """Teleports the player when the room is scrolling.
 
-        Args:
-            portal_in: The portal the player is entering
-            portal_out: The portal the player is exiting
+        :param portal_in: The portal the player is entering
+        :param portal_out: The portal the player is exiting
+        :return: None
         """
         dir_in = portal_in.facing
         dir_out = portal_out.facing
@@ -567,13 +565,10 @@ class Room(cb.AbstractBase):
             self.player1.vel = self.player1.vel.rotate(dir_angles[dir_out])
 
     def _sprites_rotate_trajectory(self, angle: float) -> None:
-        """Rotates the velocities and accelerations of all the sprites within the room's sprites.
+        """Rotates the velocities and accelerations of all the sprites within the room's sprites
 
-        Args:
-            angle: The angle to rotate the vectors by
-
-        Returns:
-            None
+        :param angle: The angle to rotate the vectors by
+        :return: None
         """
         self.vel = self.vel.rotate(angle)
 
@@ -581,11 +576,11 @@ class Room(cb.AbstractBase):
             sprite.vel = sprite.vel.rotate(angle)
 
     def _translate_trajectory(self, is_player_to_room: bool, angle: float) -> None:
-        """Translates the velocity of the room's sprites to the player, or vice versa.
+        """Translates the velocity of the room's sprites to the player, or vice versa
 
-        Args:
-            is_player_to_room: Should velocity be swapped from player to room (True), or from room to player (False)?
-            angle: The angle to rotate the trajectory by
+        :param is_player_to_room: Should velocity be swapped from player to room (True), or from room to player (False)?
+        :param angle: The angle to rotate the trajectory by
+        :return: None
         """
         if is_player_to_room:
             for sprite in self._get_sprites_to_recenter():
@@ -595,14 +590,11 @@ class Room(cb.AbstractBase):
             self.player1.vel = self.vel.rotate(angle)
 
     def _sprite_collide_check(self, instig, *contact_list) -> None:
-        """Collide check for when the room is scrolling.
+        """Collide check for when the room is scrolling
 
-        Args:
-            instig: The sprite instigating the collision
-            *contact_list: The sprite group(s) to check for a collision with
-
-        Returns:
-            None
+        :param instig: The sprite instigating the collision
+        :param contact_list: The sprite group(s) to check for a collision with
+        :return: None
         """
         if instig == self.player1:
             for sprite in [s
@@ -700,11 +692,11 @@ class Room(cb.AbstractBase):
     def _init_room(self, room_size_x: int, room_size_y: int, can_scroll_x: bool, can_scroll_y: bool) -> None:
         """Initializes a room's properties. This function must be called once for every room iteration.
 
-        Args:
-            room_size_x: The width of the room (in pixels).
-            room_size_y: The height of the room (in pixels).
-            can_scroll_x: Should the room scroll with the player along the x-axis?
-            can_scroll_y: Should the room scroll with the player along the y-axis?
+        :param room_size_x: The width of the room (in pixels).
+        :param room_size_y: The height of the room (in pixels).
+        :param can_scroll_x: Should the room scroll with the player along the x-axis?
+        :param can_scroll_y: Should the room scroll with the player along the y-axis?
+        :return: None
         """
         # Placing borders in correct spots in room
         west_coords = vec(-8, room_size_y // 2)
@@ -754,14 +746,14 @@ class Room(cb.AbstractBase):
 
     def _get_room_change_trajectory(self, prev_room_scroll_x: bool, prev_room_scroll_y: bool, new_room_scroll_x: bool,
                                     new_room_scroll_y: bool, player_vel: pygame.math.Vector2) -> None:
-        """Transfers the velocity from the room to the player or vice versa when changing rooms.
+        """Transfers the velocity from the room to the player or vice versa when changing rooms
 
-        Args:
-            prev_room_scroll_x: Did the previous room scroll along the x-axis?
-            prev_room_scroll_y: Did the previous room scroll along the y-axis?
-            new_room_scroll_x: Does the new room scroll along the x-axis?
-            new_room_scroll_y: Does the new room scroll along the y-axis?
-            player_vel: The player's velocity
+        :param prev_room_scroll_x: Did the previous room scroll along the x-axis?
+        :param prev_room_scroll_y: Did the previous room scroll along the y-axis?
+        :param new_room_scroll_x: Does the new room scroll along the x-axis?
+        :param new_room_scroll_y: Does the new room scroll along the y-axis?
+        :param player_vel: The player's velocity
+        :return: None
         """
         if prev_room_scroll_x:
             if not new_room_scroll_x:
@@ -853,7 +845,7 @@ class Room(cb.AbstractBase):
 
         elif self.room == vec(0, 2):
             return [
-                tiles.Wall(0, 0, 16, 4),s
+                tiles.Wall(0, 0, 16, 4),
             ]
 
         else:

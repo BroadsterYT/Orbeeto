@@ -10,10 +10,9 @@ class RoomContainer(cb.AbstractBase):
     def __init__(self, room_x: int, room_y: int, *sprites):
         """A container for sprites within a room. Contains data about all enemies in a room.
 
-        Args:
-            room_x: The container's x-location in the room grid
-            room_y: The container's y-location in the room grid
-            *sprites: The sprite(s) that should be added to the container
+        :param room_x: The container's x-location in the room grid
+        :param room_y: The container's y-location in the room grid
+        :param sprites: The sprite(s) that should be added to the container
         """
         super().__init__()
         self.room = vec((room_x, room_y))

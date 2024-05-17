@@ -14,10 +14,9 @@ class StdBulletExplode(cb.ActorBase):
     def __init__(self, owner, pos_x: float, pos_y: float):
         """An explosion that is displayed on-screen when a projectile hits something.
 
-        Args:
-            owner: The entity to render an explosion for
-            pos_x: The x-position to spawn the explosion at
-            pos_y: The y-position to spawn the explosion at
+        :param owner: The entity to render an explosion for
+        :param pos_x: The x-position to spawn the explosion at
+        :param pos_y: The y-position to spawn the explosion at
         """
         super().__init__(cst.LAYER['explosion'])
         self.show()

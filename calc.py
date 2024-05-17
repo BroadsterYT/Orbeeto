@@ -21,11 +21,8 @@ import timer
 def get_angle_to_mouse(any_sprite) -> float:
     """Returns the angle between a sprite and the mouse cursor.
 
-    Args:
-        any_sprite: The sprite to measure the angle from
-
-    Returns:
-        float: The angle between the sprite and the mouse cursor
+    :param any_sprite: The sprite to measure the angle from
+    :return: The angle between the sprite and the mouse cursor
     """
     mouse_x, mouse_y = pygame.mouse.get_pos()
     length_to_x = mouse_x - any_sprite.pos.x
@@ -49,12 +46,9 @@ def get_angle_to_mouse(any_sprite) -> float:
 def get_angle(first_obj, sec_obj) -> float:
     """Returns the angle between two sprites/coordinates
 
-    Args:
-        first_obj: The first object
-        sec_obj: The second object
-
-    Returns:
-        float: The angle between the two objects
+    :param first_obj: The first object
+    :param sec_obj: The second object
+    :return: The angle between the two objects
     """
     if type(first_obj) is pygame.math.Vector2:
         first_pos = first_obj.copy()
@@ -88,12 +82,9 @@ def get_angle(first_obj, sec_obj) -> float:
 def get_dist(first_input, sec_input) -> float:
     """Returns the distance between two sprites or coordinates.
 
-    Args:
-        first_input: The object to start the measure from
-        sec_input: The second object to measure the distance from the first
-
-    Returns:
-        float: The distance between the two objects
+    :param first_input: The object to start the measure from
+    :param sec_input: The second object to measure the distance from the first
+    :return: The distance between the two objects
     """
     if type(first_input) is pygame.math.Vector2:
         first_vec = first_input
@@ -114,12 +105,9 @@ def get_dist(first_input, sec_input) -> float:
 def get_vec_angle(vec_x: int | float, vec_y: int | float) -> float:
     """Returns the angle of a resultant vector
 
-    Args:
-        vec_x: The x-axis component of the vector
-        vec_y: The y-axis component of the vector
-
-    Returns:
-        The angle of the resultant vector (in degrees)
+    :param vec_x: The x-axis component of the vector
+    :param vec_y: The y-axis component of the vector
+    :return: The angle of the resultant vector (in degrees)
     """
     if vec_x and vec_y != 0:
         vec_angle = -math.degrees(math.atan2(vec_y, vec_x)) - 90
@@ -140,11 +128,8 @@ def get_vec_angle(vec_x: int | float, vec_y: int | float) -> float:
 def get_time_diff(time_value: float) -> float:
     """Returns the difference between the current time and another.
 
-    Args:
-        time_value: The time to compare to the current time
-
-    Returns:
-        float: The difference between the current time and the other time
+    :param time_value: The time to compare to the current time
+    :return: The difference between the current time and the other time
     """
     return time.time() - time_value
 
@@ -163,13 +148,10 @@ def get_game_tdiff(time_value: float) -> float:  # noqa
 def cerp(a: int | float, b: int | float, weight: float) -> float:
     """Cosinusoidally interpolates between two values given a weight
 
-    Args:
-        a: The starting value
-        b: The ending value
-        weight: The weight to interpolate by
-
-    Returns:
-        float: The interpolated value
+    :param a: The starting value
+    :param b: The ending value
+    :param weight: The weight to interpolate by
+    :return: The interpolated value
     """
     if weight < 0:
         weight = 0
@@ -183,16 +165,11 @@ def cerp(a: int | float, b: int | float, weight: float) -> float:
 def eerp(a: int | float, b: int | float, weight: float) -> float:
     """Exponentially interpolates between two values given a weight
 
-    Args:
-        a: The starting value
-        b: The ending value
-        weight: The weight to interpolate by
-
-    Returns:
-        float: The interpolated value
-
-    Raises:
-        ValueError: Raised if a and b have opposite signs
+    :param a: The starting value
+    :param b: The ending value
+    :param weight: The weight to interpolate by
+    :return: The interpolated value
+    :raises ValueError: Raised if a and b have opposite signs
     """
     if (a < 0 < b) or (a > 0 > b):
         raise ValueError('Error: \"a\" and \"b\" cannot have opposite signs')
@@ -214,12 +191,9 @@ def eerp(a: int | float, b: int | float, weight: float) -> float:
 def calculate_damage(receiver, proj) -> int:
     """Calculates the damage a sprite receives after being hit.
 
-    Args:
-        receiver: The sprite taking damage
-        proj: The projectile the receiver got hit by
-
-    Returns:
-        int: The damage the receiver will take
+    :param receiver: The sprite taking damage
+    :param proj: The projectile the receiver got hit by
+    :return: The damage the receiver will take
     """
     damage = math.ceil(proj.damage - receiver.defense)
     if damage <= 0:
@@ -260,14 +234,11 @@ def get_opposite(value):
 
 
 def triangle_collide(instig, sprite) -> str:
-    """Determines where two sprites collide using a triangulation approach.
+    """Determines where two sprites collide using a triangulation approach
 
-    Args:
-        instig: The instigator of the collision
-        sprite: The sprite being collided into
-
-    Returns:
-        str: The side the instigator struck upon the other sprite
+    :param instig: The instigator of the collision
+    :param sprite: The sprite being collided into
+    :return: The side the instigator struck upon the other sprite
     """
     # Bottom right corner
     point_a = vec(sprite.pos.x + sprite.hitbox.width // 2,
@@ -303,11 +274,8 @@ def triangle_collide(instig, sprite) -> str:
     def is_closest_side(height: float) -> bool:
         """Determines if the given distance is the one closest to the instigator (the shortest)
 
-        Args:
-            height: The distance from a side to the instigator
-
-        Returns:
-            bool: If the distance is the shortest (True) or not (False)
+        :param height: The distance from a side to the instigator
+        :return: If the distance is the shortest (True) or not (False)
         """
         height_list = [height_ap, height_bp, height_cp, height_dp]
         height_list.remove(height)
@@ -357,11 +325,8 @@ def get_rand_components(max_value: int | float) -> vec:
     """Given a maximum value, will output a vector containing two components that vectorially add to that value.
     The result can be positive or negative.
 
-    Args:
-        max_value: The value the components will vectorially add to. The result can add to +maxValue or -maxValue.
-
-    Returns:
-        pygame.math.Vector2: The resultant random vector
+    :param max_value: The value the components will vectorially add to. The result can add to +max_value or -max_value.
+    :return: The resultant random vector
     """
     x = rand.uniform(-max_value, max_value)
     y = math.sqrt(pow(max_value, 2) - pow(x, 2))
@@ -373,11 +338,8 @@ def get_rand_components(max_value: int | float) -> vec:
 def get_scroll_weight(obj) -> vec:
     """Returns the weight an object's acceleration should use when centering the screen.
 
-    Args:
-        obj: The object being centered on the screen
-
-    Returns:
-        The acceleration weight vector to use during a room scroll
+    :param obj: The object being centered on the screen
+    :return: The acceleration weight vector to use during a room scroll
     """
     mult = 2.5
     scroll_weight = vec(
@@ -396,10 +358,10 @@ class ScreenShakeQueue:
     def add(self, amplitude: int | float, duration: int, rate_of_decay: int | float = 1.2) -> None:
         """Adds a screen shake to the queue of screen shakes.
 
-        Args:
-            amplitude: How intense the shake should be
-            duration: How long the shake should last
-            rate_of_decay: The intensity of the decay. Set to 1 by default. Should be greater than or equal to 0.
+        :param amplitude: How intense the shake should be
+        :param duration: How long the shake should last
+        :param rate_of_decay: The intensity of the decay. Set to 1.2 by default. Should be greater than or equal to 0.
+        :return: None
         """
         new_queue = []
         for tick in range(duration):
@@ -438,12 +400,9 @@ screen_shake_queue = ScreenShakeQueue()
 def combine_images(base_img: pygame.Surface, top_img: pygame.Surface) -> pygame.Surface:
     """Combines two images directly on top of one another
 
-    Args:
-        base_img: The image to place first
-        top_img: The image being pasted on top of the first image
-
-    Returns:
-        pygame.Surface: The combined image
+    :param base_img: The image to place first
+    :param top_img: The image being pasted on top of the first image
+    :return: The combined image
     """
     new_img: pygame.Surface = pygame.Surface(vec(max(base_img.get_width(), top_img.get_width())),
                                              max(base_img.get_height(), top_img.get_height()))
@@ -474,11 +433,8 @@ def get_closest_player():
 def get_other_portal(portal_in):
     """Returns the other portal present in the all_portals list.
 
-    Args:
-        portal_in: The portal that is known
-
-    Returns:
-        Portal: The other portal in the all_portals list
+    :param portal_in: The portal that is known
+    :return: The other portal in the all_portals list
     """
     for portal in groups.all_portals:
         if portal != portal_in:
@@ -502,13 +458,10 @@ def kill_groups(*any_groups) -> None:
 def swap_color(image: pygame.Surface, old_color: tuple, new_color: tuple) -> pygame.Surface:
     """Swaps one color of a sprite with another color.
 
-    Args:
-        image: The image to swap a color within
-        old_color: The color being replaced
-        new_color: The new color replacing the old color
-
-    Returns:
-        pygame.Surface: The image with the swapped color
+    :param image: The image to swap a color within
+    :param old_color: The color being replaced
+    :param new_color: The new color replacing the old color
+    :return: The image with the swapped color
     """
     new_img = image.copy()
     for x in range(new_img.get_width()):

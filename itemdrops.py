@@ -24,10 +24,11 @@ import timer
 
 class ItemDrop(cb.ActorBase):
     def __init__(self, pos_x: int | float, pos_y: int | float, item_name: str):
-        """An item or material dropped by an enemy that can be collected.
+        """An item or material dropped by an enemy that can be collected
 
-        Args:
-            item_name: The item to drop
+        :param pos_x: The x-axis position to spawn the item
+        :param pos_y: The y-axis position to spawn the item
+        :param item_name: The name of the item to drop. Should be chosen from 'items.MATERIALS'.
         """
         super().__init__(cst.LAYER['drops'])
         self.show()

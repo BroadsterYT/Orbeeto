@@ -11,7 +11,6 @@ from pygame.math import Vector2 as vec
 import controls as ctrl
 import items
 import projectiles as proj
-import text
 
 import calc
 import classbases as cb
@@ -21,19 +20,44 @@ import statbars
 import timer
 
 
+class GunSprite(cb.ActorBase):
+    def __init__(self, owner, image_count: int, image_offset: int = 0):
+        """An object with one of the player's gun sprites
+
+        :param owner: The owner of the gun. Should always be a player
+        :param image_count: The number of images to use from the gun spritesheet
+        :param image_offset: The offset to start the gun spritesheet snip from
+        """
+        super().__init__(cst.LAYER['player'])
+        self.show()
+        self.owner = owner
+
+        self.set_images(os.path.join(os.getcwd(), 'sprites/orbeeto/guns.png'), 64, 64, 5, image_count, image_offset)
+        self.set_rects(0, 0, 64, 64, 64, 64)
+
+        self.pos = self.owner.pos
+
+    def update(self):
+        """Updates the gun sprite. This also updates animation"""
+        self.pos = self.owner.pos
+        self.rotate_image(calc.get_angle_to_mouse(self.owner))
+        self.center_rects()
+
+
 class Player(cb.ActorBase):
-    """A player sprite that can move and shoot.
-    """
+    """A player sprite that can move and shoot."""
     def __init__(self):
         super().__init__(cst.LAYER['player'])
         self.show()
         groups.all_players.add(self)
         self.room = cb.get_room()
 
-        self.last_textbox_release = ctrl.key_released[ctrl.K_DIALOGUE]
+        # self.last_textbox_release = ctrl.key_released[ctrl.K_DIALOGUE]
 
         self.set_images(os.path.join(os.getcwd(), 'sprites/orbeeto/orbeeto.png'), 64, 64, 5, 5)
         self.set_rects(0, 0, 64, 64, 32, 32)
+
+        self.gun_l = GunSprite(self, 5)
 
         self.pos = vec((cst.WINWIDTH // 2, cst.WINHEIGHT // 2))
         self.accel_const = 0.58
@@ -145,8 +169,7 @@ class Player(cb.ActorBase):
     # --------------------------------- Movement --------------------------------- #
     @cb.check_update_state
     def movement(self):
-        """When called once every frame, it allows the player to receive input from the user and move accordingly
-        """
+        """When called once every frame, it allows the player to receive input from the user and move accordingly"""
         self.accel = self.get_accel()
         self.accel_movement()
 
@@ -332,12 +355,12 @@ class Player(cb.ActorBase):
     @cb.check_update_state
     def update(self):
         self.movement()
+        self._passive_hp_regen()
 
         # Animation
         self._animate()
         self.rotate_image(calc.get_angle_to_mouse(self))
-
-        self._passive_hp_regen()
+        self.gun_l.update()
 
         # TODO: Move textbox handling out of player object
         # self.generate_text_box()

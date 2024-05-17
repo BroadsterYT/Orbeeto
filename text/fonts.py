@@ -11,18 +11,15 @@ import spritesheet
 
 
 class Font:
-    """
-    Stores all the critical data of a font
-    """
+    """Stores all the critical data of a font"""
     def __init__(self, font_image_path: str, char_width: int, char_height: int, chars_per_row: int, char_count: int):
         """Stores all the critical data of a font.
 
-        Args:
-            font_image_path: The directory path of the image
-            char_width: The width of each individual character
-            char_height: The height of each individual character
-            chars_per_row: The number of characters in each row of the font's sprite sheet
-            char_count: The total number of characters in the font's sprite sheet
+        :param font_image_path: The directory path of the image
+        :param char_width: The width of each individual character
+        :param char_height: The height of each individual character
+        :param chars_per_row: The number of characters in each row of the font's sprite sheet
+        :param char_count: The total number of characters in the font's sprite sheet
         """
         self.path = font_image_path
         self.char_width = char_width
@@ -53,12 +50,9 @@ TEXT_MAP = {
 def text_to_image(any_text: str, a_font: Font) -> pygame.Surface:
     """Converts a string of text into an image with a given font.
 
-    Args:
-        any_text: The text string to convert into an image
-        a_font: The font object to retrieve font data from
-
-    Returns:
-        pygame.Surface: The converted image
+    :param any_text: The text string to convert into an image
+    :param a_font: The font object to retrieve font data from
+    :return: The converted image
     """
     sheet = spritesheet.Spritesheet(a_font.path, a_font.chars_per_row)
     images = sheet.get_images(a_font.char_width, a_font.char_height, a_font.char_count)

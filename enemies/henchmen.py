@@ -20,9 +20,8 @@ class StandardGrunt(enemybase.EnemyBase):
     def __init__(self, pos_x: float, pos_y: float):
         """A simple enemy that moves to random locations and shoots at players.
 
-        Args:
-            pos_x: The x-position to spawn at
-            pos_y: The y-position to spawn at
+        :param pos_x: The x-position to spawn at
+        :param pos_y: The y-position to spawn at
         """
         super().__init__()
         self.show()
@@ -99,10 +98,10 @@ class StandardGrunt(enemybase.EnemyBase):
     def shoot(self, target, vel: float, shoot_time: float) -> None:
         """Shoots a bullet at a specific velocity at a specified interval.
 
-        Args:
-            target: The target the enemy is firing at
-            vel: The velocity of the bullet
-            shoot_time: How often the enemy should fire
+        :param target: The target the enemy is firing at
+        :param vel: The velocity of the bullet
+        :param shoot_time: How often the enemy should fire
+        :return: None
         """
         if calc.get_time_diff(self.last_shot) > shoot_time:
             self.is_shooting = True
@@ -152,9 +151,8 @@ class Turret(enemybase.EnemyBase):
     def __init__(self, pos_x: float, pos_y: float):
         """An enemy that stays in place and shoots volleys of bullets.
 
-        Args:
-            pos_x: The x-position to spawn at
-            pos_y: The y-position to spawn at
+        :param pos_x: The x-position to spawn at
+        :param pos_y: The y-position to spawn at
         """
         super().__init__()
         self.show()
@@ -190,8 +188,8 @@ class Turret(enemybase.EnemyBase):
     def shoot(self, shoot_time: float) -> None:
         """Shoots a volley of bullets.
 
-        Args:
-            shoot_time: How often the volleys should be fired
+        :param shoot_time: How often the volleys should be fired
+        :return: None
         """
         if calc.get_time_diff(self.last_shot) > shoot_time:
             self.bullet_angle = math.degrees(1) * screen.dt * cst.M_FPS

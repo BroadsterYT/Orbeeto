@@ -11,10 +11,9 @@ class Button(cb.ActorBase):
     def __init__(self, id_value: int, block_pos_x: int, block_pos_y: int):
         """A button that can be activated and deactivated
 
-        Args:
-            id_value: The ID vale of the button. Will activate any trinket with the same ID value.
-            block_pos_x: The x-axis position of the button (in blocks)
-            block_pos_y: The y-axis position of the button (in blocks)
+        :param id_value: The ID vale of the button. Will activate any trinket with the same ID value.
+        :param block_pos_x: The x-axis position of the button (in blocks)
+        :param block_pos_y: The y-axis position of the button (in blocks)
         """
         super().__init__(cst.LAYER['button'])
         self.show()

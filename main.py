@@ -59,8 +59,8 @@ prev_time = time.time()  # Used for delta time
 async def main(max_frame_rate) -> None:
     """The main loop of the program.
 
-    Args:
-        max_frame_rate: The maximum framerate the game should run at
+    :param max_frame_rate: The maximum framerate the game should run at
+    :return: None
     """
     loop = asyncio.get_event_loop()
     next_frame_target = 0.0
@@ -139,8 +139,8 @@ async def main(max_frame_rate) -> None:
 def check_mouse_scroll(event) -> None:
     """Checks if the mouse wheel is being scrolled up or down and updates ctrl.is_input_held accordingly
 
-    Args:
-        event: The Pygame event currently being evaluated
+    :param event: The Pygame event currently being evaluated
+    :return: None
     """
     if event.type == pygame.MOUSEBUTTONDOWN and event.button in (4, 5):
         ctrl.is_input_held[event.button] = True
@@ -152,9 +152,9 @@ def check_mouse_scroll(event) -> None:
 def check_key_release(event, is_mouse) -> None:
     """Checks if any input(s) has been released. If one has, then its count in key_released will be updated to match.
 
-    Args:
-        event: The Pygame event currently being evaluated
-        is_mouse: Are the inputs mouse buttons? True if yes, false if no.
+    :param event: The Pygame event currently being evaluated
+    :param is_mouse: Are the inputs mouse buttons? True if yes, false if no.
+    :return: None
     """
     if not is_mouse:
         for input_key in ctrl.key_released.keys():
@@ -169,8 +169,8 @@ def check_key_release(event, is_mouse) -> None:
 async def handle_events(events_to_handle) -> None:
     """Handles the list of pygame events given
 
-    Args:
-        events_to_handle: The list of pygame events to handle
+    :param events_to_handle: The list of pygame events to handle
+    :return: None
     """
     for event in events_to_handle:
         key_pressed = pygame.key.get_pressed()
