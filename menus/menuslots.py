@@ -4,6 +4,7 @@ import time
 import pygame
 from pygame.math import Vector2 as vec
 
+import controls as ctrl
 import items
 import text
 
@@ -30,6 +31,7 @@ class SlotBase(cb.ActorBase):
 
         self.pos = vec(pos_x, pos_y)
         self.start_pos = vec(pos_x, pos_y)
+        self.is_panning = False
 
         self.menu_sheet = spritesheet.Spritesheet("sprites/ui/menu_item_slot.png", 1)
         self.menu_images = self.menu_sheet.get_images(64, 64, 1)
@@ -139,6 +141,8 @@ class MaterialSlot(SlotBase):
 
 
 class ArmorSlot(SlotBase):
+    current_clicked = None
+
     def __init__(self, owner, pos_x, pos_y, armor_held: str):
         super().__init__(gs.s_inventory, owner, pos_x, pos_y)
         self.show()
@@ -171,22 +175,37 @@ class ArmorSlot(SlotBase):
         for frame in armor_images:
             menu_image = pygame.Surface(vec(64, 64))
 
-            if self.owner.my_armors[self.holding]:
-                menu_image = visuals.stack_images(self.menu_image, frame, 0, 0)
+            # if self.owner.my_armors[self.holding]:
+            menu_image = visuals.stack_images(self.menu_image, frame, 0, 0)
 
-            elif not self.owner.my_armors[self.holding]:
-                blanked_frame = pygame.Surface(frame.get_size())
-                blanked_frame.fill((0, 0, 1))
-
-                mix_frame: pygame.Surface = frame.copy()
-                mix_frame.blit(blanked_frame, vec(0, 0), special_flags=pygame.BLEND_MULT)
-
-                menu_image = visuals.stack_images(self.menu_image, mix_frame, 0, 0)
+            # elif not self.owner.my_armors[self.holding]:
+            #     blanked_frame = pygame.Surface(frame.get_size())
+            #     blanked_frame.fill((0, 0, 1))
+            #
+            #     mix_frame: pygame.Surface = frame.copy()
+            #     mix_frame.blit(blanked_frame, vec(0, 0), special_flags=pygame.BLEND_MULT)
+            #
+            #     menu_image = visuals.stack_images(self.menu_image, mix_frame, 0, 0)
 
             menu_image.set_colorkey((0, 0, 0))
             final_images.append(menu_image)
 
         return final_images
+
+    def drag(self) -> None:
+        """Allows the slot to be dragged by the mouse when called once every frame
+
+        :return: None
+        """
+        if (self.hitbox.collidepoint(pygame.mouse.get_pos()) and ctrl.is_input_held[1]
+                and (ArmorSlot.current_clicked is self or ArmorSlot.current_clicked is None)):
+            ArmorSlot.current_clicked = self
+        elif self.hitbox.collidepoint(pygame.mouse.get_pos()) and not ctrl.is_input_held[1]:
+            self.pos = self.start_pos.copy()
+            ArmorSlot.current_clicked = None
+
+        if ArmorSlot.current_clicked is self:
+            self.pos = vec(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
 
     def update(self):
         self.center_rects()
@@ -194,6 +213,8 @@ class ArmorSlot(SlotBase):
         self._animate()
 
         self.hover()
+        self.drag()
+        print(ArmorSlot.current_clicked)
 
     def _animate(self):
         if calc.get_time_diff(self.last_frame) > 0.1:
@@ -202,3 +223,6 @@ class ArmorSlot(SlotBase):
             if self.index >= 16:
                 self.index = 0
             self.last_frame = time.time()
+
+    def __repr__(self):
+        return f'ArmorSlot({self.holding}, {self.start_pos}, {self.pos})'

@@ -47,7 +47,6 @@ class ItemDrop(cb.ActorBase):
             self.orig_images = self.spritesheet.get_images(32, 32, 3, 0)
             self.images = self.spritesheet.get_images(32, 32, 3, 0)
         elif self.mat == items.MATERIALS[1]:
-            print('hello')
             self.orig_images = self.spritesheet.get_images(32, 32, 1, 3)
             self.images = self.spritesheet.get_images(32, 32, 1, 3)
 

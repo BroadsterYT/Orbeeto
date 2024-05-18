@@ -73,7 +73,6 @@ class MenuButton(cb.ActorBase):
         :return: None
         """
         if self.last_release_value == ctrl.key_released[1] - 1 and self.hitbox.collidepoint(pygame.mouse.get_pos()):
-            print('clicked')
             self.func(*self.func_args, **self.func_kwargs)
             self.last_release_value = ctrl.key_released[1]
         else:

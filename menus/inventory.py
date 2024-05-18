@@ -1,4 +1,3 @@
-import math
 import os
 import time
 
@@ -44,19 +43,22 @@ class InventoryMenu(cb.AbstractBase):
             self.window += 1
             self.last_cycle = time.time()
             self.cycling_right = True
+            for sprite in self.sprites():
+                sprite.is_panning = True
 
     def pan_right(self):
         if not self.cycling_left and not self.cycling_right:
             self.window -= 1
             self.last_cycle = time.time()
             self.cycling_left = True
+            for sprite in self.sprites():
+                sprite.is_panning = True
 
     def cycle_menu(self) -> None:
         """Pans the menu from screen to screen
 
         :return: None
         """
-
         # Cycling left
         if self.cycling_left and not self.cycling_right:
             weight = calc.get_time_diff(self.last_cycle)
@@ -66,6 +68,7 @@ class InventoryMenu(cb.AbstractBase):
             else:
                 for sprite in self.sprites():
                     sprite.start_pos.x = sprite.pos.x
+                    sprite.is_panning = False
                 self.cycling_left = False
 
         # Cycling right
@@ -77,6 +80,7 @@ class InventoryMenu(cb.AbstractBase):
             else:
                 for sprite in self.sprites():
                     sprite.start_pos.x = sprite.pos.x
+                    sprite.is_panning = False
                 self.cycling_right = False
 
     def build_materials_slots(self) -> list:

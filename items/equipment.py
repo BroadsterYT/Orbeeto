@@ -8,10 +8,10 @@ ARMOR = {
 }
 
 WEAPONS = {  # TODO: Implementation of weapon selection can utilize even/odd key values for each
-    0: 'placeholder_R000',
-    1: 'placeholder_L000',
-    2: 'placeholder_R001',
-    3: 'placeholder_L001',
+    0: 'placeholder_L000',
+    1: 'placeholder_R000',
+    2: 'placeholder_L001',
+    3: 'placeholder_R001',
 }
 
 ACCESSORIES = {

@@ -26,7 +26,6 @@ class GameTimer:
             self._elapsed_time += (time.time() - self._last_elapse_call)
         self.time = time.time() - self._elapsed_time
         self._is_idle = False
-        print(self.time, time.time())
 
     def update_elapsed_time(self) -> None:
         """Starts the elapsed time counter to account for time in a game state other than 'action'. (This function

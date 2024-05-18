@@ -32,7 +32,9 @@ class GunSprite(cb.ActorBase):
         self.show()
         self.owner = owner
 
-        self.set_images(os.path.join(os.getcwd(), 'sprites/orbeeto/guns.png'), 64, 64, 5, image_count, image_offset)
+        self.image_count = image_count
+        self.set_images(os.path.join(os.getcwd(), 'sprites/orbeeto/guns.png'), 64, 64, 5,
+                        self.image_count, image_offset)
         self.set_rects(0, 0, 64, 64, 64, 64)
 
         self.pos = self.owner.pos
@@ -42,6 +44,16 @@ class GunSprite(cb.ActorBase):
         self.pos = self.owner.pos
         self.rotate_image(calc.get_angle_to_mouse(self.owner))
         self.center_rects()
+
+        if calc.get_time_diff(self.last_frame) > 0.05:
+            if ctrl.is_input_held[1]:
+                self.index += 1
+                if self.index > self.image_count - 1:
+                    self.index = 0
+            else:  # Idle animation
+                self.index = 0
+
+            self.last_frame = time.time()
 
 
 class Player(cb.ActorBase):
@@ -57,7 +69,10 @@ class Player(cb.ActorBase):
         self.set_images(os.path.join(os.getcwd(), 'sprites/orbeeto/orbeeto.png'), 64, 64, 5, 5)
         self.set_rects(0, 0, 64, 64, 32, 32)
 
-        self.gun_l = GunSprite(self, 5)
+        self.gun_l = items.WEAPONS[0]
+        self.gun_r = items.WEAPONS[1]
+        self.gun_l_sprite = GunSprite(self, 5)
+        self.gun_r_sprite = GunSprite(self, 5, 5)
 
         self.pos = vec((cst.WINWIDTH // 2, cst.WINHEIGHT // 2))
         self.accel_const = 0.58
@@ -128,8 +143,7 @@ class Player(cb.ActorBase):
 
     # ----------------------------------- Stats ---------------------------------- #
     def update_max_stats(self):
-        """Updates all the player's max stats.
-        """
+        """Updates all the player's max stats."""
         self.max_hp = math.floor(calc.eerp(50, 650, self.level / self.max_level))
         self.max_defense = math.floor(calc.eerp(15, 800, self.level / self.max_level))
         self.max_ammo = math.floor(calc.eerp(40, 500, self.level / self.max_level))
@@ -360,7 +374,6 @@ class Player(cb.ActorBase):
         # Animation
         self._animate()
         self.rotate_image(calc.get_angle_to_mouse(self))
-        self.gun_l.update()
 
         # TODO: Move textbox handling out of player object
         # self.generate_text_box()
@@ -368,16 +381,11 @@ class Player(cb.ActorBase):
         if self.hp <= 0:
             self.kill()
 
-    def _animate(self):
-        if calc.get_time_diff(self.last_frame) > 0.05:
-            if ctrl.is_input_held[1]:
-                self.index += 1
-                if self.index > 4:
-                    self.index = 0
-            else:  # Idle animation
-                self.index = 0
+    def display_weapon(self) -> None:
+        pass
 
-            self.last_frame = time.time()
+    def _animate(self):
+        pass
 
     def __str__(self):
         return (f'Player at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\ncurrent bullet: {self.bullet_type}\n'
