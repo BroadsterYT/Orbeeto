@@ -80,7 +80,7 @@ class ItemDrop(cb.ActorBase):
     def update(self):
         self._animate()
         for a_player in groups.all_players:
-            if self.hitbox.colliderect(a_player):
+            if self.hitbox.colliderect(a_player.hitbox):
                 groups.all_font_chars.add(
                     text.IndicatorText(a_player.pos.x, a_player.pos.y - a_player.rect.height // 2, self.mat, 1)
                 )

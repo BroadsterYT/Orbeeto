@@ -20,24 +20,42 @@ import statbars
 import timer
 
 
-class GunSprite(cb.ActorBase):
-    def __init__(self, owner, image_count: int, image_offset: int = 0):
-        """An object with one of the player's gun sprites
+class PlayerGun(cb.ActorBase):
+    def __init__(self, owner, weapon: str):
+        """A gun object that allows the player to shoot
 
         :param owner: The owner of the gun. Should always be a player
-        :param image_count: The number of images to use from the gun spritesheet
-        :param image_offset: The offset to start the gun spritesheet snip from
+        :param weapon: The name of the weapon the gun should be
         """
         super().__init__(cst.LAYER['player'])
         self.show()
         self.owner = owner
+        self.weapon = weapon
+        self.image_count = 5
+        self.bullet_vel = 10
+        self.cooldown = 0.15
 
-        self.image_count = image_count
-        self.set_images(os.path.join(os.getcwd(), 'sprites/orbeeto/guns.png'), 64, 64, 5,
-                        self.image_count, image_offset)
+        self.set_guns()
         self.set_rects(0, 0, 64, 64, 64, 64)
 
         self.pos = self.owner.pos
+
+    def set_guns(self) -> None:
+        """Sets the images and attributes of the gun. Determined by the value of 'self.weapon'.
+
+        :return: None
+        """
+        if self.weapon == items.WEAPONS[0]:
+            self.image_count = 5
+            self.set_images(os.path.join(os.getcwd(), 'sprites/orbeeto/guns.png'), 64, 64, 5, self.image_count)
+            self.bullet_vel = 10
+            self.cooldown = 0.15
+
+        elif self.weapon == items.WEAPONS[1]:
+            self.image_count = 5
+            self.set_images(os.path.join(os.getcwd(), 'sprites/orbeeto/guns.png'), 64, 64, 5, self.image_count, 5)
+            self.bullet_vel = 10
+            self.cooldown = 0.15
 
     def update(self):
         """Updates the gun sprite. This also updates animation"""
@@ -69,11 +87,6 @@ class Player(cb.ActorBase):
         self.set_images(os.path.join(os.getcwd(), 'sprites/orbeeto/orbeeto.png'), 64, 64, 5, 5)
         self.set_rects(0, 0, 64, 64, 32, 32)
 
-        self.gun_l = items.WEAPONS[0]
-        self.gun_r = items.WEAPONS[1]
-        self.gun_l_sprite = GunSprite(self, 5)
-        self.gun_r_sprite = GunSprite(self, 5, 5)
-
         self.pos = vec((cst.WINWIDTH // 2, cst.WINHEIGHT // 2))
         self.accel_const = 0.58
 
@@ -89,10 +102,12 @@ class Player(cb.ActorBase):
 
         self.last_regen = timer.g_timer.time  # Used for timing passive regeneration
 
+        self.gun_l = PlayerGun(self, items.WEAPONS[0])
+        self.gun_r = PlayerGun(self, items.WEAPONS[1])
         self.max_ammo = 40
         self.ammo = self.max_ammo
         self.bullet_vel = 10
-        self.gun_cooldown = 0.12
+        self.gun_cooldown = 0.15
         self.last_shot_time = time.time()
 
         self.grapple_speed = 2.0
@@ -256,43 +271,45 @@ class Player(cb.ActorBase):
             return output
 
     def shoot(self):
-        """Shoots bullets.
-        """
-        angle = math.radians(calc.get_angle_to_mouse(self))
-        vel_x = self.bullet_vel * -math.sin(angle)
-        vel_y = self.bullet_vel * -math.cos(angle)
-
+        """Shoots bullets"""
         offset = vec((21, 30))
+        angle = math.radians(calc.get_angle_to_mouse(self))
+        self.gun_cooldown = max(self.gun_l.cooldown, self.gun_r.cooldown)
 
-        if (ctrl.is_input_held[1] and
-                self.ammo > 0 and
-                calc.get_game_tdiff(self.last_shot_time) >= self.gun_cooldown):
-            # Standard bullets
-            if self.bullet_type == cst.PROJ_STD:
-                groups.all_projs.add(
-                    proj.PlayerStdBullet(self.pos.x - (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
-                                         self.pos.y + (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
-                                         vel_x, vel_y),
-                    proj.PlayerStdBullet(self.pos.x + (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
-                                         self.pos.y - (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
-                                         vel_x, vel_y)
-                )
+        if ctrl.is_input_held[1] and self.ammo > 0 and calc.get_game_tdiff(self.last_shot_time) >= self.gun_cooldown:
+            # ---------- Left Side Guns ---------- #
+            l_x_off = -offset.x * math.cos(angle) - offset.y * math.sin(angle)  # Barrel-bullet x-offset
+            l_y_off = offset.x * math.sin(angle) - offset.y * math.cos(angle)  # Barrel-bullet y-offset
+            l_vel_x = self.gun_l.bullet_vel * -math.sin(angle)
+            l_vel_y = self.gun_l.bullet_vel * -math.cos(angle)
 
-            # Laser bullets
-            elif self.bullet_type == cst.PROJ_LASER:
+            if self.gun_l.weapon == items.WEAPONS[0]:
                 groups.all_projs.add(
-                    proj.PlayerLaserBullet(self.pos.x - (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
-                                           self.pos.y + (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
-                                           vel_x * 2, vel_y * 2),
-                    proj.PlayerLaserBullet(self.pos.x + (offset.x * math.cos(angle)) - (offset.y * math.sin(angle)),
-                                           self.pos.y - (offset.x * math.sin(angle)) - (offset.y * math.cos(angle)),
-                                           vel_x * 2, vel_y * 2)
+                    proj.PlayerStdBullet(self.pos.x + l_x_off, self.pos.y + l_y_off, l_vel_x, l_vel_y)
                 )
+            else:
+                raise RuntimeError(f'{self.gun_l.weapon} is not a valid weapon for gun_l.')
+
+            # ---------- Right Side Guns ---------- #
+            r_x_off = offset.x * math.cos(angle) - offset.y * math.sin(angle)
+            r_y_off = -offset.x * math.sin(angle) - offset.y * math.cos(angle)
+            r_vel_x = self.gun_r.bullet_vel * -math.sin(angle)
+            r_vel_y = self.gun_r.bullet_vel * -math.cos(angle)
+
+            if self.gun_r.weapon == items.WEAPONS[1]:
+                groups.all_projs.add(
+                    proj.PlayerStdBullet(self.pos.x + r_x_off, self.pos.y + r_y_off, r_vel_x, r_vel_y)
+                )
+            else:
+                raise RuntimeError(f'{self.gun_r.weapon} is not a valid weapon for gun_r')
 
             self.ammo -= 1
             self.last_shot_time = timer.g_timer.time
 
         # ------------------------------ Firing Portals ------------------------------ #
+        vel_x = self.bullet_vel * -math.sin(angle)
+        vel_y = self.bullet_vel * -math.cos(angle)
+
         if ctrl.key_released[3] % 2 == 0 and self.can_portal:
             groups.all_projs.add(proj.PortalBullet(self.pos.x, self.pos.y, vel_x, vel_y))
             self.can_portal = False
@@ -393,3 +410,12 @@ class Player(cb.ActorBase):
 
     def __repr__(self):
         return f'Player({self.pos}, {self.vel}, {self.accel}, {self.bullet_type}, {self.xp}, {self.level})'
+
+
+if __name__ == '__main__':
+    import timeit
+    import rooms
+
+    room_test = rooms.Room(0, 0)
+    player_test = Player()
+    print(timeit.timeit('player_test.shoot()', number=10000, globals=globals()))

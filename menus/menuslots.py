@@ -22,7 +22,7 @@ class SlotBase(cb.ActorBase):
         """The base class for all inventory slots.
 
         :param gamestate: The gamestate the slot should be displayed in
-        :param owner: The owner of the inventory menu (should be the player)
+        :param owner: The owner of the slot (should be the inventory menu)
         :param pos_x: The x-position to spawn the slot at
         :param pos_y: The y-position to spawn the slot at
         """
@@ -31,6 +31,7 @@ class SlotBase(cb.ActorBase):
 
         self.pos = vec(pos_x, pos_y)
         self.start_pos = vec(pos_x, pos_y)
+        self.screen_pos = vec(pos_x, pos_y)
         self.is_panning = False
 
         self.menu_sheet = spritesheet.Spritesheet("sprites/ui/menu_item_slot.png", 1)
@@ -58,14 +59,14 @@ class MaterialSlot(SlotBase):
     def __init__(self, owner, pos_x: int | float, pos_y: int | float, item_held: str | None):
         """A menu slot that shows the collected amount of a specific item.
 
-        :param owner: The owner of the inventory to whom the menu slot belongs to
+        :param owner: The inventory the slot belongs to
         :param pos_x: The x-position to spawn at
         :param pos_y: The y-position to spawn at
         :param item_held: The item the menu slot will hold. Items are chosen from MATERIALS dictionary.
         """
         super().__init__(gs.s_inventory, owner, pos_x, pos_y)
         self.show()
-        groups.all_slots.add(self)
+        groups.all_material_slots.add(self)
 
         self.holding = item_held
         self.count = 0
@@ -124,7 +125,7 @@ class MaterialSlot(SlotBase):
     def update(self):
         self.center_rects()
 
-        self.count = self.owner.my_materials[self.holding]
+        self.count = self.owner.owner.my_materials[self.holding]
         if self.last_count != self.count:
             self.images = self.create_slot_images()
             self.last_count = self.count
@@ -146,7 +147,7 @@ class ArmorSlot(SlotBase):
     def __init__(self, owner, pos_x, pos_y, armor_held: str):
         super().__init__(gs.s_inventory, owner, pos_x, pos_y)
         self.show()
-        groups.all_slots.add(self)
+        groups.all_armor_slots.add(self)
 
         self.holding = armor_held
         self.armor_sheet = spritesheet.Spritesheet('sprites/textures/armor_items.png', 16)
@@ -173,20 +174,7 @@ class ArmorSlot(SlotBase):
         armor_images = self._get_armor_images()
 
         for frame in armor_images:
-            menu_image = pygame.Surface(vec(64, 64))
-
-            # if self.owner.my_armors[self.holding]:
             menu_image = visuals.stack_images(self.menu_image, frame, 0, 0)
-
-            # elif not self.owner.my_armors[self.holding]:
-            #     blanked_frame = pygame.Surface(frame.get_size())
-            #     blanked_frame.fill((0, 0, 1))
-            #
-            #     mix_frame: pygame.Surface = frame.copy()
-            #     mix_frame.blit(blanked_frame, vec(0, 0), special_flags=pygame.BLEND_MULT)
-            #
-            #     menu_image = visuals.stack_images(self.menu_image, mix_frame, 0, 0)
-
             menu_image.set_colorkey((0, 0, 0))
             final_images.append(menu_image)
 
@@ -200,12 +188,24 @@ class ArmorSlot(SlotBase):
         if (self.hitbox.collidepoint(pygame.mouse.get_pos()) and ctrl.is_input_held[1]
                 and (ArmorSlot.current_clicked is self or ArmorSlot.current_clicked is None)):
             ArmorSlot.current_clicked = self
-        elif self.hitbox.collidepoint(pygame.mouse.get_pos()) and not ctrl.is_input_held[1]:
-            self.pos = self.start_pos.copy()
+
+        elif (self.hitbox.collidepoint(pygame.mouse.get_pos()) and not ctrl.is_input_held[1]
+              and ArmorSlot.current_clicked is not None):
+            if self.hitbox.colliderect(self.owner.armor_select.hitbox):
+                # Returns slot that is being replaced back to correct position
+                for slot in [s for s in groups.all_armor_slots if s != ArmorSlot.current_clicked]:
+                    slot.pos = slot.screen_pos
+                self.owner.armor_select.equipped = ArmorSlot.current_clicked
+                ArmorSlot.current_clicked.pos = self.owner.armor_select.pos
+            else:
+                ArmorSlot.current_clicked.pos = ArmorSlot.current_clicked.screen_pos
             ArmorSlot.current_clicked = None
 
         if ArmorSlot.current_clicked is self:
             self.pos = vec(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
+            gs.s_inventory.all_sprites.change_layer(self, cst.LAYER['ui_1'] + 1)
+        else:
+            gs.s_inventory.all_sprites.change_layer(self, cst.LAYER['ui_1'])
 
     def update(self):
         self.center_rects()
@@ -214,7 +214,6 @@ class ArmorSlot(SlotBase):
 
         self.hover()
         self.drag()
-        print(ArmorSlot.current_clicked)
 
     def _animate(self):
         if calc.get_time_diff(self.last_frame) > 0.1:
@@ -226,3 +225,20 @@ class ArmorSlot(SlotBase):
 
     def __repr__(self):
         return f'ArmorSlot({self.holding}, {self.start_pos}, {self.pos})'
+
+
+class SelectionSlotA(SlotBase):
+    def __init__(self, owner, pos_x, pos_y):
+        super().__init__(gs.s_inventory, owner, pos_x, pos_y)
+        self.show()
+        groups.all_material_slots.add(self)
+
+        self.set_images('sprites/ui/menu_item_slot.png', 64, 64, 3, 1, 1)
+        self.set_rects(0, 0, 64, 64, 64, 64)
+
+        self.equipped = None
+
+    def update(self):
+        self.center_rects()
+        if self.equipped is not None:
+            print(self.equipped)

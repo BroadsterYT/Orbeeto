@@ -2,17 +2,18 @@
 Module containing all armor, weapons, and accessories.
 """
 ARMOR = {
-    0: 'placeholder_000',
+    0: 'standard_A000',
     1: 'placeholder_001',
     2: 'placeholder_002',
 }
 
-WEAPONS = {  # TODO: Implementation of weapon selection can utilize even/odd key values for each
-    0: 'placeholder_L000',
-    1: 'placeholder_R000',
-    2: 'placeholder_L001',
-    3: 'placeholder_R001',
+WEAPONS = {
+    0: 'standard_L000',
+    1: 'standard_R000',
+    2: 'laser_L001',
+    3: 'laser_R001',
 }
+
 
 ACCESSORIES = {
     0: 'placeholder_000',

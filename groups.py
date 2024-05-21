@@ -16,7 +16,9 @@ all_movable = Group()
 all_trinkets = Group()
 
 all_drops = Group()
-all_slots = Group()
+
+all_material_slots = Group()
+all_armor_slots = Group()
 
 # --------------------------------- Projectile groups ---------------------------------#
 all_projs = Group()  # noqa

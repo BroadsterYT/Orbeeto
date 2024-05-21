@@ -1,4 +1,3 @@
-import os
 import time
 
 import pygame
@@ -33,9 +32,12 @@ class InventoryMenu(cb.AbstractBase):
         self.right_arrow = menus.MenuArrow(gs.s_inventory, cst.WINWIDTH - 64, cst.WINHEIGHT / 2, cst.EAST, self.pan_left)
         self.left_arrow = menus.MenuArrow(gs.s_inventory, 64, cst.WINHEIGHT / 2, cst.WEST, self.pan_right)
 
+        self.armor_select = menus.SelectionSlotA(self, 600, 600)
+
         self.add(
             self.build_materials_slots(),
-            self.build_armor_slots()  # noqa
+            self.build_armor_slots(),  # noqa
+            self.armor_select  # noqa
         )
 
     def pan_left(self):
@@ -67,7 +69,7 @@ class InventoryMenu(cb.AbstractBase):
                     sprite.pos.x = calc.cerp(sprite.start_pos.x, sprite.start_pos.x - cst.WINWIDTH, weight)
             else:
                 for sprite in self.sprites():
-                    sprite.start_pos.x = sprite.pos.x
+                    sprite.start_pos.x -= cst.WINWIDTH
                     sprite.is_panning = False
                 self.cycling_left = False
 
@@ -79,7 +81,7 @@ class InventoryMenu(cb.AbstractBase):
                     sprite.pos.x = calc.cerp(sprite.start_pos.x, sprite.start_pos.x + cst.WINWIDTH, weight)
             else:
                 for sprite in self.sprites():
-                    sprite.start_pos.x = sprite.pos.x
+                    sprite.start_pos.x += cst.WINWIDTH
                     sprite.is_panning = False
                 self.cycling_right = False
 
@@ -96,7 +98,7 @@ class InventoryMenu(cb.AbstractBase):
         for y in range(5):
             for x in range(5):
                 menu_slots.append(
-                    menus.MaterialSlot(self.owner, space.x, space.y, items.MATERIALS[count])
+                    menus.MaterialSlot(self, space.x, space.y, items.MATERIALS[count])
                 )
                 space.x += space_cushion.x
                 offset += 1
@@ -118,7 +120,7 @@ class InventoryMenu(cb.AbstractBase):
         for y in range(1):
             for x in range(3):
                 menu_slots.append(
-                    menus.ArmorSlot(self.owner, space.x, space.y, items.ARMOR[count])
+                    menus.ArmorSlot(self, space.x, space.y, items.ARMOR[count])
                 )
                 space.x += space_cushion.x
                 offset += 1
