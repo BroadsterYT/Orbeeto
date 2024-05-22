@@ -109,12 +109,9 @@ class Player(cb.ActorBase):
         self.bullet_vel = 10
         self.gun_cooldown = 0.15
         self.last_shot_time = time.time()
-
-        self.grapple_speed = 2.0
-
         self.last_hit = timer.g_timer.time
 
-        self.update_level()
+        self.grapple_speed = 2.0
 
         # --------------------------------- Stat Bars -------------------------------- #
         self.health_bar = statbars.StatBar(self, 0, 'hp', 'max_hp', 'sprites/stat_bars/health_bar.png')
@@ -129,6 +126,7 @@ class Player(cb.ActorBase):
         for armor in items.ARMOR.values():
             self.my_armors.update({armor: False})
         self.my_armors.update({items.ARMOR[0]: True})
+        self.current_armor = items.ARMOR_DATA[None]
 
         self.my_weapons = {}
         for weapon in items.WEAPONS.values():
@@ -142,6 +140,8 @@ class Player(cb.ActorBase):
         self.grapple = None
         self.can_grapple = True
         self.grapple_input_copy = ctrl.key_released[ctrl.K_GRAPPLE]
+
+        self.update_level()
 
     @property
     def xp(self):
@@ -159,13 +159,15 @@ class Player(cb.ActorBase):
     # ----------------------------------- Stats ---------------------------------- #
     def update_max_stats(self):
         """Updates all the player's max stats."""
-        self.max_hp = math.floor(calc.eerp(50, 650, self.level / self.max_level))
-        self.max_defense = math.floor(calc.eerp(15, 800, self.level / self.max_level))
-        self.max_ammo = math.floor(calc.eerp(40, 500, self.level / self.max_level))
-
+        self.max_hp = math.floor(calc.eerp(50, 650, self.level / self.max_level)) + self.current_armor.hp_mod
+        self.max_defense = math.floor(calc.eerp(15, 800, self.level / self.max_level)) + self.current_armor.def_mod
+        self.max_ammo = math.floor(calc.eerp(40, 500, self.level / self.max_level)) + self.current_armor.ammo_mod
         self.grapple_speed = math.floor(calc.eerp(2.0, 4.0, self.level / self.max_level))
 
         self.defense = self.max_defense
+
+        if self.ammo > self.max_ammo:  # TODO: fix stat bars to allow handling of values over their max
+            self.ammo = self.max_ammo
 
     def update_level(self) -> None:
         """Updates the level of the player using the amount of xp collected.
@@ -176,9 +178,22 @@ class Player(cb.ActorBase):
         self.level = math.floor((256 * self.xp) / (self.xp + 16384))
         self.update_max_stats()
 
-    def _passive_hp_regen(self) -> None:
-        """Regenerates the player's HP after not being attacked for a period of time.
+    def update_armor_buffs(self, new_armor_name) -> None:
+        """Updates the player's stats with the correct effects declared by the player's equipment
+
+        :param new_armor_name: The name of the new armor equipped
+        :return: None
         """
+        self.update_max_stats()
+        print(new_armor_name)
+        if new_armor_name == items.ARMOR[0]:
+            self.current_armor = items.ARMOR_DATA[items.ARMOR[0]]
+        else:
+            self.current_armor = items.ARMOR_DATA[None]
+        self.update_max_stats()
+
+    def _passive_hp_regen(self) -> None:
+        """Regenerates the player's HP after not being attacked for a period of time."""
         time_hit = calc.get_game_tdiff(self.last_hit)
         regen_delay = 5
         regens_per_sec = 0
@@ -229,9 +244,9 @@ class Player(cb.ActorBase):
 
     def _get_x_axis_output(self) -> float:
         output = 0.0
-        if ctrl.is_input_held[ctrl.K_MOVE_LEFT]:
+        if ctrl.is_input_held[self.room.binds[cst.WEST]]:
             output -= self.accel_const
-        if ctrl.is_input_held[ctrl.K_MOVE_RIGHT]:
+        if ctrl.is_input_held[self.room.binds[cst.EAST]]:
             output += self.accel_const
 
         if self.is_swinging():
@@ -242,9 +257,9 @@ class Player(cb.ActorBase):
 
     def _get_y_axis_output(self) -> float:
         output = 0.0
-        if ctrl.is_input_held[ctrl.K_MOVE_UP]:
+        if ctrl.is_input_held[self.room.binds[cst.NORTH]]:
             output -= self.accel_const
-        if ctrl.is_input_held[ctrl.K_MOVE_DOWN]:
+        if ctrl.is_input_held[self.room.binds[cst.SOUTH]]:
             output += self.accel_const
 
         if self.is_swinging():
@@ -398,15 +413,8 @@ class Player(cb.ActorBase):
         if self.hp <= 0:
             self.kill()
 
-    def display_weapon(self) -> None:
-        pass
-
     def _animate(self):
         pass
-
-    def __str__(self):
-        return (f'Player at {self.pos}\nvel: {self.vel}\naccel: {self.accel}\ncurrent bullet: {self.bullet_type}\n'
-                f'xp: {self.xp}\nlevel: {self.level}\n room: {self.room.room}')
 
     def __repr__(self):
         return f'Player({self.pos}, {self.vel}, {self.accel}, {self.bullet_type}, {self.xp}, {self.level})'

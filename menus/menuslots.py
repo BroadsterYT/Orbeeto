@@ -31,7 +31,6 @@ class SlotBase(cb.ActorBase):
 
         self.pos = vec(pos_x, pos_y)
         self.start_pos = vec(pos_x, pos_y)
-        self.screen_pos = vec(pos_x, pos_y)
         self.is_panning = False
 
         self.menu_sheet = spritesheet.Spritesheet("sprites/ui/menu_item_slot.png", 1)
@@ -149,6 +148,8 @@ class ArmorSlot(SlotBase):
         self.show()
         groups.all_armor_slots.add(self)
 
+        self.screen_pos = vec(pos_x % cst.WINWIDTH, pos_y)
+
         self.holding = armor_held
         self.armor_sheet = spritesheet.Spritesheet('sprites/textures/armor_items.png', 16)
 
@@ -198,6 +199,14 @@ class ArmorSlot(SlotBase):
                 self.owner.armor_select.equipped = ArmorSlot.current_clicked
                 ArmorSlot.current_clicked.pos = self.owner.armor_select.pos
             else:
+                # Checking if equip slot is empty
+                empty_check = True
+                for slot in groups.all_armor_slots:
+                    if slot.hitbox.colliderect(self.owner.armor_select.hitbox):
+                        empty_check = False
+                if empty_check:
+                    self.owner.armor_select.equipped = None
+                # ----------------------------- #
                 ArmorSlot.current_clicked.pos = ArmorSlot.current_clicked.screen_pos
             ArmorSlot.current_clicked = None
 
@@ -224,7 +233,7 @@ class ArmorSlot(SlotBase):
             self.last_frame = time.time()
 
     def __repr__(self):
-        return f'ArmorSlot({self.holding}, {self.start_pos}, {self.pos})'
+        return f'ArmorSlot({self.holding}, {self.pos}, {self.start_pos}, {self.screen_pos})'
 
 
 class SelectionSlotA(SlotBase):
@@ -240,5 +249,4 @@ class SelectionSlotA(SlotBase):
 
     def update(self):
         self.center_rects()
-        if self.equipped is not None:
-            print(self.equipped)
+        print(self.equipped)

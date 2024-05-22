@@ -26,13 +26,14 @@ class InventoryMenu(cb.AbstractBase):
 
         self.last_release_value = ctrl.key_released[ctrl.K_MENU]
         self.is_open = False
-
         self.last_cycle = time.time()
 
-        self.right_arrow = menus.MenuArrow(gs.s_inventory, cst.WINWIDTH - 64, cst.WINHEIGHT / 2, cst.EAST, self.pan_left)
+        self.right_arrow = menus.MenuArrow(gs.s_inventory, cst.WINWIDTH - 64, cst.WINHEIGHT / 2, cst.EAST,
+                                           self.pan_left)
         self.left_arrow = menus.MenuArrow(gs.s_inventory, 64, cst.WINHEIGHT / 2, cst.WEST, self.pan_right)
 
-        self.armor_select = menus.SelectionSlotA(self, 600, 600)
+        self.armor_select = menus.SelectionSlotA(self, 600 + cst.WINWIDTH, 600)
+        self.last_armor_equip = None
 
         self.add(
             self.build_materials_slots(),
@@ -113,7 +114,7 @@ class InventoryMenu(cb.AbstractBase):
         :return: A list containing the armor slots created
         """
         count = 0
-        space = vec(512, 64)
+        space = vec(512 + cst.WINWIDTH, 64)
         space_cushion = vec(82, 82)
         menu_slots = []
         offset = 0
@@ -129,6 +130,18 @@ class InventoryMenu(cb.AbstractBase):
             space.x = 512
         return menu_slots
 
+    def check_equipped(self) -> None:
+        """Checks which equipment is locked into each equipment slot and updates the player's stats accordingly"""
+        # print(self.armor_select.equipped)
+        if self.armor_select.equipped != self.last_armor_equip:
+            if self.armor_select.equipped is None:
+                self.owner.update_armor_buffs(None)
+                self.last_armor_equip = self.armor_select.equipped
+            else:
+                armor_name = self.armor_select.equipped.holding
+                self.owner.update_armor_buffs(armor_name)  # player1.update_armor_buffs()
+                self.last_armor_equip = self.armor_select.equipped
+
     def update(self):
         # ----- Prevents the arrows in the inventory menu from being clicked when closed ----- #
         if self.is_open:
@@ -137,3 +150,4 @@ class InventoryMenu(cb.AbstractBase):
             pass
         # ------------------------------------------------------------------------------------ #
         self.cycle_menu()
+        self.check_equipped()
