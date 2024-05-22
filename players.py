@@ -166,6 +166,8 @@ class Player(cb.ActorBase):
 
         self.defense = self.max_defense
 
+        if self.hp > self.max_hp:
+            self.hp = self.max_hp
         if self.ammo > self.max_ammo:  # TODO: fix stat bars to allow handling of values over their max
             self.ammo = self.max_ammo
 

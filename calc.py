@@ -195,7 +195,7 @@ def calculate_damage(receiver, proj) -> int:
     :param proj: The projectile the receiver got hit by
     :return: The damage the receiver will take
     """
-    damage = math.ceil(proj.damage - receiver.defense)
+    damage = math.ceil(proj.damage / ((receiver.defense * 100) / 100))
     if damage <= 0:
         damage = 1
 
