@@ -36,7 +36,7 @@ class ItemDrop(cb.ActorBase):
 
         self.start_time = timer.g_timer.time
 
-        self.accel_const = 0.8
+        self.accel_const = 0.58
         self.pos = vec((pos_x, pos_y))
         self.rand_accel = calc.get_rand_components(self.accel_const)
         
@@ -58,7 +58,7 @@ class ItemDrop(cb.ActorBase):
 
     def movement(self):
         if self.can_update:
-            if calc.get_time_diff(self.start_time) > 0.1:
+            if calc.get_time_diff(self.start_time) > 0.5:
                 self.collide_check(groups.all_walls)
 
             self.rect = self.image.get_rect(center=self.rect.center)

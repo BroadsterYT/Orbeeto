@@ -30,7 +30,7 @@ ARMOR = {
 
 ARMOR_DATA = {
     None: ArmorData('None'),
-    ARMOR[0]: ArmorData(ARMOR[0], hp_mod=10, ammo_mod=50),
+    ARMOR[0]: ArmorData(ARMOR[0], hp_mod=10, ammo_mod=20),
 }
 
 WEAPONS = {
