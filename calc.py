@@ -69,14 +69,23 @@ def get_angle(first_obj, sec_obj) -> float:
     else:
         if length_to_y == 0:
             if length_to_x > 0:
-                return -90
+                return 270
             else:
                 return 90
         else:
             if length_to_y > 0:
-                return -180
+                return 180
             else:
                 return 0
+
+
+def rectify_angle_deg(angle):
+    if angle < 0:
+        return angle + 360
+    elif angle > 360:
+        return angle - 360
+    else:
+        return angle
 
 
 def get_dist(first_input, sec_input) -> float:
@@ -115,12 +124,12 @@ def get_vec_angle(vec_x: int | float, vec_y: int | float) -> float:
     else:
         if vec_y == 0:
             if vec_x > 0:
-                return -90
+                return 270
             else:
                 return 90
         else:
             if vec_y > 0:
-                return -180
+                return 180
             else:
                 return 0
 
@@ -174,7 +183,7 @@ def eerp(a: int | float, b: int | float, weight: float) -> float:
     if (a < 0 < b) or (a > 0 > b):
         raise ValueError('Error: \"a\" and \"b\" cannot have opposite signs')
 
-    true_b = pow(a / b, -1)
+    true_b = b / a
     true_a = a
 
     if weight > 1:

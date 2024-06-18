@@ -14,6 +14,7 @@ import calc
 import classbases as cb
 import constants as cst
 import groups
+import timer
 
 
 class StandardGrunt(enemybase.EnemyBase):
@@ -235,6 +236,7 @@ class Ambusher(enemybase.EnemyBase):
 
         self.pos = vec((pos_x, pos_y))
         self.set_room_pos()
+        self.last_shot = timer.g_timer.time
 
         self.movement_timer = time.time()
         self.movement_angle = calc.get_angle(self, calc.get_closest_player())
@@ -259,6 +261,10 @@ class Ambusher(enemybase.EnemyBase):
 
             # Stop movement and change direction
             if calc.get_time_diff(self.movement_timer) >= 1:
+                groups.all_projs.add(
+                    proj.AmbusherDasher(self.pos.x, self.pos.y, 90),
+                    proj.AmbusherDasher(self.pos.x, self.pos.y, 270),
+                )
                 self.movement_timer = time.time()
 
         final_accel += room.get_accel()
@@ -266,9 +272,9 @@ class Ambusher(enemybase.EnemyBase):
 
     def movement(self):
         if self.hp > 0:
+            self.collide_check(groups.all_walls)
             self.accel = self.get_accel()
             self.set_room_pos()
-
             self.accel_movement()
 
     def update(self):

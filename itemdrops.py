@@ -4,7 +4,6 @@ Module containing the ItemDrop class.
 import math
 import os
 import random as rand
-import time
 
 import pygame
 from pygame.math import Vector2 as vec
