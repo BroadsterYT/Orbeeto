@@ -119,6 +119,7 @@ async def main(max_frame_rate) -> None:
         # Draw framerate on screen
         try:
             text.draw_text(f'{pow(screen.dt, -1)}', 0, 0)
+            text.draw_text(f'{main_room.player1}', 0, 16)
         except ZeroDivisionError:
             pass
 

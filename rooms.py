@@ -82,9 +82,9 @@ class Room(cb.AbstractBase):
         self.accel_const = self.player1.accel_const
 
         self._room_specs = {
-            (0, 0): RoomSpecs(1280, 720, True, True),
+            (0, 0): RoomSpecs(1280, 720, True, False),
             (0, 1): RoomSpecs(640, 360, False, False),
-            (0, 2): RoomSpecs(1280, 720, True, False),
+            (0, 2): RoomSpecs(1280, 720, False, True),
         }
 
         self.layout_update()
@@ -495,32 +495,28 @@ class Room(cb.AbstractBase):
                 if dir_out == dir_in:
                     self.player1.vel = self.player1.vel.rotate(dir_angles[dir_out])
                 if dir_out in [cst.EAST, cst.WEST]:
-                    self._translate_trajectory(True, dir_angles[dir_out])
-                    self.player1.vel.y = 0
+                    self._translate_vel(dir_angles[dir_out])
 
             if dir_in == cst.EAST:
                 dir_angles.update({cst.SOUTH: 90, cst.EAST: 180, cst.NORTH: 270, cst.WEST: 0})
                 if dir_out == dir_in:
                     self._sprites_rotate_trajectory(dir_angles[dir_out])
                 if dir_out in [cst.SOUTH, cst.NORTH]:
-                    self._translate_trajectory(False, dir_angles[dir_out])
-                    self.vel.x = 0
+                    self._translate_vel(dir_angles[dir_out])
 
             if dir_in == cst.NORTH:
                 dir_angles.update({cst.SOUTH: 0, cst.EAST: 90, cst.NORTH: 180, cst.WEST: 270})
                 if dir_out == dir_in:
                     self.player1.vel = self.player1.vel.rotate(dir_angles[dir_out])
                 if dir_out in [cst.EAST, cst.WEST]:
-                    self._translate_trajectory(True, dir_angles[dir_out])
-                    self.player1.vel.y = 0
+                    self._translate_vel(dir_angles[dir_out])
 
             if dir_in == cst.WEST:
                 dir_angles.update({cst.SOUTH: 270, cst.EAST: 0, cst.NORTH: 90, cst.WEST: 180})
                 if dir_out == dir_in:
                     self._sprites_rotate_trajectory(dir_angles[dir_out])
                 if dir_out in [cst.SOUTH, cst.NORTH]:
-                    self._translate_trajectory(False, dir_angles[dir_out])
-                    self.vel.x = 0
+                    self._translate_vel(dir_angles[dir_out])
 
         elif not self.is_scrolling_x and self.is_scrolling_y:
             if dir_in == cst.SOUTH:
@@ -528,32 +524,28 @@ class Room(cb.AbstractBase):
                 if dir_out == dir_in:
                     self._sprites_rotate_trajectory(dir_angles[dir_out])
                 if dir_out in [cst.EAST, cst.WEST]:
-                    self._translate_trajectory(False, dir_angles[dir_out])
-                    self.vel.y = 0
+                    self._translate_vel(dir_angles[dir_out])
 
             if dir_in == cst.EAST:
                 dir_angles.update({cst.SOUTH: 90, cst.EAST: 180, cst.NORTH: 270, cst.WEST: 0})
                 if dir_out == dir_in:
                     self.player1.vel = self.player1.vel.rotate(dir_angles[dir_out])
                 if dir_out in [cst.SOUTH, cst.NORTH]:
-                    self._translate_trajectory(True, dir_angles[dir_out])
-                    self.player1.vel.x = 0
+                    self._translate_vel(dir_angles[dir_out])
 
             if dir_in == cst.NORTH:
                 dir_angles.update({cst.SOUTH: 0, cst.EAST: 90, cst.NORTH: 180, cst.WEST: 270})
                 if dir_out == dir_in:
                     self._sprites_rotate_trajectory(dir_angles[dir_out])
                 if dir_out in [cst.EAST, cst.WEST]:
-                    self._translate_trajectory(False, dir_angles[dir_out])
-                    self.vel.y = 0
+                    self._translate_vel(dir_angles[dir_out])
 
             if dir_in == cst.WEST:
                 dir_angles.update({cst.SOUTH: 270, cst.EAST: 0, cst.NORTH: 90, cst.WEST: 180})
                 if dir_out == dir_in:
                     self.player1.vel = self.player1.vel.rotate(dir_angles[dir_out])
                 if dir_out in [cst.SOUTH, cst.NORTH]:
-                    self._translate_trajectory(True, dir_angles[dir_out])
-                    self.player1.vel.x = 0
+                    self._translate_vel(dir_angles[dir_out])
 
         elif not self.is_scrolling_x and not self.is_scrolling_y:
             if dir_in == cst.EAST:
@@ -575,19 +567,17 @@ class Room(cb.AbstractBase):
         for sprite in self._get_sprites_to_recenter():
             sprite.vel = sprite.vel.rotate(angle)
 
-    def _translate_trajectory(self, is_player_to_room: bool, angle: float) -> None:
-        """Translates the velocity of the room's sprites to the player, or vice versa
+    def _translate_vel(self, angle: float) -> None:
+        """Sets the room's velocity equal to the player's rotated velocity and vice versa
 
-        :param is_player_to_room: Should velocity be swapped from player to room (True), or from room to player (False)?
-        :param angle: The angle to rotate the trajectory by
+        :param angle: The angle to rotate the velocities by
         :return: None
         """
-        if is_player_to_room:
-            for sprite in self._get_sprites_to_recenter():
-                sprite.vel = self.player1.vel.rotate(angle)
-
-        elif not is_player_to_room:
-            self.player1.vel = self.vel.rotate(angle)
+        room_vel_copy = self.vel.copy()
+        player_vel_copy = self.player1.vel.copy()
+        for sprite in self._get_sprites_to_recenter():
+            sprite.vel = player_vel_copy.rotate(angle)
+        self.player1.vel = room_vel_copy.rotate(angle)
 
     def _sprite_collide_check(self, instig, *contact_list) -> None:
         """Collide check for when the room is scrolling
@@ -832,20 +822,20 @@ class Room(cb.AbstractBase):
                 trinkets.LockedWall(64, 0, 1028, 0, 1, 76, 4),
                 trinkets.PortalBlocker(0, 0, 1, 4, 45),
 
-                enemies.Ambusher(500, 300),
+                # enemies.Ambusher(500, 300),
             ]
 
         elif self.room == vec(0, 1):
             return [
                 tiles.Wall(320, 180, 16, 4),
                 tiles.Wall(320, 180, 4, 8),
-                trinkets.Box(cst.WINWIDTH // 2, cst.WINHEIGHT // 2),
-                enemies.Ambusher(cst.WINWIDTH // 2, cst.WINHEIGHT // 2)
+                # trinkets.Box(cst.WINWIDTH // 2, cst.WINHEIGHT // 2),
+                # enemies.Ambusher(cst.WINWIDTH // 2, cst.WINHEIGHT // 2)
             ]
 
         elif self.room == vec(0, 2):
             return [
-                tiles.Wall(0, 0, 16, 4),
+                tiles.Wall(600, 400, 16, 4),
             ]
 
         else:

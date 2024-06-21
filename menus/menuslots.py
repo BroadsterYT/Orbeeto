@@ -187,7 +187,8 @@ class ArmorSlot(SlotBase):
         :return: None
         """
         if (self.hitbox.collidepoint(pygame.mouse.get_pos()) and ctrl.is_input_held[1]
-                and (ArmorSlot.current_clicked is self or ArmorSlot.current_clicked is None)):
+                and (ArmorSlot.current_clicked is self or ArmorSlot.current_clicked is None)
+                and self.owner.owner.my_armors[self.holding]):
             ArmorSlot.current_clicked = self
 
         elif (self.hitbox.collidepoint(pygame.mouse.get_pos()) and not ctrl.is_input_held[1]
