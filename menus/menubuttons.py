@@ -9,6 +9,7 @@ import pygame
 from pygame.math import Vector2 as vec
 
 import controls as ctrl
+import screen
 import text
 
 import calc
@@ -34,7 +35,6 @@ class MenuButton(cb.ActorBase):
         """
         super().__init__(cst.LAYER['ui_2'], gamestate)
         self.show()
-        self.displayed = False
 
         self.func = func_call
         self.func_args = args
@@ -42,7 +42,6 @@ class MenuButton(cb.ActorBase):
 
         self.last_release_value = ctrl.key_released[1]
         self.pos = vec(pos_x, pos_y)
-        self.return_pos = vec(pos_x, pos_y)
 
         # Building image
         self.name = text.text_to_image(name, text.dialogue_font)
@@ -81,6 +80,21 @@ class MenuButton(cb.ActorBase):
     def update(self):
         self.check_for_click()
         self.hover()
+
+
+class MenuSlider(cb.ActorBase):
+    def __init__(self, gamestate: gs.GameState, pos_x: float, pos_y: float, length: int):
+        """A slider that controls a value
+
+        :param gamestate: The gamestate the slider should appear in
+        :param pos_x: The x-axis position to spawn the slider
+        :param pos_y: The y-axis position to spawn the slider
+        :param length: The length of the menu slider (in pixels)
+        """
+        super().__init__(cst.LAYER['ui_2'], gamestate)
+        self.show()
+
+        self.pos = vec(pos_x, pos_y)
 
 
 class MenuArrow(cb.ActorBase):

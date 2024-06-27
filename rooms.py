@@ -82,7 +82,7 @@ class Room(cb.AbstractBase):
         self.accel_const = self.player1.accel_const
 
         self._room_specs = {
-            (0, 0): RoomSpecs(1280, 720, True, False),
+            (0, 0): RoomSpecs(1280, 720, True, True),
             (0, 1): RoomSpecs(640, 360, False, False),
             (0, 2): RoomSpecs(1280, 720, False, True),
         }

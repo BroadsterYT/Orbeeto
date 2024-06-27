@@ -10,6 +10,7 @@ from pygame.math import Vector2 as vec
 
 import controls as ctrl
 import items
+import menus
 import projectiles as proj
 
 import calc
@@ -35,12 +36,12 @@ class PlayerGun(cb.ActorBase):
         self.bullet_vel = 10
         self.cooldown = 0.15
 
-        self.set_guns()
+        self.set_gun()
         self.set_rects(0, 0, 64, 64, 64, 64)
 
         self.pos = self.owner.pos
 
-    def set_guns(self) -> None:
+    def set_gun(self) -> None:
         """Sets the images and attributes of the gun. Determined by the value of 'self.weapon'.
 
         :return: None
@@ -131,7 +132,7 @@ class Player(cb.ActorBase):
         self.my_weapons = {}
         for weapon in items.WEAPONS.values():
             self.my_weapons.update({weapon: False})
-        self.my_weapons.update({items.WEAPONS[0]: True, items.WEAPONS[1]: True})\
+        self.my_weapons.update({items.WEAPONS[0]: True, items.WEAPONS[1]: True})
 
         # ---------------------- Bullets, Portals, and Grapples ---------------------- #
         self.bullet_type = cst.PROJ_STD

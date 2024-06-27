@@ -5,15 +5,18 @@ import timer
 
 
 class GameState:
-    def __init__(self, name: str, update_call=None, *args, **kwargs):
+    def __init__(self, name: str, priority: int, update_call=None, *args, **kwargs):
         """A mode of gameplay that is placed into the game stack
 
-        :param name: The mane of the game state
+        :param name: The name of the game state
+        :param priority: The priority the gamestate takes. (ex. a priority 2 gamestate cannot be placed above a priority
+        3 gamestate)
         :param update_call: A function to call every frame when the game state is at the top of the stack
         :param args: The arguments to pass into the update call
         :param kwargs: The keyword arguments to pass into the update call
         """
         self.name = name
+        self.priority = priority
         self.all_sprites = pygame.sprite.LayeredUpdates()
         self.groups = []
 
@@ -25,9 +28,10 @@ class GameState:
         return f'GameState({self.name}, {self.all_sprites})'
 
 
-s_action = GameState('action', timer.g_timer.update_current_time)
-s_pause = GameState('pause', timer.g_timer.update_elapsed_time)
-s_inventory = GameState('inventory', timer.g_timer.update_elapsed_time)
+s_action = GameState('action', 0,  timer.g_timer.update_current_time)
+s_pause = GameState('pause', 2, timer.g_timer.update_elapsed_time)
+s_settings = GameState('settings', 3, timer.g_timer.update_elapsed_time)
+s_inventory = GameState('inventory', 1, timer.g_timer.update_elapsed_time)
 
 
 class GameStack:
@@ -44,6 +48,9 @@ class GameStack:
         """
         if gamestate in self.stack:
             print(f'{gamestate} cannot be added to stack because it is already in stack')
+        elif self.stack[-1].priority > gamestate.priority:
+            print(f'Gamestate \"{gamestate.name}\" (priority {gamestate.priority}) cannot be placed on top of gamestate'
+                  f' \"{self.stack[-1].name}\" (priority {self.stack[-1].priority})')
         else:
             self.stack.append(gamestate)
 
