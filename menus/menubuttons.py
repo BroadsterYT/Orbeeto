@@ -9,7 +9,6 @@ import pygame
 from pygame.math import Vector2 as vec
 
 import controls as ctrl
-import screen
 import text
 
 import calc
@@ -71,7 +70,8 @@ class MenuButton(cb.ActorBase):
 
         :return: None
         """
-        if self.last_release_value == ctrl.key_released[1] - 1 and self.hitbox.collidepoint(pygame.mouse.get_pos()):
+        if (self.last_release_value == ctrl.key_released[1] - 1 and self.hitbox.collidepoint(pygame.mouse.get_pos())
+                and ctrl.last_click_pos[1] == self.gamestate and ctrl.last_release_pos[1] == self.gamestate):
             self.func(*self.func_args, **self.func_kwargs)
             self.last_release_value = ctrl.key_released[1]
         else:
@@ -174,3 +174,7 @@ class MenuArrow(cb.ActorBase):
 
             self.index += 1
             self.last_frame = time.time()
+
+
+if __name__ == '__main__':
+    pass

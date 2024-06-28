@@ -127,6 +127,18 @@ async def main(max_frame_rate) -> None:
                 pygame.quit()
                 sys.exit()
 
+        # ---------- Mouse Inputs ---------- #
+        if ctrl.is_input_held[1] and ctrl.release_check:
+            ctrl.last_click_pos = [pygame.mouse.get_pos(), gs.gamestack.stack[-1]]
+            print(f'Clicked at {ctrl.last_click_pos}')
+            ctrl.release_check = False
+
+        if ctrl.last_release_count < ctrl.key_released[1]:
+            ctrl.last_release_pos = [pygame.mouse.get_pos(), gs.gamestack.stack[-1]]
+            print(f'Released at {ctrl.last_release_pos}')
+            ctrl.last_release_count = ctrl.key_released[1]
+            ctrl.release_check = True
+
         # ------------------------------- Redraw Window ------------------------------ #
         redraw_game_window()
 

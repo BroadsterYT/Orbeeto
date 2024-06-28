@@ -10,7 +10,6 @@ from pygame.math import Vector2 as vec
 
 import controls as ctrl
 import items
-import menus
 import projectiles as proj
 
 import calc
@@ -188,7 +187,7 @@ class Player(cb.ActorBase):
         :return: None
         """
         self.update_max_stats()
-        print(new_armor_name)
+        # print(new_armor_name)
         if new_armor_name == items.ARMOR[0]:
             self.current_armor = items.ARMOR_DATA[items.ARMOR[0]]
         else:

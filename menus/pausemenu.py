@@ -19,6 +19,8 @@ class PauseMenu(cb.AbstractBase):
         self.settings_button = menus.MenuButton(gs.s_pause, cst.WINWIDTH // 2, 450, 256, 32, 'Settings', gs.gamestack.push, gs.s_settings)
         self.close_button = menus.MenuButton(gs.s_pause, cst.WINWIDTH // 2, 500, 256, 32, 'Close', sys.exit)
 
+        # self.settings_back = menus.MenuButton(gs.s_settings, cst.WINWIDTH // 2, 500, 256, 32, 'Back', gs.gamestack.pop)
+
         # noinspection PyTypeChecker
         self.add(
             self.settings_button,

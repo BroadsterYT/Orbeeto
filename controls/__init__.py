@@ -9,3 +9,4 @@ Package containing all controls and key_related constants, functions, and variab
 # __init__.py
 from .key_trackers import *
 from .keybinds import *
+from .mouse_tracker import *
