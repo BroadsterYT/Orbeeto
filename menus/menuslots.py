@@ -250,4 +250,3 @@ class SelectionSlotA(SlotBase):
 
     def update(self):
         self.center_rects()
-        print(self.equipped)

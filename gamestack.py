@@ -59,6 +59,19 @@ class GameStack:
             raise RuntimeError(f'Cannot pop {self.stack[0]} from gamestack')
         self.stack.pop()
 
+    def replace(self, old_gamestate: GameState, new_gamestate: GameState) -> None:
+        """Replaces a gamestate in the gamestack with another. If the gamestate being replaced in the stack is not
+        present, then a ValueError will be raised.
+
+        :param old_gamestate: The gamestate being replaced
+        :param new_gamestate:
+        :return: None
+        :raises ValueError: If the gamestate being replaced is not present in the gamestack
+        """
+        old_index = self.stack.index(old_gamestate)
+        self.stack.insert(old_index, new_gamestate)
+        self.stack.remove(old_gamestate)
+
     def update(self):
         self.stack[-1].all_sprites.update()
         self.stack[-1].all_sprites.draw(screen.buffer_screen)

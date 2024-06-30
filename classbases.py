@@ -52,8 +52,7 @@ class ActorBase(pygame.sprite.Sprite):
 
         # Existence booleans
         self.visible = False
-        self.can_update = True
-        self.is_paused = False
+        self._can_update = True
 
         self.last_frame = time.time()
 
@@ -73,9 +72,9 @@ class ActorBase(pygame.sprite.Sprite):
         self.accel_const = 0.58
 
         self.spritesheet = None
-        self.orig_images = None
+        self.orig_images = []
         self.orig_image = None
-        self.images = None
+        self.images = []
         self.image = None
         self.index = 0
 
@@ -97,6 +96,15 @@ class ActorBase(pygame.sprite.Sprite):
             self._layer = value
         else:
             raise ValueError(f"ERROR: Assigning layer of value {value} has no effect.")
+
+    @property
+    def can_update(self):
+        """When true, allows the sprite's update function to be called."""
+        return self._can_update
+
+    @can_update.setter
+    def can_update(self, value: bool):
+        self._can_update = value
 
     # -------------------------------- Visibility -------------------------------- #
     def hide(self) -> None:
@@ -123,7 +131,7 @@ class ActorBase(pygame.sprite.Sprite):
             bool: Whether the sprite can update
         """
         state = True
-        if not self.can_update or self.is_paused:
+        if not self.can_update:
             state = False
         return state
 
@@ -328,7 +336,6 @@ class AbstractBase(pygame.sprite.AbstractGroup):
     def __init__(self):
         super().__init__()
         self.can_update = True
-        self.is_paused = False
 
     def get_update_state(self) -> bool:
         """Returns the update state of the abstract group.
@@ -337,6 +344,6 @@ class AbstractBase(pygame.sprite.AbstractGroup):
             bool: Whether the abstract group can update
         """
         state = True
-        if not self.can_update or self.is_paused:
+        if not self.can_update:
             state = False
         return state

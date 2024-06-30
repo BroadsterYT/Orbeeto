@@ -15,11 +15,13 @@ import calc
 import classbases as cb
 import constants as cst
 import enemies
+import gamestack as gs
 import groups
 import players
 import roomcontainers
 import tiles
 import trinkets
+import visuals
 
 
 class RoomSpecs:
@@ -668,6 +670,8 @@ class Room(cb.AbstractBase):
             calc.kill_groups(groups.all_projs)
 
         elif self.player1.pos.y <= self.border_north.pos.y + height:
+            for sprite in gs.s_action.all_sprites:
+                sprite.can_update = False
             self.room.y += 1
             self.last_dir_entered = cst.NORTH
             self.layout_update()
@@ -821,6 +825,8 @@ class Room(cb.AbstractBase):
                 trinkets.Box(cst.WINWIDTH // 2, cst.WINHEIGHT // 2),
                 trinkets.LockedWall(64, 0, 1028, 0, 1, 76, 4),
                 trinkets.PortalBlocker(0, 0, 1, 4, 45),
+
+                visuals.Background('sprites/backgrounds/him_bg/')
 
                 # enemies.Ambusher(500, 300),
             ]

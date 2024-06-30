@@ -1,5 +1,6 @@
 import math
 import os
+import time
 
 import pygame
 from pygame.math import Vector2 as vec
@@ -74,3 +75,40 @@ class Beam(cb.ActorBase):
         self.build_image(0)
         self.rect = self.image.get_rect()
         self.rect.center = self.pos
+
+
+class Background(cb.ActorBase):
+    def __init__(self, image_folder: str):
+        super().__init__(cst.LAYER['background'])
+        self.show()
+
+        self.pos = vec(cst.WINWIDTH // 2, cst.WINHEIGHT // 2)
+
+        image_names = os.listdir(image_folder)
+        image_paths = []
+
+        for name in image_names:
+            image_paths.append(os.path.join(image_folder, name))
+
+        for path in image_paths:
+            self.orig_images.append(pygame.image.load(path).convert())
+        self.images = self.orig_images
+
+        print(self.images)
+        self.set_rects(self.pos.x, self.pos.y, 1280, 720, 1280, 720)
+
+    def movement(self):
+        pass
+
+    def update(self):
+        if calc.get_time_diff(self.last_frame) >= cst.SPF / 2:
+            self.index += 1
+            if self.index > 358:
+                self.index = 0
+            self.last_frame = time.time()
+        self.render_images()
+        print(self.pos)
+
+
+if __name__ == '__main__':
+    test = Background('sprites/backgrounds/him_bg/')

@@ -57,6 +57,7 @@ class PlayerGun(cb.ActorBase):
             self.bullet_vel = 10
             self.cooldown = 0.15
 
+    @cb.check_update_state
     def update(self):
         """Updates the gun sprite. This also updates animation"""
         self.pos = self.owner.pos
@@ -142,6 +143,18 @@ class Player(cb.ActorBase):
         self.grapple_input_copy = ctrl.key_released[ctrl.K_GRAPPLE]
 
         self.update_level()
+
+    @property
+    def can_update(self):
+        return self._can_update
+
+    @can_update.setter
+    def can_update(self, value: bool):
+        self.gun_l._can_update = value
+        self.gun_r._can_update = value
+        self._can_update = value
+        print('setter worked!')
+
 
     @property
     def xp(self):
