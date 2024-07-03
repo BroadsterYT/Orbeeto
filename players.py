@@ -153,7 +153,6 @@ class Player(cb.ActorBase):
         self.gun_l._can_update = value
         self.gun_r._can_update = value
         self._can_update = value
-        print('setter worked!')
 
 
     @property

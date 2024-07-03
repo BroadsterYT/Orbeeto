@@ -7,6 +7,7 @@ from pygame.math import Vector2 as vec
 import controls as ctrl
 import items
 import text
+import visuals
 
 import calc
 import classbases as cb
@@ -14,7 +15,6 @@ import constants as cst
 import gamestack as gs
 import groups
 import spritesheet
-import visuals
 
 
 class SlotBase(cb.ActorBase):

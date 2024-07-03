@@ -3,6 +3,7 @@ Module containing the room class.
 """
 import copy
 import math
+import time
 
 import itertools
 import pygame
@@ -15,13 +16,105 @@ import calc
 import classbases as cb
 import constants as cst
 import enemies
-import gamestack as gs
 import groups
 import players
 import roomcontainers
 import tiles
 import trinkets
-import visuals
+import visual_elems
+
+
+class RoomTransition(cb.ActorBase):
+    def __init__(self, owner):
+        """The screen that fades up during a room switch
+
+        :param owner: The active room object
+        """
+        super().__init__(999)
+        self.show()
+        self.owner = owner
+
+        self.pos = vec(cst.WINWIDTH // 2, cst.WINHEIGHT + cst.WINHEIGHT // 2)
+        self.active = False
+        self.phase = 'enter'
+        self.last_trans = time.time()
+
+        self.image = pygame.Surface(vec(cst.WINWIDTH, cst.WINHEIGHT))
+        self.image.fill((0, 0, 0))
+
+        self.set_rects(self.pos.x, self.pos.y, cst.WINWIDTH, cst.WINHEIGHT, cst.WINWIDTH, cst.WINHEIGHT)
+
+    def update(self):
+        if self.active and self.phase == 'enter':
+            weight = calc.get_time_diff(self.last_trans)
+            if self.owner.last_dir_entered == cst.SOUTH:
+                self.pos.x = cst.WINWIDTH // 2
+                self.pos.y = calc.cerp(-cst.WINHEIGHT // 2, cst.WINHEIGHT // 2, weight)
+                if self.pos.y >= cst.WINHEIGHT // 2:
+                    self.owner.can_update = True
+                    self.owner.player1.can_update = True
+                    self.owner.layout_update()
+                    self.phase = 'exit'
+                    self.last_trans = time.time()
+
+            elif self.owner.last_dir_entered == cst.EAST:
+                self.pos.y = cst.WINHEIGHT // 2
+                self.pos.x = calc.cerp(-cst.WINWIDTH // 2, cst.WINWIDTH // 2, weight)
+                if self.pos.x >= cst.WINWIDTH // 2:
+                    self.owner.can_update = True
+                    self.owner.player1.can_update = True
+                    self.owner.layout_update()
+                    self.phase = 'exit'
+                    self.last_trans = time.time()
+
+            elif self.owner.last_dir_entered == cst.NORTH:
+                self.pos.x = cst.WINWIDTH // 2
+                self.pos.y = calc.cerp(cst.WINHEIGHT + cst.WINHEIGHT // 2, cst.WINHEIGHT // 2, weight)
+                if self.pos.y <= cst.WINHEIGHT // 2:
+                    self.owner.can_update = True
+                    self.owner.player1.can_update = True
+                    self.owner.layout_update()
+                    self.phase = 'exit'
+                    self.last_trans = time.time()
+
+            elif self.owner.last_dir_entered == cst.WEST:
+                self.pos.y = cst.WINHEIGHT // 2
+                self.pos.x = calc.cerp(cst.WINWIDTH + cst.WINWIDTH // 2, cst.WINWIDTH // 2, weight)
+                if self.pos.x <= cst.WINWIDTH // 2:
+                    self.owner.can_update = True
+                    self.owner.player1.can_update = True
+                    self.owner.layout_update()
+                    self.phase = 'exit'
+                    self.last_trans = time.time()
+
+        # ----- Exiting ----- #
+        elif self.active and self.phase == 'exit':
+            weight = calc.get_time_diff(self.last_trans)
+            if self.owner.last_dir_entered == cst.SOUTH:
+                self.pos.y = calc.cerp(cst.WINHEIGHT // 2, cst.WINHEIGHT + cst.WINHEIGHT // 2, weight)
+                if self.pos.y >= cst.WINHEIGHT + cst.WINHEIGHT // 2:
+                    self.active = False
+                    self.phase = 'enter'
+
+            elif self.owner.last_dir_entered == cst.EAST:
+                self.pos.x = calc.cerp(cst.WINWIDTH // 2, cst.WINWIDTH + cst.WINWIDTH // 2, weight)
+                if self.pos.x >= cst.WINWIDTH + cst.WINWIDTH // 2:
+                    self.active = False
+                    self.phase = 'enter'
+
+            elif self.owner.last_dir_entered == cst.NORTH:
+                self.pos.y = calc.cerp(cst.WINHEIGHT // 2, -cst.WINHEIGHT // 2, weight)
+                if self.pos.y <= -cst.WINHEIGHT // 2:
+                    self.active = False
+                    self.phase = 'enter'
+
+            elif self.owner.last_dir_entered == cst.WEST:
+                self.pos.x = calc.cerp(cst.WINWIDTH // 2, -cst.WINWIDTH // 2, weight)
+                if self.pos.x <= -cst.WINWIDTH // 2:
+                    self.active = False
+                    self.phase = 'enter'
+
+        self.center_rects()
 
 
 class RoomSpecs:
@@ -77,6 +170,8 @@ class Room(cb.AbstractBase):
         self.is_scrolling_x = True
         self.is_scrolling_y = True
 
+        self.trans_screen = RoomTransition(self)
+
         self.pos = vec(0, 0)
         self.pos_offset = vec(0, 0)
         self.vel = vec(0, 0)
@@ -85,8 +180,10 @@ class Room(cb.AbstractBase):
 
         self._room_specs = {
             (0, 0): RoomSpecs(1280, 720, True, True),
-            (0, 1): RoomSpecs(640, 360, False, False),
+            (0, 1): RoomSpecs(640, 360, True, True),
             (0, 2): RoomSpecs(1280, 720, False, True),
+
+            (1, 0): RoomSpecs(1280*2, 720, True, False)
         }
 
         self.layout_update()
@@ -654,34 +751,45 @@ class Room(cb.AbstractBase):
 
     # -------------------------------- Room Layout ------------------------------- #
     def _change_room(self) -> None:
-        width = self.player1.hitbox.width // 2
-        height = self.player1.hitbox.height // 2
+        if not self.trans_screen.active:
+            width = self.player1.hitbox.width // 2
+            height = self.player1.hitbox.height // 2
 
-        if self.player1.pos.y >= self.border_south.pos.y - height:
-            self.room.y -= 1
-            self.last_dir_entered = cst.SOUTH
-            self.layout_update()
-            calc.kill_groups(groups.all_projs)
+            if self.player1.pos.y >= self.border_south.pos.y - height:
+                self.can_update = False
+                self.player1.can_update = False
+                self.room.y -= 1
+                self.last_dir_entered = cst.SOUTH
+                self.trans_screen.active = True
+                self.trans_screen.last_trans = time.time()
+                calc.kill_groups(groups.all_projs)
 
-        elif self.player1.pos.x >= self.border_east.pos.x - width:
-            self.room.x += 1
-            self.last_dir_entered = cst.EAST
-            self.layout_update()
-            calc.kill_groups(groups.all_projs)
+            elif self.player1.pos.x >= self.border_east.pos.x - width:
+                self.can_update = False
+                self.player1.can_update = False
+                self.room.x += 1
+                self.last_dir_entered = cst.EAST
+                self.trans_screen.active = True
+                self.trans_screen.last_trans = time.time()
+                calc.kill_groups(groups.all_projs)
 
-        elif self.player1.pos.y <= self.border_north.pos.y + height:
-            for sprite in gs.s_action.all_sprites:
-                sprite.can_update = False
-            self.room.y += 1
-            self.last_dir_entered = cst.NORTH
-            self.layout_update()
-            calc.kill_groups(groups.all_projs)
+            elif self.player1.pos.y <= self.border_north.pos.y + height:
+                self.can_update = False
+                self.player1.can_update = False
+                self.room.y += 1
+                self.last_dir_entered = cst.NORTH
+                self.trans_screen.active = True
+                self.trans_screen.last_trans = time.time()
+                calc.kill_groups(groups.all_projs)
 
-        elif self.player1.pos.x <= self.border_west.pos.x + width:
-            self.room.x -= 1
-            self.last_dir_entered = cst.WEST
-            self.layout_update()
-            calc.kill_groups(groups.all_projs)
+            elif self.player1.pos.x <= self.border_west.pos.x + width:
+                self.can_update = False
+                self.player1.can_update = False
+                self.room.x -= 1
+                self.last_dir_entered = cst.WEST
+                self.trans_screen.active = True
+                self.trans_screen.last_trans = time.time()
+                calc.kill_groups(groups.all_projs)
 
     def _init_room(self, room_size_x: int, room_size_y: int, can_scroll_x: bool, can_scroll_y: bool) -> None:
         """Initializes a room's properties. This function must be called once for every room iteration.
@@ -734,12 +842,12 @@ class Room(cb.AbstractBase):
         self.is_scrolling_x = can_scroll_x
         self.is_scrolling_y = can_scroll_y
 
-        self._get_room_change_trajectory(scroll_copy_x, scroll_copy_y, self.is_scrolling_x, self.is_scrolling_y,
-                                         player_vel_copy)
+        # self._get_room_change_trajectory(scroll_copy_x, scroll_copy_y, self.is_scrolling_x, self.is_scrolling_y,
+        #                                  player_vel_copy, room_vel_copy)
         self.vel = vec(0, 0)
 
     def _get_room_change_trajectory(self, prev_room_scroll_x: bool, prev_room_scroll_y: bool, new_room_scroll_x: bool,
-                                    new_room_scroll_y: bool, player_vel: pygame.math.Vector2) -> None:
+                                    new_room_scroll_y: bool, player_vel: vec, room_vel: vec) -> None:
         """Transfers the velocity from the room to the player or vice versa when changing rooms
 
         :param prev_room_scroll_x: Did the previous room scroll along the x-axis?
@@ -751,16 +859,14 @@ class Room(cb.AbstractBase):
         """
         if prev_room_scroll_x:
             if not new_room_scroll_x:
-                self.player1.vel.x = -self.vel.x
-
+                self.player1.vel.x = -room_vel.x
         elif not prev_room_scroll_x:
             if new_room_scroll_x:
                 self._set_vel(-player_vel.x, 0)
 
         if prev_room_scroll_y:
             if not new_room_scroll_y:
-                self.player1.vel.y = -self.vel.y
-
+                self.player1.vel.y = -room_vel.y
         elif not prev_room_scroll_y:
             if new_room_scroll_y:
                 self._set_vel(0, -player_vel.y)
@@ -787,7 +893,7 @@ class Room(cb.AbstractBase):
         self._init_room(this_room.width, this_room.height, this_room.scroll.x, this_room.scroll.y)
 
         # ----- Centering the room when the room is smaller than the window size ----- #
-        if self.border_east.pos.x - 16 < cst.WINWIDTH and not self.is_scrolling_x:
+        if self.border_east.pos.x - 16 < cst.WINWIDTH:
             self.pos_offset.x = cst.WINWIDTH // 2 - self.border_north.hitbox.width // 2
             self.border_north.pos.x = cst.WINWIDTH // 2
             self.border_south.pos.x = cst.WINWIDTH // 2
@@ -797,7 +903,7 @@ class Room(cb.AbstractBase):
         else:
             self.pos_offset.x = 0
 
-        if self.border_south.pos.y - 16 < cst.WINHEIGHT and not self.is_scrolling_y:
+        if self.border_south.pos.y - 16 < cst.WINHEIGHT:
             self.pos_offset.y = cst.WINHEIGHT // 2 - self.border_east.hitbox.height // 2
             self.border_east.pos.y = cst.WINHEIGHT // 2
             self.border_west.pos.y = cst.WINHEIGHT // 2
@@ -817,7 +923,7 @@ class Room(cb.AbstractBase):
         if self.room == vec(0, 0):
             return [
                 tiles.Wall(0, 400, 25, 4),
-                tiles.Wall(1280 - 64, 0, 4, cst.WINHEIGHT // 16),
+                # tiles.Wall(1280 - 64, 0, 4, cst.WINHEIGHT // 16),
                 tiles.Wall(1280 - 256, 400, 4, cst.WINHEIGHT // 16),
                 tiles.Floor(0, 0, 80, 80),
 
@@ -826,7 +932,7 @@ class Room(cb.AbstractBase):
                 trinkets.LockedWall(64, 0, 1028, 0, 1, 76, 4),
                 trinkets.PortalBlocker(0, 0, 1, 4, 45),
 
-                visuals.Background('sprites/backgrounds/him_bg/')
+                # visual_elems.Background('sprites/backgrounds/him_bg/')
 
                 # enemies.Ambusher(500, 300),
             ]
@@ -842,6 +948,11 @@ class Room(cb.AbstractBase):
         elif self.room == vec(0, 2):
             return [
                 tiles.Wall(600, 400, 16, 4),
+            ]
+
+        elif self.room == vec(1, 0):
+            return [
+
             ]
 
         else:

@@ -9,11 +9,11 @@ from pygame.math import Vector2 as vec
 
 import controls as ctrl
 import text
+import visuals
 
 import calc
 import classbases as cb
 import constants as cst
-import visuals
 
 
 # noinspection PyTypeChecker

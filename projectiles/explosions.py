@@ -50,4 +50,4 @@ class StdBulletExplode(cb.ActorBase):
         self.image = pygame.transform.rotate(self.orig_image, self.rand_rotation)
 
     def __repr__(self):
-        return f'ProjExplode({self.owner}, {self.pos})'
+        return f'StdBulletExplode({self.owner}, {self.pos})'

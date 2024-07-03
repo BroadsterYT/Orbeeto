@@ -14,7 +14,7 @@ import constants as cst
 import groups
 
 import portals
-import visuals
+import visual_elems
 
 
 class PlayerStdBullet(proj.BulletBase):
@@ -205,7 +205,7 @@ class GrappleBullet(proj.BulletBase):
         self.accel = vec(0, 0)
         self.accel_const = 1.5
 
-        self.chain = visuals.Beam(self, self.shot_from)
+        self.chain = visual_elems.Beam(self, self.shot_from)
         self.portal_list = []
         self.portal_check = True
 
