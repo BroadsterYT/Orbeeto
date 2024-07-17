@@ -154,7 +154,6 @@ class Player(cb.ActorBase):
         self.gun_r._can_update = value
         self._can_update = value
 
-
     @property
     def xp(self):
         """The amount of experience points the player has collected. The more xp the player has, the higher their

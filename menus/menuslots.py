@@ -140,6 +140,110 @@ class MaterialSlot(SlotBase):
             self.last_frame = time.time()
 
 
+class GearSlot(SlotBase):
+    current_clicked = None
+
+    def __init__(self, owner, pos_x: float, pos_y: float, gear_name: str, gear_type: str):
+        """An inventory slot that represents a gun, piece of armor, or articles that can be equipped by the player.
+
+        :param owner: The inventory object the slot belongs to
+        :param pos_x: The x-axis position to spawn the gear slot
+        :param pos_y: The y-axis position to spawn the gear slot
+        :param gear_name: The name of the gear the slot is representing
+        :param gear_type: The type of gear the slot represents. (``armor`` for armor, ``l_gun`` for left gun, ``r_gun``
+        for right gun, and ``article`` for articles)
+        """
+        super().__init__(gs.s_inventory, owner, pos_x, pos_y)
+        self.show()
+
+        self.screen_pos = vec(pos_x % cst.WINWIDTH, pos_y)
+
+        self.holding = gear_name
+        self.holding_type = gear_type
+
+        self.gear_sheet = None
+        if self.holding_type == 'armor':
+            groups.all_armor_slots.add(self)
+            self.gear_sheet = spritesheet.Spritesheet('sprites/textures/armor_items.png', 16)
+        elif self.holding_type == 'l_gun':
+            groups.all_l_gun_slots.add(self)
+            self.gear_sheet = spritesheet.Spritesheet('sprites/orbeeto/guns.png', 5)
+        elif self.holding_type == 'r_gun':
+            groups.all_r_gun_slots.add(self)
+            self.gear_sheet = spritesheet.Spritesheet('sprites/orbeeto/guns.png', 5)
+        elif self.holding_type == 'article':
+            # Add to article group here
+            self.gear_sheet = spritesheet.Spritesheet('sprites/textures/armor_items.png', 16)
+        else:
+            raise ValueError(f'self.holding must be \'armor\', \'l_gun\', \'r_gun\', or \'article\', '
+                             f'not \'{self.holding_type}\')')
+
+        self.images = self.create_slot_images()
+        self.image = self.images[self.index]
+        self.set_rects(self.pos.x, self.pos.y, 64, 64, 64, 64)
+
+    def _get_gear_images(self) -> list[pygame.Surface]:
+        if self.holding == items.ARMOR[0]:
+            return self.gear_sheet.get_images(64, 64, 16, 0)
+        elif self.holding == items.ARMOR[1]:
+            return self.gear_sheet.get_images(64, 64, 16, 16)
+        elif self.holding == items.ARMOR[2]:
+            return self.gear_sheet.get_images(64, 64, 16, 32)
+
+    def create_slot_images(self) -> list[pygame.Surface]:
+        final_images = []
+        gear_images = self._get_gear_images()
+        for frame in gear_images:
+            menu_image = visuals.stack_images(self.menu_image, frame, 0, 0)
+            menu_image.set_colorkey((0, 0, 0))
+            final_images.append(menu_image)
+        return final_images
+
+    def drag(self) -> None:
+        if self.holding_type == 'armor':
+            if (self.hitbox.collidepoint(pygame.mouse.get_pos()) and ctrl.is_input_held[1]
+                    and (GearSlot.current_clicked is self or GearSlot.current_clicked is None)
+                    and self.owner.owner.my_armors[self.holding]):
+                GearSlot.current_clicked = self
+
+            elif (self.hitbox.collidepoint(pygame.mouse.get_pos()) and not ctrl.is_input_held[1]
+                  and GearSlot.current_clicked is not None):
+                if self.hitbox.colliderect(self.owner.armor_select.hitbox):
+                    # Returns slot that is being replaced back to correct position
+                    for slot in [s for s in groups.all_armor_slots if s != GearSlot.current_clicked]:
+                        slot.pos = slot.screen_pos
+                    self.owner.armor_select.equipped = GearSlot.current_clicked
+                    GearSlot.current_clicked.pos = self.owner.armor_select.pos
+                else:
+                    # Checking if equip slot is empty
+                    empty_check = True
+                    for slot in groups.all_armor_slots:
+                        if slot.hitbox.colliderect(self.owner.armor_select.hitbox):
+                            empty_check = False
+                    if empty_check:
+                        self.owner.armor_select.equipped = None
+                    # ----------------------------- #
+                    GearSlot.current_clicked.pos = GearSlot.current_clicked.screen_pos
+                GearSlot.current_clicked = None
+        elif self.holding_type == 'l_gun':
+            pass
+        elif self.holding_type == 'r_gun':
+            pass
+        elif self.holding_type == 'article':
+            pass
+
+        if GearSlot.current_clicked is self:
+            self.pos = vec(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
+            gs.s_inventory.all_sprites.change_layer(self, cst.LAYER['ui_1'] + 1)
+        else:
+            gs.s_inventory.all_sprites.change_layer(self, cst.LAYER['ui_1'])
+
+    def update(self):
+        self.center_rects()
+        self.drag()
+        self.hover()
+
+
 class ArmorSlot(SlotBase):
     current_clicked = None
 
@@ -152,13 +256,10 @@ class ArmorSlot(SlotBase):
 
         self.holding = armor_held
         self.armor_sheet = spritesheet.Spritesheet('sprites/textures/armor_items.png', 16)
-
         self.images = self.create_slot_images()
         self.image = self.images[self.index]
 
-        self.rect = self.image.get_rect()
-        self.hitbox = pygame.Rect(0, 0, 64, 64)
-        self.center_rects()
+        self.set_rects(self.pos.x, self.pos.y, 64, 64, 64, 64)
 
     def _get_armor_images(self) -> list:
         if self.holding == items.ARMOR[0]:
@@ -170,7 +271,12 @@ class ArmorSlot(SlotBase):
         else:
             raise IndexError(f'No armor visual exists with an armor key of {self.holding}.')
 
-    def create_slot_images(self) -> list:  # TODO: Add docstring
+    def create_slot_images(self) -> list[pygame.Surface]:
+        """Combines the image(s) of the item and the image of the menu slot, returning a list of the final combined
+        images.
+
+        :return: A list of the combined images
+        """
         final_images = []
         armor_images = self._get_armor_images()
 

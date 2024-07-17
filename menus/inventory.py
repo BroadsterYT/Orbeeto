@@ -38,7 +38,7 @@ class InventoryMenu(cb.AbstractBase):
         self.add(
             self.build_materials_slots(),
             self.build_armor_slots(),  # noqa
-            self.armor_select  # noqa
+            self.armor_select,  # noqa
         )
 
     def pan_left(self):
@@ -121,7 +121,8 @@ class InventoryMenu(cb.AbstractBase):
         for y in range(1):
             for x in range(3):
                 menu_slots.append(
-                    menus.ArmorSlot(self, space.x, space.y, items.ARMOR[count])
+                    # menus.ArmorSlot(self, space.x, space.y, items.ARMOR[count])
+                    menus.GearSlot(self, space.x, space.y, items.ARMOR[count], 'armor')
                 )
                 space.x += space_cushion.x
                 offset += 1

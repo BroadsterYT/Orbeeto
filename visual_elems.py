@@ -94,5 +94,27 @@ class Background(cb.ActorBase):
         self.render_images()
 
 
+class RotateTest(cb.ActorBase):
+    def __init__(self):
+        super().__init__(4)
+        self.show()
+
+        self.pos = vec(0, 0)
+        self.pivot = vec(cst.WINWIDTH // 2, cst.WINHEIGHT // 2)
+        self.angle = 0
+        self.radius = 128
+
+        self.set_images('sprites/orbeeto/orbeeto.png', 64, 64, 5, 5)
+        self.set_rects(self.pos.x, self.pos.y, 64, 64, 64, 64)
+
+    def movement(self):
+        self.pos = vec(self.pivot.x + self.radius * math.cos(math.radians(self.angle)), self.pivot.y - self.radius * math.sin(math.radians(self.angle)))
+        self.angle += 1
+
+    def update(self):
+        self.rotate_image(self.angle)
+        self.center_rects()
+
+
 if __name__ == '__main__':
     test = Background('sprites/backgrounds/him_bg/')

@@ -19,6 +19,8 @@ all_drops = Group()
 
 all_material_slots = Group()
 all_armor_slots = Group()
+all_l_gun_slots = Group()
+all_r_gun_slots = Group()
 
 # --------------------------------- Projectile groups ---------------------------------#
 all_projs = Group()  # noqa
