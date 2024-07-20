@@ -4,6 +4,7 @@ Contains all important global calculations.
 import math
 import random as rand
 import time
+import timeit
 
 import pygame
 from pygame.math import Vector2 as vec
@@ -11,6 +12,7 @@ from pygame.math import Vector2 as vec
 import controls as ctrl
 
 import constants as cst
+import enemies
 import groups
 import timer
 
@@ -27,20 +29,8 @@ def get_angle_to_mouse(any_sprite) -> float:
     mouse_x, mouse_y = pygame.mouse.get_pos()
     length_to_x = mouse_x - any_sprite.pos.x
     length_to_y = mouse_y - any_sprite.pos.y
-    if length_to_x and length_to_y != 0:
-        angle_to_mouse = -math.degrees(math.atan2(length_to_y, length_to_x)) - 90
-        return angle_to_mouse
-    else:
-        if length_to_y == 0:
-            if length_to_x > 0:
-                return -90
-            else:
-                return 90
-        else:
-            if length_to_y > 0:
-                return -180
-            else:
-                return 0
+    len_vec = vec(-length_to_x, -length_to_y)
+    return len_vec.angle_to(vec(cst.WINWIDTH // 2, cst.WINHEIGHT // 2)) + 60
 
 
 def get_angle(first_obj, sec_obj) -> float:
@@ -79,34 +69,28 @@ def get_angle(first_obj, sec_obj) -> float:
                 return 0
 
 
-def rectify_angle_deg(angle):
-    if angle < 0:
-        return angle + 360
-    elif angle > 360:
-        return angle - 360
-    else:
-        return angle
-
-
 def get_dist(first_input, sec_input) -> float:
-    """Returns the distance between two sprites or coordinates.
+    """Returns the distance between two coordinates.
 
-    :param first_input: The object to start the measure from
-    :param sec_input: The second object to measure the distance from the first
-    :return: The distance between the two objects
+    :param first_input: The position to start the measure from
+    :param sec_input: The position to measure the distance from the first
+    :return: The distance between the two locations
     """
-    if type(first_input) is pygame.math.Vector2:
-        first_vec = first_input
-    else:
-        first_vec = first_input.pos
+    # if isinstance(first_input, vec):
+    #     first_vec = first_input
+    # else:
+    #     first_vec = first_input.pos
+    #
+    # if isinstance(sec_input, vec):
+    #     sec_vec = sec_input
+    # else:
+    #     sec_vec = sec_input.pos
 
-    if type(sec_input) is pygame.math.Vector2:
-        sec_vec = sec_input
-    else:
-        sec_vec = sec_input.pos
+    # length_x = sec_vec.x - first_vec.x
+    # length_y = sec_vec.y - first_vec.y
 
-    length_x = sec_vec.x - first_vec.x
-    length_y = sec_vec.y - first_vec.y
+    length_x = sec_input.x - first_input.x
+    length_y = sec_input.y - first_input.y
 
     return math.sqrt(length_x ** 2 + length_y ** 2)
 
@@ -248,6 +232,14 @@ def triangle_collide(instig, sprite) -> str:
     :param instig: The instigator of the collision
     :param sprite: The sprite being collided into
     :return: The side the instigator struck upon the other sprite
+
+                    Side C
+                +------------+
+                +            +
+        Side D  +            +  Side B
+                +            +
+                +------------+
+                    Side A
     """
     # Bottom right corner
     point_a = vec(sprite.pos.x + sprite.hitbox.width // 2,
@@ -280,6 +272,11 @@ def triangle_collide(instig, sprite) -> str:
     height_cp = abs(len_point_c * math.sin(angle_c))
     height_dp = abs(len_point_d * math.cos(angle_d))
 
+    # height_ap = abs(get_dist(instig.pos, point_a) * math.sin(angle_a))
+    # height_bp = abs(get_dist(instig.pos, point_b) * math.cos(angle_b))
+    # height_cp = abs(get_dist(instig.pos, point_c) * math.sin(angle_c))
+    # height_dp = abs(get_dist(instig.pos, point_d) * math.cos(angle_d))
+
     def is_closest_side(height: float) -> bool:
         """Determines if the given distance is the one closest to the instigator (the shortest)
 
@@ -291,11 +288,8 @@ def triangle_collide(instig, sprite) -> str:
 
         output = True
         for dist in height_list:
-            if height < dist:
-                output = True
-            else:
+            if not (height < dist):
                 output = False
-                break
         return output
 
     if is_closest_side(height_ap):
@@ -325,6 +319,19 @@ def triangle_collide(instig, sprite) -> str:
         if instig.pos.y <= point_c.y:
             return cst.NORTH
         return cst.WEST
+
+
+# def is_closest_side(height_a: float, height_b: float, height_c: float, height_d: float, height_comp: float) -> bool:
+#     height_list = np.array([height_a, height_b, height_c, height_d], dtype=float)
+#
+#     output = True
+#     for dist in height_list:
+#         if height_comp < dist:
+#             output = True
+#         else:
+#             output = False
+#             break
+#     return output
 
 
 # ============================================================================ #
@@ -404,29 +411,6 @@ screen_shake_queue = ScreenShakeQueue()
 
 
 # ============================================================================ #
-#                                Returns Surface                               #
-# ============================================================================ #
-def combine_images(base_img: pygame.Surface, top_img: pygame.Surface) -> pygame.Surface:
-    """Combines two images directly on top of one another
-
-    :param base_img: The image to place first
-    :param top_img: The image being pasted on top of the first image
-    :return: The combined image
-    """
-    new_img: pygame.Surface = pygame.Surface(vec(max(base_img.get_width(), top_img.get_width())),
-                                             max(base_img.get_height(), top_img.get_height()))
-    center_x = (new_img.get_width() - base_img.get_width()) // 2
-    center_y = (new_img.get_height() - base_img.get_height()) // 2
-    new_img.blit(base_img, vec(center_x, center_y))
-
-    center_x = (new_img.get_width() - top_img.get_width()) // 2
-    center_y = (new_img.get_height() - top_img.get_height()) // 2
-    new_img.blit(top_img, vec(center_x, center_y))
-    new_img.set_colorkey(cst.BLACK)
-    return new_img
-
-
-# ============================================================================ #
 #                                Returns Sprite                                #
 # ============================================================================ #
 def get_closest_player():
@@ -479,3 +463,15 @@ def swap_color(image: pygame.Surface, old_color: tuple, new_color: tuple) -> pyg
             if current_color == old_color:
                 new_img.set_at((x, y), new_color)
     return new_img
+
+
+if __name__ == '__main__':
+    import rooms
+    import constants as cst
+
+    main_room = rooms.Room(0, 0)
+    instig_test = enemies.StandardGrunt(200.590643, 500.42378293)
+    sprite_test = enemies.StandardGrunt(300.475234, 875.5463)
+    timer = time.time()
+
+    print(timeit.timeit('get_dist(instig_test.pos, sprite_test.pos)', number=10000, globals=globals()))

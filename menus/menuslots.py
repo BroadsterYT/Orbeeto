@@ -103,13 +103,15 @@ class MaterialSlot(SlotBase):
         item_images = self._get_item_images()
         final_images = []
         for frame in item_images:
-            new_img = calc.combine_images(self.menu_image, frame)
+            # new_img = calc.combine_images(self.menu_image, frame)
+            new_img: pygame.Surface = self.menu_image.copy()
+            center_x = (new_img.get_width() - frame.get_width()) // 2
+            center_y = (new_img.get_height() - frame.get_height()) // 2
+            new_img.blit(frame, (center_x, center_y))
 
             # Adding the count of the item to its images
             count_surface = text.text_to_image(str(self.count), text.indicator_font)
             new_img.set_colorkey((0, 0, 0))
-            center_x = (new_img.get_width() - frame.get_width()) // 2
-            center_y = (new_img.get_height() - frame.get_height()) // 2
 
             # Changing dark gray to light gray
             color_swap_1 = calc.swap_color(count_surface, (44, 44, 44), (156, 156, 156))
@@ -190,7 +192,18 @@ class GearSlot(SlotBase):
         elif self.holding == items.ARMOR[2]:
             return self.gear_sheet.get_images(64, 64, 16, 32)
 
+        elif self.holding == items.WEAPONS[0]:
+            return self.gear_sheet.get_images(64, 64, 5, 0)
+        elif self.holding == items.WEAPONS[2]:
+            return self.gear_sheet.get_images(64, 64, 5, 10)
+        else:
+            raise ValueError(f'holding field must be acceptable value, not \"{self.holding}\"')
+
     def create_slot_images(self) -> list[pygame.Surface]:
+        """Combines the item's image(s) with the menu slot image, returning the results within a list
+
+        :return: A list of the completed slot images
+        """
         final_images = []
         gear_images = self._get_gear_images()
         for frame in gear_images:
@@ -200,10 +213,14 @@ class GearSlot(SlotBase):
         return final_images
 
     def drag(self) -> None:
+        """When called once every frame, allows the menu slot to be dragged and dropped into a selection slot
+
+        :return: None
+        """
         if self.holding_type == 'armor':
             if (self.hitbox.collidepoint(pygame.mouse.get_pos()) and ctrl.is_input_held[1]
                     and (GearSlot.current_clicked is self or GearSlot.current_clicked is None)
-                    and self.owner.owner.my_armors[self.holding]):
+                    and self.owner.owner.my_equipment[self.holding]):
                 GearSlot.current_clicked = self
 
             elif (self.hitbox.collidepoint(pygame.mouse.get_pos()) and not ctrl.is_input_held[1]
@@ -225,8 +242,32 @@ class GearSlot(SlotBase):
                     # ----------------------------- #
                     GearSlot.current_clicked.pos = GearSlot.current_clicked.screen_pos
                 GearSlot.current_clicked = None
+
         elif self.holding_type == 'l_gun':
-            pass
+            if (self.hitbox.collidepoint(pygame.mouse.get_pos()) and ctrl.is_input_held[1]
+                    and (GearSlot.current_clicked is self or GearSlot.current_clicked is None)
+                    and self.owner.owner.my_equipment[self.holding]):
+                GearSlot.current_clicked = self
+
+            elif (self.hitbox.collidepoint(pygame.mouse.get_pos()) and not ctrl.is_input_held[1]
+                  and GearSlot.current_clicked is not None):
+                if self.hitbox.colliderect(self.owner.l_gun_select.hitbox):
+                    # Returns slot that is being replaced back to correct position
+                    for slot in [s for s in groups.all_l_gun_slots if s != GearSlot.current_clicked]:
+                        slot.pos = slot.screen_pos
+                    self.owner.l_gun_select.equipped = GearSlot.current_clicked
+                    GearSlot.current_clicked.pos = self.owner.l_gun_select.pos
+                else:
+                    # Checking if equip slot is empty
+                    empty_check = True
+                    for slot in groups.all_l_gun_slots:
+                        if slot.hitbox.colliderect(self.owner.l_gun_select.hitbox):
+                            empty_check = False
+                    if empty_check:
+                        self.owner.l_gun_select.equipped = None
+                    # ----------------------------- #
+                    GearSlot.current_clicked.pos = GearSlot.current_clicked.screen_pos
+                GearSlot.current_clicked = None
         elif self.holding_type == 'r_gun':
             pass
         elif self.holding_type == 'article':
@@ -244,110 +285,21 @@ class GearSlot(SlotBase):
         self.hover()
 
 
-class ArmorSlot(SlotBase):
-    current_clicked = None
+class SelectionSlot(SlotBase):
+    def __init__(self, owner, gear_type: str, pos_x, pos_y):
+        """When a ``GearSlot`` object is dragged and dropped on top of a ``SelectionSlot``, that specific piece of gear will
+        be equipped.
 
-    def __init__(self, owner, pos_x, pos_y, armor_held: str):
-        super().__init__(gs.s_inventory, owner, pos_x, pos_y)
-        self.show()
-        groups.all_armor_slots.add(self)
-
-        self.screen_pos = vec(pos_x % cst.WINWIDTH, pos_y)
-
-        self.holding = armor_held
-        self.armor_sheet = spritesheet.Spritesheet('sprites/textures/armor_items.png', 16)
-        self.images = self.create_slot_images()
-        self.image = self.images[self.index]
-
-        self.set_rects(self.pos.x, self.pos.y, 64, 64, 64, 64)
-
-    def _get_armor_images(self) -> list:
-        if self.holding == items.ARMOR[0]:
-            return self.armor_sheet.get_images(64, 64, 16, 0)
-        elif self.holding == items.ARMOR[1]:
-            return self.armor_sheet.get_images(64, 64, 16, 16)
-        elif self.holding == items.ARMOR[2]:
-            return self.armor_sheet.get_images(64, 64, 16, 32)
-        else:
-            raise IndexError(f'No armor visual exists with an armor key of {self.holding}.')
-
-    def create_slot_images(self) -> list[pygame.Surface]:
-        """Combines the image(s) of the item and the image of the menu slot, returning a list of the final combined
-        images.
-
-        :return: A list of the combined images
+        :param owner: The owner of the selection slot (should be an inventory object)
+        :param gear_type: The type of gear the slot will accept. ("armor", "l_gun", "r_gun", or "article")
+        :param pos_x: The x-axis position to spawn the selection slot
+        :param pos_y: The y-axis position to spawn the selection slot
         """
-        final_images = []
-        armor_images = self._get_armor_images()
-
-        for frame in armor_images:
-            menu_image = visuals.stack_images(self.menu_image, frame, 0, 0)
-            menu_image.set_colorkey((0, 0, 0))
-            final_images.append(menu_image)
-
-        return final_images
-
-    def drag(self) -> None:
-        """Allows the slot to be dragged by the mouse when called once every frame
-
-        :return: None
-        """
-        if (self.hitbox.collidepoint(pygame.mouse.get_pos()) and ctrl.is_input_held[1]
-                and (ArmorSlot.current_clicked is self or ArmorSlot.current_clicked is None)
-                and self.owner.owner.my_armors[self.holding]):
-            ArmorSlot.current_clicked = self
-
-        elif (self.hitbox.collidepoint(pygame.mouse.get_pos()) and not ctrl.is_input_held[1]
-              and ArmorSlot.current_clicked is not None):
-            if self.hitbox.colliderect(self.owner.armor_select.hitbox):
-                # Returns slot that is being replaced back to correct position
-                for slot in [s for s in groups.all_armor_slots if s != ArmorSlot.current_clicked]:
-                    slot.pos = slot.screen_pos
-                self.owner.armor_select.equipped = ArmorSlot.current_clicked
-                ArmorSlot.current_clicked.pos = self.owner.armor_select.pos
-            else:
-                # Checking if equip slot is empty
-                empty_check = True
-                for slot in groups.all_armor_slots:
-                    if slot.hitbox.colliderect(self.owner.armor_select.hitbox):
-                        empty_check = False
-                if empty_check:
-                    self.owner.armor_select.equipped = None
-                # ----------------------------- #
-                ArmorSlot.current_clicked.pos = ArmorSlot.current_clicked.screen_pos
-            ArmorSlot.current_clicked = None
-
-        if ArmorSlot.current_clicked is self:
-            self.pos = vec(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
-            gs.s_inventory.all_sprites.change_layer(self, cst.LAYER['ui_1'] + 1)
-        else:
-            gs.s_inventory.all_sprites.change_layer(self, cst.LAYER['ui_1'])
-
-    def update(self):
-        self.center_rects()
-        self.images = self.create_slot_images()
-        self._animate()
-
-        self.hover()
-        self.drag()
-
-    def _animate(self):
-        if calc.get_time_diff(self.last_frame) > 0.1:
-            self.image = self.images[self.index]
-            self.index += 1
-            if self.index >= 16:
-                self.index = 0
-            self.last_frame = time.time()
-
-    def __repr__(self):
-        return f'ArmorSlot({self.holding}, {self.pos}, {self.start_pos}, {self.screen_pos})'
-
-
-class SelectionSlotA(SlotBase):
-    def __init__(self, owner, pos_x, pos_y):
         super().__init__(gs.s_inventory, owner, pos_x, pos_y)
         self.show()
         groups.all_material_slots.add(self)
+
+        self.type = gear_type
 
         self.set_images('sprites/ui/menu_item_slot.png', 64, 64, 3, 1, 1)
         self.set_rects(0, 0, 64, 64, 64, 64)

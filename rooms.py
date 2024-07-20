@@ -932,7 +932,7 @@ class Room(cb.AbstractBase):
                 trinkets.LockedWall(64, 0, 1028, 0, 1, 76, 4),
                 trinkets.PortalBlocker(0, 0, 1, 4, 45),
 
-                visual_elems.RotateTest()
+                enemies.Turret(300, 300)
 
                 # visual_elems.Background('sprites/backgrounds/him_bg/')
 

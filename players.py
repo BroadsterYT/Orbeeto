@@ -5,6 +5,8 @@ import os
 import time
 import math
 
+from OpenGL.GL import *
+from OpenGL.GLU import *
 import pygame
 from pygame.math import Vector2 as vec
 
@@ -123,16 +125,16 @@ class Player(cb.ActorBase):
         for item in items.MATERIALS:
             self.my_materials.update({item: 0})
 
-        self.my_armors = {}
+        self.my_equipment: dict[str, bool] = {}
+
         for armor in items.ARMOR.values():
-            self.my_armors.update({armor: False})
-        self.my_armors.update({items.ARMOR[0]: True})
+            self.my_equipment.update({armor: False})
+        self.my_equipment.update({items.ARMOR[0]: True})
         self.current_armor = items.ARMOR_DATA[None]
 
-        self.my_weapons = {}
         for weapon in items.WEAPONS.values():
-            self.my_weapons.update({weapon: False})
-        self.my_weapons.update({items.WEAPONS[0]: True, items.WEAPONS[1]: True})
+            self.my_equipment.update({weapon: False})
+        self.my_equipment.update({items.WEAPONS[0]: True, items.WEAPONS[1]: True})
 
         # ---------------------- Bullets, Portals, and Grapples ---------------------- #
         self.bullet_type = cst.PROJ_STD
@@ -204,6 +206,12 @@ class Player(cb.ActorBase):
         else:
             self.current_armor = items.ARMOR_DATA[None]
         self.update_max_stats()
+
+    def update_l_gun_selection(self, new_gun_name):
+        pass
+
+    def update_r_gun_selection(self, new_gun_name):
+        pass
 
     def _passive_hp_regen(self) -> None:
         """Regenerates the player's HP after not being attacked for a period of time."""

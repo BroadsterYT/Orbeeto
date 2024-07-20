@@ -178,7 +178,7 @@ class Turret(enemybase.EnemyBase):
         self.accel_movement()
 
         if can_shoot:
-            self.shoot(0.15)
+            self.shoot(0.02)
 
     def get_accel(self) -> vec:
         final_accel = vec(0, 0)

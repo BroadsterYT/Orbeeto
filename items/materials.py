@@ -1,11 +1,10 @@
 """
 Module containing all materials and material-related content.
 """
-import numpy as np
 
 
 # Dictionary of all materials in the game
-MATERIALS = np.array([
+MATERIALS = [
     'metal_scrap_000',
     'bolt_001',
     'placeholder_002',
@@ -31,8 +30,7 @@ MATERIALS = np.array([
     'placeholder_022',
     'placeholder_023',
     'placeholder_024',
-],
-    dtype=str)
+]
 
 ENEMY_LOOT_TABLES = {
     0: [[(MATERIALS[0],), (MATERIALS[0],), (MATERIALS[0],), ],  # Standard Grunt

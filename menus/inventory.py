@@ -32,13 +32,19 @@ class InventoryMenu(cb.AbstractBase):
                                            self.pan_left)
         self.left_arrow = menus.MenuArrow(gs.s_inventory, 64, cst.WINHEIGHT / 2, cst.WEST, self.pan_right)
 
-        self.armor_select = menus.SelectionSlotA(self, 600 + cst.WINWIDTH, 600)
+        # --------------- Gear Selection Slots --------------- #
+        self.armor_select = menus.SelectionSlot(self, 'armor', 600 + cst.WINWIDTH, 600)
         self.last_armor_equip = None
+
+        self.l_gun_select = menus.SelectionSlot(self, 'l_gun', 520 + cst.WINWIDTH, 600)
+        self.last_l_gun_equip = None
 
         self.add(
             self.build_materials_slots(),
+            self.build_gun_slots(),
             self.build_armor_slots(),  # noqa
             self.armor_select,  # noqa
+            self.l_gun_select,  # noqa
         )
 
     def pan_left(self):
@@ -121,12 +127,29 @@ class InventoryMenu(cb.AbstractBase):
         for y in range(1):
             for x in range(3):
                 menu_slots.append(
-                    # menus.ArmorSlot(self, space.x, space.y, items.ARMOR[count])
                     menus.GearSlot(self, space.x, space.y, items.ARMOR[count], 'armor')
                 )
                 space.x += space_cushion.x
                 offset += 1
                 count += 1
+            space.y += space_cushion.y
+            space.x = 512
+        return menu_slots
+
+    def build_gun_slots(self) -> list:
+        count = 0
+        space = vec(200 + cst.WINWIDTH, 64)
+        space_cushion = vec(82, 82)
+        menu_slots = []
+        offset = 0
+        for y in range(1):
+            for x in range(2):
+                menu_slots.append(
+                    menus.GearSlot(self, space.x, space.y, items.WEAPONS[count], 'l_gun')
+                )
+                space.x += space_cushion.x
+                offset += 1
+                count += 2
             space.y += space_cushion.y
             space.x = 512
         return menu_slots
@@ -142,6 +165,10 @@ class InventoryMenu(cb.AbstractBase):
                 armor_name = self.armor_select.equipped.holding
                 self.owner.update_armor_buffs(armor_name)  # player1.update_armor_buffs()
                 self.last_armor_equip = self.armor_select.equipped
+
+        if self.l_gun_select.equipped != self.last_l_gun_equip:
+            if self.l_gun_select.equipped is None:
+                print('left gun equipped')
 
     def update(self):
         # ----- Prevents the arrows in the inventory menu from being clicked when closed ----- #
