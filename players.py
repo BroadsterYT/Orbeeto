@@ -59,6 +59,12 @@ class PlayerGun(cb.ActorBase):
             self.bullet_vel = 10
             self.cooldown = 0.15
 
+        elif self.weapon == items.WEAPONS[2]:
+            self.image_count = 5
+            self.set_images(os.path.join(os.getcwd(), 'sprites/orbeeto/guns.png'), 64, 64, 5, self.image_count, 10)
+            self.bullet_vel = 15
+            self.cooldown = 0.13
+
     @cb.check_update_state
     def update(self):
         """Updates the gun sprite. This also updates animation"""
@@ -208,7 +214,12 @@ class Player(cb.ActorBase):
         self.update_max_stats()
 
     def update_l_gun_selection(self, new_gun_name):
-        pass
+        self.update_max_stats()
+        if new_gun_name == items.WEAPONS[0]:
+            self.gun_l = PlayerGun(self, items.WEAPONS[0])
+        else:
+            self.gun_l = PlayerGun(self, items.WEAPONS[0])
+        self.update_max_stats()
 
     def update_r_gun_selection(self, new_gun_name):
         pass
