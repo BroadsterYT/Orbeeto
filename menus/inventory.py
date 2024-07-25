@@ -145,27 +145,5 @@ class InventoryMenu(cb.AbstractBase):
             space.x = 512
         return menu_slots
 
-    # def check_equipped(self) -> None:
-    #     """Checks which equipment is locked into each equipment slot and updates the player's stats accordingly"""
-    #     # print(self.l_gun_select.equipped)
-    #     if self.armor_select.equipped != self.last_armor_equip:
-    #         if self.armor_select.equipped is None:
-    #             self.owner.update_armor_selection(None)
-    #             self.last_armor_equip = self.armor_select.equipped
-    #         else:
-    #             armor_name = self.armor_select.equipped.holding
-    #             self.owner.update_armor_selection(armor_name)  # player1.update_armor_selection()
-    #             self.last_armor_equip = self.armor_select.equipped
-    #
-    #     if self.l_gun_select.equipped != self.last_l_gun_equip:
-    #         if self.l_gun_select.equipped is None:
-    #             self.owner.update_l_gun_selection(None)
-    #             self.last_l_gun_equip = self.l_gun_select.equipped
-    #         else:
-    #             l_gun_name = self.l_gun_select.equipped.holding
-    #             self.owner.update_l_gun_selection(l_gun_name)
-    #             self.last_l_gun_equip = self.l_gun_select.equipped
-
     def update(self):
         self.cycle_menu()
-        # self.check_equipped()
