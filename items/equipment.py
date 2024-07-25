@@ -23,14 +23,9 @@ class ArmorData:
 
 
 ARMOR = {
-    0: 'standard_A000',
-    1: 'placeholder_A001',
-    2: 'placeholder_A002',
-}
-
-ARMOR_DATA = {
-    None: ArmorData('None'),
-    ARMOR[0]: ArmorData(ARMOR[0], hp_mod=10, ammo_mod=20),
+    0: ArmorData('standard_A000'),
+    1: ArmorData('placeholder_A001', hp_mod=10),
+    2: ArmorData('placeholder_A002'),
 }
 
 WEAPONS = {
