@@ -136,7 +136,7 @@ class Player(cb.ActorBase):
         for armor in items.ARMOR.values():
             self.my_equipment.update({armor: False})
         self.my_equipment.update({items.ARMOR[0]: True})
-        self.current_armor = items.ARMOR_DATA[None]
+        self.current_armor = items.ARMOR[0]
 
         for weapon in items.WEAPONS.values():
             self.my_equipment.update({weapon: False})
@@ -199,18 +199,20 @@ class Player(cb.ActorBase):
         self.level = math.floor((256 * self.xp) / (self.xp + 16384))
         self.update_max_stats()
 
-    def update_armor_buffs(self, new_armor_name) -> None:
+    def update_armor_selection(self, new_armor: items.ArmorData) -> None:
         """Updates the player's stats with the correct effects declared by the player's equipment
 
-        :param new_armor_name: The name of the new armor equipped
+        :param new_armor: The ArmorData object of the newly equipped armor
         :return: None
         """
         self.update_max_stats()
         # print(new_armor_name)
-        if new_armor_name == items.ARMOR[0]:
-            self.current_armor = items.ARMOR_DATA[items.ARMOR[0]]
-        else:
-            self.current_armor = items.ARMOR_DATA[None]
+        # if new_armor_name == items.ARMOR[0]:
+        #     self.current_armor = items.ARMOR[0]
+        # else:
+        #     raise ValueError(f'The field current_armor must be an accepted value, not {self.current_armor}')
+        self.current_armor = new_armor
+
         self.update_max_stats()
 
     def update_l_gun_selection(self, new_gun_name):
