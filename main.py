@@ -122,11 +122,6 @@ async def main(max_frame_rate) -> None:
         except ZeroDivisionError:
             pass
 
-        for a_player in groups.all_players:
-            if a_player.hp <= 0:
-                pygame.quit()
-                sys.exit()
-
         # ---------- Mouse Inputs ---------- #
         if ctrl.is_input_held[1] and ctrl.release_check:
             ctrl.last_click_pos = [pygame.mouse.get_pos(), gs.gamestack.stack[-1]]
@@ -200,11 +195,6 @@ async def handle_events(events_to_handle) -> None:
         # Key release updating
         check_key_release(event, False)
         check_key_release(event, True)
-
-        if event.type == pygame.MOUSEWHEEL:  # TODO: Implement this in players.py
-            # Player ammo refill
-            if main_room.player1.ammo < main_room.player1.max_ammo:
-                main_room.player1.ammo += 1
 
 
 if __name__ == '__main__':
