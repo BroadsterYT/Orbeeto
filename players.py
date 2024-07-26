@@ -4,6 +4,7 @@ Contains the player class.
 import os
 import time
 import math
+import random as rand
 
 import pygame
 from pygame.math import Vector2 as vec
@@ -17,6 +18,7 @@ import classbases as cb
 import constants as cst
 import groups
 import statbars
+import text
 import timer
 
 
@@ -396,7 +398,7 @@ class Player(cb.ActorBase):
 
     def _gun_heat_dissipate(self):
         last_heat = calc.get_game_tdiff(self.last_gun_heat_inc)
-        cools_per_sec = 50 * pow(0.9, last_heat)
+        cools_per_sec = 65 * pow(0.9, last_heat)
 
         if calc.get_game_tdiff(self.last_gun_cool) >= 1 / cools_per_sec:
             if self.gun_heat > 0:
@@ -457,10 +459,18 @@ class Player(cb.ActorBase):
 
         # Heat damage
         if self.gun_heat > self.heat_thresh:
+            # Armor starts shaking when overheated
+            rand_x = rand.uniform(-self.gun_heat / self.heat_thresh / 2, self.gun_heat / self.heat_thresh / 2)
+            rand_y = rand.uniform(-self.gun_heat / self.heat_thresh / 2, self.gun_heat / self.heat_thresh / 2)
+            self.rect.center = vec(self.pos.x + rand_x, self.pos.y + rand_y)
+
             if calc.get_game_tdiff(self.last_overheat) > self.overheat_rate:
                 self.hp -= math.ceil(0.02 * self.max_hp)
                 self.last_overheat = timer.g_timer.time
                 self.last_hit = timer.g_timer.time
+                groups.all_font_chars.add(
+                    text.IndicatorText(self.pos.x, self.pos.y - 32, f'{math.ceil(0.02 * self.max_hp)}')
+                )
         else:
             self._passive_hp_regen()
 

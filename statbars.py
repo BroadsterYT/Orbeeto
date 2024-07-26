@@ -90,6 +90,8 @@ class StatBarTest(cb.ActorBase):
 
         self.set_rects(self.pos.x, self.pos.y, 128, 16, 128, 16)
 
+        self.heat_numbers = BarNumbersTest(self, 80, 0, 'gun_heat', 'heat_thresh')
+
     def update(self):
         self.pos = vec(self.owner.pos.x, self.owner.pos.y + 48)
         self.center_rects()
@@ -113,6 +115,35 @@ class StatBarTest(cb.ActorBase):
             color_strip.fill(dim_color.lerp(bright_color, i / 128))
             heat_bar.blit(color_strip, (i, 0))
         self.image.blit(heat_bar, (0, 10))
+
+
+class BarNumbersTest(cb.ActorBase):
+    def __init__(self, bar, pos_x_rel: float, pos_y_rel: float, value_name: str, max_value_name: str):
+        super().__init__(cst.LAYER['statbar'])
+        self.show()
+        groups.all_stat_bars.add(self)
+
+        self.bar = bar
+        self.rel_pos = vec(pos_x_rel, pos_y_rel)
+        self.pos = vec(self.bar.pos.x + self.rel_pos.x, self.bar.pos.y + self.rel_pos.y)
+
+        self.value_name = value_name
+        self.value = getattr(self.bar.owner, self.value_name)
+        self.max_value_name = max_value_name
+        self.max_value = getattr(self.bar.owner, self.max_value_name)
+
+        self.image = text.text_to_image(f'{self.value}/{self.max_value}', text.font_small)
+        self.set_rects(self.pos.x, self.pos.y, self.image.get_width(), self.image.get_height(), self.image.get_width(),
+                       self.image.get_height())
+
+    def update(self):
+        self.pos = vec(self.bar.pos.x + self.rel_pos.x, self.bar.pos.y + self.rel_pos.y)
+        self.center_rects()
+
+        self.value = getattr(self.bar.owner, self.value_name)
+        self.max_value = getattr(self.bar.owner, self.max_value_name)
+
+        self.image = text.text_to_image(f'{self.value}/{self.max_value}', text.font_small)
 
 
 class BarNumbers(cb.ActorBase):
