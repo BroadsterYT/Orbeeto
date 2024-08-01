@@ -323,7 +323,6 @@ class Player(cb.ActorBase):
         offset = vec((21, 30))
         angle = math.radians(calc.get_angle_to_mouse(self))
         self.gun_cooldown = max(self.gun_l.cooldown, self.gun_r.cooldown)
-        print(self.gun_heat)
 
         if ctrl.is_input_held[1] and calc.get_game_tdiff(self.last_shot_time) >= self.gun_cooldown:
             if calc.get_game_tdiff(self.last_gun_heat_inc) >= 0.1:
