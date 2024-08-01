@@ -4,9 +4,8 @@ Contains the player class.
 import os
 import time
 import math
+import random as rand
 
-from OpenGL.GL import *
-from OpenGL.GLU import *
 import pygame
 from pygame.math import Vector2 as vec
 
@@ -19,6 +18,7 @@ import classbases as cb
 import constants as cst
 import groups
 import statbars
+import text
 import timer
 
 
@@ -113,8 +113,16 @@ class Player(cb.ActorBase):
 
         self.gun_l = PlayerGun(self, items.WEAPONS[0])
         self.gun_r = PlayerGun(self, items.WEAPONS[1])
-        self.max_ammo = 40
-        self.ammo = self.max_ammo
+
+        self.gun_heat = 0
+        self.heat_thresh = 250
+        self.last_gun_heat_inc = timer.g_timer.time
+        self.gun_heat_conduct = 10  # Gun heat conductivity
+        self.last_gun_cool = timer.g_timer.time
+
+        self.last_overheat = timer.g_timer.time
+        self.overheat_rate = 0.4
+
         self.bullet_vel = 10
         self.gun_cooldown = 0.15
         self.last_shot_time = time.time()
@@ -123,8 +131,8 @@ class Player(cb.ActorBase):
         self.grapple_speed = 2.0
 
         # --------------------------------- Stat Bars -------------------------------- #
-        self.health_bar = statbars.StatBar(self, 0, 'hp', 'max_hp', 'sprites/stat_bars/health_bar.png')
-        self.ammo_bar = statbars.StatBar(self, 1, 'ammo', 'max_ammo', 'sprites/stat_bars/ammo_bar.png')
+        # self.health_bar = statbars.StatBar(self, 0, 'hp', 'max_hp', 'sprites/stat_bars/health_bar.png')
+        self.health_bar = statbars.StatBarTest(self)
 
         # ---------------------------- Menu and Inventory ---------------------------- #
         self.my_materials = {}
@@ -180,15 +188,13 @@ class Player(cb.ActorBase):
         """Updates all the player's max stats."""
         self.max_hp = math.floor(calc.eerp(50, 650, self.level / self.max_level)) + self.current_armor.hp_mod
         self.max_defense = math.floor(calc.eerp(15, 800, self.level / self.max_level)) + self.current_armor.def_mod
-        self.max_ammo = math.floor(calc.eerp(40, 500, self.level / self.max_level)) + self.current_armor.ammo_mod
+        # self.max_ammo = math.floor(calc.eerp(40, 500, self.level / self.max_level)) + self.current_armor.ammo_mod
         self.grapple_speed = math.floor(calc.eerp(2.0, 4.0, self.level / self.max_level))
 
         self.defense = self.max_defense
 
         if self.hp > self.max_hp:
             self.hp = self.max_hp
-        if self.ammo > self.max_ammo:  # TODO: fix stat bars to allow handling of values over their max
-            self.ammo = self.max_ammo
 
     def update_level(self) -> None:
         """Updates the level of the player using the amount of xp collected.
@@ -205,14 +211,7 @@ class Player(cb.ActorBase):
         :param new_armor: The ArmorData object of the newly equipped armor
         :return: None
         """
-        self.update_max_stats()
-        # print(new_armor_name)
-        # if new_armor_name == items.ARMOR[0]:
-        #     self.current_armor = items.ARMOR[0]
-        # else:
-        #     raise ValueError(f'The field current_armor must be an accepted value, not {self.current_armor}')
         self.current_armor = new_armor
-
         self.update_max_stats()
 
     def update_l_gun_selection(self, new_gun_name):
@@ -324,8 +323,13 @@ class Player(cb.ActorBase):
         offset = vec((21, 30))
         angle = math.radians(calc.get_angle_to_mouse(self))
         self.gun_cooldown = max(self.gun_l.cooldown, self.gun_r.cooldown)
+        print(self.gun_heat)
 
-        if ctrl.is_input_held[1] and self.ammo > 0 and calc.get_game_tdiff(self.last_shot_time) >= self.gun_cooldown:
+        if ctrl.is_input_held[1] and calc.get_game_tdiff(self.last_shot_time) >= self.gun_cooldown:
+            if calc.get_game_tdiff(self.last_gun_heat_inc) >= 0.1:
+                self.gun_heat += self.gun_heat_conduct
+                self.last_gun_heat_inc = timer.g_timer.time
+
             # ---------- Left Side Guns ---------- #
             l_x_off = -offset.x * math.cos(angle) - offset.y * math.sin(angle)  # Barrel-bullet x-offset
             l_y_off = offset.x * math.sin(angle) - offset.y * math.cos(angle)  # Barrel-bullet y-offset
@@ -352,8 +356,10 @@ class Player(cb.ActorBase):
             else:
                 raise RuntimeError(f'{self.gun_r.weapon} is not a valid weapon for gun_r')
 
-            self.ammo -= 1
             self.last_shot_time = timer.g_timer.time
+
+        elif not ctrl.is_input_held[1]:  # Gun Heating Mechanic
+            self._gun_heat_dissipate()
 
         # ------------------------------ Firing Portals ------------------------------ #
         vel_x = self.bullet_vel * -math.sin(angle)
@@ -389,6 +395,15 @@ class Player(cb.ActorBase):
                 pass
             self.can_grapple = True
             self.grapple_input_copy = ctrl.key_released[ctrl.K_GRAPPLE]
+
+    def _gun_heat_dissipate(self):
+        last_heat = calc.get_game_tdiff(self.last_gun_heat_inc)
+        cools_per_sec = 65 * pow(0.9, last_heat)
+
+        if calc.get_game_tdiff(self.last_gun_cool) >= 1 / cools_per_sec:
+            if self.gun_heat > 0:
+                self.gun_heat -= 1
+            self.last_gun_cool = timer.g_timer.time
 
     # TODO: Player object should not have control over textbox handling. Move to either room or separate object.
     # def _get_closest_interact(self):
@@ -435,17 +450,32 @@ class Player(cb.ActorBase):
     @cb.check_update_state
     def update(self):
         self.movement()
-        self._passive_hp_regen()
 
-        # Animation
         self._animate()
         self.rotate_image(calc.get_angle_to_mouse(self))
 
         # TODO: Move textbox handling out of player object
         # self.generate_text_box()
 
+        # Heat damage
+        if self.gun_heat > self.heat_thresh:
+            # Armor starts shaking when overheated
+            rand_x = rand.uniform(-self.gun_heat / self.heat_thresh / 2, self.gun_heat / self.heat_thresh / 2)
+            rand_y = rand.uniform(-self.gun_heat / self.heat_thresh / 2, self.gun_heat / self.heat_thresh / 2)
+            self.rect.center = vec(self.pos.x + rand_x, self.pos.y + rand_y)
+
+            if calc.get_game_tdiff(self.last_overheat) > self.overheat_rate:
+                self.hp -= math.ceil(0.02 * self.max_hp)
+                self.last_overheat = timer.g_timer.time
+                self.last_hit = timer.g_timer.time
+                groups.all_font_chars.add(
+                    text.IndicatorText(self.pos.x, self.pos.y - 32, f'{math.ceil(0.02 * self.max_hp)}')
+                )
+        else:
+            self._passive_hp_regen()
+
         if self.hp <= 0:
-            self.kill()
+            pygame.quit()
 
     def _animate(self):
         pass
