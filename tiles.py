@@ -8,6 +8,7 @@ import classbases as cb
 import constants as cst
 import calc
 import groups
+import screen
 import spritesheet
 import visuals
 
@@ -40,7 +41,7 @@ class TileBase(cb.ActorBase):
         :param block_height: The height of the tile (in tiles)
         :param tile_size: The size of each individual tile (in pixels). Default is 16.
         """
-        super().__init__()
+        super().__init__(cst.LAYER['wall'])
         self.tile_size = tile_size
 
         self.block_width, self.block_height = block_width, block_height
@@ -85,7 +86,7 @@ class Wall(TileBase):
         :param style: The tiling style to use on the wall
         """
         super().__init__(pos_x, pos_y, block_width, block_height)
-        self.layer = cst.LAYER['wall']
+        self.layer = cst.LAYER['wall'] + 1
         self.show()
         groups.all_walls.add(self)
 
@@ -107,8 +108,8 @@ class Wall(TileBase):
 
 class Wall3D(TileBase):
     def __init__(self, pos_x: float, pos_y: float, block_width: int, block_height: int,
-                 parallax_mult: tuple[float, float] = (1.0, 1.0)):
-        """A wall that cannot be passed or obstructed.
+                 image_row: int = 0, style: int = 0, parallax_mult: tuple[float, float] = (1.0, 1.0)):
+        """A 3D wall that cannot be passed or obstructed.
 
         :param pos_x: The x-axis position to spawn the wall on the block grid (1 block = 16 pixels)
         :param pos_y: The y-axis position to spawn the wall on the block grid (1 block = 16 pixels)
@@ -122,9 +123,11 @@ class Wall3D(TileBase):
 
         self.pos = self.place_top_left(pos_x, pos_y)
 
-        self.image = pygame.Surface(vec(self.block_width * 16, self.block_height * 16))
-        self.image.fill((0, 0, 0))
-        self.image.set_colorkey(cst.BLACK)
+        self.spritesheet = spritesheet.Spritesheet(os.path.join(os.getcwd(), 'sprites/tiles/wall.png'), 16)
+        self.textures = self.spritesheet.get_images(16, 16, 16, image_row * 16)
+        self.orig_image = fancy_tile_texture(self.block_width, self.block_height,
+                                             self.textures, cst.BLACK, style)
+        self.image = self.orig_image
 
         self.parallax_mult = vec(parallax_mult[0], parallax_mult[1])
         self.p_ratio_x = -(self.pos.x - cst.WINWIDTH // 2) / (cst.WINWIDTH // 2) * self.parallax_mult.x
@@ -132,16 +135,16 @@ class Wall3D(TileBase):
 
         self.wall_x = PerspectiveWall(self, 'x')
         self.wall_y = PerspectiveWall(self, 'y')
-        self.top = PerspectiveTop(self)
 
         self.set_rects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
+
+    def center_rects(self) -> None:
+        self.rect.center = vec(self.pos.x - self.p_ratio_x * self.width, self.pos.y - self.p_ratio_y * self.height)
+        self.hitbox.center = self.pos
 
     def update(self):
         self.p_ratio_x = -(self.pos.x - cst.WINWIDTH // 2) / (cst.WINWIDTH // 2) * self.parallax_mult.x
         self.p_ratio_y = -(self.pos.y - cst.WINHEIGHT // 2) / (cst.WINHEIGHT // 2) * self.parallax_mult.y
-
-        self.top.pos.x = self.pos.x - self.p_ratio_x * self.width
-        self.top.pos.y = self.pos.y - self.p_ratio_y * self.height
 
         if self.p_ratio_x > 0:
             self.wall_x.pos.x = self.pos.x + self.width // 2 - self.wall_x.rect.width // 2
@@ -160,7 +163,7 @@ class Wall3D(TileBase):
 
 class PerspectiveWall(cb.ActorBase):
     def __init__(self, wall: Wall3D, axis: str, image_row: int = 0, style: int = 0):
-        super().__init__(cst.LAYER['wall'] + 1)
+        super().__init__(cst.LAYER['wall'])
         self.show()
 
         self.wall = wall
@@ -170,8 +173,7 @@ class PerspectiveWall(cb.ActorBase):
         self.textures = self.spritesheet.get_images(16, 16, 16, image_row * 16)
         self.orig_image = fancy_tile_texture(self.wall.block_width, self.wall.block_height,
                                              self.textures, cst.BLACK, style)
-        self.image = self.orig_image
-        self.image, self.rect = visuals.warp(self.orig_image, [(0, 0), (0, 64), (100, 64), (100, 0)])
+        self.image, self.rect = visuals.warp(self.orig_image, [(0, 0), (0, 64), (64, 64), (64, 0)])
 
         self.pos = vec(self.wall.pos.x, self.wall.pos.y)
         self.set_rects(self.pos.x, self.pos.y, self.rect.width, self.rect.height, self.rect.width, self.rect.height)
@@ -194,28 +196,6 @@ class PerspectiveWall(cb.ActorBase):
                  ]
             )
 
-        self.center_rects()
-
-
-class PerspectiveTop(cb.ActorBase):
-    def __init__(self, wall: Wall3D, image_row: int = 0, style: int = 0):
-        super().__init__(cst.LAYER['wall'] + 2)
-        self.show()
-        # groups.all_walls.add(self)
-        self.wall = wall
-
-        self.spritesheet = spritesheet.Spritesheet(os.path.join(os.getcwd(), 'sprites/tiles/wall.png'), 16)
-        self.textures = self.spritesheet.get_images(16, 16, 16, image_row * 16)
-        self.orig_image = fancy_tile_texture(self.wall.block_width, self.wall.block_height,
-                                             self.textures, cst.BLACK, style)
-        self.image = self.orig_image
-        # self.image = pygame.Surface(vec(self.wall.block_width * 16, self.wall.block_height * 16))
-        # self.image.fill((0, 0, 1))
-        self.pos = vec(self.wall.pos.x, self.wall.pos.y)
-
-        self.set_rects(self.pos.x, self.pos.y, self.image.get_width(), self.image.get_height(), self.image.get_width(), self.image.get_height())
-
-    def update(self):
         self.center_rects()
 
 
