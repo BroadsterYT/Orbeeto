@@ -106,7 +106,7 @@ class StandardGrunt(enemybase.EnemyBase):
         """
         if calc.get_time_diff(self.last_shot) > shoot_time:
             self.is_shooting = True
-            angle = calc.get_angle(self, target)
+            angle = calc.get_angle(self.pos, target.pos)
 
             cos_angle = math.cos(math.radians(angle))
             sin_angle = math.sin(math.radians(angle))
@@ -128,7 +128,7 @@ class StandardGrunt(enemybase.EnemyBase):
             self.collide_check(groups.all_players, groups.all_walls)
 
             self._animate()
-            self.rotate_image(calc.get_angle(self, calc.get_closest_player()))
+            self.rotate_image(calc.get_angle(self.pos, calc.get_closest_player().pos))
 
         self._destroy_check(6, 75, 0)
 
@@ -239,7 +239,7 @@ class Ambusher(enemybase.EnemyBase):
         self.last_shot = timer.g_timer.time
 
         self.movement_timer = time.time()
-        self.movement_angle = calc.get_angle(self, calc.get_closest_player())
+        self.movement_angle = calc.get_angle(self.pos, calc.get_closest_player().pos)
 
         self.set_images('sprites/enemies/ambusher.png', 64, 64, 1, 1, 0, 0)
         self.set_rects(0, 0, 64, 64, 32, 32)
@@ -250,7 +250,7 @@ class Ambusher(enemybase.EnemyBase):
         room = cb.get_room()
         final_accel = vec(0, 0)
 
-        self.movement_angle = calc.get_angle(self, calc.get_closest_player())
+        self.movement_angle = calc.get_angle(self.pos, calc.get_closest_player().pos)
         dash_timer = calc.eerp(0.6, 0.8, self.hp / self.max_hp)  # Moves for longer as health gets lower
 
         # Rush towards the nearest player
@@ -278,5 +278,5 @@ class Ambusher(enemybase.EnemyBase):
             self.accel_movement()
 
     def update(self):
-        self.rotate_image(calc.get_angle(self, calc.get_closest_player()))
+        self.rotate_image(calc.get_angle(self.pos, calc.get_closest_player().pos))
         self._destroy_check(6, 75, 2)

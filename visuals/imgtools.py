@@ -1,8 +1,9 @@
+import typing
+
 import cv2
 import numpy
 import pygame
 from pygame.math import Vector2 as vec
-import typing
 
 
 def stack_images(base_image: pygame.Surface, top_image: pygame.Surface, stack_x: int, stack_y: int) -> pygame.Surface:
@@ -20,9 +21,7 @@ def stack_images(base_image: pygame.Surface, top_image: pygame.Surface, stack_x:
     return output_image
 
 
-def warp(surf: pygame.Surface,
-         warp_pts,
-         smooth=True,
+def warp(surf: pygame.Surface, warp_pts, smooth=True,
          out: pygame.Surface = None) -> typing.Tuple[pygame.Surface, pygame.Rect]:
     """Stretches a pygame surface to fill a quad using cv2's perspective warp.
 

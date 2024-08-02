@@ -267,7 +267,7 @@ class GrappleBullet(proj.BulletBase):
         if self.grappled_to not in groups.all_walls:
             # Hook returns to portal it entered
             if len(self.portal_list) > 1:
-                angle = calc.get_angle(self, self.portal_list[1])
+                angle = calc.get_angle(self.pos, self.portal_list[1].pos)
                 room = cb.get_room()
                 room_accel = room.get_accel()
                 self.accel.x = self.accel_const * -math.sin(math.radians(angle)) + room_accel.x
@@ -280,7 +280,7 @@ class GrappleBullet(proj.BulletBase):
 
             # Hook returns to player
             else:
-                angle = calc.get_angle(self, self.shot_from)
+                angle = calc.get_angle(self.pos, self.shot_from.pos)
                 room = cb.get_room()
                 room_accel = room.get_accel()
                 self.accel.x = self.accel_const * -math.sin(math.radians(angle)) + room_accel.x

@@ -100,7 +100,7 @@ class ItemDrop(cb.ActorBase):
         exist_time = calc.get_game_tdiff(self.start_time)
         if exist_time <= 10:
             angle = math.sin(self.period_mult * math.pi * exist_time) * (1 / exist_time)
-            self.rotate_image(int(math.degrees(angle)))
+            self.rotate_image(math.degrees(angle))
 
     def __repr__(self):
         return f'ItemDrop({self.pos})'

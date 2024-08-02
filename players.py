@@ -283,7 +283,7 @@ class Player(cb.ActorBase):
             output += self.accel_const
 
         if self.is_swinging():
-            angle = calc.get_angle(self, self.grapple)
+            angle = calc.get_angle(self.pos, self.grapple.pos)
             output += self.grapple_speed * -math.sin(math.radians(angle))
 
         return output
@@ -296,7 +296,7 @@ class Player(cb.ActorBase):
             output += self.accel_const
 
         if self.is_swinging():
-            angle = calc.get_angle(self, self.grapple)
+            angle = calc.get_angle(self.pos, self.grapple.pos)
             output += self.grapple_speed * -math.cos(math.radians(angle))
 
         return output

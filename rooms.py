@@ -448,7 +448,7 @@ class Room(cb.AbstractBase):
             output -= self.player1.accel_const
 
         if self.player1.is_swinging():
-            angle = calc.get_angle(self.player1, self.player1.grapple)
+            angle = calc.get_angle(self.player1.pos, self.player1.grapple.pos)
             output += self.player1.grapple_speed * math.sin(math.radians(angle))
 
         return output
@@ -468,7 +468,7 @@ class Room(cb.AbstractBase):
             output -= self.player1.accel_const
 
         if self.player1.is_swinging():
-            angle = calc.get_angle(self.player1, self.player1.grapple)
+            angle = calc.get_angle(self.player1.pos, self.player1.grapple.pos)
             output += self.player1.grapple_speed * math.cos(math.radians(angle))
 
         return output
@@ -932,11 +932,11 @@ class Room(cb.AbstractBase):
                 trinkets.LockedWall(64, 0, 1028, 0, 1, 76, 4),
                 trinkets.PortalBlocker(0, 0, 1, 4, 45),
 
-                enemies.Turret(300, 300),
+                # enemies.Turret(300, 300),
 
-                tiles.Wall3D(800, 300, 6, 4)
+                tiles.Wall3D(800, 300, 6, 4),
 
-                # enemies.Ambusher(500, 300),
+                enemies.Ambusher(500, 300),
             ]
 
         elif self.room == vec(0, 1):

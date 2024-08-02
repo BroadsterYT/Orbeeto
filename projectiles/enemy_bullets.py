@@ -98,7 +98,7 @@ class AmbusherDasher(proj.BulletBase):
 
         # Homing capability
         if 0.2 < calc.get_game_tdiff(self.seek_time) <= 0.75:
-            angle = 270 - calc.get_angle(self, room.player1)
+            angle = 270 - calc.get_angle(self.pos, room.player1.pos)
             self.vel_const = self.launch_vel.rotate(calc.eerp(1, angle, self.seek_time))
 
         final_vel = self.vel_const + room.vel.copy()

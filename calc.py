@@ -4,7 +4,6 @@ Contains all important global calculations.
 import math
 import random as rand
 import time
-import timeit
 
 import pygame
 from pygame.math import Vector2 as vec
@@ -14,6 +13,7 @@ import controls as ctrl
 import constants as cst
 import enemies
 import groups
+import rooms
 import timer
 
 
@@ -33,25 +33,16 @@ def get_angle_to_mouse(any_sprite) -> float:
     return len_vec.angle_to(vec(cst.WINWIDTH // 2, cst.WINHEIGHT // 2)) + 60
 
 
-def get_angle(first_obj, sec_obj) -> float:
+def get_angle(vec1: vec, vec2: vec) -> float:
     """Returns the angle between two sprites/coordinates
 
-    :param first_obj: The first object
-    :param sec_obj: The second object
-    :return: The angle between the two objects
+    :param vec1: The first vector
+    :param vec2: The second vector
+    :return: The angle between the two vectors
     """
-    if type(first_obj) is pygame.math.Vector2:
-        first_pos = first_obj.copy()
-    else:
-        first_pos = first_obj.pos
 
-    if type(sec_obj) is pygame.math.Vector2:
-        sec_pos = sec_obj.copy()
-    else:
-        sec_pos = sec_obj.pos
-
-    length_to_x = sec_pos.x - first_pos.x
-    length_to_y = sec_pos.y - first_pos.y
+    length_to_x = vec2.x - vec1.x
+    length_to_y = vec2.y - vec1.y
 
     if length_to_x and length_to_y != 0:
         angle = -math.degrees(math.atan2(length_to_y, length_to_x)) - 90
@@ -204,26 +195,23 @@ def get_opposite(value):
     :param value: The value to get the opposite of
     :return: The opposite of the input
     """
-    match value:
-        # ---------- str inputs ---------- #
-        case cst.SOUTH:
-            return cst.NORTH
-        case cst.EAST:
-            return cst.WEST
-        case cst.NORTH:
-            return cst.SOUTH
-        case cst.WEST:
-            return cst.EAST
+    if value == cst.SOUTH:
+        return cst.NORTH
+    elif value == cst.EAST:
+        return cst.WEST
+    elif value == cst.NORTH:
+        return cst.SOUTH
+    elif value == cst.WEST:
+        return cst.EAST
 
-        # ---------- int inputs ---------- #
-        case ctrl.K_MOVE_DOWN:
-            return ctrl.K_MOVE_UP
-        case ctrl.K_MOVE_RIGHT:
-            return ctrl.K_MOVE_LEFT
-        case ctrl.K_MOVE_UP:
-            return ctrl.K_MOVE_DOWN
-        case ctrl.K_MOVE_LEFT:
-            return ctrl.K_MOVE_RIGHT
+    elif value == ctrl.K_MOVE_DOWN:
+        return ctrl.K_MOVE_UP
+    elif value == ctrl.K_MOVE_RIGHT:
+        return ctrl.K_MOVE_LEFT
+    elif value == ctrl.K_MOVE_UP:
+        return ctrl.K_MOVE_DOWN
+    elif value == ctrl.K_MOVE_LEFT:
+        return ctrl.K_MOVE_RIGHT
 
 
 def triangle_collide(instig, sprite) -> str:
@@ -466,12 +454,6 @@ def swap_color(image: pygame.Surface, old_color: tuple, new_color: tuple) -> pyg
 
 
 if __name__ == '__main__':
-    import rooms
-    import constants as cst
+    import timeit
 
-    main_room = rooms.Room(0, 0)
-    instig_test = enemies.StandardGrunt(200.590643, 500.42378293)
-    sprite_test = enemies.StandardGrunt(300.475234, 875.5463)
-    timer = time.time()
-
-    print(timeit.timeit('get_dist(instig_test.pos, sprite_test.pos)', number=10000, globals=globals()))
+    room_test = rooms.Room(0, 0)

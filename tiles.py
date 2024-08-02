@@ -8,7 +8,6 @@ import classbases as cb
 import constants as cst
 import calc
 import groups
-import screen
 import spritesheet
 import visuals
 
@@ -196,6 +195,44 @@ class PerspectiveWall(cb.ActorBase):
                  ]
             )
 
+        self.center_rects()
+
+
+class PerspectiveWallTest(cb.ActorBase):
+    def __init__(self, wall: Wall3D, axis: str, image_row: int = 0, style: int = 0):
+        super().__init__(cst.LAYER['wall'])
+        self.show()
+
+        self.wall = wall
+        self.axis = axis
+
+        self.spritesheet = spritesheet.Spritesheet(os.path.join(os.getcwd(), 'sprites/tiles/wall.png'), 16)
+        self.textures = self.spritesheet.get_images(16, 16, 16, image_row * 16)
+        self.orig_image = fancy_tile_texture(self.wall.block_width, self.wall.block_height,
+                                             self.textures, cst.BLACK, style)
+        self.image, self.rect = visuals.warp(self.orig_image, [(0, 0), (0, 64), (64, 64), (64, 0)])
+
+        self.image_dict = {}
+        if self.axis == 'x':
+            for x in range(0, cst.WINWIDTH // 2):
+                for y in range(0, cst.WINHEIGHT // 2):
+                    print(f'Adding surface for {(x, y)}')
+                    self.image_dict.update({
+                        (x, y): visuals.warp(self.orig_image,
+                                             [(0, 0),
+                                              (0, self.wall.height),
+                                              (self.wall.width * self.wall.p_ratio_x,
+                                               self.wall.height + self.wall.p_ratio_y * self.wall.height),
+                                              (self.wall.width * self.wall.p_ratio_x,
+                                               self.wall.p_ratio_y * self.wall.height)])
+                    })
+        elif self.axis == 'y':
+            pass
+
+        self.pos = vec(self.wall.pos.x, self.wall.pos.y)
+        self.set_rects(self.pos.x, self.pos.y, self.rect.width, self.rect.height, self.rect.width, self.rect.height)
+
+    def update(self):
         self.center_rects()
 
 
