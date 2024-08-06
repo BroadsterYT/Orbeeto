@@ -15,7 +15,6 @@ import text
 import calc
 import constants as cst
 import gamestack as gs
-import groups
 import rooms
 
 
@@ -24,7 +23,8 @@ pygame.display.set_caption('Orbeeto')
 pygame.display.set_icon(pygame.image.load(os.path.join(os.getcwd(), 'other/orbeeto.png')))
 
 screen.buffer_screen = pygame.Surface((cst.WINWIDTH, cst.WINHEIGHT))
-screen.viewport = pygame.display.set_mode((cst.WINWIDTH, cst.WINHEIGHT), pygame.RESIZABLE | pygame.DOUBLEBUF)
+screen.viewport = pygame.display.set_mode((cst.WINWIDTH, cst.WINHEIGHT),
+                                          pygame.RESIZABLE | pygame.DOUBLEBUF | pygame.SCALED)
 
 
 def redraw_game_window() -> None:
