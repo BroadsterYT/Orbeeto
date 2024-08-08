@@ -165,8 +165,8 @@ class ActorBase(pygame.sprite.Sprite):
         self.image = self.images[self.index]
         self.orig_image = self.orig_images[self.index]
 
-    def set_rects(self, rect_pos_x: float, rect_pos_y: float, rect_width: int, rect_height: int,
-                  hitbox_width: int, hitbox_height: int, set_pos: bool = True) -> None:
+    def set_rects(self, rect_pos_x: float, rect_pos_y: float, rect_width: int | float, rect_height: int | float,
+                  hitbox_width: int | float, hitbox_height: int | float, set_pos: bool = True) -> None:
         """Initializes the rect and hitbox of a sprite.
 
         :param rect_pos_x: The x-axis position to spawn the rect and hitbox

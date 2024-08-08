@@ -44,7 +44,6 @@ def warp(surf: pygame.Surface, warp_pts, smooth=True,
 
     w, h = surf.get_size()
     is_alpha = surf.get_flags() & pygame.SRCALPHA
-
     # XXX throughout this method we need to swap x and y coordinates
     # when we pass stuff between pygame and cv2. I'm not sure why .-.
     src_corners = numpy.float32([(0, 0), (0, w), (h, w), (h, 0)])
@@ -87,3 +86,18 @@ def warp(surf: pygame.Surface, warp_pts, smooth=True,
     # XXX swap x and y once again...
     return out, pygame.Rect(warp_bounding_box.y, warp_bounding_box.x,
                             warp_bounding_box.h, warp_bounding_box.w)
+
+
+if __name__ == '__main__':
+    import os
+    import timeit
+
+    print(os.getcwd())
+    os.chdir('C:\\Users\BroDe\Documents\GitHub\Orbeeto')
+    print(os.getcwd())
+
+    sheet = pygame.image.load('sprites/tiles/wall.png')
+    img = pygame.Surface((16, 16))
+    img.blit(sheet, (0, 0))
+
+    print(timeit.timeit('warp(img, [(0, 0), (0, 32), (16, 128), (16, 0)])', number=1000, globals=globals()))

@@ -925,7 +925,7 @@ class Room(cb.AbstractBase):
                 tiles.Wall3D(0, 400, 25, 4, parallax_mult=(0.25, 1.0)),
                 # tiles.Wall(1280 - 64, 0, 4, cst.WINHEIGHT // 16),
                 tiles.Wall3D(1280 - 256, 400, 4, cst.WINHEIGHT // 16, parallax_mult=(2, 0.1)),
-                tiles.Floor(0, 0, 80, 80),
+                # tiles.Floor(0, 0, 80, 80),
 
                 trinkets.Button(1, 14, 16),
                 trinkets.Box(cst.WINWIDTH // 2, cst.WINHEIGHT // 2),
@@ -936,7 +936,7 @@ class Room(cb.AbstractBase):
 
                 tiles.Wall3D(800, 300, 6, 4),
 
-                enemies.Ambusher(500, 300),
+                # enemies.Ambusher(500, 300),
             ]
 
         elif self.room == vec(0, 1):
