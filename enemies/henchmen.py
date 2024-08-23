@@ -172,19 +172,12 @@ class Turret(enemybase.EnemyBase):
         self._set_stats(10, 10, 68)
 
     def movement(self, can_shoot: bool = True):
-        self.set_room_pos()
+        if can_shoot:
+            self.shoot(0.2)
 
         self.accel = self.get_accel()
         self.accel_movement()
-
-        if can_shoot:
-            self.shoot(0.02)
-
-    def get_accel(self) -> vec:
-        final_accel = vec(0, 0)
-        room = cb.get_room()
-        final_accel += room.get_accel()
-        return final_accel
+        self.set_room_pos()
 
     def shoot(self, shoot_time: float) -> None:
         """Shoots a volley of bullets.
@@ -199,10 +192,10 @@ class Turret(enemybase.EnemyBase):
             vel_rot1 = self.bullet_vel.rotate(90)
 
             groups.all_projs.add(
-                proj.EnemyStdBullet(self.pos.x, self.pos.y, self.bullet_vel.x, self.bullet_vel.y),
-                proj.EnemyStdBullet(self.pos.x, self.pos.y, -self.bullet_vel.x, -self.bullet_vel.y),
-                proj.EnemyStdBullet(self.pos.x, self.pos.y, vel_rot1.x, vel_rot1.y),
-                proj.EnemyStdBullet(self.pos.x, self.pos.y, -vel_rot1.x, -vel_rot1.y),
+                proj.EnemyStdBullet(self.pos.x + 6, self.pos.y, self.bullet_vel.x, self.bullet_vel.y),
+                proj.EnemyStdBullet(self.pos.x + 6, self.pos.y, -self.bullet_vel.x, -self.bullet_vel.y),
+                proj.EnemyStdBullet(self.pos.x + 6, self.pos.y, vel_rot1.x, vel_rot1.y),
+                proj.EnemyStdBullet(self.pos.x + 6, self.pos.y, -vel_rot1.x, -vel_rot1.y),
             )
             self.bullet_vel = self.bullet_vel.rotate(self.bullet_angle)
             self.last_shot = time.time()

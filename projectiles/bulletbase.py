@@ -1,7 +1,9 @@
+import copy
 import random as rand
 import time
 
 import pygame
+from pygame.math import Vector2 as vec
 
 from projectiles import explosions
 from text import display_text
@@ -30,15 +32,11 @@ class BulletBase(cb.ActorBase):
         self.hit = None
         self.side_hit = None
 
-    def get_vel(self) -> pygame.math.Vector2:
-        """Returns the velocity the bullet should have
-
-        :return: The velocity vector to assign to the bullet
-        """
+    def get_accel(self):
         room = cb.get_room()
-        final_vel = self.vel_const + room.vel.copy()
-
-        return final_vel * screen.dt * cst.M_FPS
+        final_accel = vec(self.vel_const.x / 15, self.vel_const.y / 15)
+        final_accel += room.get_accel()
+        return final_accel
 
     def land(self, target) -> None:
         """Destroys the bullet and renders an explosion or bounces the bullet
@@ -137,6 +135,33 @@ class BulletBase(cb.ActorBase):
                     self.land(colliding_sprite)
                     return
 
+    def teleport(self, portal_in):
+        portal_out = calc.get_other_portal(portal_in)
+        dir_in = portal_in.facing
+        dir_out = portal_out.facing
+
+        dist_offset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
+        dir_list = {cst.SOUTH: 180, cst.EAST: 90, cst.NORTH: 0, cst.WEST: 270}
+
+        if dir_in == cst.SOUTH:
+            dist_offset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
+
+        elif dir_in == cst.EAST:
+            dir_list.update({cst.EAST: 180, cst.NORTH: 90, cst.WEST: 0, cst.SOUTH: 270})
+            dist_offset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
+
+        elif dir_in == cst.NORTH:
+            dir_list.update({cst.NORTH: 180, cst.WEST: 90, cst.SOUTH: 0, cst.EAST: 270})
+            dist_offset = copy.copy(self.pos.x) - copy.copy(portal_in.pos.x)
+
+        elif dir_in == cst.WEST:
+            dir_list.update({cst.WEST: 180, cst.SOUTH: 90, cst.EAST: 0, cst.NORTH: 270})
+            dist_offset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
+
+        self._align_sprite(portal_out, dist_offset, dir_out)
+        self.vel = self.vel.rotate(dir_list[dir_out])
+        self.vel_const = self.vel_const.rotate(dir_list[dir_out])
+
     def inflict_damage(self, sprite_group, receiver) -> None:
         """Calculates the damage a bullet should inflict on a sprite and subtracts it from that sprite's HP
 
@@ -175,4 +200,3 @@ class BulletBase(cb.ActorBase):
             self.pos.x < room.border_west.pos.x
         ):
             self.kill()
-        pygame.draw.rect(screen.buffer_screen, cst.RED, self.hitbox)

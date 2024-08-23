@@ -498,6 +498,9 @@ class Room(cb.AbstractBase):
             for sprite in self._get_sprites_to_recenter():
                 sprite.movement()
 
+            for proj in groups.all_projs:
+                proj.movement()
+
     def _set_vel(self, value_x: int | float, value_y: int | float, is_additive: bool = False) -> None:
         """Sets the velocity components of the room, as well as all the sprites within the room, to specified values
 
@@ -525,7 +528,7 @@ class Room(cb.AbstractBase):
         """
         output_list = []
         for sprite in [s
-                       for s in itertools.chain(self.sprites(), groups.all_projs, groups.all_drops)
+                       for s in itertools.chain(self.sprites(), groups.all_drops)
                        if s.visible]:
             output_list.append(sprite)
 
@@ -922,21 +925,8 @@ class Room(cb.AbstractBase):
         """
         if self.room == vec(0, 0):
             return [
-                # tiles.Wall3D(0, 400, 25, 4, parallax_mult=(0.25, 1.0)),
-                # tiles.Wall3D(1280 - 256, 400, 4, cst.WINHEIGHT // 16, parallax_mult=(2, 0.1)),
-                # tiles.Floor(0, 0, 80, 80),
-
-                trinkets.Button(1, 14, 16),
-                trinkets.Box(cst.WINWIDTH // 2, cst.WINHEIGHT // 2),
-                trinkets.LockedWall(64, 0, 1028, 0, 1, 76, 4),
-                trinkets.PortalBlocker(0, 0, 1, 4, 45),
-
-                enemies.Turret(300, 300),
-
-                # tiles.Wall3D(800, 300, 6, 4),
-                tiles.spawn_3d_wall(800, 300, 6, 4)
-
-                # enemies.Ambusher(500, 300),
+                tiles.Wall(0, 0, 4, 41),
+                enemies.Turret(300, 300)
             ]
 
         elif self.room == vec(0, 1):

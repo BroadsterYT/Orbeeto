@@ -32,7 +32,7 @@ class PlayerStdBullet(proj.BulletBase):
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
-        self.vel_const = self.vel
+        self.vel_const = vec(vel_x, vel_y)
         self.ric_count = bounce_count
 
         self.set_images(os.path.join(os.getcwd(), 'sprites/bullets/bullets.png'), 32, 32, 8, 1)
@@ -47,14 +47,15 @@ class PlayerStdBullet(proj.BulletBase):
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)
 
-            if calc.get_time_diff(self.start_time) <= 10:
-                self.vel = self.get_vel()
-                self.vel_movement(False)
+            if calc.get_time_diff(self.start_time) <= 5:
+                self.accel = self.get_accel()
+                self.accel_movement()
             else:
                 self.kill()
 
     def update(self):
         super().update()
+        print(self.vel)
 
     def __repr__(self):
         return f'PlayerStdBullet({self.pos}, {self.vel})'
@@ -70,7 +71,7 @@ class PlayerLaserBullet(proj.BulletBase):
         self.vel_const = self.vel
         self.ric_count = bounce_count
 
-        self.set_images(os.path.join(os.getcwd(), 'sprites/bullets/bullets.png'), 32, 32, 8, 1, 4)
+        self.set_images(os.path.join(os.getcwd(), 'sprites/bullets/bullets.png'), 32, 32, 8, 1, 2)
         self.set_rects(self.pos.x, self.pos.y, 8, 8, 10, 10)
 
         self.rotate_image(calc.get_vec_angle(self.vel.x, self.vel.y))
@@ -78,17 +79,17 @@ class PlayerLaserBullet(proj.BulletBase):
     def movement(self):
         if self.can_update:
             self.proj_collide(groups.all_enemies, True)
+            self.proj_collide(groups.all_sentries, True)
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)
 
-            if calc.get_time_diff(self.start_time) <= 10:
+            if calc.get_time_diff(self.start_time) <= 5:
                 self.vel = self.get_vel()
                 self.vel_movement(False)
             else:
                 self.kill()
 
     def update(self):
-        self.movement()
         super().update()
 
 
@@ -164,8 +165,8 @@ class PortalBullet(proj.BulletBase):
             self.proj_collide(groups.all_portals, False)
 
             if calc.get_time_diff(self.start_time) <= 5:
-                self.vel = self.get_vel()
-                self.vel_movement(False)
+                self.accel = self.get_accel()
+                self.accel_movement()
             else:
                 self.kill()
 
@@ -201,7 +202,7 @@ class GrappleBullet(proj.BulletBase):
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
-        self.vel_const = self.vel
+        self.vel_const = vec(vel_x, vel_y)
         self.accel = vec(0, 0)
         self.accel_const = 1.5
 
@@ -306,8 +307,8 @@ class GrappleBullet(proj.BulletBase):
     def movement(self):
         if not self.returning:
             if not self.is_hooked:
-                self.vel = self.get_vel()
-                self.vel_movement(True)
+                self.accel = self.get_accel()
+                self.accel_movement()
 
             elif self.is_hooked:
                 if self.grappled_to is not None and self.grappled_to not in groups.all_walls:

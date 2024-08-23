@@ -28,7 +28,7 @@ class EnemyStdBullet(proj.BulletBase):
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
-        self.vel_const = self.vel
+        self.vel_const = vec(vel_x, vel_y)
         self.ric_count = bounce_count
 
         self.dmg_mod = dmg_mod
@@ -44,9 +44,9 @@ class EnemyStdBullet(proj.BulletBase):
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)
 
-            if calc.get_time_diff(self.start_time) <= 10:
-                self.vel = self.get_vel()
-                self.vel_movement(False)
+            if calc.get_time_diff(self.start_time) <= 5:
+                self.accel = self.get_accel()
+                self.accel_movement()
             else:
                 self.kill()
 

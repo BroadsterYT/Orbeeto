@@ -62,7 +62,7 @@ class PlayerGun(cb.ActorBase):
         elif self.weapon == items.WEAPONS[2]:
             self.image_count = 5
             self.set_images(os.path.join(os.getcwd(), 'sprites/orbeeto/guns.png'), 64, 64, 5, self.image_count, 10)
-            self.bullet_vel = 15
+            self.bullet_vel = 12
             self.cooldown = 0.13
 
     @cb.check_update_state
@@ -188,7 +188,6 @@ class Player(cb.ActorBase):
         """Updates all the player's max stats."""
         self.max_hp = math.floor(calc.eerp(50, 650, self.level / self.max_level)) + self.current_armor.hp_mod
         self.max_defense = math.floor(calc.eerp(15, 800, self.level / self.max_level)) + self.current_armor.def_mod
-        # self.max_ammo = math.floor(calc.eerp(40, 500, self.level / self.max_level)) + self.current_armor.ammo_mod
         self.grapple_speed = math.floor(calc.eerp(2.0, 4.0, self.level / self.max_level))
 
         self.defense = self.max_defense
@@ -342,6 +341,10 @@ class Player(cb.ActorBase):
                 groups.all_projs.add(
                     proj.PlayerStdBullet(self.pos.x + l_x_off, self.pos.y + l_y_off, l_vel_x, l_vel_y)
                 )
+            elif self.gun_l.weapon == items.WEAPONS[2]:
+                groups.all_projs.add(
+                    proj.PlayerLaserBullet(self.pos.x + l_x_off, self.pos.y + l_y_off, l_vel_x, l_vel_y)
+                )
             else:
                 raise RuntimeError(f'{self.gun_l.weapon} is not a valid weapon for gun_l or is not yet implemented.')
 
@@ -352,9 +355,10 @@ class Player(cb.ActorBase):
             r_vel_y = self.gun_r.bullet_vel * -math.cos(angle)
 
             if self.gun_r.weapon == items.WEAPONS[1]:
-                groups.all_projs.add(
-                    proj.PlayerStdBullet(self.pos.x + r_x_off, self.pos.y + r_y_off, r_vel_x, r_vel_y)
-                )
+                # groups.all_projs.add(
+                #     proj.PlayerStdBullet(self.pos.x + r_x_off, self.pos.y + r_y_off, r_vel_x, r_vel_y)
+                # )
+                pass
             else:
                 raise RuntimeError(f'{self.gun_r.weapon} is not a valid weapon for gun_r')
 
