@@ -355,10 +355,9 @@ class Player(cb.ActorBase):
             r_vel_y = self.gun_r.bullet_vel * -math.cos(angle)
 
             if self.gun_r.weapon == items.WEAPONS[1]:
-                # groups.all_projs.add(
-                #     proj.PlayerStdBullet(self.pos.x + r_x_off, self.pos.y + r_y_off, r_vel_x, r_vel_y)
-                # )
-                pass
+                groups.all_projs.add(
+                    proj.PlayerStdBullet(self.pos.x + r_x_off, self.pos.y + r_y_off, r_vel_x, r_vel_y)
+                )
             else:
                 raise RuntimeError(f'{self.gun_r.weapon} is not a valid weapon for gun_r')
 
