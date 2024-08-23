@@ -216,8 +216,11 @@ class Player(cb.ActorBase):
 
     def update_l_gun_selection(self, new_gun_name):
         self.update_max_stats()
+        self.gun_l.kill()
         if new_gun_name == items.WEAPONS[0]:
             self.gun_l = PlayerGun(self, items.WEAPONS[0])
+        elif new_gun_name == items.WEAPONS[2]:
+            self.gun_l = PlayerGun(self, items.WEAPONS[2])
         else:
             self.gun_l = PlayerGun(self, items.WEAPONS[0])
         self.update_max_stats()
@@ -340,7 +343,7 @@ class Player(cb.ActorBase):
                     proj.PlayerStdBullet(self.pos.x + l_x_off, self.pos.y + l_y_off, l_vel_x, l_vel_y)
                 )
             else:
-                raise RuntimeError(f'{self.gun_l.weapon} is not a valid weapon for gun_l.')
+                raise RuntimeError(f'{self.gun_l.weapon} is not a valid weapon for gun_l or is not yet implemented.')
 
             # ---------- Right Side Guns ---------- #
             r_x_off = offset.x * math.cos(angle) - offset.y * math.sin(angle)

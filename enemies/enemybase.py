@@ -3,8 +3,8 @@ import random as rand
 from pygame.math import Vector2 as vec
 
 import items
+import visuals
 
-import calc
 import classbases as cb
 import constants as cst
 import groups
@@ -70,7 +70,7 @@ class EnemyBase(cb.ActorBase):
         :return: None
         """
         if self.hp <= 0:
-            calc.screen_shake_queue.add(amplitude, duration)
+            visuals.screen_shake_queue.add(amplitude, duration)
             self._drop_items(loot_table_index)
             self._award_xp()
             self.kill()

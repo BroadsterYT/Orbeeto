@@ -922,9 +922,8 @@ class Room(cb.AbstractBase):
         """
         if self.room == vec(0, 0):
             return [
-                tiles.Wall3D(0, 400, 25, 4, parallax_mult=(0.25, 1.0)),
-                # tiles.Wall(1280 - 64, 0, 4, cst.WINHEIGHT // 16),
-                tiles.Wall3D(1280 - 256, 400, 4, cst.WINHEIGHT // 16, parallax_mult=(2, 0.1)),
+                # tiles.Wall3D(0, 400, 25, 4, parallax_mult=(0.25, 1.0)),
+                # tiles.Wall3D(1280 - 256, 400, 4, cst.WINHEIGHT // 16, parallax_mult=(2, 0.1)),
                 # tiles.Floor(0, 0, 80, 80),
 
                 trinkets.Button(1, 14, 16),
@@ -932,9 +931,10 @@ class Room(cb.AbstractBase):
                 trinkets.LockedWall(64, 0, 1028, 0, 1, 76, 4),
                 trinkets.PortalBlocker(0, 0, 1, 4, 45),
 
-                # enemies.Turret(300, 300),
+                enemies.Turret(300, 300),
 
-                tiles.Wall3D(800, 300, 6, 4),
+                # tiles.Wall3D(800, 300, 6, 4),
+                tiles.spawn_3d_wall(800, 300, 6, 4)
 
                 # enemies.Ambusher(500, 300),
             ]
