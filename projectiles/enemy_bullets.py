@@ -72,7 +72,7 @@ class AmbusherDasher(proj.BulletBase):
         self.pos = vec((pos_x, pos_y))
         self.launch_vel = vec(7, 0)
         self.vel = self.launch_vel.rotate(launch_angle)
-        self.vel_const = self.vel
+        self.vel_const = self.launch_vel.rotate(launch_angle)
         self.seek_time = timer.g_timer.time
 
         self.dmg_mod = dmg_mod
@@ -87,22 +87,24 @@ class AmbusherDasher(proj.BulletBase):
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)
 
+            # TODO: Update movement logic to use accel_movement
             if calc.get_time_diff(self.start_time) <= 10:
-                self.vel = self.get_vel()
-                self.vel_movement(False)
+                # self.vel = self.get_vel()
+                # self.vel_movement(False)
+                pass
             else:
                 self.kill()
 
-    def get_vel(self) -> vec:
-        room = cb.get_room()
-
-        # Homing capability
-        if 0.2 < calc.get_game_tdiff(self.seek_time) <= 0.75:
-            angle = 270 - calc.get_angle(self.pos, room.player1.pos)
-            self.vel_const = self.launch_vel.rotate(calc.eerp(1, angle, self.seek_time))
-
-        final_vel = self.vel_const + room.vel.copy()
-        return final_vel * screen.dt * cst.M_FPS
+    # def get_vel(self) -> vec:
+    #     room = cb.get_room()
+    #
+    #     # Homing capability
+    #     if 0.2 < calc.get_game_tdiff(self.seek_time) <= 0.75:
+    #         angle = 270 - calc.get_angle(self.pos, room.player1.pos)
+    #         self.vel_const = self.launch_vel.rotate(calc.eerp(1, angle, self.seek_time))
+    #
+    #     final_vel = self.vel_const + room.vel.copy()
+    #     return final_vel * screen.dt * cst.M_FPS
 
     def update(self):
         super().update()

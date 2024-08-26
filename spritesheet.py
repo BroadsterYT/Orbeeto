@@ -2,8 +2,7 @@ import pygame
 from pygame.math import Vector2 as vec
 
 
-class Spritesheet(object):
-    """An object that handles sprite sheets and can extract frames and animations from them."""
+class Spritesheet:
     def __init__(self, file_name, sprites_per_row):
         """An object that handles sprite sheets and can extract frames and animations from them
 

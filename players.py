@@ -340,6 +340,7 @@ class Player(cb.ActorBase):
             if self.gun_l.weapon == items.WEAPONS[0]:
                 groups.all_projs.add(
                     proj.PlayerStdBullet(self.pos.x + l_x_off, self.pos.y + l_y_off, l_vel_x, l_vel_y)
+                    # proj.PlayerHomingBullet(self.pos.x + l_x_off, self.pos.y + l_y_off, l_vel_x, l_vel_y)
                 )
             elif self.gun_l.weapon == items.WEAPONS[2]:
                 groups.all_projs.add(
@@ -458,6 +459,7 @@ class Player(cb.ActorBase):
 
         self._animate()
         self.rotate_image(calc.get_angle_to_mouse(self))
+        print(calc.get_angle_to_mouse(self))
 
         # TODO: Move textbox handling out of player object
         # self.generate_text_box()

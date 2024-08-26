@@ -1,7 +1,6 @@
 """
 Module containing ActorBase and AbstractBase.
 """
-import copy
 import functools
 import time
 
@@ -40,7 +39,7 @@ def check_update_state(method):
 
 class ActorBase(pygame.sprite.Sprite):
     """The base class for all actors in the game."""
-    def __init__(self, layer=1, gamestate: gs.GameState = gs.s_action):
+    def __init__(self, layer: int = 1, gamestate: gs.GameState = gs.s_action):
         """The base class for all actors in the game
 
         :param layer: The layer the sprite should be drawn on
@@ -49,25 +48,17 @@ class ActorBase(pygame.sprite.Sprite):
         super().__init__()
         self._layer = layer
         self.gamestate = gamestate
-
-        # Existence booleans
         self.visible = False
         self._can_update = True
 
-        self.last_frame = time.time()
+        self.last_frame = time.time()  # For animation frames
 
-        self.pos = vec((0, 0))
+        self.pos = vec(0, 0)
         self.pos_copy = self.pos.copy()  # For adjusting sprites within the scrolling rooms
-        
         self.room_pos = vec(0, 0)  # For maintaining position within a moving room
         
         self.vel = vec(0, 0)
-
-        """The velocity constant of the sprite. It determines how fast a sprite moving with a constant velocity
-            should move along the x-axis and y-axis. If the sprite moves according to acceleration and not velocity
-            alone, then this value will not be used."""
-        self.vel_const = vec(0, 0)
-
+        self.vel_const = vec(0, 0)  # Used for objects moving at a constant velocity
         self.accel = vec(0, 0)
         self.accel_const = 0.58
 
@@ -78,8 +69,8 @@ class ActorBase(pygame.sprite.Sprite):
         self.image = None
         self.index = 0
 
-        self.rect = None
-        self.hitbox = None
+        self.rect = pygame.Rect(0, 0, 64, 64)
+        self.hitbox = pygame.Rect(0, 0, 64, 64)
 
         self.is_grappled = False
         self.grappled_by = None
@@ -206,23 +197,6 @@ class ActorBase(pygame.sprite.Sprite):
         room = get_room()
         self.room_pos = vec((self.pos.x - room.pos.x, self.pos.y - room.pos.y))
 
-    def vel_movement(self, adjust_centers_first: bool) -> None:
-        """Makes a sprite move according to its velocity (self.vel)
-
-        :param adjust_centers_first: Should rect and hitbox be snapped to its position before or after the vel
-        calculation?
-        :return: None
-        """
-        if adjust_centers_first:
-            self.center_rects()
-            self.pos.x += self.vel.x
-            self.pos.y += self.vel.y
-
-        else:
-            self.pos.x += self.vel.x
-            self.pos.y += self.vel.y
-            self.center_rects()
-
     def accel_movement(self) -> None:
         """Makes a sprite move according to its acceleration (self.accel and self.accel_const).
         """
@@ -234,8 +208,8 @@ class ActorBase(pygame.sprite.Sprite):
         self.center_rects()
 
     def get_accel(self) -> pygame.math.Vector2:
-        """Returns the acceleration the sprite should have. (Should be overridden if the sprite does not use
-        acceleration or if the sprite does not move at all).
+        """Returns the acceleration the sprite should have. Should be overridden if the sprite requires more
+        acceleration than moving within a room.
         """
         room = get_room()
         final_accel = vec(0, 0)

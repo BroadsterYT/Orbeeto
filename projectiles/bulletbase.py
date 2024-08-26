@@ -32,7 +32,7 @@ class BulletBase(cb.ActorBase):
         self.hit = None
         self.side_hit = None
 
-    def get_accel(self):
+    def get_accel(self) -> vec:
         room = cb.get_room()
         final_accel = vec(self.vel_const.x / 15, self.vel_const.y / 15)
         final_accel += room.get_accel()

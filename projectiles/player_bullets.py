@@ -1,3 +1,4 @@
+import itertools
 import math
 import os
 import time
@@ -6,7 +7,6 @@ import pygame
 from pygame.math import Vector2 as vec
 
 import projectiles as proj
-import screen
 
 import classbases as cb
 import calc
@@ -14,6 +14,7 @@ import constants as cst
 import groups
 
 import portals
+import timer
 import visual_elems
 
 
@@ -55,7 +56,6 @@ class PlayerStdBullet(proj.BulletBase):
 
     def update(self):
         super().update()
-        print(self.vel)
 
     def __repr__(self):
         return f'PlayerStdBullet({self.pos}, {self.vel})'
@@ -68,7 +68,7 @@ class PlayerLaserBullet(proj.BulletBase):
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
-        self.vel_const = self.vel
+        self.vel_const = vec(vel_x, vel_y)
         self.ric_count = bounce_count
 
         self.set_images(os.path.join(os.getcwd(), 'sprites/bullets/bullets.png'), 32, 32, 8, 1, 2)
@@ -84,13 +84,100 @@ class PlayerLaserBullet(proj.BulletBase):
             self.proj_collide(groups.all_portals, False)
 
             if calc.get_time_diff(self.start_time) <= 5:
-                self.vel = self.get_vel()
-                self.vel_movement(False)
+                self.accel = self.get_accel()
+                self.accel_movement()
             else:
                 self.kill()
 
     def update(self):
         super().update()
+
+
+class PlayerHomingBullet(proj.BulletBase):
+    def __init__(self, pos_x: float, pos_y: float, vel_x: float, vel_y: float, bounce_count: int = 1):
+        """A projectile fired by a player that homes in on enemies
+
+        :param pos_x: The x-position where the bullet should be spawned
+        :param pos_y: The y-position where the bullet should be spawned
+        :param vel_x: The x-axis component of the bullet's velocity
+        :param vel_y: The y-axis component of the bullet's velocity
+        :param bounce_count: The number of times the bullet should bounce. Defaults to 1 (no bounce).
+        """
+        super().__init__(7)
+        self.show()
+
+        self.pos = vec((pos_x, pos_y))
+        self.vel = vec(vel_x, vel_y)
+        self.vel_const = vec(vel_x, vel_y)
+        self.launch_vel = vec(vel_x, vel_y)
+        self.ric_count = bounce_count
+
+        self.last_homing_time = timer.g_timer.time
+        self.seek_time = timer.g_timer.time
+
+        self.dist_dict = {}
+        for sprite in [s for s in itertools.chain(groups.all_enemies, groups.all_sentries)
+                       if s.visible]:
+            self.dist_dict.update({sprite: calc.get_dist(self.pos, sprite.pos)})
+        self.last_homing_time = timer.g_timer.time
+
+        self.set_images(os.path.join(os.getcwd(), 'sprites/bullets/bullets.png'), 32, 32, 8, 1)
+        self.set_rects(self.pos.x, self.pos.y, 8, 8, 6, 6)
+
+        self.rotate_image(calc.get_vec_angle(self.vel.x, self.vel.y))
+
+    def get_accel(self) -> vec:
+        room = cb.get_room()
+        final_accel = vec(self.vel_const.x / 15, self.vel_const.y / 15)
+
+        # Getting distances away from every enemy
+        if calc.get_game_tdiff(self.last_homing_time) >= 0.3:
+            self.dist_dict = {}
+            for sprite in [s for s in itertools.chain(groups.all_enemies, groups.all_sentries)
+                           if s.visible]:
+                self.dist_dict.update({sprite: calc.get_dist(self.pos, sprite.pos)})
+            self.last_homing_time = timer.g_timer.time
+
+        # Homing onto the closest target
+        try:
+            closest_target = min(self.dist_dict, key=self.dist_dict.get)
+            if self.pos.x < closest_target.pos.x:
+                final_accel.x += 0.5
+            elif self.pos.x >= closest_target.pos.x:
+                final_accel.x -= 0.5
+
+            if self.pos.y < closest_target.pos.y:
+                final_accel.y += 0.5
+            elif self.pos.y >= closest_target.pos.y:
+                final_accel.y -= 0.5
+        except ValueError:
+            pass
+
+        final_accel += room.get_accel()
+        return final_accel
+
+    @staticmethod
+    def get_angle_weight(angle) -> float:
+        return -5 * math.sin(math.pi * angle / 360)
+
+    def movement(self):
+        if self.can_update:
+            self.proj_collide(groups.all_enemies, True)
+            self.proj_collide(groups.all_sentries, True)
+            self.proj_collide(groups.all_walls, False)
+            self.proj_collide(groups.all_portals, False)
+
+            if calc.get_time_diff(self.start_time) <= 5:
+                self.accel = self.get_accel()
+                self.accel_movement()
+            else:
+                self.kill()
+
+    def update(self):
+        super().update()
+
+    def __repr__(self):
+        return f'PlayerStdBullet({self.pos}, {self.vel})'
 
 
 # ------------------------------ Utility Bullets ----------------------------- #
@@ -101,7 +188,7 @@ class PortalBullet(proj.BulletBase):
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
-        self.vel_const = self.vel
+        self.vel_const = vec(vel_x, vel_y)
 
         self.hitbox_adjust = vec(0, 0)
 

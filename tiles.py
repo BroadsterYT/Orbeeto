@@ -106,6 +106,137 @@ class Wall(TileBase):
         pass
 
 
+class CustomWall(cb.ActorBase):
+    def __init__(self, pos_x: float, pos_y: float, shape_art: str, tile_size: int = 64):
+        """A wall with a customizable shape
+
+        :param pos_x:
+        :param pos_y:
+        :param shape_art:
+        :param tile_size:
+        """
+        super().__init__(100)
+        self.show()
+        self.shape_art = shape_art
+
+        size_log2 = math.log10(tile_size) / math.log10(2)
+        if math.ceil(size_log2) != math.floor(size_log2):
+            raise ValueError(f'Parameter tile_size must be a power of 2, not {tile_size}')
+        self.tile_size = tile_size
+
+        # ----- Finding number of rows and columns ----- #
+        self.rows = 0
+        self.cols = 1
+        for char in self.shape_art:
+            if char != '\n' and self.cols <= 1:
+                self.rows += 1
+            if char == '\n':
+                self.cols += 1
+
+        # ----- Creating a tile array ----- #
+        self.tile_array = []
+        for i in range(self.rows):
+            self.tile_array.append([])
+            for j in range(self.cols):
+                self.tile_array[i].append(0)
+
+        row_count = 0
+        col_count = 0
+        for char in self.shape_art:
+            if char == 'x':
+                self.tile_array[row_count][col_count] = 0b10000
+                row_count += 1
+            elif char == 'o':
+                self.tile_array[row_count][col_count] = 0b00000
+                row_count += 1
+            elif char == '\n':
+                row_count = 0
+                col_count += 1
+
+        # ----- Updating the tile array to detail which sides of each tile are free ----- #
+        """
+        If there is an occupied tile above the current one (to the south), the 1's place will be 1,
+        to the right of the current one (to the east), the 2's place will be 1,
+        below the current one (to the north), the 4's place will be 1,
+        to the left of the current one (to the west), the 8's place will be 1
+        """
+        for x in range(self.rows):
+            for y in range(self.cols):
+                if self.tile_array[x][y - 1] >= 0b10000 and y - 1 >= 0:
+                    self.tile_array[x][y] += 0b00001
+                try:
+                    if self.tile_array[x + 1][y] >= 0b10000:
+                        self.tile_array[x][y] += 0b00010
+                except IndexError:
+                    pass
+                try:
+                    if self.tile_array[x][y + 1] >= 0b10000:
+                        self.tile_array[x][y] += 0b00100
+                except IndexError:
+                    pass
+                if self.tile_array[x - 1][y] >= 0b10000 and x - 1 >= 0:
+                    self.tile_array[x][y] += 0b01000
+
+        # ----- Converting each element of the 2d tile array into strings for parsing ----- #
+        for x in range(self.rows):
+            for y in range(self.cols):
+                self.tile_array[x][y] = format(self.tile_array[x][y], '#07b')
+        print(self.tile_array)
+
+        # ---- Parsing each array item and creating a PerspectiveWall position map as an array ----- #
+        self.p_wall_map = []
+        for x in range(self.rows):
+            for y in range(self.cols):
+                count = 0
+                for char in self.tile_array[x][y]:
+                    count += 1
+
+        self.pos = vec(pos_x, pos_y)
+
+        self.spritesheet = spritesheet.Spritesheet('sprites/tiles/wall.png', 16)
+        self.textures = self.spritesheet.get_images(16, 16, 16)
+
+        self.build_images()
+        self.rect = self.image.get_rect()
+        self.hitbox = self.image.get_rect()
+
+    def build_images(self) -> None:
+        """Builds the images of the custom wall. Will allow animated designs at a future date.
+
+        :return: None
+        """
+        # Getting total size of canvas given points
+        self.image = pygame.Surface(vec(self.rows * self.tile_size, self.cols * self.tile_size))
+
+        stamp = pygame.Surface(vec(self.tile_size, self.tile_size))
+        space = self.tile_size // 16
+        for i in range(space):
+            for j in range(space):
+                stamp.blit(self.textures[0], (i * 16, j * 16))
+
+        # Blitting the tiles onto the final shape
+        x = 0
+        y = 0
+        for char in self.shape_art:
+            if char == 'x':
+                self.image.blit(stamp, (x * self.tile_size, y * self.tile_size))
+                x += 1
+            elif char == 'o':
+                x += 1
+            elif char == '\n':
+                x = 0
+                y += 1
+            else:
+                raise ValueError(f'shape_art must be a string comprised of \"x\", \"o\", or \"\\n\", not {char}')
+
+    def movement(self):
+        self.accel = self.get_accel()
+        self.accel_movement()
+
+    def update(self):
+        self.center_rects()
+
+
 class Wall3D(TileBase):
     def __init__(self, pos_x: float, pos_y: float, block_width: int, block_height: int,
                  image_row: int = 0, style: int = 0, style_3d: int = 0, base_color: tuple = (0, 0, 1),

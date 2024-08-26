@@ -11,7 +11,6 @@ from pygame.math import Vector2 as vec
 import controls as ctrl
 
 import constants as cst
-import enemies
 import groups
 import rooms
 import timer
@@ -20,17 +19,14 @@ import timer
 # ============================================================================ #
 #                                 Returns float                                #
 # ============================================================================ #
-def get_angle_to_mouse(any_sprite) -> float:
+def get_angle_to_mouse(sprite) -> float:
     """Returns the angle between a sprite and the mouse cursor.
 
-    :param any_sprite: The sprite to measure the angle from
+    :param sprite: The sprite to measure the angle from
     :return: The angle between the sprite and the mouse cursor
     """
     mouse_x, mouse_y = pygame.mouse.get_pos()
-    length_to_x = mouse_x - any_sprite.pos.x
-    length_to_y = mouse_y - any_sprite.pos.y
-    len_vec = vec(-length_to_x, -length_to_y)
-    return len_vec.angle_to(vec(cst.WINWIDTH // 2, cst.WINHEIGHT // 2)) + 60
+    return math.degrees(math.atan2(sprite.pos.x - mouse_x, sprite.pos.y - mouse_y))
 
 
 def get_angle(vec1: vec, vec2: vec) -> float:
@@ -40,46 +36,16 @@ def get_angle(vec1: vec, vec2: vec) -> float:
     :param vec2: The second vector
     :return: The angle between the two vectors
     """
-
-    length_to_x = vec2.x - vec1.x
-    length_to_y = vec2.y - vec1.y
-
-    if length_to_x and length_to_y != 0:
-        angle = -math.degrees(math.atan2(length_to_y, length_to_x)) - 90
-        return angle
-    else:
-        if length_to_y == 0:
-            if length_to_x > 0:
-                return 270
-            else:
-                return 90
-        else:
-            if length_to_y > 0:
-                return 180
-            else:
-                return 0
+    return math.degrees(math.atan2(vec1.x - vec2.x, vec1.y - vec2.y))
 
 
-def get_dist(first_input, sec_input) -> float:
+def get_dist(first_input: vec, sec_input: vec) -> float:
     """Returns the distance between two coordinates.
 
     :param first_input: The position to start the measure from
     :param sec_input: The position to measure the distance from the first
     :return: The distance between the two locations
     """
-    # if isinstance(first_input, vec):
-    #     first_vec = first_input
-    # else:
-    #     first_vec = first_input.pos
-    #
-    # if isinstance(sec_input, vec):
-    #     sec_vec = sec_input
-    # else:
-    #     sec_vec = sec_input.pos
-
-    # length_x = sec_vec.x - first_vec.x
-    # length_y = sec_vec.y - first_vec.y
-
     length_x = sec_input.x - first_input.x
     length_y = sec_input.y - first_input.y
 
@@ -362,7 +328,7 @@ def get_closest_player():
     Returns:
         Player: The closest player to the sprite
     """
-    for sprite in groups.all_players:  # No need to do full linear search, there's only one player
+    for sprite in groups.all_players:  # No need to do full linear search (yet), there's only one player
         return sprite
 
 
@@ -409,6 +375,4 @@ def swap_color(image: pygame.Surface, old_color: tuple, new_color: tuple) -> pyg
 
 
 if __name__ == '__main__':
-    import timeit
-
-    room_test = rooms.Room(0, 0)
+    print(math.degrees(math.atan2(1, 1)))

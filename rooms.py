@@ -926,7 +926,9 @@ class Room(cb.AbstractBase):
         if self.room == vec(0, 0):
             return [
                 tiles.Wall(0, 0, 4, 41),
-                enemies.Turret(300, 300)
+                enemies.Turret(300, 300),
+                # tiles.CustomWall(cst.WINWIDTH // 2, cst.WINHEIGHT // 2,
+                #                  'xx\nxo', 64)
             ]
 
         elif self.room == vec(0, 1):
