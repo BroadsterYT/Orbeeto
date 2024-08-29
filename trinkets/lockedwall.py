@@ -59,7 +59,6 @@ class LockedWall(tiles.Wall):
             # Controls movement of wall when activator is activated/deactivated
             if self.activator.get_state():
                 if not self._is_moving and self.activator.get_state() is not self.last_state:
-                    print('Switched on!')
                     self.last_state = self.activator.get_state()
                     self.last_state_change = time.time()
                     self._is_moving = True
@@ -72,7 +71,6 @@ class LockedWall(tiles.Wall):
 
             else:
                 if not self._is_moving and self.activator.get_state() is not self.last_state:
-                    print('Switched off!')
                     self.last_state = self.activator.get_state()
                     self.last_state_change = time.time()
                     self._is_moving = True

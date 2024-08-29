@@ -5,10 +5,7 @@ from pygame.math import Vector2 as vec
 import projectiles as proj
 
 import calc
-import classbases as cb
-import constants as cst
 import groups
-import screen
 import timer
 
 
@@ -23,7 +20,7 @@ class EnemyStdBullet(proj.BulletBase):
         :param dmg_mod: Multiplier for the bullet's damage
         :param bounce_count: The amount of times the bullet should bounce/ricochet
         """
-        super().__init__(cst.PROJ_DAMAGE[cst.PROJ_STD])
+        super().__init__(7)
         self.show()
 
         self.pos = vec((pos_x, pos_y))

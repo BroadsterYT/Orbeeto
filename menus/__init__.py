@@ -11,3 +11,4 @@ from .inventory import *
 from .menubuttons import *
 from .menuslots import *
 from .pausemenu import *
+from .tooltips import *

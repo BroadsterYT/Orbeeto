@@ -49,19 +49,3 @@ LAYER = {
 # ------------------------------ Object Movement ----------------------------- #
 # The coefficient of friction for all objects with an acceleration parameter
 FRIC = -0.07
-
-# -------------------------------- Projectiles ------------------------------- #
-PROJ_STD = 'proj_StdBullet'
-PROJ_LASER = 'proj_Laser'
-
-PROJ_PORTAL = 'proj_PortalBullet'
-PROJ_GRAPPLE = 'proj_GrappleHook'
-
-# A dictionary that stores all damage constants of all projectile types
-PROJ_DAMAGE = {
-    PROJ_STD: 7,
-    PROJ_LASER: 16,
-
-    PROJ_PORTAL: 0,
-    PROJ_GRAPPLE: 0,
-}

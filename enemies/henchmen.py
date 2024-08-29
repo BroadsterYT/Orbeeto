@@ -203,7 +203,7 @@ class Turret(enemybase.EnemyBase):
     def update(self):
         if self.hp > 0:
             self._animate()
-        self._destroy_check(15, 360, 2)
+        self._destroy_check(15, 80, 2)
 
     def _animate(self):
         if calc.get_time_diff(self.last_frame) > cst.SPF:

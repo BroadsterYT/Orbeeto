@@ -82,21 +82,6 @@ class MenuButton(cb.ActorBase):
         self.hover()
 
 
-class MenuSlider(cb.ActorBase):
-    def __init__(self, gamestate: gs.GameState, pos_x: float, pos_y: float, length: int):
-        """A slider that controls a value
-
-        :param gamestate: The gamestate the slider should appear in
-        :param pos_x: The x-axis position to spawn the slider
-        :param pos_y: The y-axis position to spawn the slider
-        :param length: The length of the menu slider (in pixels)
-        """
-        super().__init__(cst.LAYER['ui_2'], gamestate)
-        self.show()
-
-        self.pos = vec(pos_x, pos_y)
-
-
 class MenuArrow(cb.ActorBase):
     def __init__(self, gamestate: gs.GameState, pos_x: float, pos_y: float, direction: str, func_call, *args, **kwargs):
         """An arrow that can be clicked to call any function

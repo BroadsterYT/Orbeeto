@@ -14,6 +14,7 @@ import constants as cst
 import groups
 
 import portals
+import screen
 import timer
 import visual_elems
 
@@ -28,7 +29,7 @@ class PlayerStdBullet(proj.BulletBase):
         :param vel_y: The y-axis component of the bullet's velocity
         :param bounce_count: The number of times the bullet should bounce. Defaults to 1 (no bounce).
         """
-        super().__init__(cst.PROJ_DAMAGE[cst.PROJ_STD])
+        super().__init__(7)
         self.show()
 
         self.pos = vec((pos_x, pos_y))
@@ -63,7 +64,7 @@ class PlayerStdBullet(proj.BulletBase):
 
 class PlayerLaserBullet(proj.BulletBase):
     def __init__(self, pos_x: float, pos_y: float, vel_x: float, vel_y: float, bounce_count: int = 1):
-        super().__init__(cst.PROJ_DAMAGE[cst.PROJ_LASER])
+        super().__init__(11)
         self.show()
 
         self.pos = vec((pos_x, pos_y))
@@ -91,6 +92,64 @@ class PlayerLaserBullet(proj.BulletBase):
 
     def update(self):
         super().update()
+
+
+class PlayerChakram(proj.BulletBase):
+    def __init__(self, pos_x: float, pos_y: float, vel_x: float, vel_y: float):
+        """A projectile fired by a player that moves at a constant velocity.
+
+        :param pos_x: The x-position where the bullet should be spawned
+        :param pos_y: The y-position where the bullet should be spawned
+        :param vel_x: The x-axis component of the bullet's velocity
+        :param vel_y: The y-axis component of the bullet's velocity
+        """
+        super().__init__(14)
+        self.show()
+        self.start_time = timer.g_timer.time
+
+        self.pos = vec((pos_x, pos_y))
+        self.vel = vec(vel_x, vel_y).rotate(-30)
+        self.vel_const = vec(vel_x, vel_y).rotate(-30)
+        self.ric_count = 1
+
+        self.set_images(os.path.join(os.getcwd(), 'sprites/bullets/bullets.png'), 32, 32, 8, 1, 3)
+        self.set_rects(self.pos.x, self.pos.y, 8, 8, 6, 6)
+
+        self.image_angle = 0
+        self.rotate_image(calc.get_vec_angle(self.vel.x, self.vel.y))
+
+    def get_accel(self) -> vec:
+        room = cb.get_room()
+        final_accel = vec(self.vel_const.x / 15, self.vel_const.y / 15)
+        final_accel += room.get_accel()
+        return final_accel
+
+    def movement(self):
+        if self.can_update:
+            self.proj_collide(groups.all_enemies, True)
+            self.proj_collide(groups.all_sentries, True)
+            self.proj_collide(groups.all_walls, False)
+            self.proj_collide(groups.all_portals, False)
+
+            if calc.get_time_diff(self.start_time) <= 5:
+                self.accel = self.get_accel()
+                self.accel_movement()
+                self.vel_const = self.vel_const.rotate(self.get_arc_angle())
+            else:
+                self.kill()
+            pygame.draw.rect(screen.buffer_screen, (255, 0, 0), self.hitbox)
+
+    def get_arc_angle(self) -> float:
+        t = calc.get_game_tdiff(self.start_time)
+        return math.sin(t) * 3
+
+    def update(self):
+        super().update()
+        self.rotate_image(self.image_angle)
+        self.image_angle += 10
+
+    def __repr__(self):
+        return f'PlayerStdBullet({self.pos}, {self.vel})'
 
 
 class PlayerHomingBullet(proj.BulletBase):
@@ -139,6 +198,7 @@ class PlayerHomingBullet(proj.BulletBase):
             self.last_homing_time = timer.g_timer.time
 
         # Homing onto the closest target
+        # TODO: MAKE THIS SHIT WORK!
         try:
             closest_target = min(self.dist_dict, key=self.dist_dict.get)
             if self.pos.x < closest_target.pos.x:
@@ -277,7 +337,7 @@ class GrappleBullet(proj.BulletBase):
         super().__init__()
         self.layer = cst.LAYER['grapple']
         self.show()
-        self.damage = cst.PROJ_DAMAGE[cst.PROJ_GRAPPLE]
+        self.damage = 0
         
         self.shot_from = shot_from
 

@@ -2,6 +2,9 @@ import random as rand
 
 from pygame.math import Vector2 as vec
 
+import constants as cst
+import screen
+
 
 class ScreenShakeQueue:
     """An object that handles screen-shaking capabilities."""
@@ -9,7 +12,7 @@ class ScreenShakeQueue:
     def __init__(self):
         self.queue = []
 
-    def add(self, amplitude: int | float, duration: int, rate_of_decay: int | float = 1.2) -> None:
+    def add(self, amplitude: float, duration: int, rate_of_decay: float = 1.2) -> None:
         """Adds a screen shake to the queue of screen shakes.
 
         :param amplitude: How intense the shake should be
@@ -18,8 +21,9 @@ class ScreenShakeQueue:
         :return: None
         """
         new_queue = []
-        for tick in range(duration):
-            decay = (pow(duration - tick, rate_of_decay)) / pow(duration, rate_of_decay)
+        adj_duration = int(duration * (pow(screen.dt, -1) / cst.M_FPS))
+        for tick in range(adj_duration):
+            decay = (pow(adj_duration - tick, rate_of_decay)) / pow(adj_duration, rate_of_decay)
             queue_input = vec(rand.uniform(-amplitude, amplitude) * decay, rand.uniform(-amplitude, amplitude) * decay)
             new_queue.append(queue_input)
 
