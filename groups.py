@@ -37,6 +37,5 @@ all_rooms = []
 all_containers = []
 
 # --------------------------------- UI groups ---------------------------------#
-all_text_boxes = Group()
 all_font_chars = Group()
 all_stat_bars = Group()

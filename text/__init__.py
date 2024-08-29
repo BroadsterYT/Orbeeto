@@ -11,4 +11,3 @@ Package containing all text-related functions and classes.
 from .dialogue import *
 from .display_text import *
 from .fonts import *
-from .textbox import *

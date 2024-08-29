@@ -82,6 +82,44 @@ class MenuButton(cb.ActorBase):
         self.hover()
 
 
+class ScrollWidget(cb.ActorBase):
+    def __init__(self, gamestate, pos_x, pos_y, vis_length, vis_width):
+        """A scroll widget that allows the display of items, settings, checkboxes, and more.
+
+        :param gamestate: The gamestate the object should exist within
+        :param pos_x:
+        :param pos_y:
+        :param vis_length: The visible length of the entry display of the widget (this does not include the padding)
+        :param vis_width: The visible width of the entry display. This will determine the width of the entries inside
+        """
+        super().__init__(cst.LAYER['ui_2'], gamestate)
+        self.show()
+
+        self.entries = []
+
+    def update(self):
+        pass
+
+
+class ScrollPullTab(cb.ActorBase):
+    def __init__(self, gamestate, owner: ScrollWidget):
+        """A pull tab used on a scroll widget to allow scrolling by dragging
+
+        :param gamestate: The gamestate the object should exist within
+        :param owner:
+        """
+        super().__init__(cst.LAYER['ui_2'], gamestate)
+        self.show()
+        self.owner = owner
+
+
+class ScrollWidgetEntry(cb.ActorBase):
+    def __init__(self, gamestate, owner: ScrollWidget):
+        super().__init__(cst.LAYER['ui_2'], gamestate)
+        self.show()
+        self.owner = owner
+
+
 class MenuArrow(cb.ActorBase):
     def __init__(self, gamestate: gs.GameState, pos_x: float, pos_y: float, direction: str, func_call, *args, **kwargs):
         """An arrow that can be clicked to call any function

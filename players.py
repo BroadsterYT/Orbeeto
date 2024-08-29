@@ -244,7 +244,6 @@ class Player(cb.ActorBase):
             self.last_regen = timer.g_timer.time
 
     # --------------------------------- Movement --------------------------------- #
-    @cb.check_update_state
     def movement(self):
         """When called once every frame, it allows the player to receive input from the user and move accordingly"""
         self.accel = self.get_accel()
@@ -409,48 +408,6 @@ class Player(cb.ActorBase):
             if self.gun_heat > 0:
                 self.gun_heat -= 1
             self.last_gun_cool = timer.g_timer.time
-
-    # TODO: Player object should not have control over textbox handling. Move to either room or separate object.
-    # def _get_closest_interact(self):
-    #     sprite_dists = {}
-    #     for sprite in [s for s in itertools.chain(groups.all_movable, groups.all_trinkets) if s.visible]:
-    #         sprite_dists.update({sprite: calc.get_dist(self, sprite)})
-    #     try:
-    #         shortest_dist = min(sprite_dists.values())
-    #         closest_sprites = [key for key in sprite_dists if sprite_dists[key] == shortest_dist]
-    #         if shortest_dist <= 128:  # TODO: Calculate proper radius to activate
-    #             return closest_sprites[0]
-    #         else:
-    #             return None
-    #
-    #     except ValueError:
-    #         return None
-    #
-    # def _get_dialogue(self) -> str:
-    #     """Returns the proper dialogue to show when in proximity to a sprite.
-    #
-    #     Returns:
-    #         str: The correct dialogue from ``dialogue.all_dialogue_lines``
-    #     """
-    #     closest_sprite = self._get_closest_interact()
-    #     print(closest_sprite.__class__.__name__)
-    #     if closest_sprite is None:
-    #         return 'default'
-    #     elif isinstance(closest_sprite, trinkets.Box):
-    #         return 'box_test'
-    #     elif isinstance(closest_sprite, trinkets.Button):
-    #         return 'error'
-    #     else:
-    #         return 'error'
-    #
-    # def generate_text_box(self) -> None:
-    #     """Generates dialogue based on specific conditions."""
-    #     if self.last_textbox_release != ctrl.key_released[ctrl.K_DIALOGUE]:
-    #         if len(groups.all_text_boxes) < 1:
-    #             groups.all_text_boxes.add(
-    #                 text.TextBox(cst.WINWIDTH // 2, cst.WINHEIGHT - 90, self._get_dialogue())
-    #             )
-    #         self.last_textbox_release = ctrl.key_released[ctrl.K_DIALOGUE]
 
     @cb.check_update_state
     def update(self):
