@@ -41,7 +41,7 @@ class EnemyStdBullet(proj.BulletBase):
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)
 
-            if calc.get_time_diff(self.start_time) <= 5:
+            if calc.get_game_tdiff(self.start_time) <= 5:
                 self.accel = self.get_accel()
                 self.accel_movement()
             else:
@@ -85,7 +85,7 @@ class AmbusherDasher(proj.BulletBase):
             self.proj_collide(groups.all_portals, False)
 
             # TODO: Update movement logic to use accel_movement
-            if calc.get_time_diff(self.start_time) <= 10:
+            if calc.get_game_tdiff(self.start_time) <= 10:
                 # self.vel = self.get_vel()
                 # self.vel_movement(False)
                 pass

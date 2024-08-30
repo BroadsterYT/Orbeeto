@@ -62,7 +62,7 @@ class PlayerGun(cb.ActorBase):
         elif self.weapon == items.WEAPONS[2]:
             self.image_count = 5
             self.set_images(os.path.join(os.getcwd(), 'sprites/orbeeto/guns.png'), 64, 64, 5, self.image_count, 10)
-            self.bullet_vel = 12
+            self.bullet_vel = 5
             self.cooldown = 0.13
 
     @cb.check_update_state
@@ -147,7 +147,7 @@ class Player(cb.ActorBase):
         self.current_armor = items.ARMOR[0]
 
         for weapon in items.WEAPONS.values():
-            self.my_equipment.update({weapon: False})
+            self.my_equipment.update({weapon: True})
         self.my_equipment.update({items.WEAPONS[0]: True, items.WEAPONS[1]: True})
 
         # ---------------------- Bullets, Portals, and Grapples ---------------------- #
@@ -336,13 +336,13 @@ class Player(cb.ActorBase):
 
             if self.gun_l.weapon == items.WEAPONS[0]:
                 groups.all_projs.add(
-                    proj.PlayerChakram(self.pos.x + l_x_off, self.pos.y + l_y_off, l_vel_x, l_vel_y)
-                    # proj.PlayerStdBullet(self.pos.x + l_x_off, self.pos.y + l_y_off, l_vel_x, l_vel_y)
+                    # proj.PlayerChakram(self.pos.x + l_x_off, self.pos.y + l_y_off, l_vel_x, l_vel_y)
+                    proj.PlayerStdBullet(self.pos.x + l_x_off, self.pos.y + l_y_off, l_vel_x, l_vel_y)
                     # proj.PlayerHomingBullet(self.pos.x + l_x_off, self.pos.y + l_y_off, l_vel_x, l_vel_y)
                 )
             elif self.gun_l.weapon == items.WEAPONS[2]:
                 groups.all_projs.add(
-                    proj.PlayerLaserBullet(self.pos.x + l_x_off, self.pos.y + l_y_off, l_vel_x, l_vel_y)
+                    proj.PlayerChakram(self.pos.x + l_x_off, self.pos.y + l_y_off, l_vel_x, l_vel_y)
                 )
             else:
                 raise RuntimeError(f'{self.gun_l.weapon} is not a valid weapon for gun_l or is not yet implemented.')

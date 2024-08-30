@@ -49,7 +49,7 @@ class PlayerStdBullet(proj.BulletBase):
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)
 
-            if calc.get_time_diff(self.start_time) <= 5:
+            if calc.get_game_tdiff(self.start_time) <= 5:
                 self.accel = self.get_accel()
                 self.accel_movement()
             else:
@@ -84,7 +84,7 @@ class PlayerLaserBullet(proj.BulletBase):
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)
 
-            if calc.get_time_diff(self.start_time) <= 5:
+            if calc.get_game_tdiff(self.start_time) <= 5:
                 self.accel = self.get_accel()
                 self.accel_movement()
             else:
@@ -131,7 +131,7 @@ class PlayerChakram(proj.BulletBase):
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)
 
-            if calc.get_time_diff(self.start_time) <= 5:
+            if calc.get_game_tdiff(self.start_time) <= 5:
                 self.accel = self.get_accel()
                 self.accel_movement()
                 self.vel_const = self.vel_const.rotate(self.get_arc_angle())
@@ -227,7 +227,7 @@ class PlayerHomingBullet(proj.BulletBase):
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)
 
-            if calc.get_time_diff(self.start_time) <= 5:
+            if calc.get_game_tdiff(self.start_time) <= 5:
                 self.accel = self.get_accel()
                 self.accel_movement()
             else:
@@ -311,7 +311,7 @@ class PortalBullet(proj.BulletBase):
             self.proj_collide(groups.all_portal_blockers, False)
             self.proj_collide(groups.all_portals, False)
 
-            if calc.get_time_diff(self.start_time) <= 5:
+            if calc.get_game_tdiff(self.start_time) <= 5:
                 self.accel = self.get_accel()
                 self.accel_movement()
             else:

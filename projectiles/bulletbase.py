@@ -5,6 +5,7 @@ import time
 import pygame
 from pygame.math import Vector2 as vec
 
+import timer
 from projectiles import explosions
 from text import display_text
 import screen
@@ -24,7 +25,7 @@ class BulletBase(cb.ActorBase):
         """
         super().__init__(cst.LAYER['proj'])
         self.ric_count = 1
-        self.start_time = time.time()
+        self.start_time = timer.g_timer.time
 
         self.damage = damage
         self.dmg_mod = dmg_mod
