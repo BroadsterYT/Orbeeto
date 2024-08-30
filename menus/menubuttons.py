@@ -33,7 +33,7 @@ class MenuButton(cb.ActorBase):
         :param kwargs: The keyword arguments to use in the function being called
         """
         super().__init__(cst.LAYER['ui_2'], gamestate)
-        self.show()
+        self.add_to_gamestate()
 
         self.func = func_call
         self.func_args = args
@@ -93,7 +93,7 @@ class ScrollWidget(cb.ActorBase):
         :param vis_width: The visible width of the entry display. This will determine the width of the entries inside
         """
         super().__init__(cst.LAYER['ui_2'], gamestate)
-        self.show()
+        self.add_to_gamestate()
 
         self.entries = []
 
@@ -109,14 +109,14 @@ class ScrollPullTab(cb.ActorBase):
         :param owner:
         """
         super().__init__(cst.LAYER['ui_2'], gamestate)
-        self.show()
+        self.add_to_gamestate()
         self.owner = owner
 
 
 class ScrollWidgetEntry(cb.ActorBase):
     def __init__(self, gamestate, owner: ScrollWidget):
         super().__init__(cst.LAYER['ui_2'], gamestate)
-        self.show()
+        self.add_to_gamestate()
         self.owner = owner
 
 
@@ -133,7 +133,7 @@ class MenuArrow(cb.ActorBase):
         :param kwargs: The keyword arguments to use in the function being called
         """
         super().__init__(cst.LAYER['ui_1'], gamestate)
-        self.show()
+        self.add_to_gamestate()
 
         self.func = func_call
         self.func_args = args

@@ -24,7 +24,7 @@ pygame.display.set_icon(pygame.image.load(os.path.join(os.getcwd(), 'other/orbee
 
 screen.buffer_screen = pygame.Surface((cst.WINWIDTH, cst.WINHEIGHT))
 screen.viewport = pygame.display.set_mode((cst.WINWIDTH, cst.WINHEIGHT),
-                                          pygame.RESIZABLE | pygame.DOUBLEBUF | pygame.SCALED)
+                                          pygame.FULLSCREEN | pygame.HWSURFACE | pygame.SCALED | pygame.DOUBLEBUF)
 
 
 def redraw_game_window() -> None:

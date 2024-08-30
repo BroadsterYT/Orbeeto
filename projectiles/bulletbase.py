@@ -109,7 +109,7 @@ class BulletBase(cb.ActorBase):
             if not self.hitbox.colliderect(colliding_sprite.hitbox):
                 continue
 
-            if not colliding_sprite.visible:
+            if not colliding_sprite.in_gamestate:
                 continue
 
             if can_hurt:

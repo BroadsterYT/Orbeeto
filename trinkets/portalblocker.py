@@ -10,7 +10,7 @@ class PortalBlocker(tiles.TileBase):
     def __init__(self, pos_x: int | float, pos_y: int | float, id_value: int, block_width: int, block_height: int):
         super().__init__(pos_x, pos_y, block_width, block_height)
         self.layer = cst.LAYER['wall']
-        self.show()
+        self.add_to_gamestate()
         groups.all_portal_blockers.add(self)
 
         self.id_value = id_value

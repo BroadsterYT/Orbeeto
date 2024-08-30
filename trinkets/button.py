@@ -16,7 +16,7 @@ class Button(cb.ActorBase):
         :param block_pos_y: The y-axis position of the button (in blocks)
         """
         super().__init__(cst.LAYER['button'])
-        self.show()
+        self.add_to_gamestate()
         groups.all_trinkets.add(self)
 
         self.id_value = id_value
@@ -45,7 +45,7 @@ class Button(cb.ActorBase):
                 return is_active
 
     def movement(self):
-        if self.can_update and self.visible:
+        if self.in_gamestate:
             self.set_room_pos()
 
             self.accel = self.get_accel()

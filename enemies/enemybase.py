@@ -30,13 +30,13 @@ class EnemyBase(cb.ActorBase):
 
         self.health_bar = statbars.StatBar(self, 1, 'hp', 'max_hp', 'sprites/stat_bars/health_bar.png')
 
-    def hide(self):
-        self.health_bar.hide()
-        super().hide()
+    def remove_from_gamestate(self) -> None:
+        self.health_bar.remove_from_gamestate()
+        super().remove_from_gamestate()
 
-    def show(self):
-        self.health_bar.show()
-        super().show()
+    def add_to_gamestate(self) -> None:
+        self.health_bar.add_to_gamestate()
+        super().add_to_gamestate()
 
     def _set_stats(self, hp: int, defense: int, xp: int):
         self.max_hp = hp

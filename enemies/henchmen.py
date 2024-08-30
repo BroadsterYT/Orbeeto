@@ -25,7 +25,7 @@ class StandardGrunt(enemybase.EnemyBase):
         :param pos_y: The y-position to spawn at
         """
         super().__init__()
-        self.show()
+        self.add_to_gamestate()
         groups.all_enemies.add(self)
 
         self.last_relocate = time.time()
@@ -156,7 +156,7 @@ class Turret(enemybase.EnemyBase):
         :param pos_y: The y-position to spawn at
         """
         super().__init__()
-        self.show()
+        self.add_to_gamestate()
         groups.all_sentries.add(self)
 
         self.bullet_vel = vec(0, 6)
@@ -224,7 +224,7 @@ class Turret(enemybase.EnemyBase):
 class Ambusher(enemybase.EnemyBase):
     def __init__(self, pos_x, pos_y):
         super().__init__()
-        self.show()
+        self.add_to_gamestate()
         groups.all_enemies.add(self)
 
         self.pos = vec((pos_x, pos_y))

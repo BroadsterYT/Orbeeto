@@ -19,7 +19,7 @@ class Portal(cb.ActorBase):
         :param facing: The direction the portal should face. Default is cst.SOUTH.
         """
         super().__init__(cst.LAYER['portal'])
-        self.show()
+        self.add_to_gamestate()
         groups.all_portals.add(self)
 
         room = cb.get_room()

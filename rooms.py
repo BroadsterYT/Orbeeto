@@ -31,7 +31,7 @@ class RoomTransition(cb.ActorBase):
         :param owner: The active room object
         """
         super().__init__(999)
-        self.show()
+        self.add_to_gamestate()
         self.owner = owner
 
         self.pos = vec(cst.WINWIDTH // 2, cst.WINHEIGHT + cst.WINHEIGHT // 2)
@@ -183,7 +183,8 @@ class Room(cb.AbstractBase):
             (0, 1): RoomSpecs(640, 360, True, True),
             (0, 2): RoomSpecs(1280, 720, False, True),
 
-            (1, 0): RoomSpecs(1280*2, 720, True, False)
+            (1, 0): RoomSpecs(1280*2, 720, True, False),
+            (2, 0): RoomSpecs(1280*2, 720, True, False),
         }
 
         self.layout_update()
@@ -529,7 +530,7 @@ class Room(cb.AbstractBase):
         output_list = []
         for sprite in [s
                        for s in itertools.chain(self.sprites(), groups.all_drops)
-                       if s.visible]:
+                       if s.in_gamestate]:
             output_list.append(sprite)
 
         for container in [c for c in groups.all_containers if c.room == self.room]:
@@ -692,13 +693,13 @@ class Room(cb.AbstractBase):
             for sprite in [s
                            for group in contact_list
                            for s in group
-                           if s.visible]:
+                           if s.in_gamestate]:
                 self._player_block_from_side(sprite)
         else:
             for sprite in [s
                            for group in contact_list
                            for s in group
-                           if s.visible]:
+                           if s.in_gamestate]:
                 self._sprite_block_from_side(instig, sprite)
 
     def _player_block_from_side(self, sprite) -> None:
@@ -883,11 +884,11 @@ class Room(cb.AbstractBase):
             portal.kill()
 
         for container in groups.all_containers:
-            container.hide_sprites()
+            container.deactivate_sprites()
 
         try:  # Searching for the room container. If container isn't found, one will be generated
             container = next(c for c in groups.all_containers if c.room == self.room)
-            container.show_sprites()
+            container.activate_sprites()
         except StopIteration:
             new_container = roomcontainers.RoomContainer(self.room.x, self.room.y, self._get_room_layout())
             groups.all_containers.append(new_container)
@@ -929,6 +930,7 @@ class Room(cb.AbstractBase):
                 enemies.Turret(300, 300),
                 # tiles.CustomWall(cst.WINWIDTH // 2, cst.WINHEIGHT // 2,
                 #                  'xx\nxo', 64)
+                trinkets.Box(300, 300)
             ]
 
         elif self.room == vec(0, 1):

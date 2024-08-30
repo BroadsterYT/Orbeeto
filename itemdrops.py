@@ -30,7 +30,8 @@ class ItemDrop(cb.ActorBase):
         :param item_name: The name of the item to drop. Should be chosen from 'items.MATERIALS'.
         """
         super().__init__(cst.LAYER['drops'])
-        self.show()
+        groups.all_drops.add(self)
+        self.add_to_gamestate()
         self.mat = item_name
 
         self.start_time = timer.g_timer.time

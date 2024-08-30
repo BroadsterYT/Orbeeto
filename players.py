@@ -30,7 +30,7 @@ class PlayerGun(cb.ActorBase):
         :param weapon: The name of the weapon the gun should be
         """
         super().__init__(cst.LAYER['player'])
-        self.show()
+        self.add_to_gamestate()
         self.owner = owner
         self.weapon = weapon
         self.image_count = 5
@@ -87,7 +87,7 @@ class Player(cb.ActorBase):
     """A player sprite that can move and shoot."""
     def __init__(self):
         super().__init__(cst.LAYER['player'])
-        self.show()
+        self.add_to_gamestate()
         groups.all_players.add(self)
         self.room = cb.get_room()
 
@@ -164,9 +164,9 @@ class Player(cb.ActorBase):
 
     @can_update.setter
     def can_update(self, value: bool):
+        self._can_update = value
         self.gun_l._can_update = value
         self.gun_r._can_update = value
-        self._can_update = value
 
     @property
     def xp(self):
@@ -437,7 +437,7 @@ class Player(cb.ActorBase):
             self._passive_hp_regen()
 
         if self.hp <= 0:
-            pygame.quit()
+            self.kill()
 
     def _animate(self):
         pass

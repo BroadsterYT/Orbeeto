@@ -64,7 +64,7 @@ class MaterialSlot(SlotBase):
         :param item_held: The item the menu slot will hold. Items are chosen from MATERIALS dictionary.
         """
         super().__init__(gs.s_inventory, owner, pos_x, pos_y)
-        self.show()
+        self.add_to_gamestate()
         groups.all_material_slots.add(self)
 
         self.holding = item_held
@@ -145,7 +145,7 @@ class MaterialSlot(SlotBase):
 class GearSlot(SlotBase):
     def __init__(self, owner, pos_x, pos_y, gear_name, gear_type):
         super().__init__(gs.s_inventory, owner, pos_x, pos_y)
-        self.show()
+        self.add_to_gamestate()
 
         self.screen_pos = vec(pos_x % cst.WINWIDTH, pos_y)
 

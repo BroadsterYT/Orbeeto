@@ -43,15 +43,13 @@ class StatBar(cb.ActorBase):
 
         self.number = BarNumbers(self)
 
-        self.show()
+    def add_to_gamestate(self) -> None:
+        self.number.add_to_gamestate()
+        super().add_to_gamestate()
 
-    def show(self):
-        self.number.show()
-        super().show()
-
-    def hide(self):
-        self.number.hide()
-        super().hide()
+    def remove_from_gamestate(self) -> None:
+        self.number.remove_from_gamestate()
+        super().remove_from_gamestate()
 
     def movement(self):
         self.pos = vec(self.owner.pos.x,
@@ -80,7 +78,7 @@ class StatBarTest(cb.ActorBase):
     def __init__(self, owner):
         super().__init__(cst.LAYER['statbar'])
         groups.all_stat_bars.add(self)
-        self.show()
+        self.add_to_gamestate()
 
         self.owner = owner
         self.pos = vec(self.owner.pos.x, self.owner.pos.y + 48)
@@ -120,7 +118,7 @@ class StatBarTest(cb.ActorBase):
 class BarNumbersTest(cb.ActorBase):
     def __init__(self, bar, pos_x_rel: float, pos_y_rel: float, value_name: str, max_value_name: str):
         super().__init__(cst.LAYER['statbar'])
-        self.show()
+        self.add_to_gamestate()
         groups.all_stat_bars.add(self)
 
         self.bar = bar
@@ -153,7 +151,7 @@ class BarNumbers(cb.ActorBase):
         :param bar: The bar to display next to
         """
         super().__init__(cst.LAYER['statbar'])
-        self.show()
+        self.add_to_gamestate()
         groups.all_stat_bars.add(self)
 
         self.bar = bar

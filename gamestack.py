@@ -4,6 +4,37 @@ import screen
 import timer
 
 
+class GameLayer(pygame.sprite.LayeredUpdates):
+    def __init__(self, *sprites, **kwargs):
+        super().__init__(sprites, kwargs)  # noqa
+
+    def draw(self, surface):
+        """Updates version of
+
+        LayeredUpdates.draw(surface): return Rect_list
+
+        """
+        spritedict = self.spritedict
+        surface_blit = surface.blit
+        dirty = self.lostsprites
+        self.lostsprites = []
+        dirty_append = dirty.append
+        init_rect = self._init_rect  # noqa
+        for spr in [s for s in self.sprites() if s.in_gamestate]:
+            rec = spritedict[spr]
+            newrect = surface_blit(spr.image, spr.rect)
+            if rec is init_rect:
+                dirty_append(newrect)
+            else:
+                if newrect.colliderect(rec):
+                    dirty_append(newrect.union(rec))
+                else:
+                    dirty_append(newrect)
+                    dirty_append(rec)
+            spritedict[spr] = newrect
+        return dirty
+
+
 class GameState:
     def __init__(self, name: str, priority: int, update_call=None, *args, **kwargs):
         """A mode of gameplay that is placed into the game stack
@@ -17,7 +48,7 @@ class GameState:
         """
         self.name = name
         self.priority = priority
-        self.all_sprites = pygame.sprite.LayeredUpdates()
+        self.all_sprites = GameLayer()
         self.groups = []
 
         self.update_call = update_call

@@ -14,7 +14,7 @@ import spritesheet
 class Beam(cb.ActorBase):
     def __init__(self, from_sprite, to_sprite):
         super().__init__(cst.LAYER['floor'])
-        self.show()
+        self.add_to_gamestate()
 
         self.from_sprite, self.to_sprite = from_sprite, to_sprite
         self.index = 0
@@ -65,7 +65,7 @@ class Beam(cb.ActorBase):
 class Background(cb.ActorBase):
     def __init__(self, image_folder: str):
         super().__init__(cst.LAYER['background'])
-        self.show()
+        self.add_to_gamestate()
 
         self.pos = vec(cst.WINWIDTH // 2, cst.WINHEIGHT // 2)
 
@@ -97,7 +97,7 @@ class Background(cb.ActorBase):
 class RotateTest(cb.ActorBase):
     def __init__(self):
         super().__init__(4)
-        self.show()
+        self.add_to_gamestate()
 
         self.pos = vec(0, 0)
         self.pivot = vec(cst.WINWIDTH // 2, cst.WINHEIGHT // 2)

@@ -64,7 +64,7 @@ class TileBase(cb.ActorBase):
         return center
 
     def movement(self):
-        if self.can_update:
+        if self.in_gamestate:
             self.set_room_pos()
             self.accel = self.get_accel()
             self.accel_movement()
@@ -87,7 +87,7 @@ class Wall(TileBase):
         """
         super().__init__(pos_x, pos_y, block_width, block_height)
         self.layer = cst.LAYER['wall'] + 1
-        self.show()
+        self.add_to_gamestate()
         groups.all_walls.add(self)
 
         self.pos = self.place_top_left(pos_x, pos_y)
@@ -116,7 +116,7 @@ class CustomWall(cb.ActorBase):
         :param tile_size:
         """
         super().__init__(100)
-        self.show()
+        self.add_to_gamestate()
         self.shape_art = shape_art
 
         size_log2 = math.log10(tile_size) / math.log10(2)
@@ -256,7 +256,7 @@ class Wall3D(TileBase):
         """
         super().__init__(pos_x, pos_y, block_width, block_height)
         self.layer = cst.LAYER['wall']
-        self.show()
+        self.add_to_gamestate()
         groups.all_walls.add(self)
 
         self.pos = self.place_top_left(pos_x, pos_y)
@@ -291,7 +291,7 @@ class Wall3D(TileBase):
 class PerspectiveWall(cb.ActorBase):
     def __init__(self, wall: Wall3D, axis: str):
         super().__init__(cst.LAYER['wall'])
-        self.show()
+        self.add_to_gamestate()
 
         self.wall = wall
         self.axis = axis
@@ -524,7 +524,7 @@ class Floor(TileBase):
     def __init__(self, pos_x: int | float, pos_y: int | float, block_width: int, block_height: int):
         super().__init__(pos_x, pos_y, block_width, block_height)
         self.layer = cst.LAYER['floor']
-        self.show()
+        self.add_to_gamestate()
         groups.all_floors.add(self)
 
         self.pos = self.place_top_left(0, 0)
@@ -539,7 +539,7 @@ class Floor(TileBase):
         self.set_rects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
 
     def update(self):
-        if self.visible:
+        if self.in_gamestate:
             # self._animate()
             pass
 
@@ -559,7 +559,7 @@ class RoomBorder(TileBase):
     def __init__(self, pos_x: float, pos_y: float, block_width: int | float, block_height: int | float):
         super().__init__(pos_x, pos_y, block_width, block_height)
         self.layer = cst.LAYER['wall']
-        self.show()
+        self.add_to_gamestate()
         groups.all_borders.add(self)
 
         self.image = pygame.Surface(vec(block_width * 16, block_height * 16))

@@ -38,7 +38,7 @@ class IndicatorText(cb.ActorBase):
         :param duration: The amount of time (in seconds) for the text to last for
         """
         super().__init__(cst.LAYER['text'])
-        self.show()
+        self.add_to_gamestate()
         groups.all_font_chars.add(self)
         
         self.start = time.time()

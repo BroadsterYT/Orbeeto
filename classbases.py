@@ -48,7 +48,8 @@ class ActorBase(pygame.sprite.Sprite):
         super().__init__()
         self._layer = layer
         self.gamestate = gamestate
-        self.visible = False
+        self.in_gamestate = False
+        self.visible = True
         self._can_update = True
 
         self.last_frame = time.time()  # For animation frames
@@ -98,22 +99,21 @@ class ActorBase(pygame.sprite.Sprite):
         self._can_update = value
 
     # -------------------------------- Visibility -------------------------------- #
-    def hide(self) -> None:
-        """Makes the sprite invisible. The sprite's update() method cannot be called.
-        """
-        self.visible = False
-        # groups.all_sprites.remove(self)
-        self.gamestate.all_sprites.remove(self)
+    def add_to_gamestate(self) -> None:
+        """Adds the object instance to its game state
 
-    def show(self) -> None:
-        """Makes the sprite visible. The sprite's update() method can be called.
-
-        Returns:
-            None
+        :return: None
         """
-        self.visible = True
-        # groups.all_sprites.add(self, layer=self.layer)
         self.gamestate.all_sprites.add(self, layer=self.layer)
+        self.in_gamestate = True
+
+    def remove_from_gamestate(self) -> None:
+        """Removes the object from its game state
+
+        :return: None
+        """
+        self.gamestate.all_sprites.remove(self)
+        self.in_gamestate = False
 
     def get_update_state(self) -> bool:
         """Returns the update state of the sprite.
@@ -225,7 +225,7 @@ class ActorBase(pygame.sprite.Sprite):
         """
         for group in contact_lists:
             for sprite in group:
-                if sprite.visible:
+                if sprite.in_gamestate:
                     self._block_from_side(sprite)
 
     def _block_from_side(self, sprite) -> None:

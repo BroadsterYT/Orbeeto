@@ -15,7 +15,7 @@ class LockedWall(tiles.Wall):
                  block_width: int, block_height: int):
         super().__init__(start_pos_x, start_pos_y, block_width, block_height)
         self.layer = cst.LAYER['wall']
-        self.show()
+        self.add_to_gamestate()
         groups.all_trinkets.add(self)
         self.id_value = id_value
 
@@ -52,7 +52,7 @@ class LockedWall(tiles.Wall):
         self.end_room_pos = vec((self.end_pos.x + room.pos.x, self.end_pos.y + room.pos.y))
 
     def movement(self):
-        if self.can_update:
+        if self.in_gamestate:
             self._set_room_points()
             self.set_room_pos()
 

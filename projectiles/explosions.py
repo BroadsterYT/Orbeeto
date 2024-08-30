@@ -19,7 +19,7 @@ class StdBulletExplode(cb.ActorBase):
         :param pos_y: The y-position to spawn the explosion at
         """
         super().__init__(cst.LAYER['explosion'])
-        self.show()
+        self.add_to_gamestate()
         self.owner = owner
 
         self.pos = vec((pos_x, pos_y))

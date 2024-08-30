@@ -1,10 +1,7 @@
 """
 Contains all sprite groups.
 """
-import pygame
 from pygame.sprite import Group
-
-all_sprites = pygame.sprite.LayeredUpdates()
 
 # --------------------------------- Character groups ---------------------------------#
 all_players = Group()

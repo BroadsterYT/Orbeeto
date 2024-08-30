@@ -21,7 +21,7 @@ class EnemyStdBullet(proj.BulletBase):
         :param bounce_count: The amount of times the bullet should bounce/ricochet
         """
         super().__init__(7)
-        self.show()
+        self.add_to_gamestate()
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
@@ -36,7 +36,7 @@ class EnemyStdBullet(proj.BulletBase):
         self.rotate_image(calc.get_vec_angle(self.vel.x, self.vel.y))
 
     def movement(self):
-        if self.can_update:
+        if self.in_gamestate:
             self.proj_collide(groups.all_players, True)
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)
@@ -64,7 +64,7 @@ class AmbusherDasher(proj.BulletBase):
         :param dmg_mod: The factor to multiply the projectile's damage by
         """
         super().__init__()
-        self.show()
+        self.add_to_gamestate()
 
         self.pos = vec((pos_x, pos_y))
         self.launch_vel = vec(7, 0)
@@ -79,7 +79,7 @@ class AmbusherDasher(proj.BulletBase):
         self.rotate_image(calc.get_vec_angle(self.vel.x, self.vel.y))
 
     def movement(self):
-        if self.can_update:
+        if self.in_gamestate:
             self.proj_collide(groups.all_players, True)
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portals, False)

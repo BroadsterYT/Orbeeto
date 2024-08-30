@@ -20,15 +20,21 @@ class RoomContainer(cb.AbstractBase):
         for sprite in sprites:
             self.add(sprite)
 
-    def hide_sprites(self):
-        """Hides all the sprites in the container
+    def deactivate_sprites(self) -> None:
+        """Removes all the sprites within the container from their game states
+
+        :return: None
         """
         for sprite in self.sprites():
-            sprite.hide()
+            sprite.remove_from_gamestate()
 
-    def show_sprites(self):
+    def activate_sprites(self) -> None:
+        """Adds all the sprites within the container to their game states
+
+        :return: None
+        """
         for sprite in self.sprites():
-            sprite.show()
+            sprite.add_to_gamestate()
             sprite.accel = vec(0, 0)
             sprite.vel = vec(0, 0)
 

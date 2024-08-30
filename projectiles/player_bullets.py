@@ -30,7 +30,7 @@ class PlayerStdBullet(proj.BulletBase):
         :param bounce_count: The number of times the bullet should bounce. Defaults to 1 (no bounce).
         """
         super().__init__(7)
-        self.show()
+        self.add_to_gamestate()
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
@@ -43,7 +43,7 @@ class PlayerStdBullet(proj.BulletBase):
         self.rotate_image(calc.get_vec_angle(self.vel.x, self.vel.y))
 
     def movement(self):
-        if self.can_update:
+        if self.in_gamestate:
             self.proj_collide(groups.all_enemies, True)
             self.proj_collide(groups.all_sentries, True)
             self.proj_collide(groups.all_walls, False)
@@ -65,7 +65,7 @@ class PlayerStdBullet(proj.BulletBase):
 class PlayerLaserBullet(proj.BulletBase):
     def __init__(self, pos_x: float, pos_y: float, vel_x: float, vel_y: float, bounce_count: int = 1):
         super().__init__(11)
-        self.show()
+        self.add_to_gamestate()
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
@@ -78,7 +78,7 @@ class PlayerLaserBullet(proj.BulletBase):
         self.rotate_image(calc.get_vec_angle(self.vel.x, self.vel.y))
 
     def movement(self):
-        if self.can_update:
+        if self.in_gamestate:
             self.proj_collide(groups.all_enemies, True)
             self.proj_collide(groups.all_sentries, True)
             self.proj_collide(groups.all_walls, False)
@@ -104,7 +104,7 @@ class PlayerChakram(proj.BulletBase):
         :param vel_y: The y-axis component of the bullet's velocity
         """
         super().__init__(14)
-        self.show()
+        self.add_to_gamestate()
         self.start_time = timer.g_timer.time
 
         self.pos = vec((pos_x, pos_y))
@@ -125,7 +125,7 @@ class PlayerChakram(proj.BulletBase):
         return final_accel
 
     def movement(self):
-        if self.can_update:
+        if self.in_gamestate:
             self.proj_collide(groups.all_enemies, True)
             self.proj_collide(groups.all_sentries, True)
             self.proj_collide(groups.all_walls, False)
@@ -163,7 +163,7 @@ class PlayerHomingBullet(proj.BulletBase):
         :param bounce_count: The number of times the bullet should bounce. Defaults to 1 (no bounce).
         """
         super().__init__(7)
-        self.show()
+        self.add_to_gamestate()
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
@@ -176,7 +176,7 @@ class PlayerHomingBullet(proj.BulletBase):
 
         self.dist_dict = {}
         for sprite in [s for s in itertools.chain(groups.all_enemies, groups.all_sentries)
-                       if s.visible]:
+                       if s.in_gamestate]:
             self.dist_dict.update({sprite: calc.get_dist(self.pos, sprite.pos)})
         self.last_homing_time = timer.g_timer.time
 
@@ -193,7 +193,7 @@ class PlayerHomingBullet(proj.BulletBase):
         if calc.get_game_tdiff(self.last_homing_time) >= 0.3:
             self.dist_dict = {}
             for sprite in [s for s in itertools.chain(groups.all_enemies, groups.all_sentries)
-                           if s.visible]:
+                           if s.in_gamestate]:
                 self.dist_dict.update({sprite: calc.get_dist(self.pos, sprite.pos)})
             self.last_homing_time = timer.g_timer.time
 
@@ -221,7 +221,7 @@ class PlayerHomingBullet(proj.BulletBase):
         return -5 * math.sin(math.pi * angle / 360)
 
     def movement(self):
-        if self.can_update:
+        if self.in_gamestate:
             self.proj_collide(groups.all_enemies, True)
             self.proj_collide(groups.all_sentries, True)
             self.proj_collide(groups.all_walls, False)
@@ -244,7 +244,7 @@ class PlayerHomingBullet(proj.BulletBase):
 class PortalBullet(proj.BulletBase):
     def __init__(self, pos_x, pos_y, vel_x, vel_y):
         super().__init__()
-        self.show()
+        self.add_to_gamestate()
 
         self.pos = vec((pos_x, pos_y))
         self.vel = vec(vel_x, vel_y)
@@ -263,7 +263,7 @@ class PortalBullet(proj.BulletBase):
             if not self.hitbox.colliderect(collidingSprite.hitbox):
                 continue
             
-            if not collidingSprite.visible:
+            if not collidingSprite.in_gamestate:
                 continue
 
             if can_hurt:
@@ -306,7 +306,7 @@ class PortalBullet(proj.BulletBase):
             portals.portal_count_check()
 
     def movement(self):
-        if self.can_update:
+        if self.in_gamestate:
             self.proj_collide(groups.all_walls, False)
             self.proj_collide(groups.all_portal_blockers, False)
             self.proj_collide(groups.all_portals, False)
@@ -336,7 +336,7 @@ class GrappleBullet(proj.BulletBase):
     def __init__(self, shot_from, pos_x: float, pos_y: float, vel_x: float, vel_y: float):
         super().__init__()
         self.layer = cst.LAYER['grapple']
-        self.show()
+        self.add_to_gamestate()
         self.damage = 0
         
         self.shot_from = shot_from
@@ -389,7 +389,7 @@ class GrappleBullet(proj.BulletBase):
             if not self.hitbox.colliderect(collidingSprite.hitbox):
                 continue
 
-            if not collidingSprite.visible:
+            if not collidingSprite.in_gamestate:
                 continue
 
             if can_hurt:
@@ -474,7 +474,7 @@ class GrappleBullet(proj.BulletBase):
         self.center_rects()
 
     def bind_proj(self):
-        if self.can_update and self.visible:
+        if self.in_gamestate:
             if not self.is_hooked:
                 self.proj_collide(groups.all_enemies, True)
                 self.proj_collide(groups.all_movable, False)

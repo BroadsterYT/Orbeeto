@@ -18,7 +18,7 @@ class Box(cb.ActorBase):
         :param pos_y: The position on the y-axis to spawn the box
         """
         super().__init__(cst.LAYER['trinket'])
-        self.show()
+        self.add_to_gamestate()
         groups.all_movable.add(self)
 
         self.pos = vec((pos_x, pos_y))
@@ -30,7 +30,7 @@ class Box(cb.ActorBase):
         self.set_rects(0, 0, 64, 64, 64, 64, True)
 
     def movement(self):
-        if self.can_update and self.visible:
+        if self.in_gamestate:
             self.collide_check(groups.all_walls)
 
             self.set_room_pos()
