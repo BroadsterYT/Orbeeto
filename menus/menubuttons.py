@@ -87,15 +87,19 @@ class ScrollWidget(cb.ActorBase):
         """A scroll widget that allows the display of items, settings, checkboxes, and more.
 
         :param gamestate: The gamestate the object should exist within
-        :param pos_x:
-        :param pos_y:
+        :param pos_x: The x-axis position to spawn the widget
+        :param pos_y: The y-axis position to spawn the widget
         :param vis_length: The visible length of the entry display of the widget (this does not include the padding)
         :param vis_width: The visible width of the entry display. This will determine the width of the entries inside
         """
         super().__init__(cst.LAYER['ui_2'], gamestate)
         self.add_to_gamestate()
-
         self.entries = []
+
+        self.pos = vec(pos_x, pos_y)
+
+        self.length = vis_length
+        self.width = vis_width
 
     def update(self):
         pass
@@ -106,7 +110,7 @@ class ScrollPullTab(cb.ActorBase):
         """A pull tab used on a scroll widget to allow scrolling by dragging
 
         :param gamestate: The gamestate the object should exist within
-        :param owner:
+        :param owner: The scroll widget the pull tab belongs to
         """
         super().__init__(cst.LAYER['ui_2'], gamestate)
         self.add_to_gamestate()
@@ -114,10 +118,49 @@ class ScrollPullTab(cb.ActorBase):
 
 
 class ScrollWidgetEntry(cb.ActorBase):
-    def __init__(self, gamestate, owner: ScrollWidget):
-        super().__init__(cst.LAYER['ui_2'], gamestate)
+    def __init__(self,
+                 owner: ScrollWidget,
+                 entry_text: str,
+                 image_path: None | str = None,
+                 sprites_per_row: int = 8,
+                 sprite_width: int = 64,
+                 sprite_height: int = 64,
+                 sprite_count: int = 1,
+                 sprite_offset: int = 0,
+                 entry_type: int = 0):
+        """An entry within a scroll widget
+
+        :param owner: The scroll widget the entry belongs to
+        :param entry_text: The text to display within the entry
+        :param image_path: The path to use for the image to display in the entry. Defaults to None.
+        :param sprites_per_row: The number of sprites in each row of the given spritesheet
+        :param sprite_width: The width of each sprite in the given spritesheet
+        :param sprite_height: The height of each sprite in the given spritesheet
+        :param sprite_count: The number of sprites to pull from the spritesheet
+        :param sprite_offset: Which sprite should the "snip" start from? Defaults to the first image in the spritesheet.
+        :param entry_type: The interaction type for the entry. 0 for visual, 1 for numeric display, 2 for boolean
+        display. Defaults to 0.
+        """
+        super().__init__(cst.LAYER['ui_2'], owner.gamestate)
         self.add_to_gamestate()
         self.owner = owner
+
+        self.entry_text = entry_text
+        self.entry_type = entry_type
+
+        # --- Get base entry image(s) --- #
+
+        # ------------------------------- #
+
+        if image_path is not None:
+            self.display_sheet = spritesheet.Spritesheet(image_path, sprites_per_row)
+            self.display_images = self.display_sheet.get_images(sprite_width,
+                                                                sprite_height,
+                                                                sprite_count,
+                                                                sprite_offset)
+
+        else:
+            pass
 
 
 class MenuArrow(cb.ActorBase):
