@@ -37,7 +37,7 @@ def redraw_game_window() -> None:
     screen.viewport.blit(screen.buffer_screen, visuals.screen_shake_queue.run())
     pygame.display.flip()
 
-    screen.buffer_screen.fill((255, 255, 255))
+    screen.buffer_screen.fill((0, 255, 255))
 
 
 # ============================================================================ #

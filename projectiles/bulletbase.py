@@ -136,7 +136,8 @@ class BulletBase(cb.ActorBase):
                     self.land(colliding_sprite)
                     return
 
-    def teleport(self, portal_in):
+    def teleport(self, portal_in) -> None:
+        """Sends the projectile from one portal to the other."""
         portal_out = calc.get_other_portal(portal_in)
         dir_in = portal_in.facing
         dir_out = portal_out.facing
@@ -159,8 +160,9 @@ class BulletBase(cb.ActorBase):
             dir_list.update({cst.WEST: 180, cst.SOUTH: 90, cst.EAST: 0, cst.NORTH: 270})
             dist_offset = copy.copy(self.pos.y) - copy.copy(portal_in.pos.y)
 
+        room = cb.get_room()
         self._align_sprite(portal_out, dist_offset, dir_out)
-        self.vel = self.vel.rotate(dir_list[dir_out])
+        self.vel = self.vel.rotate(dir_list[dir_out]) + room.vel
         self.vel_const = self.vel_const.rotate(dir_list[dir_out])
 
     def inflict_damage(self, sprite_group, receiver) -> None:

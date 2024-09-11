@@ -32,17 +32,18 @@ class InventoryMenu(cb.AbstractBase):
                                            self.pan_left)
         self.left_arrow = menus.MenuArrow(gs.s_inventory, 64, cst.WINHEIGHT / 2, cst.WEST, self.pan_right)
 
-        self.widget_test = menus.ScrollWidget(gs.s_inventory, 300, 300, 300, 400, 64)
+        self.widget_test = menus.ScrollWidget(gs.s_inventory, 300, 300, 320, 416 + 32*7, 64)
         self.widget_test.add_entry(
-            menus.ScrollWidgetEntry(self.widget_test, (255, 0, 0), 0, 'hello'),
-            menus.ScrollWidgetEntry(self.widget_test, (255, 255, 255), 64, 'hello'),
-            menus.ScrollWidgetEntry(self.widget_test, (255, 120, 255), 128, 'hello'),
-            # menus.ScrollWidgetEntry(self.widget_test, (255, 120, 0), 192, 'hello'),
-            # menus.ScrollWidgetEntry(self.widget_test, (255, 0, 0), 0+192, 'hello'),
-            # menus.ScrollWidgetEntry(self.widget_test, (255, 255, 255), 64+192, 'hello'),
-            # menus.ScrollWidgetEntry(self.widget_test, (255, 120, 255), 128+192, 'hello'),
-            # menus.ScrollWidgetEntry(self.widget_test, (255, 120, 0), 192+192, 'hello'),
+            menus.ScrollWidgetEntry(self.widget_test, 'hello'),
+            menus.ScrollWidgetEntry(self.widget_test, 'hello'),
+            menus.ScrollWidgetEntry(self.widget_test, 'hello'),
+            menus.ScrollWidgetEntry(self.widget_test, 'hello'),
+            menus.ScrollWidgetEntry(self.widget_test, 'hello'),
+            menus.ScrollWidgetEntry(self.widget_test, 'hello'),
+            menus.ScrollWidgetEntry(self.widget_test, 'hello'),
+            menus.ScrollWidgetEntry(self.widget_test, 'hello'),
         )
+        self.widget_test.assign_scroll_values()
 
         self.add(
             self.build_materials_slots(),
