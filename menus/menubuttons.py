@@ -83,26 +83,61 @@ class MenuButton(cb.ActorBase):
 
 
 class ScrollWidget(cb.ActorBase):
-    def __init__(self, gamestate, pos_x, pos_y, vis_length, vis_width):
+    def __init__(self, gamestate: gs.GameState, pos_x, pos_y, vis_width: int, vis_height, entry_height: int):
         """A scroll widget that allows the display of items, settings, checkboxes, and more.
 
         :param gamestate: The gamestate the object should exist within
         :param pos_x: The x-axis position to spawn the widget
         :param pos_y: The y-axis position to spawn the widget
-        :param vis_length: The visible length of the entry display of the widget (this does not include the padding)
-        :param vis_width: The visible width of the entry display. This will determine the width of the entries inside
+        :param entry_height: The height of each entry added into the widget
         """
         super().__init__(cst.LAYER['ui_2'], gamestate)
         self.add_to_gamestate()
         self.entries = []
+        self.width = vis_width
+        self.height = vis_height
+        self.entry_height = entry_height
 
         self.pos = vec(pos_x, pos_y)
+        self.start_pos = vec(pos_x, pos_y)
 
-        self.length = vis_length
-        self.width = vis_width
+        self.last_scroll_up, self.last_scroll_down = ctrl.key_released[4], ctrl.key_released[5]
+        self.scroll_value = 0
+
+        self.image = pygame.Surface((self.width, self.height))
+        self.image.fill((255, 0, 255))
+
+        self.set_rects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
+
+    def add_entry(self, *actors) -> None:
+        """Adds an actor or list of actors to the entry list"""
+        for actor in actors:
+            self.entries.append(actor)
+
+    def remove_entry(self, actor) -> None:
+        """Removes an actor from the entry list."""
+        self.entries.remove(actor)
 
     def update(self):
-        pass
+        if self.last_scroll_up != ctrl.key_released[4]:
+            mouse_pos = pygame.mouse.get_pos()
+            if self.rect.collidepoint(mouse_pos[0], mouse_pos[1]):
+                self.scroll_value -= 15
+            # VVV Prevents widget from scrolling up beyond the last visible entry VVV
+            if len(self.entries) > 1 and self.scroll_value < -self.entry_height * (len(self.entries) - 2):
+                self.scroll_value = -self.entry_height * (len(self.entries) - 2)
+            elif len(self.entries) <= 1 and self.scroll_value < -self.entry_height * (len(self.entries) - 1):
+                self.scroll_value = -self.entry_height * (len(self.entries) - 1)
+
+            self.last_scroll_up = ctrl.key_released[4]
+
+        if self.last_scroll_down != ctrl.key_released[5]:
+            mouse_pos = pygame.mouse.get_pos()
+            if self.rect.collidepoint(mouse_pos[0], mouse_pos[1]):
+                self.scroll_value += 15
+            if self.scroll_value > 0:
+                self.scroll_value = 0  # Prevents scrolling down past the first entry
+            self.last_scroll_down = ctrl.key_released[5]
 
 
 class ScrollPullTab(cb.ActorBase):
@@ -120,6 +155,8 @@ class ScrollPullTab(cb.ActorBase):
 class ScrollWidgetEntry(cb.ActorBase):
     def __init__(self,
                  owner: ScrollWidget,
+                 color: tuple,
+                 scroll_pos: int,
                  entry_text: str,
                  image_path: None | str = None,
                  sprites_per_row: int = 8,
@@ -131,6 +168,8 @@ class ScrollWidgetEntry(cb.ActorBase):
         """An entry within a scroll widget
 
         :param owner: The scroll widget the entry belongs to
+        :param scroll_pos: The position at which the entry should be displayed in the widget. Higher values will be
+        placed lower in the widget.
         :param entry_text: The text to display within the entry
         :param image_path: The path to use for the image to display in the entry. Defaults to None.
         :param sprites_per_row: The number of sprites in each row of the given spritesheet
@@ -144,11 +183,19 @@ class ScrollWidgetEntry(cb.ActorBase):
         super().__init__(cst.LAYER['ui_2'], owner.gamestate)
         self.add_to_gamestate()
         self.owner = owner
+        self.width, self.height = self.owner.width - 64, self.owner.entry_height
+
+        self.pos = vec(self.owner.pos.x, self.owner.pos.y - self.owner.height // 2 + self.owner.entry_height)
+        self.start_pos = self.owner.start_pos
+
+        self.scroll_pos = scroll_pos
 
         self.entry_text = entry_text
         self.entry_type = entry_type
 
         # --- Get base entry image(s) --- #
+        self.image = pygame.Surface((self.width, self.height))
+        self.image.fill(color)
 
         # ------------------------------- #
 
@@ -158,9 +205,25 @@ class ScrollWidgetEntry(cb.ActorBase):
                                                                 sprite_height,
                                                                 sprite_count,
                                                                 sprite_offset)
-
         else:
             pass
+
+        self.set_rects(self.pos.x, self.pos.y, self.width, self.height, self.width, self.height)
+
+    def update(self):
+        # VVV The position of an entry that is flush with the top lip of the widget border cover
+        flush_top = self.owner.pos.y - self.owner.height // 2 + self.height // 2 + self.owner.entry_height
+        self.pos.y = self.scroll_pos + self.owner.scroll_value + flush_top
+        if self.pos.y < flush_top - self.owner.entry_height:
+            self.pos.y = flush_top - self.owner.entry_height
+
+        if self.pos.y > self.owner.pos.y + self.owner.height // 2 - self.height // 2:
+            self.pos.y = self.owner.pos.y + self.owner.height // 2 - self.height // 2
+
+        self.center_rects()
+
+    def __repr__(self):
+        return f'ScrollWidgetEntry({self.pos}, {self.scroll_pos})'
 
 
 class MenuArrow(cb.ActorBase):

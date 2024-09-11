@@ -32,10 +32,23 @@ class InventoryMenu(cb.AbstractBase):
                                            self.pan_left)
         self.left_arrow = menus.MenuArrow(gs.s_inventory, 64, cst.WINHEIGHT / 2, cst.WEST, self.pan_right)
 
+        self.widget_test = menus.ScrollWidget(gs.s_inventory, 300, 300, 300, 400, 64)
+        self.widget_test.add_entry(
+            menus.ScrollWidgetEntry(self.widget_test, (255, 0, 0), 0, 'hello'),
+            menus.ScrollWidgetEntry(self.widget_test, (255, 255, 255), 64, 'hello'),
+            menus.ScrollWidgetEntry(self.widget_test, (255, 120, 255), 128, 'hello'),
+            # menus.ScrollWidgetEntry(self.widget_test, (255, 120, 0), 192, 'hello'),
+            # menus.ScrollWidgetEntry(self.widget_test, (255, 0, 0), 0+192, 'hello'),
+            # menus.ScrollWidgetEntry(self.widget_test, (255, 255, 255), 64+192, 'hello'),
+            # menus.ScrollWidgetEntry(self.widget_test, (255, 120, 255), 128+192, 'hello'),
+            # menus.ScrollWidgetEntry(self.widget_test, (255, 120, 0), 192+192, 'hello'),
+        )
+
         self.add(
             self.build_materials_slots(),
             self.build_gun_slots(),
-            self.build_armor_slots()
+            self.build_armor_slots(),
+            self.widget_test
         )
 
     def pan_left(self):
