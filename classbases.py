@@ -280,9 +280,15 @@ class ActorBase(pygame.sprite.Sprite):
 
 class AbstractBase(pygame.sprite.AbstractGroup):
     """The base class for all standard abstract groups. Contains methods to help manipulate the abstract group."""
-    def __init__(self):
+    def __init__(self, gamestate=gs.s_action):
         super().__init__()
         self.can_update = True
+        self.gamestate = gamestate
+
+    def add_to_gamestate(self):
+        """Adds the group to its gamestate. NOTE: This method is only intended for associated objects within different
+        game states. """
+        self.gamestate.groups.append(self)
 
     def get_update_state(self) -> bool:
         """Returns the update state of the abstract group.

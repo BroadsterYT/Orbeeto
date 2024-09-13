@@ -11,6 +11,7 @@ from pygame.math import Vector2 as vec
 
 import controls as ctrl
 import items
+import menus
 import projectiles as proj
 
 import calc
@@ -135,6 +136,9 @@ class Player(cb.ActorBase):
         self.health_bar = statbars.StatBarTest(self)
 
         # ---------------------------- Menu and Inventory ---------------------------- #
+        # self.inventory_menu = menus.InventoryMenu()
+        # self.last_inv_press = ctrl.key_released[ctrl.K_MENU]
+
         self.my_materials = {}
         for item in items.MATERIALS:
             self.my_materials.update({item: 0})

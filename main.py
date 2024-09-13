@@ -50,7 +50,7 @@ gs.s_action.groups.append(main_room)
 pause_menu = menus.PauseMenu()
 pause_release = 0
 
-inventory_menu = menus.InventoryMenu()
+inventory_menu = menus.InventoryMenu(main_room.player1)
 inventory_release = 0
 
 prev_time = time.time()  # Used for delta time

@@ -14,18 +14,18 @@ import gamestack as gs
 
 
 class InventoryMenu(cb.AbstractBase):
-    def __init__(self):
+    def __init__(self, owner):
         """A menu used to view collected items and utilize them for various purposes"""
         super().__init__()
         self.cycling_left = False
         self.cycling_right = False
+        self.owner = owner
 
-        room = cb.get_room()
-        self.owner = room.player1
+        self.is_open = False
+
         self.window = 0
 
         self.last_release_value = ctrl.key_released[ctrl.K_MENU]
-        self.is_open = False
         self.last_cycle = time.time()
 
         self.right_arrow = menus.MenuArrow(gs.s_inventory, cst.WINWIDTH - 64, cst.WINHEIGHT / 2, cst.EAST,

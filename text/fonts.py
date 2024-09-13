@@ -77,5 +77,19 @@ def text_to_image(any_text: str, a_font: Font) -> pygame.Surface:
     return final_image
 
 
+def text_to_image_test(any_text: str, a_font: Font, space: int = 0) -> pygame.Surface:
+    """Converts a string of text into an image with a given font.
+
+    :param any_text: The text string to convert into an image
+    :param a_font: The font object to retrieve font data from
+    :return: The converted image
+    """
+    sheet = spritesheet.Spritesheet(a_font.path, a_font.chars_per_row)
+    images = sheet.get_images(a_font.char_width, a_font.char_height, a_font.char_count)
+    char_list = []
+
+
+
+
 if __name__ == '__main__':
     print(help(Font))
