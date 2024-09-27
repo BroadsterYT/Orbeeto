@@ -1,5 +1,5 @@
 #pragma once
-#include "TextureManager.hpp"
+#include "../TextureManager.hpp"
 
 /// <summary>
 /// A sprite component that allows an entity to draw an image onto the screen

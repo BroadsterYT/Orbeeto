@@ -4,11 +4,11 @@
 #include "InputManager.hpp"
 #include "TextureManager.hpp"
 
-#include "Coordinator.hpp"
-#include "Health.hpp"
-#include "HealthSystem.hpp"
-#include "Sprite.hpp"
-#include "SpriteSystem.hpp"
+#include "ECS/Coordinator.hpp"
+#include "ECS/Health.hpp"
+#include "ECS/HealthSystem.hpp"
+#include "ECS/Sprite.hpp"
+#include "ECS/SpriteSystem.hpp"
 
 
 SDL_Window* window;
@@ -52,8 +52,6 @@ int main(int argc, char* argv[]) {
 	}
 
 
-
-
 	oCoordinator.init();
 	// A vector containing all entities in the game
 	std::vector<Entity> entities(MAX_ENTITIES - 1);
@@ -80,11 +78,12 @@ int main(int argc, char* argv[]) {
 	const Entity& player = oCoordinator.createEntity();
 	oCoordinator.addComponent<Sprite>(player, Sprite{ renderer, "assets/orbeeto.png", 64, 64, 0, 0 });
 
+
 	while (isRunning) {
 
 		frameStart = SDL_GetTicks();
 
-		// Handling events
+		// ---------- Handling events ---------- //
 		SDL_Event event;
 		SDL_PollEvent(&event);
 		switch (event.type) {
@@ -93,11 +92,13 @@ int main(int argc, char* argv[]) {
 			break;
 		
 		case SDL_KEYDOWN:
-			std::cout << "Key has been pressed!" << std::endl;
+			InputManager::handleKeyPresses(event);
+			InputManager::printKeysPressed();
 			break;
 
 		case SDL_KEYUP:
-			std::cout << "Key has been released!" << std::endl;
+			InputManager::handleKeyReleases(event);
+			InputManager::printKeysReleased();
 			break;
 
 		default:

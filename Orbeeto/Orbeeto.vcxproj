@@ -134,27 +134,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="HealthSystem.cpp" />
+    <ClCompile Include="ECS\HealthSystem.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="SpriteSystem.cpp" />
+    <ClCompile Include="ECS\SpriteSystem.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Vector2.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ComponentArray.hpp" />
-    <ClInclude Include="ComponentManager.hpp" />
-    <ClInclude Include="Coordinator.hpp" />
-    <ClInclude Include="EntityManager.hpp" />
-    <ClInclude Include="Health.hpp" />
-    <ClInclude Include="HealthSystem.hpp" />
+    <ClInclude Include="ECS\ComponentArray.hpp" />
+    <ClInclude Include="ECS\ComponentManager.hpp" />
+    <ClInclude Include="ECS\Coordinator.hpp" />
+    <ClInclude Include="ECS\EntityManager.hpp" />
+    <ClInclude Include="ECS\Health.hpp" />
+    <ClInclude Include="ECS\HealthSystem.hpp" />
     <ClInclude Include="InputManager.hpp" />
-    <ClInclude Include="Sprite.hpp" />
-    <ClInclude Include="SpriteSystem.hpp" />
-    <ClInclude Include="System.hpp" />
-    <ClInclude Include="SystemManager.hpp" />
+    <ClInclude Include="ECS\Sprite.hpp" />
+    <ClInclude Include="ECS\SpriteSystem.hpp" />
+    <ClInclude Include="ECS\System.hpp" />
+    <ClInclude Include="ECS\SystemManager.hpp" />
     <ClInclude Include="TextureManager.hpp" />
-    <ClInclude Include="Types.hpp" />
+    <ClInclude Include="ECS\Types.hpp" />
     <ClInclude Include="Vector2.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -33,10 +33,10 @@
     <ClCompile Include="Vector2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HealthSystem.cpp">
+    <ClCompile Include="ECS\HealthSystem.cpp">
       <Filter>ECS\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="SpriteSystem.cpp">
+    <ClCompile Include="ECS\SpriteSystem.cpp">
       <Filter>ECS\Systems</Filter>
     </ClCompile>
     <ClCompile Include="InputManager.cpp">
@@ -50,37 +50,37 @@
     <ClInclude Include="Vector2.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EntityManager.hpp">
+    <ClInclude Include="ECS\EntityManager.hpp">
       <Filter>ECS</Filter>
     </ClInclude>
-    <ClInclude Include="Types.hpp">
+    <ClInclude Include="ECS\Types.hpp">
       <Filter>ECS</Filter>
     </ClInclude>
-    <ClInclude Include="ComponentArray.hpp">
+    <ClInclude Include="ECS\ComponentArray.hpp">
       <Filter>ECS</Filter>
     </ClInclude>
-    <ClInclude Include="ComponentManager.hpp">
+    <ClInclude Include="ECS\ComponentManager.hpp">
       <Filter>ECS</Filter>
     </ClInclude>
-    <ClInclude Include="System.hpp">
+    <ClInclude Include="ECS\System.hpp">
       <Filter>ECS</Filter>
     </ClInclude>
-    <ClInclude Include="SystemManager.hpp">
+    <ClInclude Include="ECS\SystemManager.hpp">
       <Filter>ECS</Filter>
     </ClInclude>
-    <ClInclude Include="Coordinator.hpp">
+    <ClInclude Include="ECS\Coordinator.hpp">
       <Filter>ECS</Filter>
     </ClInclude>
-    <ClInclude Include="Health.hpp">
+    <ClInclude Include="ECS\Health.hpp">
       <Filter>ECS\Components</Filter>
     </ClInclude>
-    <ClInclude Include="HealthSystem.hpp">
+    <ClInclude Include="ECS\HealthSystem.hpp">
       <Filter>ECS\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="Sprite.hpp">
+    <ClInclude Include="ECS\Sprite.hpp">
       <Filter>ECS\Components</Filter>
     </ClInclude>
-    <ClInclude Include="SpriteSystem.hpp">
+    <ClInclude Include="ECS\SpriteSystem.hpp">
       <Filter>ECS\Systems</Filter>
     </ClInclude>
     <ClInclude Include="InputManager.hpp">
