@@ -33,13 +33,16 @@
     <ClCompile Include="Vector2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ECS\HealthSystem.cpp">
-      <Filter>ECS\Systems</Filter>
-    </ClCompile>
     <ClCompile Include="ECS\SpriteSystem.cpp">
       <Filter>ECS\Systems</Filter>
     </ClCompile>
     <ClCompile Include="InputManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ECS\AccelTransformSystem.cpp">
+      <Filter>ECS\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -71,12 +74,6 @@
     <ClInclude Include="ECS\Coordinator.hpp">
       <Filter>ECS</Filter>
     </ClInclude>
-    <ClInclude Include="ECS\Health.hpp">
-      <Filter>ECS\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="ECS\HealthSystem.hpp">
-      <Filter>ECS\Systems</Filter>
-    </ClInclude>
     <ClInclude Include="ECS\Sprite.hpp">
       <Filter>ECS\Components</Filter>
     </ClInclude>
@@ -84,6 +81,15 @@
       <Filter>ECS\Systems</Filter>
     </ClInclude>
     <ClInclude Include="InputManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\AccelTransform.hpp">
+      <Filter>ECS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\AccelTransformSystem.hpp">
+      <Filter>ECS\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Game.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

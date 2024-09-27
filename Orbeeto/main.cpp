@@ -1,12 +1,11 @@
 #include <iostream>
 #include <vector>
 
+#include "Game.hpp"
 #include "InputManager.hpp"
 #include "TextureManager.hpp"
 
 #include "ECS/Coordinator.hpp"
-#include "ECS/Health.hpp"
-#include "ECS/HealthSystem.hpp"
 #include "ECS/Sprite.hpp"
 #include "ECS/SpriteSystem.hpp"
 
@@ -18,6 +17,7 @@ bool fullscreen = false;
 
 Coordinator oCoordinator;
 
+Game* game = nullptr;
 
 int main(int argc, char* argv[]) {
 	const int FPS = 120;
@@ -26,30 +26,8 @@ int main(int argc, char* argv[]) {
 	Uint32 frameStart;
 	int frameTime;
 
-	int flags = 0;
-	if (fullscreen) {
-		flags = SDL_WINDOW_FULLSCREEN;
-	}
-
-	if (SDL_Init(SDL_INIT_EVERYTHING) == 0) {
-		std::cout << "Subsystems initialized" << std::endl;
-		window = SDL_CreateWindow("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, flags);
-
-		if (window) {
-			std::cout << "Window created." << std::endl;
-		}
-
-		renderer = SDL_CreateRenderer(window, -1, 0);
-		if (renderer) {
-			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-			std::cout << "Renderer created." << std::endl;
-		}
-		isRunning = true;
-	}
-	else {
-		std::cout << "Error initializing" << std::endl;
-		isRunning = false;
-	}
+	game = new Game();
+	game->init("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, false);
 
 
 	oCoordinator.init();
@@ -93,12 +71,11 @@ int main(int argc, char* argv[]) {
 		
 		case SDL_KEYDOWN:
 			InputManager::handleKeyPresses(event);
-			InputManager::printKeysPressed();
 			break;
 
 		case SDL_KEYUP:
 			InputManager::handleKeyReleases(event);
-			InputManager::printKeysReleased();
+
 			break;
 
 		default:

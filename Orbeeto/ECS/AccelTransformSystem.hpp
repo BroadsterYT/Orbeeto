@@ -3,7 +3,7 @@
 #include "System.hpp"
 
 
-class HealthSystem : public System {
+class AccelTransformSystem : public System {
 public:
 	void init();
 	void update();

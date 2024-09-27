@@ -134,7 +134,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ECS\HealthSystem.cpp" />
+    <ClCompile Include="ECS\AccelTransformSystem.cpp" />
+    <ClCompile Include="Game.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ECS\SpriteSystem.cpp" />
@@ -142,12 +143,13 @@
     <ClCompile Include="Vector2.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ECS\AccelTransformSystem.hpp" />
+    <ClInclude Include="ECS\AccelTransform.hpp" />
     <ClInclude Include="ECS\ComponentArray.hpp" />
     <ClInclude Include="ECS\ComponentManager.hpp" />
     <ClInclude Include="ECS\Coordinator.hpp" />
     <ClInclude Include="ECS\EntityManager.hpp" />
-    <ClInclude Include="ECS\Health.hpp" />
-    <ClInclude Include="ECS\HealthSystem.hpp" />
+    <ClInclude Include="Game.hpp" />
     <ClInclude Include="InputManager.hpp" />
     <ClInclude Include="ECS\Sprite.hpp" />
     <ClInclude Include="ECS\SpriteSystem.hpp" />
