@@ -1,6 +1,8 @@
 #pragma once
+#include "SDL.h"
 #include <memory>
-#include "ECS/SpriteSystem.hpp"
+
+#include "ECS/Coordinator.hpp"
 
 
 class Game {
@@ -18,9 +20,7 @@ public:
 	bool isRunning;
 
 	SDL_Window* window;
-	SDL_Renderer* renderer;
+	static SDL_Renderer* renderer;
 
-	std::shared_ptr<SpriteSystem> spriteSystem;
-
-private:
-};
+	static Coordinator oCoordinator;
+};	

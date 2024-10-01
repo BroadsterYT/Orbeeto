@@ -10,12 +10,10 @@
 #include "ECS/SpriteSystem.hpp"
 
 
-SDL_Window* window;
-SDL_Renderer* renderer;
-bool isRunning;
-bool fullscreen = false;
-
-Coordinator oCoordinator;
+//SDL_Window* window;
+//SDL_Renderer* renderer;
+//bool isRunning;
+//bool fullscreen = false;
 
 Game* game = nullptr;
 
@@ -29,67 +27,47 @@ int main(int argc, char* argv[]) {
 	game = new Game();
 	game->init("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, false);
 
-
-	oCoordinator.init();
 	// A vector containing all entities in the game
 	std::vector<Entity> entities(MAX_ENTITIES - 1);
 
 	// Registering components
-	oCoordinator.registerComponent<Sprite>();
+	Game::oCoordinator.registerComponent<Sprite>();
 
 
 	// ----- Registering systems ----- //
 
-	auto spriteSystem = oCoordinator.registerSystem<SpriteSystem>();
+	auto spriteSystem = Game::oCoordinator.registerSystem<SpriteSystem>();
 	{
 		Signature signature;
-		signature.set(oCoordinator.getComponentType<Sprite>());
+		signature.set(Game::oCoordinator.getComponentType<Sprite>());
 
-		oCoordinator.setSystemSignature<SpriteSystem>(signature);
+		Game::oCoordinator.setSystemSignature<SpriteSystem>(signature);
 	}
-	spriteSystem->init();
+	spriteSystem->init(&Game::oCoordinator);
 
 	// ------------------------------- //
 
 
 	// Creating a test player
-	const Entity& player = oCoordinator.createEntity();
-	oCoordinator.addComponent<Sprite>(player, Sprite{ renderer, "assets/orbeeto.png", 64, 64, 0, 0 });
+	const Entity& player = Game::oCoordinator.createEntity();
+	Game::oCoordinator.addComponent<Sprite>(player, Sprite{ Game::renderer, "assets/orbeeto.png", 64, 64, 0, 0 });
 
 
-	while (isRunning) {
+	while (game->isRunning) {
 
 		frameStart = SDL_GetTicks();
 
 		// ---------- Handling events ---------- //
-		SDL_Event event;
-		SDL_PollEvent(&event);
-		switch (event.type) {
-		case SDL_QUIT:
-			isRunning = false;
-			break;
-		
-		case SDL_KEYDOWN:
-			InputManager::handleKeyPresses(event);
-			break;
-
-		case SDL_KEYUP:
-			InputManager::handleKeyReleases(event);
-
-			break;
-
-		default:
-			break;
-		}
+		game->handleEvents();
 
 		// Update game components here
 
 		
 		// Rendering
-		SDL_RenderClear(renderer);
-		spriteSystem->render(renderer);
+		SDL_RenderClear(Game::renderer);
+		spriteSystem->render(Game::renderer);
 
-		SDL_RenderPresent(renderer);
+		SDL_RenderPresent(Game::renderer);
 
 		frameTime = SDL_GetTicks() - frameStart;  // Time in ms it takes to handle events, update, and render
 
@@ -99,8 +77,8 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	SDL_DestroyWindow(window);
-	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(game->window);
+	SDL_DestroyRenderer(Game::renderer);
 	SDL_Quit();
 	std::cout << "Game cleaned." << std::endl;
 

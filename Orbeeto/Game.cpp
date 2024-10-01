@@ -1,6 +1,12 @@
 #include "Game.hpp"
 #include <iostream>
 
+#include "InputManager.hpp"
+
+
+Coordinator Game::oCoordinator;
+
+SDL_Renderer* Game::renderer = nullptr;
 
 Game::Game() {}
 
@@ -30,5 +36,29 @@ void Game::init(const char* title, int posX, int posY, int width, int height, bo
 	else {
 		std::cout << "Error initializing" << std::endl;
 		isRunning = false;
+	}
+
+	Game::oCoordinator.init();
+}
+
+void Game::handleEvents() {
+	SDL_Event event;
+	SDL_PollEvent(&event);
+	switch (event.type) {
+	case SDL_QUIT:
+		isRunning = false;
+		break;
+
+	case SDL_KEYDOWN:
+		InputManager::handleKeyPresses(event);
+		break;
+
+	case SDL_KEYUP:
+		InputManager::handleKeyReleases(event);
+
+		break;
+
+	default:
+		break;
 	}
 }

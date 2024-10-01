@@ -4,14 +4,13 @@
 #include "Sprite.hpp"
 
 
-extern Coordinator oCoordinator;
-
-
-void SpriteSystem::init() {}
+void SpriteSystem::init(Coordinator* coord) {
+	coordinator = coord;
+}
 
 void SpriteSystem::render(SDL_Renderer* renderer) {
 	for (const auto& entity : mEntities) {
-		auto& spriteSystem = oCoordinator.getComponent<Sprite>(entity);
+		auto& spriteSystem = coordinator->getComponent<Sprite>(entity);
 
 		spriteSystem.destRect.x = spriteSystem.posX;
 		spriteSystem.destRect.y = spriteSystem.posY;

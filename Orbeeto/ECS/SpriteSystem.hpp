@@ -5,7 +5,10 @@
 
 class SpriteSystem : public System {
 public:
-	void init();
+	void init(Coordinator* coord);
 	void render(SDL_Renderer* renderer);
 	void update();
+
+private:
+	Coordinator* coordinator;
 };
