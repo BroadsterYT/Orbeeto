@@ -42,10 +42,10 @@
     <ClCompile Include="Game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Systems\AccelTransformSystem.cpp">
+    <ClCompile Include="Systems\PlayerSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Systems\PlayerSystem.cpp">
+    <ClCompile Include="Systems\CollisionSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -95,13 +95,16 @@
     <ClInclude Include="Components\AccelTransform.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Systems\AccelTransformSystem.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Systems\PlayerSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Components\Player.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\Collision.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Systems\CollisionSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

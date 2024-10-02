@@ -135,10 +135,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Systems\AccelTransformSystem.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Systems\CollisionSystem.cpp" />
     <ClCompile Include="Systems\PlayerSystem.cpp" />
     <ClCompile Include="Systems\SpriteSystem.cpp" />
     <ClCompile Include="TextureManager.cpp" />
@@ -146,8 +146,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\AccelTransform.hpp" />
+    <ClInclude Include="Components\Collision.hpp" />
     <ClInclude Include="Components\Player.hpp" />
-    <ClInclude Include="Systems\AccelTransformSystem.hpp" />
     <ClInclude Include="ECS\ComponentArray.hpp" />
     <ClInclude Include="ECS\ComponentManager.hpp" />
     <ClInclude Include="ECS\Coordinator.hpp" />
@@ -155,6 +155,7 @@
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="InputManager.hpp" />
     <ClInclude Include="Components\Sprite.hpp" />
+    <ClInclude Include="Systems\CollisionSystem.hpp" />
     <ClInclude Include="Systems\PlayerSystem.hpp" />
     <ClInclude Include="Systems\SpriteSystem.hpp" />
     <ClInclude Include="ECS\System.hpp" />

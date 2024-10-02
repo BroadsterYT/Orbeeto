@@ -11,7 +11,19 @@ Vector2::Vector2(float x = 0.0f, float y = 0.0f) {
 Vector2::~Vector2() {}
 
 double Vector2::getAngle() {
-	return atan2(y, x);
+	double answerRad = atan2(y, x);
+	return answerRad * (180.0 / 3.141592653589793238463);
+}
+
+double Vector2::getAngleToPoint(const Vector2& other) {
+	double answerRad = atan2(y - other.y, x - other.x);
+	return answerRad * (180.0 / 3.141592653589793238463);
+}
+
+double Vector2::getAngleToPoint(const int& x, const int& y)
+{
+	double answerRad = atan2(this->y - y, this->x - x);
+	return answerRad * (180.0 / 3.141592653589793238463);
 }
 
 double Vector2::getMagnitude() {

@@ -9,5 +9,6 @@ private:
 
 public:
 	void init(Coordinator* coord);
+	Entity* checkCollision();
 	void update();
 };

@@ -2,6 +2,7 @@
 #include <unordered_map>
 
 #include "SDL.h"
+#include "Vector2.hpp"
 
 
 class InputManager {
@@ -17,6 +18,9 @@ public:
 	/// key has been released
 	/// </summary>
 	static std::unordered_map<int, unsigned int> keysReleased;
+
+	static int mousePosX;
+	static int mousePosY;
 
 	/// <summary>
 	/// Updates the unordered map of key presses

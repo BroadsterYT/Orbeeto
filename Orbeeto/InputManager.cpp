@@ -17,6 +17,9 @@ std::unordered_map<int, unsigned int> InputManager::keysReleased{
 	{SDLK_d, 0},
 };
 
+int InputManager::mousePosX = 0;
+int InputManager::mousePosY = 0;
+
 void InputManager::handleKeyPresses(SDL_Event event) {
 	switch (event.key.keysym.sym) {
 	case SDLK_w:

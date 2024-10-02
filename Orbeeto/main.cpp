@@ -6,10 +6,11 @@
 #include "TextureManager.hpp"
 
 #include "ECS/Coordinator.hpp"
-#include "Components/Sprite.hpp"
 #include "Components/AccelTransform.hpp"
+#include "Components/Collision.hpp"
 #include "Components/Player.hpp"
-#include "Systems/AccelTransformSystem.hpp"
+#include "Components/Sprite.hpp"
+#include "Systems/CollisionSystem.hpp"
 #include "Systems/PlayerSystem.hpp"
 #include "Systems/SpriteSystem.hpp"
 
@@ -27,30 +28,23 @@ int main(int argc, char* argv[]) {
 	game->init("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, false);
 
 	// Registering components
-	Game::coordinator.registerComponent<Sprite>();
 	Game::coordinator.registerComponent<AccelTransform>();
+	Game::coordinator.registerComponent<Collision>();
 	Game::coordinator.registerComponent<Player>();
+	Game::coordinator.registerComponent<Sprite>();
 
 
 	// ----- Registering systems ----- //
 
-	auto spriteSystem = Game::coordinator.registerSystem<SpriteSystem>();
-	{
-		Signature signature;
-		signature.set(Game::coordinator.getComponentType<Sprite>());
-
-		Game::coordinator.setSystemSignature<SpriteSystem>(signature);
-	}
-	spriteSystem->init(&Game::coordinator);
-
-	auto accelTransformSystem = Game::coordinator.registerSystem<AccelTransformSystem>();
+	auto collisionSystem = Game::coordinator.registerSystem<CollisionSystem>();
 	{
 		Signature signature;
 		signature.set(Game::coordinator.getComponentType<AccelTransform>());
+		signature.set(Game::coordinator.getComponentType<Collision>());
 
-		Game::coordinator.setSystemSignature<AccelTransformSystem>(signature);
+		Game::coordinator.setSystemSignature<CollisionSystem>(signature);
 	}
-	accelTransformSystem->init(&Game::coordinator);
+	collisionSystem->init(&Game::coordinator);
 
 	auto playerSystem = Game::coordinator.registerSystem<PlayerSystem>();
 	{
@@ -62,18 +56,43 @@ int main(int argc, char* argv[]) {
 	}
 	playerSystem->init(&Game::coordinator);
 
+	auto spriteSystem = Game::coordinator.registerSystem<SpriteSystem>();
+	{
+		Signature signature;
+		signature.set(Game::coordinator.getComponentType<Sprite>());
+
+		Game::coordinator.setSystemSignature<SpriteSystem>(signature);
+	}
+	spriteSystem->init(&Game::coordinator);
+
 	// ------------------------------- //
 
 
 	// Creating a test player
 	const Entity& player = Game::coordinator.createEntity();
-	Game::coordinator.addComponent<Sprite>(player, Sprite{ Game::renderer, "assets/orbeeto.png", 64, 64, 0, 0 });
+	Game::coordinator.addComponent<Sprite>(player,
+		Sprite{
+			Game::renderer,
+			"assets/orbeeto.png",
+			64,
+			64,
+			0,
+			0 
+		}
+	);
 	Game::coordinator.addComponent<AccelTransform>(player, 
 		AccelTransform{
 			.pos = Vector2(300, 300)
 		}
 	);
-	Game::coordinator.addComponent<Player>(player, Player{});
+	Game::coordinator.addComponent<Player>(player,Player{});
+	Game::coordinator.addComponent<Collision>(player,
+		Collision{
+			64,		// hitbox width
+			64,		// hitbox height
+			Vector2(300, 300)	// hitbox position
+		}
+	);
 
 
 	while (game->isRunning) {
@@ -85,6 +104,7 @@ int main(int argc, char* argv[]) {
 
 		// Update game components here
 		playerSystem->update();
+		collisionSystem->update();
 		
 		// Rendering
 		SDL_RenderClear(Game::renderer);

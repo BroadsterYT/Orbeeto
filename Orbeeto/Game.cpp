@@ -57,6 +57,10 @@ void Game::handleEvents() {
 		InputManager::handleKeyReleases(event);
 		break;
 
+	case SDL_MOUSEMOTION:
+		SDL_GetMouseState(&InputManager::mousePosX, &InputManager::mousePosY);
+		break;
+
 	default:
 		break;
 	}

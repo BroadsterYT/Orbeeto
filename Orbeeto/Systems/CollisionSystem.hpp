@@ -3,11 +3,12 @@
 #include "../ECS/Coordinator.hpp"
 
 
-class AccelTransformSystem : public System {
+class CollisionSystem : public System {
 private:
 	Coordinator* coordinator;
 
 public:
 	void init(Coordinator* coord);
+	const Entity* checkCollision(const Entity& refEntity);
 	void update();
 };
