@@ -6,14 +6,13 @@
 #include "TextureManager.hpp"
 
 #include "ECS/Coordinator.hpp"
-#include "ECS/Sprite.hpp"
-#include "ECS/SpriteSystem.hpp"
+#include "Components/Sprite.hpp"
+#include "Components/AccelTransform.hpp"
+#include "Components/Player.hpp"
+#include "Systems/AccelTransformSystem.hpp"
+#include "Systems/PlayerSystem.hpp"
+#include "Systems/SpriteSystem.hpp"
 
-
-//SDL_Window* window;
-//SDL_Renderer* renderer;
-//bool isRunning;
-//bool fullscreen = false;
 
 Game* game = nullptr;
 
@@ -27,30 +26,54 @@ int main(int argc, char* argv[]) {
 	game = new Game();
 	game->init("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, false);
 
-	// A vector containing all entities in the game
-	std::vector<Entity> entities(MAX_ENTITIES - 1);
-
 	// Registering components
-	Game::oCoordinator.registerComponent<Sprite>();
+	Game::coordinator.registerComponent<Sprite>();
+	Game::coordinator.registerComponent<AccelTransform>();
+	Game::coordinator.registerComponent<Player>();
 
 
 	// ----- Registering systems ----- //
 
-	auto spriteSystem = Game::oCoordinator.registerSystem<SpriteSystem>();
+	auto spriteSystem = Game::coordinator.registerSystem<SpriteSystem>();
 	{
 		Signature signature;
-		signature.set(Game::oCoordinator.getComponentType<Sprite>());
+		signature.set(Game::coordinator.getComponentType<Sprite>());
 
-		Game::oCoordinator.setSystemSignature<SpriteSystem>(signature);
+		Game::coordinator.setSystemSignature<SpriteSystem>(signature);
 	}
-	spriteSystem->init(&Game::oCoordinator);
+	spriteSystem->init(&Game::coordinator);
+
+	auto accelTransformSystem = Game::coordinator.registerSystem<AccelTransformSystem>();
+	{
+		Signature signature;
+		signature.set(Game::coordinator.getComponentType<AccelTransform>());
+
+		Game::coordinator.setSystemSignature<AccelTransformSystem>(signature);
+	}
+	accelTransformSystem->init(&Game::coordinator);
+
+	auto playerSystem = Game::coordinator.registerSystem<PlayerSystem>();
+	{
+		Signature signature;
+		signature.set(Game::coordinator.getComponentType<Sprite>());
+		signature.set(Game::coordinator.getComponentType<AccelTransform>());
+
+		Game::coordinator.setSystemSignature<PlayerSystem>(signature);
+	}
+	playerSystem->init(&Game::coordinator);
 
 	// ------------------------------- //
 
 
 	// Creating a test player
-	const Entity& player = Game::oCoordinator.createEntity();
-	Game::oCoordinator.addComponent<Sprite>(player, Sprite{ Game::renderer, "assets/orbeeto.png", 64, 64, 0, 0 });
+	const Entity& player = Game::coordinator.createEntity();
+	Game::coordinator.addComponent<Sprite>(player, Sprite{ Game::renderer, "assets/orbeeto.png", 64, 64, 0, 0 });
+	Game::coordinator.addComponent<AccelTransform>(player, 
+		AccelTransform{
+			.pos = Vector2(300, 300)
+		}
+	);
+	Game::coordinator.addComponent<Player>(player, Player{});
 
 
 	while (game->isRunning) {
@@ -61,7 +84,7 @@ int main(int argc, char* argv[]) {
 		game->handleEvents();
 
 		// Update game components here
-
+		playerSystem->update();
 		
 		// Rendering
 		SDL_RenderClear(Game::renderer);
@@ -77,10 +100,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	SDL_DestroyWindow(game->window);
-	SDL_DestroyRenderer(Game::renderer);
-	SDL_Quit();
-	std::cout << "Game cleaned." << std::endl;
+	game->clean();
 
 	return 0;
 }

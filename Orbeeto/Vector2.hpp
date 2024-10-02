@@ -2,16 +2,17 @@
 
 
 class Vector2 {
-private:
-	float x, y;
-
 public:
 	Vector2(float x, float y);
 	~Vector2();
 
-	float getX();
-	float getY();
+	float x, y;
 
 	double getAngle();
 	double getMagnitude();
+
+	Vector2 operator+(const Vector2& other);
+	Vector2 operator-(const Vector2& other);
+	Vector2 operator*(const float& val);
+	void operator+=(const Vector2& other);
 };

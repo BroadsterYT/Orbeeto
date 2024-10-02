@@ -14,7 +14,6 @@ public:
 	
 	void handleEvents();
 	void update();
-	void render();
 	void clean();
 
 	bool isRunning;
@@ -22,5 +21,5 @@ public:
 	SDL_Window* window;
 	static SDL_Renderer* renderer;
 
-	static Coordinator oCoordinator;
+	static Coordinator coordinator;
 };	

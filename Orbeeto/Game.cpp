@@ -4,7 +4,7 @@
 #include "InputManager.hpp"
 
 
-Coordinator Game::oCoordinator;
+Coordinator Game::coordinator;
 
 SDL_Renderer* Game::renderer = nullptr;
 
@@ -38,7 +38,7 @@ void Game::init(const char* title, int posX, int posY, int width, int height, bo
 		isRunning = false;
 	}
 
-	Game::oCoordinator.init();
+	Game::coordinator.init();
 }
 
 void Game::handleEvents() {
@@ -55,10 +55,18 @@ void Game::handleEvents() {
 
 	case SDL_KEYUP:
 		InputManager::handleKeyReleases(event);
-
 		break;
 
 	default:
 		break;
 	}
+}
+
+void Game::update() {}
+
+void Game::clean() {
+	SDL_DestroyWindow(window);
+	SDL_DestroyRenderer(renderer);
+	SDL_Quit();
+	std::cout << "Game cleaned." << std::endl;
 }
