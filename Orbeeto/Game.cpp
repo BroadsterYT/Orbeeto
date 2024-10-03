@@ -4,15 +4,13 @@
 #include "InputManager.hpp"
 
 
-Coordinator Game::coordinator;
-
 SDL_Renderer* Game::renderer = nullptr;
 
-Game::Game() {}
+Coordinator Game::coordinator;
 
-Game::~Game() {}
+Game::Game(const char* title, int posX, int posY, int width, int height, bool fullscreen) {
+	Game::coordinator.init();
 
-void Game::init(const char* title, int posX, int posY, int width, int height, bool fullscreen) {
 	int flags = 0;
 	if (fullscreen) {
 		flags = SDL_WINDOW_FULLSCREEN;
@@ -26,7 +24,7 @@ void Game::init(const char* title, int posX, int posY, int width, int height, bo
 			std::cout << "Window created." << std::endl;
 		}
 
-		renderer = SDL_CreateRenderer(window, -1, 0);
+		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_TARGETTEXTURE);
 		if (renderer) {
 			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 			std::cout << "Renderer created." << std::endl;
@@ -37,9 +35,9 @@ void Game::init(const char* title, int posX, int posY, int width, int height, bo
 		std::cout << "Error initializing" << std::endl;
 		isRunning = false;
 	}
-
-	Game::coordinator.init();
 }
+
+Game::~Game() {}
 
 void Game::handleEvents() {
 	SDL_Event event;
@@ -59,6 +57,14 @@ void Game::handleEvents() {
 
 	case SDL_MOUSEMOTION:
 		SDL_GetMouseState(&InputManager::mousePosX, &InputManager::mousePosY);
+		break;
+
+	case SDL_MOUSEBUTTONDOWN:
+		InputManager::handleMousePresses(event);
+		break;
+
+	case SDL_MOUSEBUTTONUP:
+		InputManager::handleMouseReleases(event);
 		break;
 
 	default:

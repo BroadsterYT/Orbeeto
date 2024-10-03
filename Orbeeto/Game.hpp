@@ -7,19 +7,16 @@
 
 class Game {
 public:
-	Game();
+	Game(const char* title, int posX, int posY, int width, int height, bool fullscreen);
 	~Game();
 
-	void init(const char* title, int posX, int posY, int width, int height, bool fullscreen);
+	SDL_Window* window;
+	static SDL_Renderer* renderer;
+	static Coordinator coordinator;
 	
 	void handleEvents();
 	void update();
 	void clean();
 
 	bool isRunning;
-
-	SDL_Window* window;
-	static SDL_Renderer* renderer;
-
-	static Coordinator coordinator;
 };	

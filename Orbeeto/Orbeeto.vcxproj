@@ -140,6 +140,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Systems\CollisionSystem.cpp" />
     <ClCompile Include="Systems\PlayerSystem.cpp" />
+    <ClCompile Include="Rooms\Room.cpp" />
     <ClCompile Include="Systems\SpriteSystem.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Vector2.cpp" />
@@ -160,7 +161,7 @@
     <ClInclude Include="Systems\SpriteSystem.hpp" />
     <ClInclude Include="ECS\System.hpp" />
     <ClInclude Include="ECS\SystemManager.hpp" />
-    <ClInclude Include="Room.hpp" />
+    <ClInclude Include="Rooms\Room.hpp" />
     <ClInclude Include="TextureManager.hpp" />
     <ClInclude Include="ECS\Types.hpp" />
     <ClInclude Include="Vector2.hpp" />

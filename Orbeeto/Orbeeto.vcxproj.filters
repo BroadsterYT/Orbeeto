@@ -48,6 +48,9 @@
     <ClCompile Include="Systems\CollisionSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Rooms\Room.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TextureManager.hpp">
@@ -89,7 +92,7 @@
     <ClInclude Include="Game.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Room.hpp">
+    <ClInclude Include="Rooms\Room.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Components\AccelTransform.hpp">

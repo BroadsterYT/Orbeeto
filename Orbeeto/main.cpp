@@ -3,6 +3,7 @@
 
 #include "Game.hpp"
 #include "InputManager.hpp"
+#include "Rooms/Room.hpp"
 #include "TextureManager.hpp"
 
 #include "ECS/Coordinator.hpp"
@@ -24,8 +25,7 @@ int main(int argc, char* argv[]) {
 	Uint32 frameStart;
 	int frameTime;
 
-	game = new Game();
-	game->init("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, false);
+	game = new Game("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, false);
 
 	// Registering components
 	Game::coordinator.registerComponent<AccelTransform>();
@@ -68,31 +68,8 @@ int main(int argc, char* argv[]) {
 	// ------------------------------- //
 
 
-	// Creating a test player
-	const Entity& player = Game::coordinator.createEntity();
-	Game::coordinator.addComponent<Sprite>(player,
-		Sprite{
-			Game::renderer,
-			"assets/orbeeto.png",
-			64,
-			64,
-			0,
-			0 
-		}
-	);
-	Game::coordinator.addComponent<AccelTransform>(player, 
-		AccelTransform{
-			.pos = Vector2(300, 300)
-		}
-	);
-	Game::coordinator.addComponent<Player>(player,Player{});
-	Game::coordinator.addComponent<Collision>(player,
-		Collision{
-			64,		// hitbox width
-			64,		// hitbox height
-			Vector2(300, 300)	// hitbox position
-		}
-	);
+	// Initializing room
+	Room room(0, 0);
 
 
 	while (game->isRunning) {
@@ -113,7 +90,6 @@ int main(int argc, char* argv[]) {
 		SDL_RenderPresent(Game::renderer);
 
 		frameTime = SDL_GetTicks() - frameStart;  // Time in ms it takes to handle events, update, and render
-
 		// If all updates finish sooner than the delay time, SDL will wait to render
 		if (frameDelay > frameTime) {
 			SDL_Delay(frameDelay - frameTime);
