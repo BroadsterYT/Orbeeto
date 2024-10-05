@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "InputManager.hpp"
+#include "WindowManager.hpp"
 
 
 SDL_Renderer* Game::renderer = nullptr;
@@ -18,7 +19,14 @@ Game::Game(const char* title, int posX, int posY, int width, int height, bool fu
 
 	if (SDL_Init(SDL_INIT_EVERYTHING) == 0) {
 		std::cout << "Subsystems initialized" << std::endl;
-		window = SDL_CreateWindow("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, flags);
+		window = SDL_CreateWindow(
+			"Orbeeto",
+			SDL_WINDOWPOS_CENTERED, 
+			SDL_WINDOWPOS_CENTERED, 
+			WindowManager::SCREENWIDTH, 
+			WindowManager::SCREENHEIGHT, 
+			flags
+		);
 
 		if (window) {
 			std::cout << "Window created." << std::endl;

@@ -13,6 +13,8 @@ struct Sprite {
 
 	double angle = 0;
 
+	bool moveWithRoom = true;
+
 	int tilePosX = 0;
 	int tilePosY = 0;
 

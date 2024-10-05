@@ -19,7 +19,7 @@
 Game* game = nullptr;
 
 int main(int argc, char* argv[]) {
-	const int FPS = 120;
+	const int FPS = 240;
 	const int frameDelay = 1000 / FPS;
 
 	Uint32 frameStart;
@@ -49,8 +49,9 @@ int main(int argc, char* argv[]) {
 	auto playerSystem = Game::coordinator.registerSystem<PlayerSystem>();
 	{
 		Signature signature;
-		signature.set(Game::coordinator.getComponentType<Sprite>());
 		signature.set(Game::coordinator.getComponentType<AccelTransform>());
+		signature.set(Game::coordinator.getComponentType<Sprite>());
+		signature.set(Game::coordinator.getComponentType<Player>());
 
 		Game::coordinator.setSystemSignature<PlayerSystem>(signature);
 	}
@@ -59,6 +60,7 @@ int main(int argc, char* argv[]) {
 	auto spriteSystem = Game::coordinator.registerSystem<SpriteSystem>();
 	{
 		Signature signature;
+		signature.set(Game::coordinator.getComponentType<AccelTransform>());
 		signature.set(Game::coordinator.getComponentType<Sprite>());
 
 		Game::coordinator.setSystemSignature<SpriteSystem>(signature);
@@ -80,8 +82,9 @@ int main(int argc, char* argv[]) {
 		game->handleEvents();
 
 		// Update game components here
-		playerSystem->update();
+		room.update();
 		collisionSystem->update();
+		playerSystem->update();
 		
 		// Rendering
 		SDL_RenderClear(Game::renderer);

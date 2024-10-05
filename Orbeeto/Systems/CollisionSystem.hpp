@@ -9,6 +9,5 @@ private:
 
 public:
 	void init(Coordinator* coord);
-	const Entity* checkCollision(const Entity& refEntity);
 	void update();
 };

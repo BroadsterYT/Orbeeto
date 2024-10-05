@@ -135,6 +135,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
@@ -144,8 +145,10 @@
     <ClCompile Include="Systems\SpriteSystem.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Vector2.cpp" />
+    <ClCompile Include="WindowManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Components\AccelTransform.hpp" />
     <ClInclude Include="Components\Collision.hpp" />
     <ClInclude Include="Components\Player.hpp" />
@@ -165,6 +168,7 @@
     <ClInclude Include="TextureManager.hpp" />
     <ClInclude Include="ECS\Types.hpp" />
     <ClInclude Include="Vector2.hpp" />
+    <ClInclude Include="WindowManager.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

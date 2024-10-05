@@ -33,14 +33,10 @@ void PlayerSystem::update() {
 		}
 
 		accelTransform.accel = finalAccel;
+		accelTransform.accelMovement();
 
-		// Movement update
-		accelTransform.accel.x += accelTransform.vel.x * accelTransform.fric;
-		accelTransform.accel.y += accelTransform.vel.y * accelTransform.fric;
-		accelTransform.vel += accelTransform.accel;
-		accelTransform.pos += accelTransform.vel + accelTransform.accel * accelTransform.accelConst;
-
+		Vector2 roomPos(sprite.destRect.x, sprite.destRect.y);
 		// Player's sprite rotates to cursor
-		sprite.angle = accelTransform.pos.getAngleToPoint(InputManager::mousePosX, InputManager::mousePosY) - 90.0;
+		sprite.angle = roomPos.getAngleToPoint(InputManager::mousePosX, InputManager::mousePosY) - 90.0;
 	}
 }

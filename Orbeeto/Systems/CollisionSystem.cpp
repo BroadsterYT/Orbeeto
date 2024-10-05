@@ -8,16 +8,6 @@ void CollisionSystem::init(Coordinator* coord) {
 	coordinator = coord;
 }
 
-const Entity* CollisionSystem::checkCollision(const Entity& refEntity) {
-	const Entity* output = nullptr;
-	for (const auto& entity : mEntities) {
-		//if (entity == refEntity) continue;
-
-		output = &entity;
-	}
-	return output;
-}
-
 void CollisionSystem::update() {
 	for (const auto& entity : mEntities) {
 		auto& accelTransform = coordinator->getComponent<AccelTransform>(entity);
@@ -26,7 +16,15 @@ void CollisionSystem::update() {
 		// Assign hitbox to sprite center
 		collision.hitPos.x = accelTransform.pos.x;
 		collision.hitPos.y = accelTransform.pos.y;
+		
+		// Checking every collidable entity for a collision
+		for (const auto& e : mEntities) {
+			if (e == entity) continue;
+			auto& eCollide = coordinator->getComponent<Collision>(e);
 
-		this->checkCollision(entity);
+			if (collision.checkCollision(eCollide)) {
+				std::cout << "Entity " << entity << " is colliding with Entity " << e << std::endl;
+			}
+		}
 	}
 }
