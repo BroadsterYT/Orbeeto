@@ -40,6 +40,10 @@ void PlayerSystem::update() {
 		accelTransform.vel += accelTransform.accel;
 		accelTransform.pos += accelTransform.vel + accelTransform.accel * accelTransform.accelConst;
 
+		// Updating sprite position to center
+		sprite.destRect.x = accelTransform.pos.x - sprite.tileWidth / 2;
+		sprite.destRect.y = accelTransform.pos.y - sprite.tileHeight / 2;
+
 		// Player's sprite rotates to cursor
 		sprite.angle = accelTransform.pos.getAngleToPoint(InputManager::mousePosX, InputManager::mousePosY) - 90.0;
 	}
