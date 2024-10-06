@@ -57,7 +57,8 @@ Room::Room(int roomX, int roomY) {
 		Collision{
 			64,		// hitbox width
 			64,		// hitbox height
-			Vector2(500, 500)	// hitbox position
+			Vector2(500, 500),	// hitbox position
+			false,
 		}
 	);
 }

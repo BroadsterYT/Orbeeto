@@ -35,8 +35,8 @@ void PlayerSystem::update() {
 		accelTransform.accel = finalAccel;
 		accelTransform.accelMovement();
 
-		Vector2 roomPos(sprite.destRect.x, sprite.destRect.y);
+		Vector2 roomPos(sprite.destRect.x + sprite.tileWidth / 2, sprite.destRect.y + sprite.tileHeight / 2);
 		// Player's sprite rotates to cursor
-		sprite.angle = roomPos.getAngleToPoint(InputManager::mousePosX, InputManager::mousePosY) - 90.0;
+		sprite.angle = -roomPos.getAngleToPoint(InputManager::mousePosX, InputManager::mousePosY);
 	}
 }

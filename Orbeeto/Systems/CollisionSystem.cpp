@@ -24,6 +24,7 @@ void CollisionSystem::update() {
 
 			if (collision.checkCollision(eCollide)) {
 				std::cout << "Entity " << entity << " is colliding with Entity " << e << std::endl;
+				std::cout << collision.triangleCollide(eCollide) << std::endl;
 			}
 		}
 	}
