@@ -5,7 +5,7 @@
 #include <SDL_stdinc.h>
 
 
-struct Collision {
+struct PushCollision {
 	int hitWidth;
 	int hitHeight;
 
@@ -19,7 +19,7 @@ struct Collision {
 	/// </summary>
 	/// <param name="check">The other collision component to check for a collision with</param>
 	/// <returns>True if colliding, false otherwise</returns>
-	bool checkCollision(const Collision& check) {
+	bool checkCollision(const PushCollision& check) {
 		bool output = false;
 		if (hitPos.x + hitWidth / 2 >= check.hitPos.x - check.hitWidth / 2
 			&& hitPos.x - hitWidth / 2 <= check.hitPos.x + check.hitWidth / 2
@@ -31,7 +31,7 @@ struct Collision {
 		return output;
 	}
 
-	int intersection(const Collision& other) {
+	int intersection(const PushCollision& other) {
 		Vector2 dist(hitPos.x - other.hitPos.x, hitPos.y - other.hitPos.y);
 		Vector2 minDist((hitWidth + other.hitWidth) / 2, (hitHeight + other.hitHeight) / 2);
 

@@ -11,9 +11,9 @@ struct Sprite {
 	int posX;
 	int posY;
 
-	double angle = 0;
+	double angle = 0;  // The angle the texture should be rotated to
 
-	bool moveWithRoom = true;
+	bool moveWithRoom = true;  // Does this sprite move with the room?
 
 	int tilePosX = 0;
 	int tilePosY = 0;

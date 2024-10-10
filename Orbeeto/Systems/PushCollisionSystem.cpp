@@ -1,4 +1,4 @@
-#include "CollisionSystem.hpp"
+#include "PushCollisionSystem.hpp"
 #include <iostream>
 
 
@@ -6,7 +6,7 @@ void CollisionSystem::init(Coordinator* coord) {
 	coordinator = coord;
 }
 
-void CollisionSystem::pushCollision(Collision& coll1, AccelTransform& trans1, Collision& coll2, AccelTransform& trans2) {
+void CollisionSystem::pushCollision(PushCollision& coll1, AccelTransform& trans1, PushCollision& coll2, AccelTransform& trans2) {
 	if (coll1.canBePushed != true && coll2.canPush == true) return;
 	
 	int side = coll1.intersection(coll2);
@@ -40,7 +40,7 @@ void CollisionSystem::pushCollision(Collision& coll1, AccelTransform& trans1, Co
 void CollisionSystem::update() {
 	for (const auto& entity : mEntities) {
 		auto& accelTransform = coordinator->getComponent<AccelTransform>(entity);
-		auto& collision = coordinator->getComponent<Collision>(entity);
+		auto& collision = coordinator->getComponent<PushCollision>(entity);
 
 		// Assign hitbox to entity center
 		collision.hitPos = accelTransform.pos;
@@ -49,7 +49,7 @@ void CollisionSystem::update() {
 		// TODO: First check if entity should move if collided with
 		for (const auto& e : mEntities) {
 			if (e == entity) continue;
-			auto& eCollide = coordinator->getComponent<Collision>(e);
+			auto& eCollide = coordinator->getComponent<PushCollision>(e);
 
 			if (collision.checkCollision(eCollide)) {
 				auto& eTransform = coordinator->getComponent<AccelTransform>(e);
