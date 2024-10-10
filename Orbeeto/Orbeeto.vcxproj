@@ -139,7 +139,7 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Systems\CollisionSystem.cpp" />
+    <ClCompile Include="Systems\PushCollisionSystem.cpp" />
     <ClCompile Include="Systems\PlayerSystem.cpp" />
     <ClCompile Include="Rooms\Room.cpp" />
     <ClCompile Include="Systems\SpriteSystem.cpp" />
@@ -150,7 +150,7 @@
   <ItemGroup>
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Components\AccelTransform.hpp" />
-    <ClInclude Include="Components\Collision.hpp" />
+    <ClInclude Include="Components\PushCollision.hpp" />
     <ClInclude Include="Components\Player.hpp" />
     <ClInclude Include="ECS\ComponentArray.hpp" />
     <ClInclude Include="ECS\ComponentManager.hpp" />
@@ -159,7 +159,7 @@
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="InputManager.hpp" />
     <ClInclude Include="Components\Sprite.hpp" />
-    <ClInclude Include="Systems\CollisionSystem.hpp" />
+    <ClInclude Include="Systems\PushCollisionSystem.hpp" />
     <ClInclude Include="Systems\PlayerSystem.hpp" />
     <ClInclude Include="Systems\SpriteSystem.hpp" />
     <ClInclude Include="ECS\System.hpp" />

@@ -1,7 +1,7 @@
 #include "Room.hpp"
 
 #include "../Components/AccelTransform.hpp"
-#include "../Components/Collision.hpp"
+#include "../Components/PushCollision.hpp"
 #include "../Components/Player.hpp"
 #include "../Components/Sprite.hpp"
 #include <iostream>
@@ -29,8 +29,8 @@ Room::Room(int roomX, int roomY) {
 		}
 	);
 	Game::coordinator.addComponent<Player>(player, Player{});
-	Game::coordinator.addComponent<Collision>(player,
-		Collision{
+	Game::coordinator.addComponent<PushCollision>(player,
+		PushCollision{
 			64,		// hitbox width
 			64,		// hitbox height
 			Vector2(300, 300)	// hitbox position
@@ -53,8 +53,8 @@ Room::Room(int roomX, int roomY) {
 			.pos = Vector2(500, 500)
 		}
 	);
-	Game::coordinator.addComponent<Collision>(wall,
-		Collision{
+	Game::coordinator.addComponent<PushCollision>(wall,
+		PushCollision{
 			64,		// hitbox width
 			64,		// hitbox height
 			Vector2(500, 500),	// hitbox position

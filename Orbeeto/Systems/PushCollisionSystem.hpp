@@ -3,7 +3,7 @@
 #include "../ECS/Coordinator.hpp"
 
 #include "../Components/AccelTransform.hpp"
-#include "../Components/Collision.hpp"
+#include "../Components/PushCollision.hpp"
 
 
 class CollisionSystem : public System {
@@ -20,8 +20,8 @@ public:
 	/// <param name="trans1">AccelTransform component of instigator entity</param>
 	/// <param name="coll2">Collision component of recipient entity</param>
 	/// <param name="trans2">AccelTransform component of recipient entity</param>
-	static void pushCollision(Collision& coll1, AccelTransform& trans1,
-		Collision& coll2, AccelTransform& trans2);
+	static void pushCollision(PushCollision& coll1, AccelTransform& trans1,
+		PushCollision& coll2, AccelTransform& trans2);
 	
 	void update();
 };

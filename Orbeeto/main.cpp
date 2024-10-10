@@ -8,20 +8,20 @@
 
 #include "ECS/Coordinator.hpp"
 #include "Components/AccelTransform.hpp"
-#include "Components/Collision.hpp"
 #include "Components/Player.hpp"
+#include "Components/PushCollision.hpp"
 #include "Components/Sprite.hpp"
-#include "Systems/CollisionSystem.hpp"
 #include "Systems/PlayerSystem.hpp"
+#include "Systems/PushCollisionSystem.hpp"
 #include "Systems/SpriteSystem.hpp"
 
 
 Game* game = nullptr;
 
-int main(int argc, char* argv[]) {
-	const int FPS = 240;
-	const int frameDelay = 1000 / FPS;
+const int FPS = 240;
+const int frameDelay = 1000 / FPS;
 
+int main(int argc, char* argv[]) {
 	Uint32 frameStart;
 	int frameTime;
 
@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
 
 	// Registering components
 	Game::coordinator.registerComponent<AccelTransform>();
-	Game::coordinator.registerComponent<Collision>();
+	Game::coordinator.registerComponent<PushCollision>();
 	Game::coordinator.registerComponent<Player>();
 	Game::coordinator.registerComponent<Sprite>();
 
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
 	{
 		Signature signature;
 		signature.set(Game::coordinator.getComponentType<AccelTransform>());
-		signature.set(Game::coordinator.getComponentType<Collision>());
+		signature.set(Game::coordinator.getComponentType<PushCollision>());
 
 		Game::coordinator.setSystemSignature<CollisionSystem>(signature);
 	}
