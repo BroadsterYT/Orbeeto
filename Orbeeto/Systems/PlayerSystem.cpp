@@ -1,5 +1,7 @@
 #include "PlayerSystem.hpp"
+#include "../Game.hpp"
 #include "../Components/Sprite.hpp"
+#include "../Components/Collision.hpp"
 #include "../Components/AccelTransform.hpp"
 #include "../Components/Player.hpp"
 
@@ -30,6 +32,38 @@ void PlayerSystem::update() {
 		}
 		if (InputManager::keysPressed[SDLK_d]) {
 			finalAccel.x += accelTransform.accelConst;
+		}
+
+		if (InputManager::mousePressed[SDL_BUTTON_LEFT]) {
+			Entity bullet = coordinator->createEntity();
+
+			coordinator->addComponent<AccelTransform>(bullet,
+				AccelTransform{
+					.pos = Vector2(accelTransform.pos.x + 100, accelTransform.pos.y)
+				}
+			);
+			coordinator->addComponent<Collision>(bullet,
+				Collision{
+					16,
+					16,
+					Vector2(accelTransform.pos.x + 100, accelTransform.pos.y),
+					false,
+					false,
+					true,
+					false
+				}
+			);
+			coordinator->addComponent<Sprite>(bullet,
+				Sprite{
+					Game::renderer,
+					"Assets/bullets.png",
+					32,
+					32,
+					0,
+					0,
+					0,
+				}
+			);
 		}
 
 		accelTransform.accel = finalAccel;

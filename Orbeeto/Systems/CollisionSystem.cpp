@@ -1,4 +1,4 @@
-#include "PushCollisionSystem.hpp"
+#include "CollisionSystem.hpp"
 #include <iostream>
 
 
@@ -6,7 +6,7 @@ void CollisionSystem::init(Coordinator* coord) {
 	coordinator = coord;
 }
 
-void CollisionSystem::pushCollision(PushCollision& coll1, AccelTransform& trans1, PushCollision& coll2, AccelTransform& trans2) {
+void CollisionSystem::pushEntity(Collision& coll1, AccelTransform& trans1, Collision& coll2, AccelTransform& trans2) {
 	if (coll1.canBePushed != true && coll2.canPush == true) return;
 	
 	int side = coll1.intersection(coll2);
@@ -37,23 +37,32 @@ void CollisionSystem::pushCollision(PushCollision& coll1, AccelTransform& trans1
 	}
 }
 
+void CollisionSystem::evaluateCollison(Entity& entity, AccelTransform& eTrans, Collision& eColl, Entity& other, Collision& oColl) {
+	// Pushing entities that can be pushed
+	if (eColl.canBePushed && oColl.canPush) {
+		auto& oTrans = coordinator->getComponent<AccelTransform>(other);
+		this->pushEntity(eColl, eTrans, oColl, oTrans);
+	}
+
+	// Taking damage if entity has stats and is hit by a projectile that does damage
+	if (eColl.canHurt && oColl.isProj) {}
+}
+
 void CollisionSystem::update() {
-	for (const auto& entity : mEntities) {
+	for (Entity entity : mEntities) {
 		auto& accelTransform = coordinator->getComponent<AccelTransform>(entity);
-		auto& collision = coordinator->getComponent<PushCollision>(entity);
+		auto& collision = coordinator->getComponent<Collision>(entity);
 
 		// Assign hitbox to entity center
 		collision.hitPos = accelTransform.pos;
 		
 		// Checking every collidable entity for a collision
-		// TODO: First check if entity should move if collided with
-		for (const auto& e : mEntities) {
+		for (Entity e : mEntities) {
 			if (e == entity) continue;
-			auto& eCollide = coordinator->getComponent<PushCollision>(e);
+			auto& eCollide = coordinator->getComponent<Collision>(e);
 
 			if (collision.checkCollision(eCollide)) {
-				auto& eTransform = coordinator->getComponent<AccelTransform>(e);
-				this->pushCollision(collision, accelTransform, eCollide, eTransform);
+				this->evaluateCollison(entity, accelTransform, collision, e, eCollide);
 			}
 		}
 	}

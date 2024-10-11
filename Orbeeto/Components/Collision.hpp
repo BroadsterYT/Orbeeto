@@ -4,8 +4,17 @@
 #include <iostream>
 #include <SDL_stdinc.h>
 
-
-struct PushCollision {
+/// <summary>
+/// A compent for detecting collisions between entities
+/// </summary>
+/// <param name="hitWidth">The width of the hitbox</param>
+/// <param name="hitHeight">The height of the hitbox</param>
+/// <param name="hitPos">The position of the center of the hitbox. Defaults to (0, 0)</param>
+/// <param name="canBePushed">Can the entity be pushed by others? Defaults to true</param>
+/// <param name="canPush">Can the entity push others? Defaults to true</param>
+/// <param name="isProj">Should the entity be treated as a projectile? Defaults to false</param>
+/// <param name="canHurt">Can the entity be hurt? Defaults to false</param>
+struct Collision {
 	int hitWidth;
 	int hitHeight;
 
@@ -13,13 +22,16 @@ struct PushCollision {
 
 	bool canBePushed = true;
 	bool canPush = true;
+	
+	bool isProj = false;
+	bool canHurt = false;
 
 	/// <summary>
 	/// Checks if the hitbox is colliding with another hitbox.
 	/// </summary>
 	/// <param name="check">The other collision component to check for a collision with</param>
 	/// <returns>True if colliding, false otherwise</returns>
-	bool checkCollision(const PushCollision& check) {
+	bool checkCollision(const Collision& check) {
 		bool output = false;
 		if (hitPos.x + hitWidth / 2 >= check.hitPos.x - check.hitWidth / 2
 			&& hitPos.x - hitWidth / 2 <= check.hitPos.x + check.hitWidth / 2
@@ -31,7 +43,13 @@ struct PushCollision {
 		return output;
 	}
 
-	int intersection(const PushCollision& other) {
+	/// <summary>
+	/// Returns the side that this entity is colliding with the other. NOTE: This should
+	/// only be called after a collision has been detected!
+	/// </summary>
+	/// <param name="other">The collision component of the entity that this one is colliding with</param>
+	/// <returns>The side of the other entity that this entity hit</returns>
+	int intersection(const Collision& other) {
 		Vector2 dist(hitPos.x - other.hitPos.x, hitPos.y - other.hitPos.y);
 		Vector2 minDist((hitWidth + other.hitWidth) / 2, (hitHeight + other.hitHeight) / 2);
 

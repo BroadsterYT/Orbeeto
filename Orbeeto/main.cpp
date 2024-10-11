@@ -8,11 +8,14 @@
 
 #include "ECS/Coordinator.hpp"
 #include "Components/AccelTransform.hpp"
+#include "Components/Defense.hpp"
+#include "Components/Hp.hpp"
 #include "Components/Player.hpp"
-#include "Components/PushCollision.hpp"
+#include "Components/Collision.hpp"
 #include "Components/Sprite.hpp"
+
+#include "Systems/CollisionSystem.hpp"
 #include "Systems/PlayerSystem.hpp"
-#include "Systems/PushCollisionSystem.hpp"
 #include "Systems/SpriteSystem.hpp"
 
 
@@ -25,11 +28,13 @@ int main(int argc, char* argv[]) {
 	Uint32 frameStart;
 	int frameTime;
 
-	game = new Game("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, false);
+	game = new Game("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, false);
 
 	// Registering components
 	Game::coordinator.registerComponent<AccelTransform>();
-	Game::coordinator.registerComponent<PushCollision>();
+	Game::coordinator.registerComponent<Collision>();
+	Game::coordinator.registerComponent<Defense>();
+	Game::coordinator.registerComponent<Hp>();
 	Game::coordinator.registerComponent<Player>();
 	Game::coordinator.registerComponent<Sprite>();
 
@@ -40,7 +45,7 @@ int main(int argc, char* argv[]) {
 	{
 		Signature signature;
 		signature.set(Game::coordinator.getComponentType<AccelTransform>());
-		signature.set(Game::coordinator.getComponentType<PushCollision>());
+		signature.set(Game::coordinator.getComponentType<Collision>());
 
 		Game::coordinator.setSystemSignature<CollisionSystem>(signature);
 	}

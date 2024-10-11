@@ -22,6 +22,8 @@ void SpriteSystem::render(SDL_Renderer* renderer) {
 			sprite.destRect.y = accelTransform.pos.y - sprite.tileHeight / 2;
 		}
 
-		SDL_RenderCopyEx(sprite.renderer, sprite.image, NULL, &sprite.destRect, sprite.angle, NULL, SDL_FLIP_NONE);
+		sprite.image = TextureManager::loadTexture(Game::renderer, sprite.fileLocation);
+
+		SDL_RenderCopyEx(sprite.renderer, sprite.image, &sprite.srcRect, &sprite.destRect, sprite.angle, NULL, SDL_FLIP_NONE);
 	}
 }

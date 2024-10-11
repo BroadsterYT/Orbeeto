@@ -1,7 +1,9 @@
 #include "Room.hpp"
 
 #include "../Components/AccelTransform.hpp"
-#include "../Components/PushCollision.hpp"
+#include "../Components/Collision.hpp"
+#include "../Components/Defense.hpp"
+#include "../Components/Hp.hpp"
 #include "../Components/Player.hpp"
 #include "../Components/Sprite.hpp"
 #include <iostream>
@@ -16,7 +18,7 @@ Room::Room(int roomX, int roomY) {
 	Game::coordinator.addComponent<Sprite>(player,
 		Sprite{
 			Game::renderer,
-			"assets/orbeeto.png",
+			"Assets/orbeeto.png",
 			64,
 			64,
 			0,
@@ -29,19 +31,26 @@ Room::Room(int roomX, int roomY) {
 		}
 	);
 	Game::coordinator.addComponent<Player>(player, Player{});
-	Game::coordinator.addComponent<PushCollision>(player,
-		PushCollision{
+	Game::coordinator.addComponent<Collision>(player,
+		Collision{
 			64,		// hitbox width
 			64,		// hitbox height
-			Vector2(300, 300)	// hitbox position
+			Vector2(300, 300),	// hitbox position
+			true,
+			true,
+			false,
+			true,
 		}
 	);
+	Game::coordinator.addComponent<Hp>(player, Hp{ 50, 50 });
+	Game::coordinator.addComponent<Defense>(player, Defense{ 10, 10 });
+
 
 	// Wall
 	Game::coordinator.addComponent<Sprite>(wall,
 		Sprite{
 			Game::renderer,
-			"assets/orbeeto.png",
+			"Assets/orbeeto.png",
 			64,
 			64,
 			0,
@@ -53,11 +62,11 @@ Room::Room(int roomX, int roomY) {
 			.pos = Vector2(500, 500)
 		}
 	);
-	Game::coordinator.addComponent<PushCollision>(wall,
-		PushCollision{
-			64,		// hitbox width
-			64,		// hitbox height
-			Vector2(500, 500),	// hitbox position
+	Game::coordinator.addComponent<Collision>(wall,
+		Collision{
+			64,
+			64,
+			Vector2(500, 500),
 			false,
 		}
 	);
