@@ -154,6 +154,7 @@
     <ClInclude Include="Components\Hp.hpp" />
     <ClInclude Include="Components\Collision.hpp" />
     <ClInclude Include="Components\Player.hpp" />
+    <ClInclude Include="Components\PlayerGun.hpp" />
     <ClInclude Include="ECS\ComponentArray.hpp" />
     <ClInclude Include="ECS\ComponentManager.hpp" />
     <ClInclude Include="ECS\Coordinator.hpp" />

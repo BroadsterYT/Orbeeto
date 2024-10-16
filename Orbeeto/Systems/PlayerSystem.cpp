@@ -55,13 +55,11 @@ void PlayerSystem::update() {
 			);
 			coordinator->addComponent<Sprite>(bullet,
 				Sprite{
-					Game::renderer,
-					"Assets/bullets.png",
-					32,
-					32,
-					0,
-					0,
-					0,
+					.tileWidth = 32,
+					.tileHeight = 32,
+					.posX = 0,
+					.posY = 0,
+					.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/bullets.png"),
 				}
 			);
 		}

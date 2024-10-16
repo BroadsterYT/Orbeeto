@@ -122,5 +122,14 @@
     <ClInclude Include="Camera.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Components\Defense.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\Hp.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\PlayerGun.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

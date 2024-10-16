@@ -2,6 +2,7 @@
 #include "SDL.h"
 #include "../ECS/Coordinator.hpp"
 #include "../ECS/System.hpp"
+#include "../Components/Sprite.hpp"
 
 
 class SpriteSystem : public System {

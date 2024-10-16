@@ -17,12 +17,11 @@ Room::Room(int roomX, int roomY) {
 	// Creating a test player
 	Game::coordinator.addComponent<Sprite>(player,
 		Sprite{
-			Game::renderer,
-			"Assets/orbeeto.png",
-			64,
-			64,
-			0,
-			0
+			.tileWidth = 64,
+			.tileHeight = 64,
+			.posX = 0,
+			.posY = 0,
+			.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png")
 		}
 	);
 	Game::coordinator.addComponent<AccelTransform>(player,
@@ -49,12 +48,11 @@ Room::Room(int roomX, int roomY) {
 	// Wall
 	Game::coordinator.addComponent<Sprite>(wall,
 		Sprite{
-			Game::renderer,
-			"Assets/orbeeto.png",
-			64,
-			64,
-			0,
-			0
+			.tileWidth = 64,
+			.tileHeight = 64,
+			.posX = 0,
+			.posY = 0,
+			.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png")
 		}
 	);
 	Game::coordinator.addComponent<AccelTransform>(wall,

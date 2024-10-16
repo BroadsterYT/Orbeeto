@@ -1,6 +1,5 @@
 #include "SpriteSystem.hpp"
 #include "../Components/AccelTransform.hpp"
-#include "../Components/Sprite.hpp"
 #include "../Rooms/Room.hpp"
 
 
@@ -22,8 +21,6 @@ void SpriteSystem::render(SDL_Renderer* renderer) {
 			sprite.destRect.y = accelTransform.pos.y - sprite.tileHeight / 2;
 		}
 
-		sprite.image = TextureManager::loadTexture(Game::renderer, sprite.fileLocation);
-
-		SDL_RenderCopyEx(sprite.renderer, sprite.image, &sprite.srcRect, &sprite.destRect, sprite.angle, NULL, SDL_FLIP_NONE);
+		SDL_RenderCopyEx(renderer, sprite.spriteSheet, &sprite.srcRect, &sprite.destRect, sprite.angle, NULL, SDL_FLIP_NONE);
 	}
 }

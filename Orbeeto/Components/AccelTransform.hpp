@@ -8,7 +8,7 @@ struct AccelTransform {
 	Vector2 accel = { 0.0f, 0.0f };
 	float accelConst = 0.108f;
 
-	float fric = -0.03;
+	float fric = -0.03f;
 
 	void accelMovement() {
 		accel.x += vel.x * fric;
