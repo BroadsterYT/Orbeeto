@@ -140,6 +140,7 @@
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Systems\CollisionSystem.cpp" />
+    <ClCompile Include="Systems\GunSystem.cpp" />
     <ClCompile Include="Systems\PlayerSystem.cpp" />
     <ClCompile Include="Rooms\Room.cpp" />
     <ClCompile Include="Systems\SpriteSystem.cpp" />
@@ -163,6 +164,7 @@
     <ClInclude Include="InputManager.hpp" />
     <ClInclude Include="Components\Sprite.hpp" />
     <ClInclude Include="Systems\CollisionSystem.hpp" />
+    <ClInclude Include="Systems\GunSystem.hpp" />
     <ClInclude Include="Systems\PlayerSystem.hpp" />
     <ClInclude Include="Systems\SpriteSystem.hpp" />
     <ClInclude Include="ECS\System.hpp" />

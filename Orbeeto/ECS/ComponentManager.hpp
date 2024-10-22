@@ -40,7 +40,7 @@ public:
 		mComponentArrays.insert({ typeName, std::make_shared<ComponentArray<T>>() });
 		
 		// Increment the value so that the next component registered will be different
-		mNextComponentType++;
+		++mNextComponentType;
 	}
 
 	template <typename T>

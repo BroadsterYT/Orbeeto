@@ -5,8 +5,10 @@
 #include "../Components/Defense.hpp"
 #include "../Components/Hp.hpp"
 #include "../Components/Player.hpp"
+#include "../Components/PlayerGun.hpp"
 #include "../Components/Sprite.hpp"
 #include <iostream>
+
 
 Camera Room::camera = Camera();
 
@@ -15,21 +17,11 @@ Room::Room(int roomX, int roomY) {
 	this->roomY = roomY;
 
 	// Creating a test player
-	Game::coordinator.addComponent<Sprite>(player,
-		Sprite{
-			.tileWidth = 64,
-			.tileHeight = 64,
-			.posX = 0,
-			.posY = 0,
-			.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png")
-		}
-	);
 	Game::coordinator.addComponent<AccelTransform>(player,
 		AccelTransform{
 			.pos = Vector2(300, 300)
 		}
-	);
-	Game::coordinator.addComponent<Player>(player, Player{});
+		);
 	Game::coordinator.addComponent<Collision>(player,
 		Collision{
 			64,		// hitbox width
@@ -40,13 +32,11 @@ Room::Room(int roomX, int roomY) {
 			false,
 			true,
 		}
-	);
-	Game::coordinator.addComponent<Hp>(player, Hp{ 50, 50 });
+		);
 	Game::coordinator.addComponent<Defense>(player, Defense{ 10, 10 });
-
-
-	// Wall
-	Game::coordinator.addComponent<Sprite>(wall,
+	Game::coordinator.addComponent<Hp>(player, Hp{ 50, 50 });
+	Game::coordinator.addComponent<Player>(player, Player{});
+	Game::coordinator.addComponent<Sprite>(player,
 		Sprite{
 			.tileWidth = 64,
 			.tileHeight = 64,
@@ -54,24 +44,61 @@ Room::Room(int roomX, int roomY) {
 			.posY = 0,
 			.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png")
 		}
-	);
-	Game::coordinator.addComponent<AccelTransform>(wall,
-		AccelTransform{
-			.pos = Vector2(500, 500)
+		);
+	
+
+	// Player left gun test
+	Game::coordinator.addComponent<AccelTransform>(leftGun,
+		AccelTransform{.pos = Vector2(0, 0)}
+		);
+	Game::coordinator.addComponent<PlayerGun>(leftGun,
+		PlayerGun{
+			.owner = &player,
+			.cooldown = 10.0f,
+			.heatDissipation = 5.0f
 		}
-	);
-	Game::coordinator.addComponent<Collision>(wall,
-		Collision{
-			64,
-			64,
-			Vector2(500, 500),
-			false,
+		);
+	Game::coordinator.addComponent<Sprite>(leftGun,
+		Sprite{
+			.tileWidth = 64,
+			.tileHeight = 64,
+			.posX = 0,
+			.posY = 0,
+			.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeetoguns.png")
 		}
-	);
+		);
+
+	loadRoomEntities(0, 0);
 }
 
-void Room::loadRoomLayout(int x, int y) {
+void Room::loadRoomEntities(int x, int y) {
+	if (roomX == 0 && roomY == 0) {
+		const Entity& wall1 = Game::coordinator.createEntity();
 
+		Game::coordinator.addComponent<AccelTransform>(wall1, AccelTransform{.pos = Vector2(500, 500)});
+		Game::coordinator.addComponent<Collision>(wall1,
+			Collision{
+				64,
+				64,
+				Vector2(500, 500),
+				false,
+				true,
+			}
+			);
+		Game::coordinator.addComponent<Sprite>(wall1,
+			Sprite{
+				.tileWidth = 64,
+				.tileHeight = 64,
+				.posX = 0,
+				.posY = 0,
+				.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png")
+			}
+			);
+	}
+	
+	else {
+
+	}
 }
 
 void Room::recordRoomLayout() {

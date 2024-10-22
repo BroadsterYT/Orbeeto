@@ -12,15 +12,30 @@ private:
 	bool canScrollX;
 	bool canScrollY;
 
+	std::vector<Entity> roomEntities;
+	
 	const Entity& player = Game::coordinator.createEntity();
-	const Entity& wall = Game::coordinator.createEntity();
+	const Entity& leftGun = Game::coordinator.createEntity();
 
 public:
 	Room(int roomX, int roomY);
 
 	static Camera camera;
 
-	void loadRoomLayout(int x, int y);
+	/// <summary>
+	/// Loads all room entities.
+	/// This does not include entities like enemies, bullets, or puzzle objects.
+	/// </summary>
+	/// <param name="x">The x-value of the room in the room grid</param>
+	/// <param name="y">The y-value of the room in the room grid</param>
+	void loadRoomEntities(int x, int y);
+	/// <summary>
+	/// Loads all entities unrelated to the room layout.
+	/// Includes enemies, bullets, puzzle objects, etc.
+	/// </summary>
+	/// <param name="x">The x-value of the room in the room grid</param>
+	/// <param name="y">The y-value of the room in the room grid</param>
+	void loadOutsideEntities(int x, int y);
 	void recordRoomLayout();
 
 	void update();

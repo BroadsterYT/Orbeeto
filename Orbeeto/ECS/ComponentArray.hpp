@@ -3,6 +3,7 @@
 #include <cassert>
 #include <unordered_map>
 #include "Types.hpp"
+#include <iostream>
 
 
 class IComponentArray {
@@ -35,7 +36,7 @@ public:
 		mEntityToIndexMap[entity] = newIndex;
 		mEntityToIndexMap[newIndex] = entity;
 		mComponentArray[newIndex] = component;
-		mSize++;
+		++mSize;
 	}
 
 	void removeData(Entity entity) {
@@ -54,7 +55,7 @@ public:
 		mEntityToIndexMap.erase(entity);
 		mIndexToEntityMap.erase(indexOfLastElement);
 
-		mSize--;
+		--mSize;
 	}
 
 	T& getData(Entity entity) {

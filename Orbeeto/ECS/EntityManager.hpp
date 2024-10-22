@@ -23,7 +23,7 @@ public:
 
 		Entity id = mAvailableEntities.front();
 		mAvailableEntities.pop();
-		mLivingEntityCount++;
+		++mLivingEntityCount;
 
 		return id;
 	}
@@ -36,7 +36,7 @@ public:
 
 		// Put the destroyed ID at the back of the queue
 		mAvailableEntities.push(entity);
-		mLivingEntityCount--;
+		--mLivingEntityCount;
 	}
 
 	void setSignature(Entity entity, Signature signature) {

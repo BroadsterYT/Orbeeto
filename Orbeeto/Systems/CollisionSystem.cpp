@@ -7,7 +7,7 @@ void CollisionSystem::init(Coordinator* coord) {
 }
 
 void CollisionSystem::pushEntity(Collision& coll1, AccelTransform& trans1, Collision& coll2, AccelTransform& trans2) {
-	if (coll1.canBePushed != true && coll2.canPush == true) return;
+	if (!coll1.canBePushed && coll2.canPush) return;
 	
 	int side = coll1.intersection(coll2);
 
@@ -45,7 +45,9 @@ void CollisionSystem::evaluateCollison(Entity& entity, AccelTransform& eTrans, C
 	}
 
 	// Taking damage if entity has stats and is hit by a projectile that does damage
-	if (eColl.canHurt && oColl.isProj) {}
+	if (eColl.canHurt && oColl.isProj) {
+			
+	}
 }
 
 void CollisionSystem::update() {
