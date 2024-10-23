@@ -33,19 +33,10 @@
     <ClCompile Include="Vector2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Systems\SpriteSystem.cpp">
-      <Filter>ECS\Systems</Filter>
-    </ClCompile>
     <ClCompile Include="InputManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Game.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Systems\PlayerSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Systems\CollisionSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Rooms\Room.cpp">
@@ -57,12 +48,6 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Systems\GunSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Systems\BulletSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TextureManager.hpp">
@@ -71,32 +56,8 @@
     <ClInclude Include="Vector2.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ECS\EntityManager.hpp">
-      <Filter>ECS</Filter>
-    </ClInclude>
-    <ClInclude Include="ECS\Types.hpp">
-      <Filter>ECS</Filter>
-    </ClInclude>
-    <ClInclude Include="ECS\ComponentArray.hpp">
-      <Filter>ECS</Filter>
-    </ClInclude>
-    <ClInclude Include="ECS\ComponentManager.hpp">
-      <Filter>ECS</Filter>
-    </ClInclude>
-    <ClInclude Include="ECS\System.hpp">
-      <Filter>ECS</Filter>
-    </ClInclude>
-    <ClInclude Include="ECS\SystemManager.hpp">
-      <Filter>ECS</Filter>
-    </ClInclude>
-    <ClInclude Include="ECS\Coordinator.hpp">
-      <Filter>ECS</Filter>
-    </ClInclude>
     <ClInclude Include="Components\Sprite.hpp">
       <Filter>ECS\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Systems\SpriteSystem.hpp">
-      <Filter>ECS\Systems</Filter>
     </ClInclude>
     <ClInclude Include="InputManager.hpp">
       <Filter>Header Files</Filter>
@@ -110,16 +71,10 @@
     <ClInclude Include="Components\Transform.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Systems\PlayerSystem.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Components\Player.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Components\Collision.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Systems\CollisionSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WindowManager.hpp">
@@ -137,13 +92,16 @@
     <ClInclude Include="Components\PlayerGun.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Systems\GunSystem.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Components\Bullet.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Systems\BulletSystem.hpp">
+    <ClInclude Include="ECS.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Systems\SpriteSystem.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Systems\PlayerSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

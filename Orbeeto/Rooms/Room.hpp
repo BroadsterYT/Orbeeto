@@ -2,6 +2,7 @@
 #include "../Vector2.hpp"
 #include "../Game.hpp"
 #include "../Camera.hpp"
+#include "../ECS.hpp"
 
 
 class Room {
@@ -12,10 +13,7 @@ private:
 	bool canScrollX;
 	bool canScrollY;
 
-	std::vector<Entity> roomEntities;
-	
-	const Entity& player = Game::coordinator.createEntity();
-	const Entity& leftGun = Game::coordinator.createEntity();
+	EntityID player = Game::scene.newEntity();
 
 public:
 	Room(int roomX, int roomY);

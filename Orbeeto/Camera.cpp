@@ -3,8 +3,7 @@
 #include "WindowManager.hpp"
 
 
-Camera::Camera(Coordinator* coord, int posX, int posY, int width, int height) {
-	coordinator = coord;
+Camera::Camera(int posX, int posY, int width, int height) {
 	camera = SDL_Rect(posX, posY, width, height);
 }
 
@@ -16,9 +15,7 @@ int Camera::getY() {
 	return camera.y;
 }
 
-void Camera::focus(const Entity& ref) {
-	auto& accelTransform = coordinator->getComponent<Transform>(ref);
-
-	camera.x = accelTransform.pos.x - WindowManager::SCREENWIDTH / 2;
-	camera.y = accelTransform.pos.y - WindowManager::SCREENHEIGHT / 2;
+void Camera::focus(int posX, int posY) {
+	camera.x = posX - WindowManager::SCREENWIDTH / 2;
+	camera.y = posY - WindowManager::SCREENHEIGHT / 2;
 }

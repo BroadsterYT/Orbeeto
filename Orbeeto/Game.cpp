@@ -7,11 +7,9 @@
 
 SDL_Renderer* Game::renderer = nullptr;
 
-Coordinator Game::coordinator;
+Scene Game::scene;
 
 Game::Game(const char* title, int posX, int posY, int width, int height, bool fullscreen) {
-	Game::coordinator.init();
-
 	int flags = 0;
 	if (fullscreen) {
 		flags = SDL_WINDOW_FULLSCREEN;
@@ -80,7 +78,10 @@ void Game::handleEvents() {
 	}
 }
 
-void Game::update() {}
+void Game::update() {
+
+	// Rendering
+}
 
 void Game::clean() {
 	SDL_DestroyWindow(window);

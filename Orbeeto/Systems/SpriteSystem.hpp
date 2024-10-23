@@ -1,16 +1,23 @@
 #pragma once
-#include "SDL.h"
-#include "../ECS/Coordinator.hpp"
-#include "../ECS/System.hpp"
+#include "../ECS.hpp"
 #include "../Components/Sprite.hpp"
+#include "../Components/Transform.hpp"
 
 
-class SpriteSystem : public System {
-private:
-	Coordinator* coordinator;
+void SpriteSystem(Scene& scene, SDL_Renderer* renderer) {
+	for (EntityID entity : SceneView<Sprite, Transform>(scene)) {
+		Sprite* sprite = scene.get<Sprite>(entity);
+		Transform* transform = scene.get<Transform>(entity);
 
-public:
-	void init(Coordinator* coord);
-	void render(SDL_Renderer* renderer);
-	void update();
-};
+		if (sprite->moveWithRoom) {
+			sprite->destRect.x = transform->pos.x - sprite->tileWidth / 2 - Room::camera.getX();
+			sprite->destRect.y = transform->pos.y - sprite->tileHeight / 2 - Room::camera.getY();
+		}
+		else {
+			sprite->destRect.x = transform->pos.x - sprite->tileWidth / 2;
+			sprite->destRect.y = transform->pos.y - sprite->tileHeight / 2;
+		}
+
+		SDL_RenderCopyEx(renderer, sprite->spriteSheet, &sprite->srcRect, &sprite->destRect, sprite->angle, NULL, SDL_FLIP_NONE);
+	}
+}

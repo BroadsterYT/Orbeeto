@@ -6,7 +6,6 @@
 #include "Rooms/Room.hpp"
 #include "TextureManager.hpp"
 
-#include "ECS/Coordinator.hpp"
 #include "Components/Bullet.hpp"
 #include "Components/Collision.hpp"
 #include "Components/Defense.hpp"
@@ -16,14 +15,12 @@
 #include "Components/Sprite.hpp"
 #include "Components/Transform.hpp"
 
-#include "Systems/BulletSystem.hpp"
-#include "Systems/CollisionSystem.hpp"
-#include "Systems/GunSystem.hpp"
 #include "Systems/PlayerSystem.hpp"
 #include "Systems/SpriteSystem.hpp"
 
 
 Game* game = nullptr;
+int s_componentCounter = 0;
 
 const int FPS = 240;
 const int frameDelay = 1000 / FPS;
@@ -35,68 +32,14 @@ int main(int argc, char* argv[]) {
 	game = new Game("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, false);
 
 	// Registering components
-	Game::coordinator.registerComponent<Bullet>();
-	Game::coordinator.registerComponent<Collision>();
-	Game::coordinator.registerComponent<Defense>();
-	Game::coordinator.registerComponent<Hp>();
-	Game::coordinator.registerComponent<Player>();
-	Game::coordinator.registerComponent<PlayerGun>();
-	Game::coordinator.registerComponent<Sprite>();
-	Game::coordinator.registerComponent<Transform>();
-
-
-	// ----- Registering systems ----- //
-	auto bulletSystem = Game::coordinator.registerSystem<BulletSystem>();
-	{
-		Signature sig;
-		sig.set(Game::coordinator.getComponentType<Bullet>());
-		sig.set(Game::coordinator.getComponentType<Transform>());
-
-		Game::coordinator.setSystemSignature<BulletSystem>(sig);
-	}
-	bulletSystem->init(&Game::coordinator);
-
-	auto collisionSystem = Game::coordinator.registerSystem<CollisionSystem>();
-	{
-		Signature sig;
-		sig.set(Game::coordinator.getComponentType<Transform>());
-		sig.set(Game::coordinator.getComponentType<Collision>());
-
-		Game::coordinator.setSystemSignature<CollisionSystem>(sig);
-	}
-	collisionSystem->init(&Game::coordinator);
-
-	auto gunSystem = Game::coordinator.registerSystem<GunSystem>();
-	{
-		Signature sig;
-		sig.set(Game::coordinator.getComponentType<Transform>());
-		sig.set(Game::coordinator.getComponentType<PlayerGun>());
-		sig.set(Game::coordinator.getComponentType<Sprite>());
-
-		Game::coordinator.setSystemSignature<GunSystem>(sig);
-	}
-	gunSystem->init(&Game::coordinator);
-
-	auto playerSystem = Game::coordinator.registerSystem<PlayerSystem>();
-	{
-		Signature sig;
-		sig.set(Game::coordinator.getComponentType<Transform>());
-		sig.set(Game::coordinator.getComponentType<Sprite>());
-		sig.set(Game::coordinator.getComponentType<Player>());
-
-		Game::coordinator.setSystemSignature<PlayerSystem>(sig);
-	}
-	playerSystem->init(&Game::coordinator);
-
-	auto spriteSystem = Game::coordinator.registerSystem<SpriteSystem>();
-	{
-		Signature sig;
-		sig.set(Game::coordinator.getComponentType<Transform>());
-		sig.set(Game::coordinator.getComponentType<Sprite>());
-
-		Game::coordinator.setSystemSignature<SpriteSystem>(sig);
-	}
-	spriteSystem->init(&Game::coordinator);
+	std::cout << "Component ID: " << GetId<Bullet>() << std::endl;
+	std::cout << "Component ID: " << GetId<Collision>() << std::endl;
+	std::cout << "Component ID: " << GetId<Defense>() << std::endl;
+	std::cout << "Component ID: " << GetId<Hp>() << std::endl;
+	std::cout << "Component ID: " << GetId<Player>() << std::endl;
+	std::cout << "Component ID: " << GetId<PlayerGun>() << std::endl;
+	std::cout << "Component ID: " << GetId<Sprite>() << std::endl;
+	std::cout << "Component ID: " << GetId<Transform>() << std::endl;
 
 	// ------------------------------- //
 
@@ -112,22 +55,13 @@ int main(int argc, char* argv[]) {
 		// ---------- Handling events ---------- //
 		game->handleEvents();
 
+		PlayerSystem(Game::scene);
+
 		// Update game components here
 		room.update();
 
-		collisionSystem->update();
-		gunSystem->update();
-		playerSystem->update();
-
-		bulletSystem->update();
-		bulletSystem->killAbandoned();
-
-
-		
-		// Rendering
 		SDL_RenderClear(Game::renderer);
-		spriteSystem->render(Game::renderer);
-
+		SpriteSystem(Game::scene, Game::renderer);
 		SDL_RenderPresent(Game::renderer);
 
 		frameTime = SDL_GetTicks() - frameStart;  // Time in ms it takes to handle events, update, and render
