@@ -2,7 +2,7 @@
 #include "../ECS/System.hpp"
 #include "../ECS/Coordinator.hpp"
 
-#include "../Components/AccelTransform.hpp"
+#include "../Components/Transform.hpp"
 #include "../Components/Collision.hpp"
 
 
@@ -20,8 +20,8 @@ public:
 	/// <param name="trans1">AccelTransform component of instigator entity</param>
 	/// <param name="coll2">Collision component of recipient entity</param>
 	/// <param name="trans2">AccelTransform component of recipient entity</param>
-	static void pushEntity(Collision& coll1, AccelTransform& trans1,
-		Collision& coll2, AccelTransform& trans2);
+	static void pushEntity(Collision& coll1, Transform& trans1,
+		Collision& coll2, Transform& trans2);
 	
 	/// <summary>
 	/// Evaluates the fields of the collison components of each entity
@@ -31,7 +31,7 @@ public:
 	/// <param name="eColl"></param>
 	/// <param name="other"></param>
 	/// <param name="oColl"></param>
-	void evaluateCollison(Entity& entity, AccelTransform& eTrans, Collision& eColl,
+	void evaluateCollison(Entity& entity, Transform& eTrans, Collision& eColl,
 		Entity& other, Collision& oColl);
 	void update();
 };

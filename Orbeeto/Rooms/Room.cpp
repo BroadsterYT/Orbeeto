@@ -1,6 +1,6 @@
 #include "Room.hpp"
 
-#include "../Components/AccelTransform.hpp"
+#include "../Components/Transform.hpp"
 #include "../Components/Collision.hpp"
 #include "../Components/Defense.hpp"
 #include "../Components/Hp.hpp"
@@ -17,8 +17,8 @@ Room::Room(int roomX, int roomY) {
 	this->roomY = roomY;
 
 	// Creating a test player
-	Game::coordinator.addComponent<AccelTransform>(player,
-		AccelTransform{
+	Game::coordinator.addComponent<Transform>(player,
+		Transform{
 			.pos = Vector2(300, 300)
 		}
 		);
@@ -48,8 +48,8 @@ Room::Room(int roomX, int roomY) {
 	
 
 	// Player left gun test
-	Game::coordinator.addComponent<AccelTransform>(leftGun,
-		AccelTransform{.pos = Vector2(0, 0)}
+	Game::coordinator.addComponent<Transform>(leftGun,
+		Transform{.pos = Vector2(0, 0)}
 		);
 	Game::coordinator.addComponent<PlayerGun>(leftGun,
 		PlayerGun{
@@ -75,7 +75,7 @@ void Room::loadRoomEntities(int x, int y) {
 	if (roomX == 0 && roomY == 0) {
 		const Entity& wall1 = Game::coordinator.createEntity();
 
-		Game::coordinator.addComponent<AccelTransform>(wall1, AccelTransform{.pos = Vector2(500, 500)});
+		Game::coordinator.addComponent<Transform>(wall1, Transform{.pos = Vector2(500, 500)});
 		Game::coordinator.addComponent<Collision>(wall1,
 			Collision{
 				64,

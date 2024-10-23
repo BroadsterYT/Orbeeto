@@ -15,6 +15,8 @@ public:
 	double getAngleToPoint(const int& x, const int& y);
 	double getMagnitude();
 
+	void rotate(const double x);
+
 	Vector2 operator+(const Vector2& other);
 	Vector2 operator-(const Vector2& other);
 	Vector2 operator*(const float& val);

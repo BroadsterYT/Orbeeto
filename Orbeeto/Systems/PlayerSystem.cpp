@@ -2,7 +2,7 @@
 #include "../Game.hpp"
 #include "../Components/Sprite.hpp"
 #include "../Components/Collision.hpp"
-#include "../Components/AccelTransform.hpp"
+#include "../Components/Transform.hpp"
 #include "../Components/Player.hpp"
 
 #include "../InputManager.hpp"
@@ -15,7 +15,7 @@ void PlayerSystem::init(Coordinator* coord) {
 
 void PlayerSystem::update() {
 	for (const auto& entity : mEntities) {
-		auto& accelTrans = coordinator->getComponent<AccelTransform>(entity);
+		auto& accelTrans = coordinator->getComponent<Transform>(entity);
 		auto& sprite = coordinator->getComponent<Sprite>(entity);
 		auto& player = coordinator->getComponent<Player>(entity);
 

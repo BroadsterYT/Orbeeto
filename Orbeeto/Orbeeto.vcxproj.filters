@@ -60,6 +60,9 @@
     <ClCompile Include="Systems\GunSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Systems\BulletSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TextureManager.hpp">
@@ -104,7 +107,7 @@
     <ClInclude Include="Rooms\Room.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Components\AccelTransform.hpp">
+    <ClInclude Include="Components\Transform.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Systems\PlayerSystem.hpp">
@@ -135,6 +138,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Systems\GunSystem.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\Bullet.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Systems\BulletSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

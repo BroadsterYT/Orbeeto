@@ -1,5 +1,5 @@
 #include "Camera.hpp"
-#include "Components/AccelTransform.hpp"
+#include "Components/Transform.hpp"
 #include "WindowManager.hpp"
 
 
@@ -17,7 +17,7 @@ int Camera::getY() {
 }
 
 void Camera::focus(const Entity& ref) {
-	auto& accelTransform = coordinator->getComponent<AccelTransform>(ref);
+	auto& accelTransform = coordinator->getComponent<Transform>(ref);
 
 	camera.x = accelTransform.pos.x - WindowManager::SCREENWIDTH / 2;
 	camera.y = accelTransform.pos.y - WindowManager::SCREENHEIGHT / 2;

@@ -7,14 +7,16 @@
 #include "TextureManager.hpp"
 
 #include "ECS/Coordinator.hpp"
-#include "Components/AccelTransform.hpp"
+#include "Components/Bullet.hpp"
+#include "Components/Collision.hpp"
 #include "Components/Defense.hpp"
 #include "Components/Hp.hpp"
 #include "Components/Player.hpp"
 #include "Components/PlayerGun.hpp"
-#include "Components/Collision.hpp"
 #include "Components/Sprite.hpp"
+#include "Components/Transform.hpp"
 
+#include "Systems/BulletSystem.hpp"
 #include "Systems/CollisionSystem.hpp"
 #include "Systems/GunSystem.hpp"
 #include "Systems/PlayerSystem.hpp"
@@ -33,21 +35,31 @@ int main(int argc, char* argv[]) {
 	game = new Game("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, false);
 
 	// Registering components
-	Game::coordinator.registerComponent<AccelTransform>();
+	Game::coordinator.registerComponent<Bullet>();
 	Game::coordinator.registerComponent<Collision>();
 	Game::coordinator.registerComponent<Defense>();
-	Game::coordinator.registerComponent<PlayerGun>();
 	Game::coordinator.registerComponent<Hp>();
 	Game::coordinator.registerComponent<Player>();
+	Game::coordinator.registerComponent<PlayerGun>();
 	Game::coordinator.registerComponent<Sprite>();
+	Game::coordinator.registerComponent<Transform>();
 
 
 	// ----- Registering systems ----- //
+	auto bulletSystem = Game::coordinator.registerSystem<BulletSystem>();
+	{
+		Signature sig;
+		sig.set(Game::coordinator.getComponentType<Bullet>());
+		sig.set(Game::coordinator.getComponentType<Transform>());
+
+		Game::coordinator.setSystemSignature<BulletSystem>(sig);
+	}
+	bulletSystem->init(&Game::coordinator);
 
 	auto collisionSystem = Game::coordinator.registerSystem<CollisionSystem>();
 	{
 		Signature sig;
-		sig.set(Game::coordinator.getComponentType<AccelTransform>());
+		sig.set(Game::coordinator.getComponentType<Transform>());
 		sig.set(Game::coordinator.getComponentType<Collision>());
 
 		Game::coordinator.setSystemSignature<CollisionSystem>(sig);
@@ -57,7 +69,7 @@ int main(int argc, char* argv[]) {
 	auto gunSystem = Game::coordinator.registerSystem<GunSystem>();
 	{
 		Signature sig;
-		sig.set(Game::coordinator.getComponentType<AccelTransform>());
+		sig.set(Game::coordinator.getComponentType<Transform>());
 		sig.set(Game::coordinator.getComponentType<PlayerGun>());
 		sig.set(Game::coordinator.getComponentType<Sprite>());
 
@@ -68,7 +80,7 @@ int main(int argc, char* argv[]) {
 	auto playerSystem = Game::coordinator.registerSystem<PlayerSystem>();
 	{
 		Signature sig;
-		sig.set(Game::coordinator.getComponentType<AccelTransform>());
+		sig.set(Game::coordinator.getComponentType<Transform>());
 		sig.set(Game::coordinator.getComponentType<Sprite>());
 		sig.set(Game::coordinator.getComponentType<Player>());
 
@@ -79,7 +91,7 @@ int main(int argc, char* argv[]) {
 	auto spriteSystem = Game::coordinator.registerSystem<SpriteSystem>();
 	{
 		Signature sig;
-		sig.set(Game::coordinator.getComponentType<AccelTransform>());
+		sig.set(Game::coordinator.getComponentType<Transform>());
 		sig.set(Game::coordinator.getComponentType<Sprite>());
 
 		Game::coordinator.setSystemSignature<SpriteSystem>(sig);
@@ -102,9 +114,15 @@ int main(int argc, char* argv[]) {
 
 		// Update game components here
 		room.update();
+
 		collisionSystem->update();
 		gunSystem->update();
 		playerSystem->update();
+
+		bulletSystem->update();
+		bulletSystem->killAbandoned();
+
+
 		
 		// Rendering
 		SDL_RenderClear(Game::renderer);

@@ -3,12 +3,13 @@
 #include "../ECS/Coordinator.hpp"
 
 
-class GunSystem : public System {
+class BulletSystem : public System {
 private:
 	Coordinator* coordinator;
-	bool fired = false;
+	std::vector<Entity> kill;
 
 public:
 	void init(Coordinator* coord);
 	void update();
+	void killAbandoned();
 };

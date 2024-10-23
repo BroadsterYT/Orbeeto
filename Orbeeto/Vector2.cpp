@@ -34,6 +34,13 @@ double Vector2::getMagnitude() {
 	return sqrt(pow(x, 2) + pow(y, 2));
 }
 
+void Vector2::rotate(const double x) {
+	const double angleRad = x * (M_PI / 180.0);
+	double tempX = this->x;
+	this->x = cos(angleRad) * tempX - sin(angleRad) * y;
+	y = sin(angleRad) * tempX + cos(angleRad) * y;
+}
+
 Vector2 Vector2::operator+(const Vector2& other) {
 	return Vector2(x + other.x, y + other.y);
 }

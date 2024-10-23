@@ -2,7 +2,7 @@
 #include "../Vector2.hpp"
 
 
-struct AccelTransform {
+struct Transform {
 	Vector2 pos = { 0.0f, 0.0f };
 	Vector2 vel = { 0.0f, 0.0f };
 	Vector2 accel = { 0.0f, 0.0f };
@@ -15,5 +15,9 @@ struct AccelTransform {
 		accel.y += vel.y * fric;
 		vel += accel;
 		pos += vel + accel * accelConst;
+	}
+
+	void velMovement() {
+		pos += vel;
 	}
 };
