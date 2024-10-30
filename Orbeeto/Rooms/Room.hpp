@@ -1,3 +1,4 @@
+#pragma once
 #include <vector>
 #include "../Vector2.hpp"
 #include "../Game.hpp"
@@ -13,7 +14,7 @@ private:
 	bool canScrollX;
 	bool canScrollY;
 
-	EntityID player = Game::scene.newEntity();
+	Entity player = Game::ecs.createEntity();
 
 public:
 	Room(int roomX, int roomY);

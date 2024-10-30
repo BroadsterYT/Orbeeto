@@ -30,17 +30,6 @@ int main(int argc, char* argv[]) {
 	int frameTime;
 
 	game = new Game("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, false);
-
-	// Registering components
-	std::cout << "Component ID: " << GetId<Bullet>() << std::endl;
-	std::cout << "Component ID: " << GetId<Collision>() << std::endl;
-	std::cout << "Component ID: " << GetId<Defense>() << std::endl;
-	std::cout << "Component ID: " << GetId<Hp>() << std::endl;
-	std::cout << "Component ID: " << GetId<Player>() << std::endl;
-	std::cout << "Component ID: " << GetId<PlayerGun>() << std::endl;
-	std::cout << "Component ID: " << GetId<Sprite>() << std::endl;
-	std::cout << "Component ID: " << GetId<Transform>() << std::endl;
-
 	// ------------------------------- //
 
 
@@ -55,13 +44,11 @@ int main(int argc, char* argv[]) {
 		// ---------- Handling events ---------- //
 		game->handleEvents();
 
-		PlayerSystem(Game::scene);
-
 		// Update game components here
 		room.update();
 
 		SDL_RenderClear(Game::renderer);
-		SpriteSystem(Game::scene, Game::renderer);
+		SpriteSystem(Game::renderer, Game::ecs);
 		SDL_RenderPresent(Game::renderer);
 
 		frameTime = SDL_GetTicks() - frameStart;  // Time in ms it takes to handle events, update, and render

@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "Component.hpp"
 #include "../TextureManager.hpp"
 
 /// <summary>
@@ -11,7 +12,7 @@
 /// <param name="posY">The y-position on the screen to draw the sprite</param>
 /// <param name="angle">The angle to rotate the sprite before drawing. Defualts to 0.</param>
 /// <param name="moveWithRoom">Should this sprite be affected by the room/camera? Defaults to true.</param>
-struct Sprite {
+struct Sprite : Component {
 	int tileWidth;
 	int tileHeight;
 	int posX;

@@ -1,4 +1,5 @@
 #pragma once
+#include "Component.hpp"
 #include "../Vector2.hpp"
 #include <cmath>
 #include <iostream>
@@ -14,7 +15,7 @@
 /// <param name="canPush">Can the entity push others? Defaults to true</param>
 /// <param name="isProj">Should the entity be treated as a projectile? Defaults to false</param>
 /// <param name="canHurt">Can the entity be hurt? Defaults to false</param>
-struct Collision {
+struct Collision : Component {
 	int hitWidth;
 	int hitHeight;
 

@@ -147,6 +147,7 @@
   <ItemGroup>
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Components\Bullet.hpp" />
+    <ClInclude Include="Components\Component.hpp" />
     <ClInclude Include="Components\Transform.hpp" />
     <ClInclude Include="Components\Defense.hpp" />
     <ClInclude Include="Components\Hp.hpp" />

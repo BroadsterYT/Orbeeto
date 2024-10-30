@@ -1,7 +1,7 @@
 #pragma once
 #include "SDL.h"
-#include <memory>
 #include "ECS.hpp"
+#include <memory>
 
 
 class Game {
@@ -11,7 +11,7 @@ public:
 
 	SDL_Window* window;
 	static SDL_Renderer* renderer;
-	static Scene scene;
+	static ECS ecs;
 	
 	void handleEvents();
 	void update();

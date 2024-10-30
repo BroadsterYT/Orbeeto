@@ -7,7 +7,7 @@
 
 SDL_Renderer* Game::renderer = nullptr;
 
-Scene Game::scene;
+ECS Game::ecs = ECS();
 
 Game::Game(const char* title, int posX, int posY, int width, int height, bool fullscreen) {
 	int flags = 0;

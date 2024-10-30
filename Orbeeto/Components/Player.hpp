@@ -1,6 +1,7 @@
 #pragma once
+#include "Component.hpp"
 
 
-struct Player {
+struct Player : Component {
 
 };
