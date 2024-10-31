@@ -21,7 +21,6 @@
 
 
 Game* game = nullptr;
-int s_componentCounter = 0;
 
 const int FPS = 240;
 const int frameDelay = 1000 / FPS;
@@ -32,13 +31,16 @@ int main(int argc, char* argv[]) {
 
 	game = new Game("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, false);
 
-
 	// Initializing room
 	Room room(0, 0);
 
+	// Initializing systems
+	CollisionSystem collisionSystem;
+	PlayerSystem playerSystem;
+	SpriteSystem spriteSystem;
+
 
 	while (game->isRunning) {
-
 		frameStart = SDL_GetTicks();
 
 		// ---------- Handling events ---------- //
@@ -46,11 +48,10 @@ int main(int argc, char* argv[]) {
 
 		// Update game components here
 		room.update();
-		CollisionSystem(Game::ecs);
-		PlayerSystem(Game::ecs);
+		playerSystem.update();
 
 		SDL_RenderClear(Game::renderer);
-		SpriteSystem(Game::renderer, Game::ecs);
+		spriteSystem.render(Game::renderer);
 		SDL_RenderPresent(Game::renderer);
 
 		frameTime = SDL_GetTicks() - frameStart;  // Time in ms it takes to handle events, update, and render

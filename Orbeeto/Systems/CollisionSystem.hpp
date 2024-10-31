@@ -1,11 +1,10 @@
 #pragma once
-#include "../ECS.hpp"
-#include "../Components/Collision.hpp"
-#include "../Components/Transform.hpp"
+#include "System.hpp"
 
 
-void CollisionSystem(ECS& ecs) {
-	for (auto& entity : ecs.getSystemGroup<Collision, Transform>()) {
+class CollisionSystem : public System {
+public:
+	CollisionSystem();
 
-	}
-}
+	void update();
+};

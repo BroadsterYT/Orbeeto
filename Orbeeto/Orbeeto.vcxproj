@@ -140,6 +140,9 @@
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Rooms\Room.cpp" />
+    <ClCompile Include="Systems\CollisionSystem.cpp" />
+    <ClCompile Include="Systems\PlayerSystem.cpp" />
+    <ClCompile Include="Systems\SpriteSystem.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Vector2.cpp" />
     <ClCompile Include="WindowManager.cpp" />
@@ -162,6 +165,7 @@
     <ClInclude Include="Systems\CollisionSystem.hpp" />
     <ClInclude Include="Systems\PlayerSystem.hpp" />
     <ClInclude Include="Systems\SpriteSystem.hpp" />
+    <ClInclude Include="Systems\System.hpp" />
     <ClInclude Include="TextureManager.hpp" />
     <ClInclude Include="Vector2.hpp" />
     <ClInclude Include="WindowManager.hpp" />
