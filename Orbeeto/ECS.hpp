@@ -40,6 +40,7 @@ public:
 		// ----- Registering Components ----- //
 		std::cout << "Sprite component registered. ID: " << getComponentId<Sprite>() << std::endl;
 		std::cout << "Transform component registered. ID: " << getComponentId<Transform>() << std::endl;
+		std::cout << "Collision component registered. ID: " << getComponentId<Collision>() << std::endl;
 		std::cout << "Player component registered. ID: " << getComponentId<Player>() << std::endl;
 
 		for (Entity i = 0; i < MAX_ENTITIES; i++) {
@@ -146,7 +147,7 @@ public:
 			output.push_back(edesc.entity);
 		}
 
-		std::cout << "Time to complete: " << SDL_GetTicks() - timer << std::endl;
+		//std::cout << "Time to complete: " << SDL_GetTicks() - timer << std::endl;
 		return output;
 	}
 };

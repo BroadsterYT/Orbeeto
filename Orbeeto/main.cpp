@@ -48,6 +48,7 @@ int main(int argc, char* argv[]) {
 
 		// Update game components here
 		room.update();
+		collisionSystem.update();
 		playerSystem.update();
 
 		SDL_RenderClear(Game::renderer);

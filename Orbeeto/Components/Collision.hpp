@@ -32,16 +32,15 @@ struct Collision : Component {
 	/// </summary>
 	/// <param name="check">The other collision component to check for a collision with</param>
 	/// <returns>True if colliding, false otherwise</returns>
-	bool checkCollision(const Collision& check) {
-		bool output = false;
-		if (hitPos.x + hitWidth / 2 >= check.hitPos.x - check.hitWidth / 2
-			&& hitPos.x - hitWidth / 2 <= check.hitPos.x + check.hitWidth / 2
-			&& hitPos.y + hitHeight / 2 >= check.hitPos.y - check.hitHeight / 2
-			&& hitPos.y - hitHeight / 2 <= check.hitPos.y + check.hitHeight / 2) {
-			output = true;
+	bool checkCollision(Collision* check) {
+		if (hitPos.x + hitWidth / 2 >= check->hitPos.x - check->hitWidth / 2
+			&& hitPos.x - hitWidth / 2 <= check->hitPos.x + check->hitWidth / 2
+			&& hitPos.y + hitHeight / 2 >= check->hitPos.y - check->hitHeight / 2
+			&& hitPos.y - hitHeight / 2 <= check->hitPos.y + check->hitHeight / 2) {
+			return true;
 		}
 
-		return output;
+		return false;
 	}
 
 	/// <summary>
@@ -50,9 +49,9 @@ struct Collision : Component {
 	/// </summary>
 	/// <param name="other">The collision component of the entity that this one is colliding with</param>
 	/// <returns>The side of the other entity that this entity hit</returns>
-	int intersection(const Collision& other) {
-		Vector2 dist(hitPos.x - other.hitPos.x, hitPos.y - other.hitPos.y);
-		Vector2 minDist((hitWidth + other.hitWidth) / 2, (hitHeight + other.hitHeight) / 2);
+	int intersection(Collision* other) {
+		Vector2 dist(hitPos.x - other->hitPos.x, hitPos.y - other->hitPos.y);
+		Vector2 minDist((hitWidth + other->hitWidth) / 2, (hitHeight + other->hitHeight) / 2);
 
 		Vector2 depth;
 		depth.x = dist.x > 0 ? minDist.x - dist.x : -minDist.x - dist.x;

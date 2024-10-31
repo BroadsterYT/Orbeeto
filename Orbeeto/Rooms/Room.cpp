@@ -16,9 +16,11 @@ Room::Room(int roomX, int roomY) {
 	Game::ecs.assignComponent<Sprite>(player);
 	Game::ecs.assignComponent<Player>(player);
 	Game::ecs.assignComponent<Transform>(player);
+	Game::ecs.assignComponent<Collision>(player);
 
 	Game::ecs.assignComponent<Sprite>(wall);
 	Game::ecs.assignComponent<Transform>(wall);
+	Game::ecs.assignComponent<Collision>(wall);
 
 	Sprite* wallSprite = Game::ecs.getComponent<Sprite>(wall);
 	*wallSprite = Sprite{
@@ -28,16 +30,31 @@ Room::Room(int roomX, int roomY) {
 	};
 	Transform* wallTrans = Game::ecs.getComponent<Transform>(wall);
 	*wallTrans = Transform{ .pos = Vector2(500.0f, 500.0f) };
+	Collision* wallColl = Game::ecs.getComponent<Collision>(wall);
+	*wallColl = Collision{
+		.hitWidth = 64,
+		.hitHeight = 64,
+		.hitPos = Vector2(300.0f, 300.0f),
+		.canHurt = true
+	};
 
+	// ----- Player ----- //
 	Sprite* pullSprite = Game::ecs.getComponent<Sprite>(player);
 	*pullSprite = Sprite{
 		.tileWidth = 64,
 		.tileHeight = 64,
 		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png")
 	};
-	
 	Transform* pullTransform = Game::ecs.getComponent<Transform>(player);
 	*pullTransform = Transform{ .pos = Vector2(300, 300) };
+	Collision* playerColl = Game::ecs.getComponent<Collision>(player);
+	*playerColl = Collision{
+		.hitWidth = 64,
+		.hitHeight = 64,
+		.hitPos = Vector2(300.0f, 300.0f),
+		.canHurt = true
+	};
+	
 
 	std::cout << "Entities: " << std::endl;
 	for (int i = 0; i < Game::ecs.entities.size(); i++) {
