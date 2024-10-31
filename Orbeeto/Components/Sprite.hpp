@@ -15,8 +15,8 @@
 struct Sprite : Component {
 	int tileWidth;
 	int tileHeight;
-	int posX;
-	int posY;
+	int posX = 0;
+	int posY = 0;
 	double angle = 0;  // The angle the texture should be rotated to
 	bool moveWithRoom = true;  // Does this sprite move with the room?
 

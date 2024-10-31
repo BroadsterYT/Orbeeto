@@ -15,6 +15,7 @@
 #include "Components/Sprite.hpp"
 #include "Components/Transform.hpp"
 
+#include "Systems/CollisionSystem.hpp"
 #include "Systems/PlayerSystem.hpp"
 #include "Systems/SpriteSystem.hpp"
 
@@ -30,7 +31,6 @@ int main(int argc, char* argv[]) {
 	int frameTime;
 
 	game = new Game("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, false);
-	// ------------------------------- //
 
 
 	// Initializing room
@@ -46,6 +46,8 @@ int main(int argc, char* argv[]) {
 
 		// Update game components here
 		room.update();
+		CollisionSystem(Game::ecs);
+		PlayerSystem(Game::ecs);
 
 		SDL_RenderClear(Game::renderer);
 		SpriteSystem(Game::renderer, Game::ecs);

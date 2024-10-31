@@ -17,7 +17,7 @@
 
 using Entity = uint32_t;
 
-const uint32_t MAX_ENTITIES = 2000;
+const uint32_t MAX_ENTITIES = 1000;
 const uint32_t MAX_COMPONENTS = 10;
 using ComponentMask = std::bitset<MAX_COMPONENTS>;
 
@@ -39,7 +39,7 @@ public:
 	ECS() {
 		// ----- Registering Components ----- //
 		std::cout << "Sprite component registered. ID: " << getComponentId<Sprite>() << std::endl;
-		std::cout << "Sprite component registered. ID: " << getComponentId<Transform>() << std::endl;
+		std::cout << "Transform component registered. ID: " << getComponentId<Transform>() << std::endl;
 		std::cout << "Player component registered. ID: " << getComponentId<Player>() << std::endl;
 
 		for (Entity i = 0; i < MAX_ENTITIES; i++) {
@@ -59,9 +59,7 @@ public:
 
 		// Preparing the vector of component pointers for the new entity
 		std::vector<Component*> tempComponents;
-		for (int i = 0; i < MAX_COMPONENTS; i++) {
-			tempComponents.push_back(nullptr);
-		}
+		tempComponents.assign(MAX_COMPONENTS, nullptr);
 		entities.push_back({ temp, ComponentMask(), tempComponents });
 
 		std::cout << "Entity " << temp << " was successfully created." << std::endl;
@@ -95,7 +93,7 @@ public:
 				edesc.components[getComponentId<T>()] = new T;
 				
 				std::cout << "Component for entity " << entity << " set successfully." << std::endl;
-				std::cout << "Entity bitmask: " << edesc.mask.to_string() << std::endl;
+				// std::cout << "Entity bitmask: " << edesc.mask.to_string() << std::endl;
 				return;
 			}
 		}
@@ -107,6 +105,8 @@ public:
 	void removeComponent(Entity& entity) {
 		for (EntityDesc& edesc : entities) {
 			if (edesc.entity == entity) {
+				assert(edesc.mask.test(getComponentId<T>()) && "Trying to remove non-existent component");
+				
 				delete edesc.components[getComponentId<T>()];
 				edesc.components[getComponentId<T>()] = nullptr;
 				std::cout << "Removal of component from entity " << entity << " was successful." << std::endl;
@@ -129,6 +129,7 @@ public:
 
 	template<typename... ComponentTypes>
 	std::vector<Entity> getSystemGroup() {
+		Uint32 timer = SDL_GetTicks();
 		std::vector<Entity> output;
 		ComponentMask maskRef;
 
@@ -142,10 +143,10 @@ public:
 		// Finding entities that belong in system group
 		for (EntityDesc& edesc : entities) {
 			if ((maskRef & edesc.mask) != maskRef) continue;
-			//std::cout << "Entity " << edesc.entity << " belongs in this group" << std::endl;
 			output.push_back(edesc.entity);
 		}
 
+		std::cout << "Time to complete: " << SDL_GetTicks() - timer << std::endl;
 		return output;
 	}
 };

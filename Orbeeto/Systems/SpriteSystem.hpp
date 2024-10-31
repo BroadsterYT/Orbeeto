@@ -18,7 +18,6 @@ void SpriteSystem(SDL_Renderer* renderer, ECS& ecs) {
 			sprite->destRect.x = transform->pos.x - sprite->tileWidth / 2;
 			sprite->destRect.y = transform->pos.y - sprite->tileHeight / 2;
 		}
-
 		
 		SDL_RenderCopyEx(renderer, sprite->spriteSheet, &sprite->srcRect, &sprite->destRect, sprite->angle, NULL, SDL_FLIP_NONE);
 	}

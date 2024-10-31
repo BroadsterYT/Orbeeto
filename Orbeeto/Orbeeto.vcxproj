@@ -159,6 +159,7 @@
     <ClInclude Include="InputManager.hpp" />
     <ClInclude Include="Components\Sprite.hpp" />
     <ClInclude Include="Rooms\Room.hpp" />
+    <ClInclude Include="Systems\CollisionSystem.hpp" />
     <ClInclude Include="Systems\PlayerSystem.hpp" />
     <ClInclude Include="Systems\SpriteSystem.hpp" />
     <ClInclude Include="TextureManager.hpp" />

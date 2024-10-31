@@ -13,25 +13,31 @@ Room::Room(int roomX, int roomY) {
 	this->roomX = roomX;
 	this->roomY = roomY;
 
-	Entity test = Game::ecs.createEntity();
-	Game::ecs.assignComponent<Sprite>(test);
-
 	Game::ecs.assignComponent<Sprite>(player);
+	Game::ecs.assignComponent<Player>(player);
 	Game::ecs.assignComponent<Transform>(player);
+
+	Game::ecs.assignComponent<Sprite>(wall);
+	Game::ecs.assignComponent<Transform>(wall);
+
+	Sprite* wallSprite = Game::ecs.getComponent<Sprite>(wall);
+	*wallSprite = Sprite{
+		.tileWidth = 64,
+		.tileHeight = 64,
+		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png")
+	};
+	Transform* wallTrans = Game::ecs.getComponent<Transform>(wall);
+	*wallTrans = Transform{ .pos = Vector2(500.0f, 500.0f) };
 
 	Sprite* pullSprite = Game::ecs.getComponent<Sprite>(player);
 	*pullSprite = Sprite{
 		.tileWidth = 64,
 		.tileHeight = 64,
-		.posX = 0,
-		.posY = 0,
 		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png")
 	};
 	
 	Transform* pullTransform = Game::ecs.getComponent<Transform>(player);
 	*pullTransform = Transform{ .pos = Vector2(300, 300) };
-
-	Game::ecs.destroyEntity(test);
 
 	std::cout << "Entities: " << std::endl;
 	for (int i = 0; i < Game::ecs.entities.size(); i++) {
