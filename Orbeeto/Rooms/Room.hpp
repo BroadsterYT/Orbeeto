@@ -15,7 +15,8 @@ private:
 	bool canScrollY;
 
 	Entity player = Game::ecs.createEntity();
-	Entity wall = Game::ecs.createEntity();
+	Entity leftGun = Game::ecs.createEntity();
+	Entity rightGun = Game::ecs.createEntity();
 
 public:
 	Room(int roomX, int roomY);

@@ -16,6 +16,7 @@
 #include "Components/Transform.hpp"
 
 #include "Systems/CollisionSystem.hpp"
+#include "Systems/PlayerGunSystem.hpp"
 #include "Systems/PlayerSystem.hpp"
 #include "Systems/SpriteSystem.hpp"
 
@@ -36,6 +37,7 @@ int main(int argc, char* argv[]) {
 
 	// Initializing systems
 	CollisionSystem collisionSystem;
+	PlayerGunSystem playerGunSystem;
 	PlayerSystem playerSystem;
 	SpriteSystem spriteSystem;
 
@@ -48,7 +50,9 @@ int main(int argc, char* argv[]) {
 
 		// Update game components here
 		room.update();
+		
 		collisionSystem.update();
+		playerGunSystem.update();
 		playerSystem.update();
 
 		SDL_RenderClear(Game::renderer);

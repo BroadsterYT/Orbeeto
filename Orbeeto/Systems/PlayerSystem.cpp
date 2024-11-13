@@ -21,5 +21,8 @@ void PlayerSystem::update() {
 
 		transform->accel = finalAccel;
 		transform->accelMovement();
+
+		Vector2 roomPos(sprite->destRect.x + sprite->tileWidth / 2, sprite->destRect.y + sprite->tileHeight / 2);
+		sprite->angle = -roomPos.getAngleToPoint(InputManager::mousePosX, InputManager::mousePosY);
 	}
 }

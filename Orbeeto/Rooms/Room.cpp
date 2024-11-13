@@ -18,35 +18,21 @@ Room::Room(int roomX, int roomY) {
 	Game::ecs.assignComponent<Transform>(player);
 	Game::ecs.assignComponent<Collision>(player);
 
-	Game::ecs.assignComponent<Sprite>(wall);
-	Game::ecs.assignComponent<Transform>(wall);
-	Game::ecs.assignComponent<Collision>(wall);
-
-	Sprite* wallSprite = Game::ecs.getComponent<Sprite>(wall);
-	*wallSprite = Sprite{
-		.tileWidth = 64,
-		.tileHeight = 64,
-		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png")
-	};
-	Transform* wallTrans = Game::ecs.getComponent<Transform>(wall);
-	*wallTrans = Transform{ .pos = Vector2(500.0f, 500.0f) };
-	Collision* wallColl = Game::ecs.getComponent<Collision>(wall);
-	*wallColl = Collision{
-		.hitWidth = 64,
-		.hitHeight = 64,
-		.hitPos = Vector2(300.0f, 300.0f),
-		.canHurt = true
-	};
+	Game::ecs.assignComponent<Sprite>(leftGun);
+	Game::ecs.assignComponent<PlayerGun>(leftGun);
+	Game::ecs.assignComponent<Transform>(leftGun);
 
 	// ----- Player ----- //
-	Sprite* pullSprite = Game::ecs.getComponent<Sprite>(player);
-	*pullSprite = Sprite{
+	Sprite* playerSprite = Game::ecs.getComponent<Sprite>(player);
+	*playerSprite = Sprite{
 		.tileWidth = 64,
 		.tileHeight = 64,
 		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png")
 	};
-	Transform* pullTransform = Game::ecs.getComponent<Transform>(player);
-	*pullTransform = Transform{ .pos = Vector2(300, 300) };
+	
+	Transform* playerTrans = Game::ecs.getComponent<Transform>(player);
+	*playerTrans = Transform{ .pos = Vector2(300, 300) };
+	
 	Collision* playerColl = Game::ecs.getComponent<Collision>(player);
 	*playerColl = Collision{
 		.hitWidth = 64,
@@ -54,27 +40,55 @@ Room::Room(int roomX, int roomY) {
 		.hitPos = Vector2(300.0f, 300.0f),
 		.canHurt = true
 	};
-	
 
-	std::cout << "Entities: " << std::endl;
-	for (int i = 0; i < Game::ecs.entities.size(); i++) {
-		std::cout << Game::ecs.entities[i].entity << std::endl;
-	}
+	// ----- Left Gun ----- //
+	Sprite* lGunSprite = Game::ecs.getComponent<Sprite>(leftGun);
+	*lGunSprite = Sprite{
+		.tileWidth = 64,
+		.tileHeight = 64,
+		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeetoguns.png")
+	};
 
-	Game::ecs.getSystemGroup<Sprite>();
+	Transform* lGunTrans = Game::ecs.getComponent<Transform>(leftGun);
+	*lGunTrans = Transform{ .pos = Vector2(300.0f, 300.0f) };
+
+	PlayerGun* lGun = Game::ecs.getComponent<PlayerGun>(leftGun);
+	*lGun = PlayerGun{
+		.owner = &player,
+		.cooldown = 0.10f,
+		.heatDissipation = 10.0f
+	};
 
 	loadRoomEntities(0, 0);
 }
 
 void Room::loadRoomEntities(int x, int y) {
 	if (roomX == 0 && roomY == 0) {
+		Entity wall = Game::ecs.createEntity();
 
+		Game::ecs.assignComponent<Sprite>(wall);
+		Game::ecs.assignComponent<Transform>(wall);
+		Game::ecs.assignComponent<Collision>(wall);
+
+		Sprite* wallSprite = Game::ecs.getComponent<Sprite>(wall);
+		*wallSprite = Sprite{
+			.tileWidth = 64,
+			.tileHeight = 64,
+			.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png")
+		};
+		Transform* wallTrans = Game::ecs.getComponent<Transform>(wall);
+		*wallTrans = Transform{ .pos = Vector2(500.0f, 500.0f) };
+		Collision* wallColl = Game::ecs.getComponent<Collision>(wall);
+		*wallColl = Collision{
+			.hitWidth = 64,
+			.hitHeight = 64,
+			.hitPos = Vector2(300.0f, 300.0f),
+			.canHurt = true
+		};
 	}
 }
 
-void Room::recordRoomLayout() {
-
-}
+void Room::recordRoomLayout() {}
 
 void Room::update() {
 	Transform* pTransform = Game::ecs.getComponent<Transform>(player);

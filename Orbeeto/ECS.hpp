@@ -18,7 +18,7 @@
 using Entity = uint32_t;
 
 const uint32_t MAX_ENTITIES = 1000;
-const uint32_t MAX_COMPONENTS = 10;
+const uint32_t MAX_COMPONENTS = 12;
 using ComponentMask = std::bitset<MAX_COMPONENTS>;
 
 struct EntityDesc {
@@ -38,10 +38,14 @@ public:
 
 	ECS() {
 		// ----- Registering Components ----- //
+		std::cout << "Bullet component registered. ID: " << getComponentId<Bullet>() << std::endl;
+		std::cout << "Collision component registered. ID: " << getComponentId<Collision>() << std::endl;
+		std::cout << "Defense component registered. ID: " << getComponentId<Defense>() << std::endl;
+		std::cout << "Hp component registered. ID: " << getComponentId<Hp>() << std::endl;
+		std::cout << "Player component registered. ID: " << getComponentId<Player>() << std::endl;
+		std::cout << "PlayerGun component registered. ID: " << getComponentId<PlayerGun>() << std::endl;
 		std::cout << "Sprite component registered. ID: " << getComponentId<Sprite>() << std::endl;
 		std::cout << "Transform component registered. ID: " << getComponentId<Transform>() << std::endl;
-		std::cout << "Collision component registered. ID: " << getComponentId<Collision>() << std::endl;
-		std::cout << "Player component registered. ID: " << getComponentId<Player>() << std::endl;
 
 		for (Entity i = 0; i < MAX_ENTITIES; i++) {
 			freeEntities.push_back(i);
