@@ -14,6 +14,7 @@
 #include "Components/Sprite.hpp"
 #include "Components/Transform.hpp"
 
+#include "Systems/BulletSystem.hpp"
 #include "Systems/CollisionSystem.hpp"
 #include "Systems/PlayerGunSystem.hpp"
 #include "Systems/PlayerSystem.hpp"
@@ -26,7 +27,7 @@ const int FPS = 240;
 const int frameDelay = 1000 / FPS;
 
 int main(int argc, char* argv[]) {
-	Uint32 frameStart;
+	uint32_t frameStart;
 	int frameTime;
 
 	game = new Game("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, false);
@@ -35,6 +36,7 @@ int main(int argc, char* argv[]) {
 	Room room(0, 0);
 
 	// Initializing systems
+	BulletSystem bulletSystem;
 	CollisionSystem collisionSystem;
 	PlayerGunSystem playerGunSystem;
 	PlayerSystem playerSystem;
@@ -51,6 +53,8 @@ int main(int argc, char* argv[]) {
 		collisionSystem.update();
 		playerSystem.update();
 		playerGunSystem.update();
+
+		bulletSystem.update();
 
 		room.update();
 

@@ -55,7 +55,7 @@ Room::Room(int roomX, int roomY) {
 	PlayerGun* lGun = Game::ecs.getComponent<PlayerGun>(leftGun);
 	*lGun = PlayerGun{
 		.owner = &player,
-		.cooldown = 0.10f,
+		.cooldown = 10,
 		.heatDissipation = 10.0f
 	};
 
