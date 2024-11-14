@@ -83,7 +83,7 @@ void Room::loadRoomEntities(int x, int y) {
 			.hitWidth = 64,
 			.hitHeight = 64,
 			.hitPos = Vector2(300.0f, 300.0f),
-			.canHurt = true
+			.canHurt = false
 		};
 	}
 }

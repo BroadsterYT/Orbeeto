@@ -1,4 +1,3 @@
-#include <iostream>
 #include <vector>
 
 #include "Game.hpp"
@@ -49,11 +48,11 @@ int main(int argc, char* argv[]) {
 		game->handleEvents();
 
 		// Update game components here
-		room.update();
-		
 		collisionSystem.update();
-		playerGunSystem.update();
 		playerSystem.update();
+		playerGunSystem.update();
+
+		room.update();
 
 		SDL_RenderClear(Game::renderer);
 		spriteSystem.render(Game::renderer);
