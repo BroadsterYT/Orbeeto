@@ -1,8 +1,7 @@
 #include "Game.hpp"
-#include <iostream>
-
 #include "InputManager.hpp"
 #include "WindowManager.hpp"
+#include <iostream>
 
 
 SDL_Renderer* Game::renderer = nullptr;

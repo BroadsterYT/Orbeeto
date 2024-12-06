@@ -1,6 +1,7 @@
 #pragma once
-#include "SDL.h"
 #include "ECS.hpp"
+#include "EntityGroup.hpp"
+#include "SDL.h"
 #include <memory>
 
 
@@ -12,6 +13,9 @@ public:
 	SDL_Window* window;
 	static SDL_Renderer* renderer;
 	static ECS ecs;
+
+	static EntityGroup projectiles;
+
 	
 	void handleEvents();
 	void update();

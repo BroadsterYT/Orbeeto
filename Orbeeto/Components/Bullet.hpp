@@ -1,5 +1,6 @@
 #pragma once
 #include "Component.hpp"
+#include "SDL.h"
 
 
 struct Bullet : Component {

@@ -1,5 +1,6 @@
 #include "BulletSystem.hpp"
 
+
 BulletSystem::BulletSystem() : System() {}
 
 void BulletSystem::update() {
@@ -10,8 +11,9 @@ void BulletSystem::update() {
 		transform->velMovement();
 
 		// Destroying bullet if its lifetime is too long
-		/*if (SDL_GetTicks() - bullet) {
-
-		}*/
+		if (SDL_GetTicks() - bullet->birthTime >= 5000) {
+			std::cout << "Bullet destroyed." << std::endl;
+			Game::ecs.destroyEntity(entity);
+		}
 	}
 }
