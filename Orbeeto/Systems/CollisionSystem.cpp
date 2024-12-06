@@ -53,7 +53,6 @@ void CollisionSystem::update() {
 		Transform* transform = Game::ecs.getComponent<Transform>(entity);
 
 		collision->hitPos = transform->pos;
-		std::cout << collision->hitPos.x << std::endl;
 
 		// Evaluating every entity in the system for a collision
 		for (Entity& other : Game::ecs.getSystemGroup<Collision, Transform>()) {
