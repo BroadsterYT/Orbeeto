@@ -1,6 +1,7 @@
 #pragma once
 #include "Component.hpp"
 #include "../Vector2.hpp"
+#include "../DeltaTime.h"
 
 
 struct Transform : Component {
@@ -14,11 +15,11 @@ struct Transform : Component {
 	void accelMovement() {
 		accel.x += vel.x * fric;
 		accel.y += vel.y * fric;
-		vel += accel;
-		pos += vel + accel * accelConst;
+		vel += accel * DeltaTime::avgDeltaTime * 10000.0f;
+		pos += vel * DeltaTime::avgDeltaTime * 10000.0f + accel * accelConst;
 	}
 
 	void velMovement() {
-		pos += vel;
+		pos += vel * DeltaTime::avgDeltaTime * 10000.0f;
 	}
 };

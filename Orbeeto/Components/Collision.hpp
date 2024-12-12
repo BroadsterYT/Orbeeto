@@ -24,7 +24,6 @@ struct Collision : Component {
 	bool canBePushed = true;
 	bool canPush = true;
 	
-	bool isProj = false;
 	bool canHurt = false;
 
 	/// <summary>

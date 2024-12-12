@@ -1,13 +1,19 @@
 #pragma once
 #include <vector>
+#include <string>
 
+
+using Entity = uint32_t;
 
 class EntityGroup {
 private:
-	std::vector<uint32_t> entities;
+	std::string name;
+	std::vector<Entity> entities;
 
 public:
-	std::vector<uint32_t> getEntities() const;
-	void addEntity(const uint32_t entity);
-	void removeEntity(const uint32_t entity);
+	EntityGroup(std::string name);
+
+	std::vector<Entity> getEntities() const;
+	void addEntity(const Entity entity);
+	void removeEntity(const Entity entity);
 };

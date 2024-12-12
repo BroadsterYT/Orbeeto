@@ -157,25 +157,6 @@ public:
 
 	template<typename... ComponentTypes>
 	std::vector<Entity> getSystemGroup() {
-		////Uint32 timer = SDL_GetTicks();
-		//std::vector<Entity> output;
-		//ComponentMask maskRef;
-
-		//assert(sizeof...(ComponentTypes) > 0 && "A group must be bound by at least 1 component.");
-
-		//int componentIds[] = { getComponentId<ComponentTypes>() ... };
-		//for (int& id : componentIds) {
-		//	maskRef.set(id);
-		//}
-
-		//// Finding entities that belong in system group
-		//for (EntityDesc& edesc : entities) {
-		//	if ((maskRef & edesc.mask) != maskRef) continue;
-		//	output.push_back(edesc.entity);
-		//}
-
-		////std::cout << "Time to complete: " << SDL_GetTicks() - timer << std::endl;
-		//return output;
 		std::vector<Entity> output;
 		std::bitset<MAX_COMPONENTS> refMask;
 

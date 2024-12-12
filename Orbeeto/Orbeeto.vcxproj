@@ -136,16 +136,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="DeltaTime.cpp" />
     <ClCompile Include="EntityGroup.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Rooms\Room.cpp" />
-    <ClCompile Include="Systems\BulletSystem.cpp" />
-    <ClCompile Include="Systems\CollisionSystem.cpp" />
-    <ClCompile Include="Systems\PlayerGunSystem.cpp" />
-    <ClCompile Include="Systems\PlayerSystem.cpp" />
-    <ClCompile Include="Systems\SpriteSystem.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Vector2.cpp" />
     <ClCompile Include="WindowManager.cpp" />
@@ -163,6 +159,7 @@
     <ClInclude Include="ECS.hpp" />
     <ClInclude Include="EntityGroup.hpp" />
     <ClInclude Include="Game.hpp" />
+    <ClInclude Include="DeltaTime.h" />
     <ClInclude Include="InputManager.hpp" />
     <ClInclude Include="Components\Sprite.hpp" />
     <ClInclude Include="Rooms\Room.hpp" />

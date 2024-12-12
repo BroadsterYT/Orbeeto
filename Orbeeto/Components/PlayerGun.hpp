@@ -4,6 +4,10 @@
 
 struct PlayerGun : Component {
 	uint32_t* owner;  // Pointer to player entity
-	int cooldown;  // The base rate at which the gun fires bullets
-	float heatDissipation;
+	bool isLeft = true;  // Is this gun on Orbeeto's left? Left if true; right if false
+
+	int maxCooldown = 100;  // The base rate at which the gun fires bullets
+	int cooldown = 100;
+
+	float heatDissipation = 100;
 };

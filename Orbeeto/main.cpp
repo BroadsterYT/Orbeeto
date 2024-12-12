@@ -1,5 +1,8 @@
 #include <vector>
+#include <algorithm>
+#include <numeric>
 
+#include "DeltaTime.h"
 #include "Game.hpp"
 #include "InputManager.hpp"
 #include "Rooms/Room.hpp"
@@ -23,8 +26,11 @@
 
 Game* game = nullptr;
 
-const int FPS = 240;
+const int FPS = 60;
 const int frameDelay = 1000 / FPS;
+
+const float TARGET_DELTA_TIME = 1.0f / 60.0f;  // 60 FPS
+
 
 int main(int argc, char* argv[]) {
 	uint32_t frameStart;
@@ -42,6 +48,7 @@ int main(int argc, char* argv[]) {
 	PlayerSystem playerSystem;
 	SpriteSystem spriteSystem;
 
+	DeltaTime::previousTime = SDL_GetPerformanceCounter();
 
 	while (game->isRunning) {
 		frameStart = SDL_GetTicks();
@@ -58,15 +65,28 @@ int main(int argc, char* argv[]) {
 
 		room.update();
 
+		// Delta Time
+		DeltaTime::currentTime = SDL_GetPerformanceCounter();
+		DeltaTime::deltaTime = (DeltaTime::currentTime - DeltaTime::previousTime) / (float)SDL_GetPerformanceFrequency();
+		DeltaTime::previousTime = DeltaTime::currentTime;
+
+		// Update Buffer
+		DeltaTime::deltaBuffer[DeltaTime::bufferIndex] = DeltaTime::deltaTime;
+		DeltaTime::bufferIndex = (DeltaTime::bufferIndex) % DeltaTime::deltaBuffer.size();
+
+		DeltaTime::avgDeltaTime = std::accumulate(DeltaTime::deltaBuffer.begin(), DeltaTime::deltaBuffer.end(), 0.0f) / DeltaTime::bufferSize;
+
 		SDL_RenderClear(Game::renderer);
 		spriteSystem.render(Game::renderer);
 		SDL_RenderPresent(Game::renderer);
 
-		frameTime = SDL_GetTicks() - frameStart;  // Time in ms it takes to handle events, update, and render
-		// If all updates finish sooner than the delay time, SDL will wait to render
-		if (frameDelay > frameTime) {
-			SDL_Delay(frameDelay - frameTime);
-		}
+		//SDL_Delay(16);
+
+		std::cout << DeltaTime::avgDeltaTime << std::endl;
+		/*float frameTime = (SDL_GetPerformanceCounter() - DeltaTime::currentTime) / (float)SDL_GetPerformanceFrequency();
+		if (frameTime < TARGET_DELTA_TIME) {
+			while ((SDL_GetPerformanceCounter() - DeltaTime::currentTime) / (float)SDL_GetPerformanceFrequency() < TARGET_DELTA_TIME);
+		}*/
 	}
 
 	game->clean();

@@ -14,8 +14,7 @@ public:
 	static SDL_Renderer* renderer;
 	static ECS ecs;
 
-	static EntityGroup projectiles;
-
+	static EntityGroup gProjectiles;
 	
 	void handleEvents();
 	void update();
