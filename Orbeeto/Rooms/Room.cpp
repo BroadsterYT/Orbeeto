@@ -1,6 +1,8 @@
 #include "Room.hpp"
+#include <fstream>
 #include <iostream>
 #include <memory>
+#include <cassert>
 
 #include "../Components/Player.hpp"
 #include "../Components/Sprite.hpp"
@@ -35,10 +37,10 @@ Room::Room(int roomX, int roomY) {
 	
 	Collision* playerColl = Game::ecs.getComponent<Collision>(player);
 	*playerColl = Collision{
-		.hitWidth = 64,
-		.hitHeight = 64,
+		.hitWidth = 32,
+		.hitHeight = 32,
 		.hitPos = Vector2(300.0f, 300.0f),
-		.canHurt = true
+		.physicsTags = {"player", "pushable", "canPush", "hurtable"}
 	};
 
 	// ----- Left Gun ----- //
@@ -55,41 +57,127 @@ Room::Room(int roomX, int roomY) {
 	PlayerGun* lGun = Game::ecs.getComponent<PlayerGun>(leftGun);
 	*lGun = PlayerGun{
 		.owner = &player,
-		.maxCooldown = 100,
-		.cooldown = 100,
-		.heatDissipation = 10.0f
 	};
 
-	loadRoomEntities(0, 0);
+	loadRoom(0, 0);
 }
 
-void Room::loadRoomEntities(int x, int y) {
-	if (roomX == 0 && roomY == 0) {
-		Entity wall = Game::ecs.createEntity();
+std::vector<int> Room::vectorizeRoomDetails(const std::string roomFilePath) {
+	std::vector<int> roomDetails;
 
-		Game::ecs.assignComponent<Sprite>(wall);
-		Game::ecs.assignComponent<Transform>(wall);
-		Game::ecs.assignComponent<Collision>(wall);
+	std::ifstream roomFile(roomFilePath);
 
-		Sprite* wallSprite = Game::ecs.getComponent<Sprite>(wall);
-		*wallSprite = Sprite{
-			.tileWidth = 64,
-			.tileHeight = 64,
-			.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png")
-		};
-		Transform* wallTrans = Game::ecs.getComponent<Transform>(wall);
-		*wallTrans = Transform{ .pos = Vector2(500.0f, 500.0f) };
-		Collision* wallColl = Game::ecs.getComponent<Collision>(wall);
+	int currentSpec;
+	for (int i = 0; i < 4; i++) {
+		roomFile >> currentSpec;
+		roomDetails.push_back(currentSpec);
+	}
+
+	roomFile.close();
+	return roomDetails;
+}
+
+std::vector<std::vector<int>> Room::vectorizeRoomTiles(const std::string roomFileName) {
+	std::ifstream roomFile(roomFileName);
+	assert(roomFile.is_open() && "Error opening room data file.");
+
+	int roomTileWidth, roomTileHeight;
+	roomFile >> roomTileWidth >> roomTileHeight;
+
+	// We don't care about the scrolling values so we skip over them
+	int temp;
+	roomFile >> temp >> temp;
+
+	// Taking each tile ID in the room data file and putting them into vectors
+	std::vector<std::vector<int>> finalData;
+	std::vector<int> tempData;
+
+	int currentTile;
+	for (int i = 0; i < roomTileWidth * roomTileHeight; i++) {
+		roomFile >> currentTile;
+
+		tempData.push_back(currentTile);
+
+		if ((i + 1) % roomTileWidth == 0) {
+			finalData.push_back(tempData);
+			tempData.clear();
+		}
+	}
+
+	roomFile.close();
+	return finalData;
+}
+
+void Room::readRoomData(const std::vector<int> roomDetails, const std::vector<std::vector<int>> roomTiles) {
+	canScrollX = roomDetails[2];
+	canScrollY = roomDetails[3];
+
+	for (int y = 0; y < roomTiles.size(); y++) {
+		for (int x = 0; x < roomTiles[y].size(); x++) {
+			buildRoomEntity(roomTiles[y][x], x, y);
+		}
+	}
+}
+
+void Room::buildRoomEntity(const int tileId, int tilePosX, int tilePosY) {
+	const int tileSize = 64;
+
+	if (tileId == 0) return;
+
+	else if (tileId == 1) {
+		Entity testWall = Game::ecs.createEntity();
+		Game::ecs.assignComponent<Collision>(testWall);
+		Game::ecs.assignComponent<Sprite>(testWall);
+		Game::ecs.assignComponent<Transform>(testWall);
+
+		// Building wall tile image
+		SDL_Texture* finalWallImage = SDL_CreateTexture(Game::renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, tileSize, tileSize);
+		SDL_Texture* tileSheet = TextureManager::loadTexture(Game::renderer, "Assets/wall.png");
+
+		SDL_SetTextureBlendMode(finalWallImage, SDL_BLENDMODE_BLEND);
+		SDL_SetRenderTarget(Game::renderer, finalWallImage);
+
+		const int tileStampSize = 32;  // The size of each little tile being stitched together to make the final tile (may not be the size of the tile in the tile sheet!)
+		SDL_Rect finalSrcRect(0, 0, 16, 16);
+		SDL_Rect finalDestRect(0, 0, tileStampSize, tileStampSize);
+
+		// Blitting each little tile onto the final tile texture
+		for (int y = 0; y < 2; y++) {
+			for (int x = 0; x < 2; x++) {
+				finalDestRect.x = x * tileStampSize;
+				finalDestRect.y = y * tileStampSize;
+				SDL_RenderCopy(Game::renderer, tileSheet, &finalSrcRect, &finalDestRect);
+			}
+		}
+		SDL_SetRenderTarget(Game::renderer, NULL);
+
+		// Assigning components
+		Collision* wallColl = Game::ecs.getComponent<Collision>(testWall);
 		*wallColl = Collision{
 			.hitWidth = 64,
 			.hitHeight = 64,
-			.hitPos = Vector2(300.0f, 300.0f),
-			.canHurt = false
+			.physicsTags = {"wall", "pushable", "canPush"}
+		};
+
+		Sprite* wallSprite = Game::ecs.getComponent<Sprite>(testWall);
+		*wallSprite = Sprite{
+			.tileWidth = tileSize,
+			.tileHeight = tileSize,
+			.spriteSheet = finalWallImage
+		};
+
+		Transform* wallTrans = Game::ecs.getComponent<Transform>(testWall);
+		*wallTrans = Transform{
+			.pos = Vector2(tileSize * tilePosX, tileSize * tilePosY)  // TODO: Verify this is correct
 		};
 	}
 }
 
-void Room::recordRoomLayout() {}
+void Room::loadRoom(int x, int y) {
+	if (roomX == 0 && roomY == 0) {
+		readRoomData(vectorizeRoomDetails("Rooms/RoomLayouts/test.dat"), vectorizeRoomTiles("Rooms/RoomLayouts/test.dat"));
+	}
+}
 
 void Room::update() {
 	Transform* pTransform = Game::ecs.getComponent<Transform>(player);

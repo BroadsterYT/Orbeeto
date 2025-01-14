@@ -18,22 +18,18 @@
 using Entity = uint32_t;
 
 const uint32_t MAX_ENTITIES = 1000;
-const uint32_t MAX_COMPONENTS = 12;
+const uint32_t MAX_COMPONENTS = 32;
 using ComponentMask = std::bitset<MAX_COMPONENTS>;
 
 
 struct EntityDesc {
 	Entity entity;
-	std::vector<int> sparse;  // The sparse vector that maps to the packed vector
-	std::vector<int> packed; // The packed vector that maps to the component vector
+	ComponentMask mask;
 	std::vector<Component*> components;
 };
 
 
 class ECS {
-private:
-	int componentCounter = 0;
-
 public:
 	std::vector<EntityDesc> entities;  // All entities currently in existence
 	std::vector<Entity> freeEntities;  // All entity values that are unused
@@ -65,10 +61,9 @@ public:
 		Entity temp = freeEntities[0];
 		freeEntities.erase(freeEntities.begin());
 
-		EntityDesc tempDesc;
-		tempDesc.entity = temp;
-		tempDesc.sparse.assign(MAX_COMPONENTS, -1);
-		entities.push_back(tempDesc);
+		std::vector<Component*> tempComponents;
+		tempComponents.assign(MAX_COMPONENTS, nullptr);
+		entities.push_back({ temp, ComponentMask(), tempComponents });
 
 		return temp;
 	}
@@ -77,6 +72,14 @@ public:
 		int count = 0;
 		for (EntityDesc& edesc : entities) {
 			if (edesc.entity == entity) {
+				// Freeing memory taken up by spritesheet if the entity has a sprite
+				if (edesc.mask.test(getComponentId<Sprite>())) {
+					std::cout << "Sprite sheet for entity " << entity << " is being destroyed.\n";
+					Sprite* sprite = getComponent<Sprite>(entity);
+					SDL_DestroyTexture(sprite->spriteSheet);
+					sprite->spriteSheet = nullptr;
+				}
+
 				for (auto& comp : edesc.components) {
 					delete comp;
 					comp = nullptr;  // Only need to free component memory because of manual memory allocation
@@ -97,14 +100,10 @@ public:
 	void assignComponent(Entity& entity) {
 		for (EntityDesc& edesc : entities) {
 			if (edesc.entity == entity) {
-				std::cout << edesc.sparse[getComponentId<T>()] << std::endl;
-				assert(edesc.sparse[getComponentId<T>()] == -1 && "Component already added to entity.");
+				assert(!edesc.mask.test(getComponentId<T>()) && "Component already added to entity.");
 				
-				edesc.sparse[getComponentId<T>()] = edesc.packed.size();
-				edesc.packed.push_back(getComponentId<T>());
-				
-				edesc.components.push_back(nullptr);
-				edesc.components[edesc.components.size() - 1] = new T;
+				edesc.mask.set(getComponentId<T>());
+				edesc.components[getComponentId<T>()] = new T;
 
 				std::cout << "Component for entity " << entity << " set successfully." << std::endl;
 				return;
@@ -118,23 +117,10 @@ public:
 	void removeComponent(Entity& entity) {
 		for (EntityDesc& edesc : entities) {
 			if (edesc.entity == entity) {
-				assert(edesc.sparse[getComponentId<T>()] != -1 && "Trying to remove non-existent component");
+				assert(edesc.mask.test(getComponentId<T>()) && "Trying to remove non-existent component");
 
-				int packedDelIndex = edesc.sparse[getComponentId<T>()]; // The index of the packed vector being deleted
-				delete edesc.components[packedDelIndex];
-				edesc.components.erase(edesc.components.begin() + packedDelIndex);
-				edesc.sparse[getComponentId<T>()] = -1;
-
-				// If last component was deleted, sparse vector does not need remapped
-				if (packedDelIndex > edesc.components.size()) {
-					std::cout << "Removal of component from entity " << entity << " was successful." << std::endl;
-					return;
-				}
-
-				// Remapping packed vector to sparse
-				for (int i = packedDelIndex; i < edesc.packed.size(); i++) {
-					edesc.sparse[edesc.packed[i]] -= 1;
-				}
+				delete edesc.components[getComponentId<T>()];
+				edesc.components[getComponentId<T>()] = nullptr;
 
 				std::cout << "Removal of component from entity " << entity << " was successful." << std::endl;
 				return;
@@ -148,7 +134,7 @@ public:
 	T* getComponent(Entity& entity) {
 		for (EntityDesc& edesc : entities) {
 			if (edesc.entity == entity) {
-				return static_cast<T*>(edesc.components[edesc.sparse[getComponentId<T>()]]);
+				return static_cast<T*>(edesc.components[getComponentId<T>()]);
 			}
 		}
 
@@ -158,31 +144,26 @@ public:
 	template<typename... ComponentTypes>
 	std::vector<Entity> getSystemGroup() {
 		std::vector<Entity> output;
-		std::bitset<MAX_COMPONENTS> refMask;
+		ComponentMask maskRef;
 
 		assert(sizeof...(ComponentTypes) > 0 && "A group must be bound by at least 1 component.");
 
-		int refComponentIds[] = { getComponentId<ComponentTypes>() ... };
-		for (int& id : refComponentIds) {
-			refMask.set(id);
+		int componentIds[] = { getComponentId<ComponentTypes>() ... };
+		for (int& id : componentIds) {
+			maskRef.set(id);
 		}
 
+		// Finding entities that belong in system group
 		for (EntityDesc& edesc : entities) {
-			std::bitset<MAX_COMPONENTS> entityMask;
-			
-			for (int i = 0; i < MAX_COMPONENTS; i++) {
-				if (edesc.sparse[i] >= 0) {
-					entityMask.set(i);
-				}
-				else {
-					entityMask.reset(i);
-				}
-			}
-
-			if ((refMask & entityMask) != refMask) continue;
+			if ((maskRef & edesc.mask) != maskRef) continue;
 			output.push_back(edesc.entity);
 		}
 
 		return output;
 	}
+
+private:
+	int componentCounter = 0;
+
+
 };

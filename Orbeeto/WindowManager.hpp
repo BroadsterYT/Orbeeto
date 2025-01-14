@@ -3,6 +3,6 @@
 
 class WindowManager {
 public:
-	static const int SCREENWIDTH = 1280;
-	static const int SCREENHEIGHT = 720;
+	static int SCREENWIDTH;
+	static int SCREENHEIGHT;
 };

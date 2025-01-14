@@ -137,11 +137,12 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DeltaTime.cpp" />
-    <ClCompile Include="EntityGroup.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Rooms\Room.cpp" />
+    <ClCompile Include="Systems\CollisionSystem.cpp" />
+    <ClCompile Include="Systems\PlayerGunSystem.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Vector2.cpp" />
     <ClCompile Include="WindowManager.cpp" />
@@ -157,9 +158,8 @@
     <ClInclude Include="Components\Player.hpp" />
     <ClInclude Include="Components\PlayerGun.hpp" />
     <ClInclude Include="ECS.hpp" />
-    <ClInclude Include="EntityGroup.hpp" />
     <ClInclude Include="Game.hpp" />
-    <ClInclude Include="DeltaTime.h" />
+    <ClInclude Include="DeltaTime.hpp" />
     <ClInclude Include="InputManager.hpp" />
     <ClInclude Include="Components\Sprite.hpp" />
     <ClInclude Include="Rooms\Room.hpp" />
@@ -172,6 +172,9 @@
     <ClInclude Include="TextureManager.hpp" />
     <ClInclude Include="Vector2.hpp" />
     <ClInclude Include="WindowManager.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Rooms\RoomLayouts\test.dat" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

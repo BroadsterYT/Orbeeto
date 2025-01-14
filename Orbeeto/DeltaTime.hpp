@@ -13,4 +13,8 @@ public:
 
 	static float deltaTime;
 	static float avgDeltaTime;
+
+	static void calculateDeltaTime();
+
+	static float getDeltaAdjuster();
 };

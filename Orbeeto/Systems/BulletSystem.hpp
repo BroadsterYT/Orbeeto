@@ -7,7 +7,7 @@ public:
 	BulletSystem() {}
 
 	void update() {
-		for (Entity& entity : Game::ecs.getSystemGroup<Bullet, Transform>()) {
+		for (Entity& entity : Game::ecs.getSystemGroup<Bullet, Sprite, Transform>()) {
 			Bullet* bullet = Game::ecs.getComponent<Bullet>(entity);
 			Transform* transform = Game::ecs.getComponent<Transform>(entity);
 
@@ -22,6 +22,7 @@ public:
 			// Destroying bullet if its lifetime is too long
 			if (SDL_GetTicks() - bullet->birthTime >= 5000) {
 				std::cout << "Bullet destroyed." << std::endl;
+
 				Game::ecs.destroyEntity(entity);
 			}
 		}

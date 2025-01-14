@@ -8,8 +8,6 @@ SDL_Renderer* Game::renderer = nullptr;
 
 ECS Game::ecs = ECS();
 
-EntityGroup Game::gProjectiles = EntityGroup("Projectiles");
-
 Game::Game(const char* title, int posX, int posY, int width, int height, bool fullscreen) {
 	int flags = 0;
 	if (fullscreen) {

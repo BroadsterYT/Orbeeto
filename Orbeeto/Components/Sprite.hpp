@@ -13,8 +13,8 @@
 /// <param name="angle">The angle to rotate the sprite before drawing. Defualts to 0.</param>
 /// <param name="moveWithRoom">Should this sprite be affected by the room/camera? Defaults to true.</param>
 struct Sprite : Component {
-	int tileWidth;
-	int tileHeight;
+	int tileWidth = 64;
+	int tileHeight = 64;
 	int posX = 0;
 	int posY = 0;
 	double angle = 0;  // The angle the texture should be rotated to
@@ -25,26 +25,4 @@ struct Sprite : Component {
 
 	int index = 0;  // The index of the image in the image vector to display
 	SDL_Texture* spriteSheet = nullptr;
-
-	/// <summary>
-	/// Places the source rectangle at the desired sprite in the spritesheet
-	/// </summary>
-	/// <param name="spritesPerRow">The number of sprites per row in the sprite sheet</param>
-	void setSpriteFromIndex(int spritesPerRow) {
-		int finalX = 0;
-		int finalY = 0;
-
-		for (int i = 0; i < index; i++) {
-			if ((i + 1) % spritesPerRow == 0) {
-				finalX = 0;
-				finalY += tileHeight;
-			}
-			else {
-				finalX += tileWidth;
-			}
-		}
-
-		srcRect.x = finalX;
-		srcRect.y = finalY;
-	}
 };

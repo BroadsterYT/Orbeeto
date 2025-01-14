@@ -2,11 +2,12 @@
 #include <algorithm>
 #include <numeric>
 
-#include "DeltaTime.h"
+#include "DeltaTime.hpp"
 #include "Game.hpp"
 #include "InputManager.hpp"
 #include "Rooms/Room.hpp"
 #include "TextureManager.hpp"
+#include "WindowManager.hpp"
 
 #include "Components/Bullet.hpp"
 #include "Components/Collision.hpp"
@@ -26,17 +27,8 @@
 
 Game* game = nullptr;
 
-const int FPS = 60;
-const int frameDelay = 1000 / FPS;
-
-const float TARGET_DELTA_TIME = 1.0f / 60.0f;  // 60 FPS
-
-
 int main(int argc, char* argv[]) {
-	uint32_t frameStart;
-	int frameTime;
-
-	game = new Game("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, false);
+	game = new Game("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WindowManager::SCREENWIDTH, WindowManager::SCREENHEIGHT, false);
 
 	// Initializing room
 	Room room(0, 0);
@@ -51,8 +43,6 @@ int main(int argc, char* argv[]) {
 	DeltaTime::previousTime = SDL_GetPerformanceCounter();
 
 	while (game->isRunning) {
-		frameStart = SDL_GetTicks();
-
 		// ---------- Handling events ---------- //
 		game->handleEvents();
 
@@ -60,33 +50,15 @@ int main(int argc, char* argv[]) {
 		collisionSystem.update();
 		playerSystem.update();
 		playerGunSystem.update();
-
 		bulletSystem.update();
 
 		room.update();
-
-		// Delta Time
-		DeltaTime::currentTime = SDL_GetPerformanceCounter();
-		DeltaTime::deltaTime = (DeltaTime::currentTime - DeltaTime::previousTime) / (float)SDL_GetPerformanceFrequency();
-		DeltaTime::previousTime = DeltaTime::currentTime;
-
-		// Update Buffer
-		DeltaTime::deltaBuffer[DeltaTime::bufferIndex] = DeltaTime::deltaTime;
-		DeltaTime::bufferIndex = (DeltaTime::bufferIndex) % DeltaTime::deltaBuffer.size();
-
-		DeltaTime::avgDeltaTime = std::accumulate(DeltaTime::deltaBuffer.begin(), DeltaTime::deltaBuffer.end(), 0.0f) / DeltaTime::bufferSize;
+		
+		DeltaTime::calculateDeltaTime();
 
 		SDL_RenderClear(Game::renderer);
 		spriteSystem.render(Game::renderer);
 		SDL_RenderPresent(Game::renderer);
-
-		//SDL_Delay(16);
-
-		std::cout << DeltaTime::avgDeltaTime << std::endl;
-		/*float frameTime = (SDL_GetPerformanceCounter() - DeltaTime::currentTime) / (float)SDL_GetPerformanceFrequency();
-		if (frameTime < TARGET_DELTA_TIME) {
-			while ((SDL_GetPerformanceCounter() - DeltaTime::currentTime) / (float)SDL_GetPerformanceFrequency() < TARGET_DELTA_TIME);
-		}*/
 	}
 
 	game->clean();
