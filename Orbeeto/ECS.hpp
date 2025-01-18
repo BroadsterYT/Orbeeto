@@ -3,6 +3,7 @@
 #include <vector>
 #include <bitset>
 #include <iostream>
+#include <algorithm>
 
 #include "Components/Bullet.hpp"
 #include "Components/Collision.hpp"

@@ -27,6 +27,7 @@ Room::Room(int roomX, int roomY) {
 	// ----- Player ----- //
 	Sprite* playerSprite = Game::ecs.getComponent<Sprite>(player);
 	*playerSprite = Sprite{
+		.layer = 0,
 		.tileWidth = 64,
 		.tileHeight = 64,
 		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png")
@@ -46,6 +47,7 @@ Room::Room(int roomX, int roomY) {
 	// ----- Left Gun ----- //
 	Sprite* lGunSprite = Game::ecs.getComponent<Sprite>(leftGun);
 	*lGunSprite = Sprite{
+		.layer = 1,
 		.tileWidth = 64,
 		.tileHeight = 64,
 		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeetoguns.png")
@@ -131,6 +133,7 @@ void Room::buildRoomEntity(const int tileId, int tilePosX, int tilePosY) {
 		Game::ecs.assignComponent<Transform>(testWall);
 
 		// Building wall tile image
+		// TODO: finalWallImage texture must be destroyed when switching rooms
 		SDL_Texture* finalWallImage = SDL_CreateTexture(Game::renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, tileSize, tileSize);
 		SDL_Texture* tileSheet = TextureManager::loadTexture(Game::renderer, "Assets/wall.png");
 
@@ -149,6 +152,7 @@ void Room::buildRoomEntity(const int tileId, int tilePosX, int tilePosY) {
 				SDL_RenderCopy(Game::renderer, tileSheet, &finalSrcRect, &finalDestRect);
 			}
 		}
+		SDL_DestroyTexture(tileSheet);
 		SDL_SetRenderTarget(Game::renderer, NULL);
 
 		// Assigning components

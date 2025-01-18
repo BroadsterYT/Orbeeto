@@ -13,6 +13,8 @@
 /// <param name="angle">The angle to rotate the sprite before drawing. Defualts to 0.</param>
 /// <param name="moveWithRoom">Should this sprite be affected by the room/camera? Defaults to true.</param>
 struct Sprite : Component {
+	int layer = 0;
+	bool isRendered = false;
 	int tileWidth = 64;
 	int tileHeight = 64;
 	int posX = 0;

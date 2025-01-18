@@ -1,4 +1,5 @@
 #include "CollisionSystem.hpp"
+#include <algorithm>
 
 
 CollisionSystem::CollisionSystem() {}
@@ -96,8 +97,7 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 }
 
 bool CollisionSystem::hasPhysicsTag(const Collision* coll, std::string tag) {
-	for (auto anyTag : coll->physicsTags) {
-		if (anyTag == tag) return true;
-	}
-	return false;
+	const auto it = std::find(coll->physicsTags.begin(), coll->physicsTags.end(), tag);
+	if (it != coll->physicsTags.end()) return true;
+	else return false;
 }

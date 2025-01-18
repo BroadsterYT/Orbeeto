@@ -30,15 +30,15 @@ Game* game = nullptr;
 int main(int argc, char* argv[]) {
 	game = new Game("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WindowManager::SCREENWIDTH, WindowManager::SCREENHEIGHT, false);
 
-	// Initializing room
-	Room room(0, 0);
-
 	// Initializing systems
 	BulletSystem bulletSystem;
 	CollisionSystem collisionSystem;
 	PlayerGunSystem playerGunSystem;
 	PlayerSystem playerSystem;
-	SpriteSystem spriteSystem;
+	SpriteSystem spriteSystem(Game::renderer);
+
+	// Initializing room
+	Room room(0, 0);
 
 	DeltaTime::previousTime = SDL_GetPerformanceCounter();
 
@@ -47,6 +47,7 @@ int main(int argc, char* argv[]) {
 		game->handleEvents();
 
 		// Update game components here
+		spriteSystem.render(Game::renderer);
 		collisionSystem.update();
 		playerSystem.update();
 		playerGunSystem.update();
@@ -56,9 +57,8 @@ int main(int argc, char* argv[]) {
 		
 		DeltaTime::calculateDeltaTime();
 
-		SDL_RenderClear(Game::renderer);
-		spriteSystem.render(Game::renderer);
-		SDL_RenderPresent(Game::renderer);
+		/*spriteSystem.render(Game::renderer);*/
+		//SDL_RenderPresent(Game::renderer);
 	}
 
 	game->clean();
