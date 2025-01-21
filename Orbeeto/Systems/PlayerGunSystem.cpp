@@ -18,12 +18,10 @@ void PlayerGunSystem::update() {
 		sprite->angle = rotAngle;
 
 		// Firing bullets
-		if (InputManager::mousePressed[SDL_BUTTON_LEFT] && gun->cooldown >= gun->maxCooldown) {
+		if (InputManager::mousePressed[SDL_BUTTON_LEFT] && TimeManip::getTimeDiff(gun->lastShot) >= gun->cooldown) {
 			fireBullet(ownerTrans, 0, rotAngle);
-			gun->cooldown = 0;
+			gun->lastShot = TimeManip::getTime();
 		}
-		gun->cooldown++;
-		if (gun->cooldown > gun->maxCooldown) gun->cooldown = gun->maxCooldown;
 	}
 }
 

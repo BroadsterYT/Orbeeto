@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <numeric>
 
-#include "DeltaTime.hpp"
+#include "TimeManip.hpp"
 #include "Game.hpp"
 #include "InputManager.hpp"
 #include "Rooms/Room.hpp"
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
 	// Initializing room
 	Room room(0, 0);
 
-	DeltaTime::previousTime = SDL_GetPerformanceCounter();
+	TimeManip::previousTime = SDL_GetPerformanceCounter();
 
 	while (game->isRunning) {
 		// ---------- Handling events ---------- //
@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 
 		room.update();
 		
-		DeltaTime::calculateDeltaTime();
+		TimeManip::calculateDeltaTime();
 
 		/*spriteSystem.render(Game::renderer);*/
 		//SDL_RenderPresent(Game::renderer);

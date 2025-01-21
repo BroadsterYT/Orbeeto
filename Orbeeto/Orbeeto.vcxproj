@@ -136,7 +136,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="DeltaTime.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
@@ -145,6 +144,7 @@
     <ClCompile Include="Systems\PlayerGunSystem.cpp" />
     <ClCompile Include="Systems\SpriteSystem.cpp" />
     <ClCompile Include="TextureManager.cpp" />
+    <ClCompile Include="TimeManip.cpp" />
     <ClCompile Include="Vector2.cpp" />
     <ClCompile Include="WindowManager.cpp" />
   </ItemGroup>
@@ -160,7 +160,6 @@
     <ClInclude Include="Components\PlayerGun.hpp" />
     <ClInclude Include="ECS.hpp" />
     <ClInclude Include="Game.hpp" />
-    <ClInclude Include="DeltaTime.hpp" />
     <ClInclude Include="InputManager.hpp" />
     <ClInclude Include="Components\Sprite.hpp" />
     <ClInclude Include="Rooms\Room.hpp" />
@@ -171,6 +170,7 @@
     <ClInclude Include="Systems\SpriteSystem.hpp" />
     <ClInclude Include="Systems\System.hpp" />
     <ClInclude Include="TextureManager.hpp" />
+    <ClInclude Include="TimeManip.hpp" />
     <ClInclude Include="Vector2.hpp" />
     <ClInclude Include="WindowManager.hpp" />
   </ItemGroup>

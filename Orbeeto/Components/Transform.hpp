@@ -1,7 +1,7 @@
 #pragma once
 #include "Component.hpp"
 #include "../Vector2.hpp"
-#include "../DeltaTime.hpp"
+#include "../TimeManip.hpp"
 
 
 struct Transform : Component {
@@ -15,11 +15,11 @@ struct Transform : Component {
 	void accelMovement() {
 		accel.x += vel.x * fric;
 		accel.y += vel.y * fric;
-		vel += accel * DeltaTime::getDeltaAdjuster();
-		pos += vel * DeltaTime::getDeltaAdjuster() + accel * accelConst;
+		vel += accel * TimeManip::getDeltaAdjuster();
+		pos += vel * TimeManip::getDeltaAdjuster() + accel * accelConst;
 	}
 
 	void velMovement() {
-		pos += vel * DeltaTime::getDeltaAdjuster();
+		pos += vel * TimeManip::getDeltaAdjuster();
 	}
 };
