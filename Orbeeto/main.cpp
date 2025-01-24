@@ -9,17 +9,9 @@
 #include "TextureManager.hpp"
 #include "WindowManager.hpp"
 
-#include "Components/Bullet.hpp"
-#include "Components/Collision.hpp"
-#include "Components/Defense.hpp"
-#include "Components/Hp.hpp"
-#include "Components/Player.hpp"
-#include "Components/PlayerGun.hpp"
-#include "Components/Sprite.hpp"
-#include "Components/Transform.hpp"
-
 #include "Systems/BulletSystem.hpp"
 #include "Systems/CollisionSystem.hpp"
+#include "Systems/GrappleSystem.hpp"
 #include "Systems/PlayerGunSystem.hpp"
 #include "Systems/PlayerSystem.hpp"
 #include "Systems/SpriteSystem.hpp"
@@ -33,6 +25,7 @@ int main(int argc, char* argv[]) {
 	// Initializing systems
 	BulletSystem bulletSystem;
 	CollisionSystem collisionSystem;
+	GrappleSystem grappleSystem;
 	PlayerGunSystem playerGunSystem;
 	PlayerSystem playerSystem;
 	SpriteSystem spriteSystem(Game::renderer);
@@ -52,6 +45,7 @@ int main(int argc, char* argv[]) {
 		playerSystem.update();
 		playerGunSystem.update();
 		bulletSystem.update();
+		grappleSystem.update();
 
 		room.update();
 		

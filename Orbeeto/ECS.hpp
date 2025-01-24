@@ -9,6 +9,7 @@
 #include "Components/Collision.hpp"
 #include "Components/Component.hpp"
 #include "Components/Defense.hpp"
+#include "Components/Grapple.hpp"
 #include "Components/Hp.hpp"
 #include "Components/Player.hpp"
 #include "Components/PlayerGun.hpp"
@@ -40,6 +41,7 @@ public:
 		std::cout << "Bullet component registered. ID: " << getComponentId<Bullet>() << std::endl;
 		std::cout << "Collision component registered. ID: " << getComponentId<Collision>() << std::endl;
 		std::cout << "Defense component registered. ID: " << getComponentId<Defense>() << std::endl;
+		std::cout << "Grapple component registered. ID: " << getComponentId<Grapple>() << std::endl;
 		std::cout << "Hp component registered. ID: " << getComponentId<Hp>() << std::endl;
 		std::cout << "Player component registered. ID: " << getComponentId<Player>() << std::endl;
 		std::cout << "PlayerGun component registered. ID: " << getComponentId<PlayerGun>() << std::endl;
@@ -165,6 +167,4 @@ public:
 
 private:
 	int componentCounter = 0;
-
-
 };

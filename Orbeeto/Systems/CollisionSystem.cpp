@@ -91,8 +91,20 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 		pushEntity(eColl, eTrans, oColl, oTrans);
 	}
 
+	if (hasPhysicsTag(eColl, "grapple")) {
+		Grapple* grapple = Game::ecs.getComponent<Grapple>(entity);
+		Player* player = Game::ecs.getComponent<Player>(grapple->owner);
+
+		if (hasPhysicsTag(oColl, "player") && player->grappleState == GrappleState::RETURNING) {
+			Game::ecs.destroyEntity(entity);
+			player->grappleState = GrappleState::INACTIVE;
+			return;
+		}
+	}
+
 	if (hasPhysicsTag(eColl, "projectile") && hasPhysicsTag(oColl, "wall")) {  // Destroys bullet if it hits wall
 		Game::ecs.destroyEntity(entity);
+		return;
 	}
 }
 

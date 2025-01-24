@@ -2,9 +2,9 @@
 #include "System.hpp"
 
 
-class PlayerSystem : public System {
+class GrappleSystem : public System {
 public:
-	PlayerSystem();
+	GrappleSystem();
 
 	void update();
 };
