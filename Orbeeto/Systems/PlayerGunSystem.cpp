@@ -69,13 +69,13 @@ void PlayerGunSystem::fireBullet(Transform* ownerTrans, const int bulletId, cons
 
 	switch (bulletId) {
 	case 0:
-		bTransform->vel = Vector2(0.0f, -2.0f);
+		bTransform->vel = Vector2(0.0f, -3.0f);
 		bTransform->vel.rotate(rotAngle);
 		//bTransform->vel += ownerTrans->vel;
 		break;
 
 	default:
-		bTransform->vel = Vector2(0.0f, -2.0f);
+		bTransform->vel = Vector2(0.0f, -3.0f);
 		bTransform->vel.rotate(rotAngle);
 		//bTransform->vel += ownerTrans->vel;
 		break;

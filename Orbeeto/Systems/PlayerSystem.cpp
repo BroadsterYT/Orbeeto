@@ -23,44 +23,49 @@ void PlayerSystem::update() {
 		sprite->angle = -roomPos.getAngleToPoint(InputManager::mousePosX, InputManager::mousePosY);
 
 		// ----- Firing grappling hook ----- //
-		if (player->grappleState == GrappleState::INACTIVE && InputManager::mousePressed[SDL_BUTTON_MIDDLE]) {
-			player->grappleState = GrappleState::SENT;
-			
-			Entity grapple = Game::ecs.createEntity();
-
-			Game::ecs.assignComponent<Sprite>(grapple);
-			Game::ecs.assignComponent<Collision>(grapple);
-			Game::ecs.assignComponent<Grapple>(grapple);
-			Game::ecs.assignComponent<Transform>(grapple);
-
-			Sprite* gSprite = Game::ecs.getComponent<Sprite>(grapple);
-			*gSprite = Sprite{
-				.tileWidth = 32,
-				.tileHeight = 32,
-				.angle = sprite->angle,
-				.srcRect = SDL_Rect(0, 64, 32, 32),
-				.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/bullets.png"),
-			};
-
-			Collision* gColl = Game::ecs.getComponent<Collision>(grapple);
-			*gColl = Collision{
-				.hitWidth = 32,
-				.hitHeight = 32,
-				.physicsTags = {"grapple"},
-			};
-
-			Grapple* gGrapple = Game::ecs.getComponent<Grapple>(grapple);
-			*gGrapple = Grapple{
-				.owner = entity
-			};
-
-			Transform* gTrans = Game::ecs.getComponent<Transform>(grapple);
-			*gTrans = Transform{
-				.pos = Vector2(transform->pos.x, transform->pos.y),
-				.vel = Vector2(0, -2.0f),
-				.accelConst = 0.15f,
-			};
-			gTrans->vel.rotate(sprite->angle);
+		if (player->grappleState == GrappleState::INACTIVE && player->grappleInputCopy < InputManager::mouseReleased[SDL_BUTTON_MIDDLE]) {
+			fireGrapple(entity, player, transform, sprite);
+			player->grappleInputCopy = InputManager::mouseReleased[SDL_BUTTON_MIDDLE];
 		}
 	}
+}
+
+void PlayerSystem::fireGrapple(const Entity& pEntity, Player* player, Transform* pTrans, Sprite* pSprite) {
+	player->grappleState = GrappleState::SENT;
+
+	Entity grapple = Game::ecs.createEntity();
+
+	Game::ecs.assignComponent<Sprite>(grapple);
+	Game::ecs.assignComponent<Collision>(grapple);
+	Game::ecs.assignComponent<Grapple>(grapple);
+	Game::ecs.assignComponent<Transform>(grapple);
+
+	Sprite* gSprite = Game::ecs.getComponent<Sprite>(grapple);
+	*gSprite = Sprite{
+		.tileWidth = 32,
+		.tileHeight = 32,
+		.angle = pSprite->angle,
+		.srcRect = SDL_Rect(0, 64, 32, 32),
+		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/bullets.png"),
+	};
+
+	Collision* gColl = Game::ecs.getComponent<Collision>(grapple);
+	*gColl = Collision{
+		.hitWidth = 32,
+		.hitHeight = 32,
+		.physicsTags = {"grapple"},
+	};
+
+	Grapple* gGrapple = Game::ecs.getComponent<Grapple>(grapple);
+	*gGrapple = Grapple{
+		.owner = pEntity
+	};
+
+	Transform* gTrans = Game::ecs.getComponent<Transform>(grapple);
+	*gTrans = Transform{
+		.pos = Vector2(pTrans->pos.x, pTrans->pos.y),
+		.vel = Vector2(0, -2.0f),
+		.accelConst = 0.15f,
+	};
+	gTrans->vel.rotate(pSprite->angle);
 }

@@ -43,9 +43,9 @@ int main(int argc, char* argv[]) {
 		spriteSystem.render(Game::renderer);
 		collisionSystem.update();
 		playerSystem.update();
+		grappleSystem.update();
 		playerGunSystem.update();
 		bulletSystem.update();
-		grappleSystem.update();
 
 		room.update();
 		
