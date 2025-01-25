@@ -25,15 +25,26 @@ void GrappleSystem::update() {
 			break;
 
 		case GrappleState::LATCHED:
+			transform->accel = Vector2(0.0f, 0.0f);
+			if (!InputManager::mousePressed[SDL_BUTTON_MIDDLE]) {
+				player->grappleState = GrappleState::RETURNING;
+			}
+
 			break;
 
-		case GrappleState::RETURNING: {
-			double angle = transform->pos.getAngleToPoint(pTrans->pos);
-			transform->accel.x = transform->accelConst * cos(-angle);
-			transform->accel.y = transform->accelConst * sin(-angle);
-		}
-
-			transform->accelMovement();
+		case GrappleState::RETURNING: 
+			if (grapple->grappledTo == nullptr) {
+				double angle = transform->pos.getAngleToPoint(pTrans->pos);
+				transform->accel.x = transform->accelConst * cos(-angle);
+				transform->accel.y = transform->accelConst * sin(-angle);
+				transform->accelMovement();
+			}
+			else {
+				double angle = pTrans->pos.getAngleToPoint(transform->pos);
+				pTrans->accel.x = transform->accelConst * cos(-angle);
+				pTrans->accel.y = transform->accelConst * sin(-angle);
+				pTrans->accelMovement();
+			}
 			break;
 		}
 	}

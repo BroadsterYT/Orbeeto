@@ -100,6 +100,11 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 			player->grappleState = GrappleState::INACTIVE;
 			return;
 		}
+
+		if (hasPhysicsTag(oColl, "wall") && player->grappleState == GrappleState::SENT) {
+			player->grappleState = GrappleState::LATCHED;
+			grapple->grappledTo = &other;
+		}
 	}
 
 	if (hasPhysicsTag(eColl, "projectile") && hasPhysicsTag(oColl, "wall")) {  // Destroys bullet if it hits wall
