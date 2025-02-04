@@ -172,6 +172,7 @@
     <ClInclude Include="Systems\GrappleSystem.hpp" />
     <ClInclude Include="Systems\PlayerGunSystem.hpp" />
     <ClInclude Include="Systems\PlayerSystem.hpp" />
+    <ClInclude Include="Systems\PortalSystem.hpp" />
     <ClInclude Include="Systems\SpriteSystem.hpp" />
     <ClInclude Include="Systems\System.hpp" />
     <ClInclude Include="TextureManager.hpp" />

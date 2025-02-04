@@ -50,9 +50,6 @@ int main(int argc, char* argv[]) {
 		room.update();
 		
 		TimeManip::calculateDeltaTime();
-
-		/*spriteSystem.render(Game::renderer);*/
-		//SDL_RenderPresent(Game::renderer);
 	}
 
 	game->clean();

@@ -91,6 +91,9 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 		pushEntity(eColl, eTrans, oColl, oTrans);
 	}
 
+	// Portal teleportation
+
+	// Grappling hook collisions
 	if (hasPhysicsTag(eColl, "grapple")) {
 		Grapple* grapple = Game::ecs.getComponent<Grapple>(entity);
 		Player* player = Game::ecs.getComponent<Player>(grapple->owner);
@@ -107,6 +110,12 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 		}
 	}
 
+	// Portal Spawning
+	if (hasPhysicsTag(eColl, "portalBullet") && hasPhysicsTag(oColl, "canHoldPortal")) {
+
+	}
+
+	// Projectile deaths
 	if (hasPhysicsTag(eColl, "projectile") && hasPhysicsTag(oColl, "wall")) {  // Destroys bullet if it hits wall
 		Game::ecs.destroyEntity(entity);
 		return;

@@ -11,5 +11,7 @@ enum GrappleState {
 
 struct Player : Component {
 	int grappleState = GrappleState::INACTIVE;
-	int grappleInputCopy = 0; // A copy of the value if the number of middle mouse presses
+	
+	int grappleInputCopy = 0; // A copy of the value of the number of middle mouse releases
+	int portalInputCopy = 0; // A copy of the number of right mouse releases
 };

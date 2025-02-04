@@ -10,6 +10,7 @@ void PlayerSystem::update() {
 		Sprite* sprite = Game::ecs.getComponent<Sprite>(entity);
 		Transform* transform = Game::ecs.getComponent<Transform>(entity);
 
+		// Normal movement
 		Vector2 finalAccel(0.0f, 0.0f);
 		if (InputManager::keysPressed[SDLK_w]) finalAccel.y -= transform->accelConst;
 		if (InputManager::keysPressed[SDLK_a]) finalAccel.x -= transform->accelConst;
@@ -19,6 +20,8 @@ void PlayerSystem::update() {
 		transform->accel = finalAccel;
 		transform->accelMovement();
 
+		// TODO: Add special rotational movement when grappled to wall
+
 		Vector2 roomPos(sprite->destRect.x + sprite->tileWidth / 2, sprite->destRect.y + sprite->tileHeight / 2);
 		sprite->angle = -roomPos.getAngleToPoint(InputManager::mousePosX, InputManager::mousePosY);
 
@@ -26,6 +29,12 @@ void PlayerSystem::update() {
 		if (player->grappleState == GrappleState::INACTIVE && player->grappleInputCopy < InputManager::mouseReleased[SDL_BUTTON_MIDDLE]) {
 			fireGrapple(entity, player, transform, sprite);
 			player->grappleInputCopy = InputManager::mouseReleased[SDL_BUTTON_MIDDLE];
+		}
+
+		// ----- Firing portal bullet ----- //
+		if (player->portalInputCopy < InputManager::mouseReleased[SDL_BUTTON_RIGHT]) {
+			firePortal(&entity, player, transform, sprite);
+			player->portalInputCopy = InputManager::mouseReleased[SDL_BUTTON_RIGHT];
 		}
 	}
 }
@@ -68,4 +77,41 @@ void PlayerSystem::fireGrapple(const Entity& pEntity, Player* player, Transform*
 		.accelConst = 0.15f,
 	};
 	gTrans->vel.rotate(pSprite->angle);
+}
+
+void PlayerSystem::firePortal(Entity* pEntity, Player* player, Transform* pTrans, Sprite* pSprite) {
+	Entity portalBullet = Game::ecs.createEntity();
+
+	Game::ecs.assignComponent<Sprite>(portalBullet);
+	Game::ecs.assignComponent<Collision>(portalBullet);
+	Game::ecs.assignComponent<Transform>(portalBullet);
+	Game::ecs.assignComponent<Bullet>(portalBullet);
+
+	Sprite* pbSprite = Game::ecs.getComponent<Sprite>(portalBullet);
+	*pbSprite = Sprite{
+		.tileWidth = 32,
+		.tileHeight = 32,
+		.angle = pSprite->angle,
+		.srcRect = SDL_Rect(0, 32, 32, 32),
+		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/bullets.png"),
+	};
+
+	Collision* pbColl = Game::ecs.getComponent<Collision>(portalBullet);
+	*pbColl = Collision{
+		.hitWidth = 8,
+		.hitHeight = 8,
+		.physicsTags = {"portalBullet", "projectile"},
+	};
+
+	Transform* pbTrans = Game::ecs.getComponent<Transform>(portalBullet);
+	*pbTrans = Transform{
+		.pos = Vector2(pTrans->pos.x, pTrans->pos.y),
+		.vel = Vector2(0, -2.0f),
+	};
+	pbTrans->vel.rotate(pSprite->angle);
+
+	Bullet* pbBullet = Game::ecs.getComponent<Bullet>(portalBullet);
+	*pbBullet = Bullet{
+		.shotBy = pEntity,
+	};
 }

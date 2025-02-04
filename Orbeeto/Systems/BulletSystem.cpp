@@ -10,11 +10,7 @@ void BulletSystem::update() {
 
 		// ----- Bullet AI ----- //
 		switch (bullet->bulletAI) {
-		case 0:  // Standard bullet
-			transform->velMovement();
-			break;
-
-		case 1: // Grapple Bullet
+		case 0:  // Standard bullet movement
 			transform->velMovement();
 			break;
 

@@ -149,6 +149,9 @@
     <ClInclude Include="TimeManip.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Systems\PortalSystem.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Rooms\RoomLayouts\test.dat" />
