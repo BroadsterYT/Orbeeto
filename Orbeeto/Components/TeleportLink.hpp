@@ -4,5 +4,5 @@
 
 
 struct TeleportLink : public Component {
-	uint32_t* linkedTo = nullptr;
+	uint32_t linkedTo = 0;
 };

@@ -1,5 +1,6 @@
 #include "CollisionSystem.hpp"
 #include <algorithm>
+#include "../Rooms/Room.hpp"
 
 
 CollisionSystem::CollisionSystem() {}
@@ -15,6 +16,8 @@ void CollisionSystem::update() {
 		for (Entity& other : Game::ecs.getSystemGroup<Collision, Transform>()) {
 			if (other == entity) continue;
 			Collision* oCollide = Game::ecs.getComponent<Collision>(other);
+
+			if (oCollide == nullptr) continue;
 
 			if (checkForCollision(collision, oCollide)) {
 				evaluateCollision(entity, collision, transform, other, oCollide);
@@ -92,6 +95,9 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 	}
 
 	// Portal teleportation
+	if (hasPhysicsTag(eColl, "canTeleport") && hasPhysicsTag(oColl, "portal")) {
+		TeleportLink* firstLink = Game::ecs.getComponent<TeleportLink>(other);
+	}
 
 	// Grappling hook collisions
 	if (hasPhysicsTag(eColl, "grapple")) {
@@ -144,6 +150,51 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 
 		TeleportLink* pTLink = Game::ecs.getComponent<TeleportLink>(portal);
 		*pTLink = TeleportLink{};
+
+		Bullet* pBullet = Game::ecs.getComponent<Bullet>(entity);
+		Player* player = Game::ecs.getComponent<Player>(pBullet->shotBy);
+
+		// Updating active player portals. If two are alredy active the oldest one will be replaced by the new one
+		if (player->portals.first == 0) {  // No portals fired yet
+			player->portals.first = portal;
+		}
+		else {
+			TeleportLink* otherLink = Game::ecs.getComponent<TeleportLink>(player->portals.first);
+
+			if (player->portals.second == 0) {  // Only 1 portal fired so far
+				player->portals.second = portal;
+				
+				// Linking portals for player
+				pTLink->linkedTo = player->portals.first;
+				otherLink->linkedTo = player->portals.second;
+
+				// Linking portals for room
+				Room::newPortalLink(player->portals.first, player->portals.second);
+				Room::newPortalLink(player->portals.second, player->portals.first);
+
+				std::cout << "Linked " << player->portals.first << " to " << Room::getPortalLink(player->portals.first) << std::endl;
+				std::cout << "Linked " << player->portals.second << " to " << Room::getPortalLink(player->portals.second) << std::endl;
+			}
+			else {  // Currently 2 portals active
+				Room::removePortalLink(player->portals.first);
+				Room::removePortalLink(player->portals.second);
+				Game::ecs.destroyEntity(player->portals.first);
+
+				player->portals.first = player->portals.second;
+				player->portals.second = portal;
+
+				// Linking portals for player
+				pTLink->linkedTo = player->portals.first;
+				otherLink->linkedTo = player->portals.second;
+
+				// Linking portals for room
+				Room::newPortalLink(player->portals.first, player->portals.second);
+				Room::newPortalLink(player->portals.second, player->portals.first);
+
+				std::cout << "Linked " << player->portals.first << " to " << Room::getPortalLink(player->portals.first) << std::endl;
+				std::cout << "Linked " << player->portals.second << " to " << Room::getPortalLink(player->portals.second) << std::endl;
+			}
+		}
 
 		// AN ENTITY WITH THE PORTALBULLET PHYSICS TAG MUST ALSO HAVE PROJECTILE TAG!
 	}

@@ -50,7 +50,7 @@ public:
 		std::cout << "TeleportLink component registered. ID: " << getComponentId<TeleportLink>() << std::endl;
 		std::cout << "Transform component registered. ID: " << getComponentId<Transform>() << std::endl;
 
-		for (Entity i = 0; i < MAX_ENTITIES; i++) {
+		for (Entity i = 1; i < MAX_ENTITIES; i++) {
 			freeEntities.push_back(i);
 		}
 	}

@@ -33,7 +33,7 @@ void PlayerSystem::update() {
 
 		// ----- Firing portal bullet ----- //
 		if (player->portalInputCopy < InputManager::mouseReleased[SDL_BUTTON_RIGHT]) {
-			firePortal(&entity, player, transform, sprite);
+			firePortal(entity, player, transform, sprite);
 			player->portalInputCopy = InputManager::mouseReleased[SDL_BUTTON_RIGHT];
 		}
 	}
@@ -79,7 +79,7 @@ void PlayerSystem::fireGrapple(const Entity& pEntity, Player* player, Transform*
 	gTrans->vel.rotate(pSprite->angle);
 }
 
-void PlayerSystem::firePortal(Entity* pEntity, Player* player, Transform* pTrans, Sprite* pSprite) {
+void PlayerSystem::firePortal(Entity pEntity, Player* player, Transform* pTrans, Sprite* pSprite) {
 	Entity portalBullet = Game::ecs.createEntity();
 
 	Game::ecs.assignComponent<Sprite>(portalBullet);

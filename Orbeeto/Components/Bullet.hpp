@@ -8,5 +8,5 @@ struct Bullet : Component {
 	uint32_t birthTime = SDL_GetTicks();
 	int bulletAI = 0;
 
-	uint32_t* shotBy = nullptr;
+	uint32_t shotBy = 0;
 };

@@ -17,5 +17,5 @@ private:
 	/// <param name="pTrans"></param>
 	/// <param name="pSprite"></param>
 	void fireGrapple(const Entity& pEntity, Player* player, Transform* pTrans, Sprite* pSprite);
-	void firePortal(Entity* pEntity, Player* player, Transform* pTrans, Sprite* pSprite);
+	void firePortal(Entity pEntity, Player* player, Transform* pTrans, Sprite* pSprite);
 };

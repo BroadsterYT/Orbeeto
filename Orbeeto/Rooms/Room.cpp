@@ -11,6 +11,8 @@
 
 Camera Room::camera = Camera();
 
+std::unordered_map<Entity, Entity> Room::portalLinks;
+
 Room::Room(int roomX, int roomY) {
 	this->roomX = roomX;
 	this->roomY = roomY;
@@ -62,6 +64,36 @@ Room::Room(int roomX, int roomY) {
 	};
 
 	loadRoom(0, 0);
+}
+
+void Room::loadRoom(int x, int y) {
+	if (roomX == 0 && roomY == 0) {
+		readRoomData(vectorizeRoomDetails("Rooms/RoomLayouts/test.dat"), vectorizeRoomTiles("Rooms/RoomLayouts/test.dat"));
+	}
+}
+
+void Room::update() {
+	Transform* pTransform = Game::ecs.getComponent<Transform>(player);
+
+	Room::camera.focus((int)pTransform->pos.x, (int)pTransform->pos.y);
+}
+
+void Room::newPortalLink(Entity& first, Entity& second) {
+	portalLinks[first] = second;
+}
+
+void Room::removePortalLink(Entity& portal) {
+	auto it = portalLinks.find(portal);
+	if (it != portalLinks.end()) portalLinks.erase(it);
+	else std::cout << "Link could not be found\n";
+}
+
+Entity Room::getPortalLink(Entity& portal) {
+	return portalLinks[portal];
+}
+
+void Room::clearPortalLinks() {
+	portalLinks.clear();
 }
 
 std::vector<int> Room::vectorizeRoomDetails(const std::string roomFilePath) {
@@ -160,7 +192,7 @@ void Room::buildRoomEntity(const int tileId, int tilePosX, int tilePosY) {
 		*wallColl = Collision{
 			.hitWidth = 64,
 			.hitHeight = 64,
-			.physicsTags = {"wall", "pushable", "canPush"}
+			.physicsTags = {"wall", "canPush", "canHoldPortal"}
 		};
 
 		Sprite* wallSprite = Game::ecs.getComponent<Sprite>(testWall);
@@ -175,15 +207,4 @@ void Room::buildRoomEntity(const int tileId, int tilePosX, int tilePosY) {
 			.pos = Vector2(tileSize * tilePosX, tileSize * tilePosY)  // TODO: Verify this is correct
 		};
 	}
-}
-
-void Room::loadRoom(int x, int y) {
-	if (roomX == 0 && roomY == 0) {
-		readRoomData(vectorizeRoomDetails("Rooms/RoomLayouts/test.dat"), vectorizeRoomTiles("Rooms/RoomLayouts/test.dat"));
-	}
-}
-
-void Room::update() {
-	Transform* pTransform = Game::ecs.getComponent<Transform>(player);
-	Room::camera.focus((int)pTransform->pos.x, (int)pTransform->pos.y);
 }

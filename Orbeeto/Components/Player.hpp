@@ -15,4 +15,6 @@ struct Player : Component {
 	
 	int grappleInputCopy = 0; // A copy of the value of the number of middle mouse releases
 	int portalInputCopy = 0; // A copy of the number of right mouse releases
+
+	std::pair<uint32_t, uint32_t> portals = { 0, 0 };
 };
