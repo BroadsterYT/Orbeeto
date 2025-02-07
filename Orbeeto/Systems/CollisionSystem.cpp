@@ -112,7 +112,40 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 
 	// Portal Spawning
 	if (hasPhysicsTag(eColl, "portalBullet") && hasPhysicsTag(oColl, "canHoldPortal")) {
+		Entity portal = Game::ecs.createEntity();
 
+		Game::ecs.assignComponent<Sprite>(portal);
+		Game::ecs.assignComponent<Transform>(portal);
+		Game::ecs.assignComponent<Collision>(portal);
+		Game::ecs.assignComponent<TeleportLink>(portal);
+
+		Sprite* pSprite = Game::ecs.getComponent<Sprite>(portal);
+		*pSprite = Sprite{
+			.tileWidth = 64,
+			.tileHeight = 64,
+			.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png"),
+		};
+
+		// Need spawning bullet's position
+		Transform* eTrans = Game::ecs.getComponent<Transform>(entity);
+
+		Transform* pTrans = Game::ecs.getComponent<Transform>(portal);
+		*pTrans = Transform{
+			.pos = eTrans->pos,
+		};
+
+		Collision* pColl = Game::ecs.getComponent<Collision>(portal);
+		*pColl = Collision{
+			.hitWidth = 64,
+			.hitHeight = 64,
+			.hitPos = eTrans->pos,
+			.physicsTags = {"portal"}
+		};
+
+		TeleportLink* pTLink = Game::ecs.getComponent<TeleportLink>(portal);
+		*pTLink = TeleportLink{};
+
+		// AN ENTITY WITH THE PORTALBULLET PHYSICS TAG MUST ALSO HAVE PROJECTILE TAG!
 	}
 
 	// Projectile deaths

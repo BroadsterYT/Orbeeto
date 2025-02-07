@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -145,6 +145,7 @@
     <ClCompile Include="Systems\GrappleSystem.cpp" />
     <ClCompile Include="Systems\PlayerGunSystem.cpp" />
     <ClCompile Include="Systems\PlayerSystem.cpp" />
+    <ClCompile Include="Systems\PortalSystem.cpp" />
     <ClCompile Include="Systems\SpriteSystem.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="TimeManip.cpp" />
@@ -156,6 +157,7 @@
     <ClInclude Include="Components\Bullet.hpp" />
     <ClInclude Include="Components\Component.hpp" />
     <ClInclude Include="Components\Grapple.hpp" />
+    <ClInclude Include="Components\TeleportLink.hpp" />
     <ClInclude Include="Components\Transform.hpp" />
     <ClInclude Include="Components\Defense.hpp" />
     <ClInclude Include="Components\Hp.hpp" />
