@@ -136,7 +136,7 @@ public:
 	}
 
 	template<typename T>
-	T* getComponent(Entity& entity) {
+	T* getComponent(Entity entity) {
 		for (EntityDesc& edesc : entities) {
 			if (edesc.entity == entity) {
 				return static_cast<T*>(edesc.components[getComponentId<T>()]);

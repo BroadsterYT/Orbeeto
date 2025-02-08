@@ -1,4 +1,5 @@
 #include "BulletSystem.hpp"
+#include "../InputManager.hpp"
 
 
 BulletSystem::BulletSystem() {}
@@ -7,11 +8,13 @@ void BulletSystem::update() {
 	for (Entity& entity : Game::ecs.getSystemGroup<Bullet, Sprite, Transform>()) {
 		Bullet* bullet = Game::ecs.getComponent<Bullet>(entity);
 		Transform* transform = Game::ecs.getComponent<Transform>(entity);
+		Sprite* sprite = Game::ecs.getComponent<Sprite>(entity);
 
 		// ----- Bullet AI ----- //
 		switch (bullet->bulletAI) {
 		case 0:  // Standard bullet movement
 			transform->velMovement();
+			sprite->angle = -transform->vel.getAngle() + 180.0;
 			break;
 
 		default:

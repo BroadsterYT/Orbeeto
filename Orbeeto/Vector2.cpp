@@ -12,7 +12,7 @@ Vector2::Vector2(float x, float y) {
 Vector2::~Vector2() {}
 
 double Vector2::getAngle() {
-	double answerRad = atan2(y, x);
+	double answerRad = atan2(x, y);
 	return answerRad * (180.0 / M_PI);
 }
 

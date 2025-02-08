@@ -30,7 +30,7 @@ public:
 	/// </summary>
 	/// <param name="portal">The entity ID of the portal whose link should be broken</param>
 	static void removePortalLink(Entity& portal);
-	static Entity getPortalLink(Entity& portal);
+	static Entity getPortalLink(Entity portal);
 	static void clearPortalLinks();
 
 private:
@@ -39,8 +39,6 @@ private:
 
 	bool canScrollX;
 	bool canScrollY;
-
-	std::vector<Entity> currentRoomEntities;
 
 	Entity player = Game::ecs.createEntity();
 	Entity leftGun = Game::ecs.createEntity();

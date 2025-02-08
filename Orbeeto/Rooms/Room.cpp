@@ -43,7 +43,7 @@ Room::Room(int roomX, int roomY) {
 		.hitWidth = 32,
 		.hitHeight = 32,
 		.hitPos = Vector2(300.0f, 300.0f),
-		.physicsTags = {"player", "pushable", "canPush", "hurtable"}
+		.physicsTags = {"player", "pushable", "canPush", "hurtable", "canTeleport"}
 	};
 
 	// ----- Left Gun ----- //
@@ -88,7 +88,7 @@ void Room::removePortalLink(Entity& portal) {
 	else std::cout << "Link could not be found\n";
 }
 
-Entity Room::getPortalLink(Entity& portal) {
+Entity Room::getPortalLink(Entity portal) {
 	return portalLinks[portal];
 }
 
