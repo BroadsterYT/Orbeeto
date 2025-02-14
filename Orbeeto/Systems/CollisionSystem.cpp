@@ -99,76 +99,66 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 		TeleportLink* firstLink = Game::ecs.getComponent<TeleportLink>(other);
 		TeleportLink* secondLink = Game::ecs.getComponent<TeleportLink>(Room::getPortalLink(other));
 
+		// if (secondLink == nullptr) return;
+
 		Transform* outPortalTrans = Game::ecs.getComponent<Transform>(Room::getPortalLink(other));
 		Collision* outPortalColl = Game::ecs.getComponent<Collision>(Room::getPortalLink(other));
 
-		if (firstLink->facing == Facing::SOUTH) {
+		std::unordered_map<int, double> directionMap = {  // Defaults to first portal facing south
+			{Facing::SOUTH, 180.0},
+			{Facing::EAST, 90.0},
+			{Facing::NORTH, 0.0},
+			{Facing::WEST, 270.0}
+		};
+
+		if (secondLink != nullptr) {
+			// Placing entity at new location
+			float width = (outPortalColl->hitWidth + eColl->hitWidth) / 2;
+			float height = (outPortalColl->hitHeight + eColl->hitHeight) / 2;
+
 			if (secondLink->facing == Facing::SOUTH) {
-				eTrans->vel.rotate(180.0);
-				eTrans->pos = { outPortalTrans->pos.x, outPortalTrans->pos.y + outPortalColl->hitHeight / 2 + eColl->hitHeight / 2 };
+				eTrans->pos = { outPortalTrans->pos.x, outPortalTrans->pos.y + height };
 			}
-			if (secondLink->facing == Facing::EAST) {
-				eTrans->vel.rotate(90.0);
-				eTrans->pos = { outPortalTrans->pos.x + outPortalColl->hitWidth / 2 + eColl->hitWidth / 2, outPortalTrans->pos.y };
+			else if (secondLink->facing == Facing::EAST) {
+				eTrans->pos = { outPortalTrans->pos.x + width, outPortalTrans->pos.y };
 			}
-			if (secondLink->facing == Facing::NORTH) {
-				eTrans->pos = { outPortalTrans->pos.x, outPortalTrans->pos.y - outPortalColl->hitHeight / 2 - eColl->hitHeight / 2 };
+			else if (secondLink->facing == Facing::NORTH) {
+				eTrans->pos = { outPortalTrans->pos.x, outPortalTrans->pos.y - height };
 			}
-			if (secondLink->facing == Facing::WEST) {
-				eTrans->vel.rotate(270.0);
-				eTrans->pos = { outPortalTrans->pos.x - outPortalColl->hitWidth / 2 - eColl->hitWidth / 2, outPortalTrans->pos.y };
+			else if (secondLink->facing == Facing::WEST) {
+				eTrans->pos = { outPortalTrans->pos.x - width, outPortalTrans->pos.y };
 			}
-		}
-		else if (firstLink->facing == Facing::EAST) {
-			if (secondLink->facing == Facing::SOUTH) {
-				eTrans->vel.rotate(270.0);
-				eTrans->pos = { outPortalTrans->pos.x, outPortalTrans->pos.y + outPortalColl->hitHeight / 2 + eColl->hitHeight / 2 };
+
+			// Rotating velocity
+			if (firstLink->facing == Facing::EAST) {
+				directionMap.clear();
+				directionMap = {
+					{Facing::SOUTH, 270.0},
+					{Facing::EAST, 180.0},
+					{Facing::NORTH, 90.0},
+					{Facing::WEST, 0.0}
+				};
 			}
-			if (secondLink->facing == Facing::EAST) {
-				eTrans->vel.rotate(180.0);
-				eTrans->pos = { outPortalTrans->pos.x + outPortalColl->hitWidth / 2 + eColl->hitWidth / 2, outPortalTrans->pos.y };
+			else if (firstLink->facing == Facing::NORTH) {
+				directionMap.clear();
+				directionMap = {
+					{Facing::SOUTH, 0.0},
+					{Facing::EAST, 270.0},
+					{Facing::NORTH, 180.0},
+					{Facing::WEST, 90.0}
+				};
 			}
-			if (secondLink->facing == Facing::NORTH) {
-				eTrans->vel.rotate(90.0);
-				eTrans->pos = { outPortalTrans->pos.x, outPortalTrans->pos.y - outPortalColl->hitHeight / 2 - eColl->hitHeight / 2 };
+			else if (firstLink->facing == Facing::WEST) {
+				directionMap.clear();
+				directionMap = {
+					{Facing::SOUTH, 90.0},
+					{Facing::EAST, 0.0},
+					{Facing::NORTH, 270.0},
+					{Facing::WEST, 180.0}
+				};
 			}
-			if (secondLink->facing == Facing::WEST) {
-				eTrans->pos = { outPortalTrans->pos.x - outPortalColl->hitWidth / 2 - eColl->hitWidth / 2, outPortalTrans->pos.y };
-			}
-		}
-		else if (firstLink->facing == Facing::NORTH) {
-			if (secondLink->facing == Facing::SOUTH) {
-				eTrans->pos = { outPortalTrans->pos.x, outPortalTrans->pos.y + outPortalColl->hitHeight / 2 + eColl->hitHeight / 2 };
-			}
-			if (secondLink->facing == Facing::EAST) {
-				eTrans->vel.rotate(270.0);
-				eTrans->pos = { outPortalTrans->pos.x + outPortalColl->hitWidth / 2 + eColl->hitWidth / 2, outPortalTrans->pos.y };
-			}
-			if (secondLink->facing == Facing::NORTH) {
-				eTrans->vel.rotate(180.0);
-				eTrans->pos = { outPortalTrans->pos.x, outPortalTrans->pos.y - outPortalColl->hitHeight / 2 - eColl->hitHeight / 2 };
-			}
-			if (secondLink->facing == Facing::WEST) {
-				eTrans->vel.rotate(90.0);
-				eTrans->pos = { outPortalTrans->pos.x - outPortalColl->hitWidth / 2 - eColl->hitWidth / 2, outPortalTrans->pos.y };
-			}
-		}
-		else if (firstLink->facing == Facing::WEST) {
-			if (secondLink->facing == Facing::SOUTH) {
-				eTrans->vel.rotate(90.0);
-				eTrans->pos = { outPortalTrans->pos.x, outPortalTrans->pos.y + outPortalColl->hitHeight / 2 + eColl->hitHeight / 2 };
-			}
-			if (secondLink->facing == Facing::EAST) {
-				eTrans->pos = { outPortalTrans->pos.x + outPortalColl->hitWidth / 2 + eColl->hitWidth / 2, outPortalTrans->pos.y };
-			}
-			if (secondLink->facing == Facing::NORTH) {
-				eTrans->vel.rotate(270.0);
-				eTrans->pos = { outPortalTrans->pos.x, outPortalTrans->pos.y - outPortalColl->hitHeight / 2 - eColl->hitHeight / 2 };
-			}
-			if (secondLink->facing == Facing::WEST) {
-				eTrans->vel.rotate(180.0);
-				eTrans->pos = { outPortalTrans->pos.x - outPortalColl->hitWidth / 2 - eColl->hitWidth / 2, outPortalTrans->pos.y };
-			}
+
+			eTrans->vel.rotate(directionMap[secondLink->facing]);
 		}
 	}
 
