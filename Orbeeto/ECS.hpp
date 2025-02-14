@@ -124,6 +124,7 @@ public:
 			if (edesc.entity == entity) {
 				assert(edesc.mask.test(getComponentId<T>()) && "Trying to remove non-existent component");
 
+				edesc.mask.reset(getComponentId<T>());
 				delete edesc.components[getComponentId<T>()];
 				edesc.components[getComponentId<T>()] = nullptr;
 
