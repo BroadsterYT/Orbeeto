@@ -27,7 +27,7 @@ public:
 	/// Unordered map that keeps track of the number of times each mouse button
 	/// has been released.
 	/// </summary>
-	static std::unordered_map<int, unsigned int> mouseReleased;
+	static std::unordered_map<int, int> mouseReleased;
 
 	// The x-axis position of the mouse cursor
 	static int mousePosX;

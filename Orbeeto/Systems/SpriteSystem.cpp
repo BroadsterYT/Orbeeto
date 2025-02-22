@@ -35,8 +35,8 @@ void SpriteSystem::render(SDL_Renderer* renderer) {
 			double widthRatio = static_cast<double>(Room::camera.getWidth()) / static_cast<double>(WindowManager::SCREENWIDTH);
 			double heightRatio = static_cast<double>(Room::camera.getHeight()) / static_cast<double>(WindowManager::SCREENHEIGHT);
 
-			sprite->destRect.x = (transform->pos.x - sprite->tileWidth / 2 - Room::camera.getX()) * widthRatio;
-			sprite->destRect.y = (transform->pos.y - sprite->tileHeight / 2 - Room::camera.getY()) * heightRatio;
+			sprite->destRect.x = (transform->pos.x - sprite->tileWidth / 2 - Room::camera.getX()) * widthRatio + (WindowManager::SCREENWIDTH / 2 - Room::camera.getWidth() / 2);
+			sprite->destRect.y = (transform->pos.y - sprite->tileHeight / 2 - Room::camera.getY()) * heightRatio + (WindowManager::SCREENHEIGHT / 2 - Room::camera.getHeight() / 2);
 			sprite->destRect.w = sprite->tileWidth * widthRatio;
 			sprite->destRect.h = sprite->tileHeight * heightRatio;
 		}
@@ -46,7 +46,7 @@ void SpriteSystem::render(SDL_Renderer* renderer) {
 		}
 		SDL_RenderCopyEx(renderer, sprite->spriteSheet, &sprite->srcRect, &sprite->destRect, sprite->angle, NULL, SDL_FLIP_NONE);
 	}
-	Room::camera.printDetails();
+	//Room::camera.printDetails();
 	//SDL_RenderSetScale(renderer, 0.5, 0.5);
 
 	SDL_RenderPresent(renderer);

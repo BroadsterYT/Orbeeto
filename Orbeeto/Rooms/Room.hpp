@@ -40,6 +40,9 @@ private:
 	bool canScrollX;
 	bool canScrollY;
 
+	int zoomOutInputCopy = 0;
+	int zoomInInputCopy = 0;
+
 	Entity player = Game::ecs.createEntity();
 	Entity leftGun = Game::ecs.createEntity();
 	Entity rightGun = Game::ecs.createEntity();

@@ -27,7 +27,7 @@ std::unordered_map<int, bool> InputManager::mousePressed{
 	{SDL_BUTTON_RIGHT, false},
 };
 
-std::unordered_map<int, unsigned int> InputManager::mouseReleased{
+std::unordered_map<int, int> InputManager::mouseReleased{
 	{SDL_BUTTON_LEFT, 0},
 	{SDL_BUTTON_MIDDLE, 0},
 	{SDL_BUTTON_RIGHT, 0},

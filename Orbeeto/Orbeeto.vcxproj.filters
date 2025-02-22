@@ -72,6 +72,9 @@
     <ClCompile Include="Systems\PortalSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Math.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TextureManager.hpp">
@@ -156,6 +159,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Components\TeleportLink.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Math.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

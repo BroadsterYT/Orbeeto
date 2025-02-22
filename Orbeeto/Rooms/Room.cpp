@@ -77,10 +77,10 @@ void Room::loadRoom(int x, int y) {
 
 void Room::update() {
 	Transform* pTransform = Game::ecs.getComponent<Transform>(player);
-	Room::camera.focus((int)pTransform->pos.x, (int)pTransform->pos.y);
+	Room::camera.cinematicFocus(pTransform->pos.x, pTransform->pos.y);
 
 	// Zooming in and out
-	if (InputManager::keysPressed[SDLK_o]) {
+	/*if (InputManager::keysPressed[SDLK_o]) {
 		std::cout << "O KEY PRESSED\n";
 		camera.setWidth(camera.getWidth() * 0.99);
 		camera.setHeight(camera.getWidth() / WindowManager::A_RATIO.first * WindowManager::A_RATIO.second);
@@ -89,6 +89,16 @@ void Room::update() {
 		std::cout << "O KEY PRESSED\n";
 		camera.setWidth(camera.getWidth() * 1.01);
 		camera.setHeight(camera.getWidth() / WindowManager::A_RATIO.first * WindowManager::A_RATIO.second);
+	}*/
+	if (zoomOutInputCopy < InputManager::keysReleased[SDLK_o]) {
+		camera.setWidth(camera.getWidth() - 256);
+		camera.setHeight(camera.getWidth() / WindowManager::A_RATIO.first * WindowManager::A_RATIO.second);
+		zoomOutInputCopy = InputManager::keysReleased[SDLK_o];
+	}
+	if (zoomInInputCopy < InputManager::keysReleased[SDLK_p]) {
+		camera.setWidth(camera.getWidth() + 256);
+		camera.setHeight(camera.getWidth() / WindowManager::A_RATIO.first * WindowManager::A_RATIO.second);
+		zoomInInputCopy = InputManager::keysReleased[SDLK_p];
 	}
 }
 

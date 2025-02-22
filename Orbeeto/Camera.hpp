@@ -1,6 +1,7 @@
 #pragma once
 #include "SDL.h"
 #include "Game.hpp"
+#include "Vector2.hpp"
 
 
 class Camera {
@@ -17,8 +18,17 @@ public:
 
 	void printDetails();
 
+	Vector2 pos = { 0.0, 0.0 };
+	Vector2 vel = { 0.0, 0.0 };
+	Vector2 accel = { 0.0, 0.0 };
+	double accelConst = 0.07;
+	double fric = -0.03;
+
 	void focus(int posX, int posY);
+	void cinematicFocus(int posX, int posY);
 
 private:
 	SDL_Rect camera;
+
+
 };
