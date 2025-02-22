@@ -15,8 +15,6 @@ void GrappleSystem::update() {
 
 		switch (player->grappleState) {
 		case GrappleState::SENT:
-			std::cout << transform->vel.x << " " << transform->vel.y << std::endl;
-
 			if (player->grappleInputCopy < InputManager::mouseReleased[SDL_BUTTON_MIDDLE]) {
 				player->grappleState = GrappleState::RETURNING;
 				player->grappleInputCopy = InputManager::mouseReleased[SDL_BUTTON_MIDDLE];
@@ -37,22 +35,25 @@ void GrappleSystem::update() {
 		case GrappleState::RETURNING: 
 			if (player->grappleInputCopy < InputManager::mouseReleased[SDL_BUTTON_MIDDLE]) {
 				Game::ecs.destroyEntity(entity);
+				player->grappleRef = 0;  // Remove grapple reference from player
+				player->moveToGrapple = false;
+
 				player->grappleState = GrappleState::INACTIVE;
 				player->grappleInputCopy = InputManager::mouseReleased[SDL_BUTTON_MIDDLE];
 				break;
 			}
 
-			if (grapple->grappledTo == nullptr) {
+			if (grapple->grappledTo == 0) {
 				double angle = transform->pos.getAngleToPoint(pTrans->pos);
 				transform->accel.x = transform->accelConst * cos(-angle);
 				transform->accel.y = transform->accelConst * sin(-angle);
 				transform->accelMovement();
 			}
 			else {
-				double angle = pTrans->pos.getAngleToPoint(transform->pos);
+				/*double angle = pTrans->pos.getAngleToPoint(transform->pos);
 				pTrans->accel.x = transform->accelConst * cos(-angle);
 				pTrans->accel.y = transform->accelConst * sin(-angle);
-				pTrans->accelMovement();
+				pTrans->accelMovement();*/
 			}
 			break;
 		}

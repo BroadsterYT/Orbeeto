@@ -17,6 +17,27 @@ void PlayerSystem::update() {
 		if (InputManager::keysPressed[SDLK_s]) finalAccel.y += transform->accelConst;
 		if (InputManager::keysPressed[SDLK_d]) finalAccel.x += transform->accelConst;
 
+		if (player->grappleRef != 0) {
+			if (player->grappleState == GrappleState::RETURNING && player->moveToGrapple) {
+				Grapple* grapple = Game::ecs.getComponent<Grapple>(player->grappleRef);
+				Transform* gTrans = Game::ecs.getComponent<Transform>(player->grappleRef);
+				double angle = transform->pos.getAngleToPoint(gTrans->pos);
+				
+				if (!player->cancelVelFlag) {
+					std::cout << "Vel canceled! \n";
+					transform->vel = { 0, 0 };
+					player->cancelVelFlag = true;
+				}
+
+				std::cout << "Return angle: " << angle << std::endl;
+				finalAccel.x += gTrans->accelConst * cos(-angle);
+				finalAccel.y += gTrans->accelConst * sin(-angle);
+			}
+			else {
+				player->cancelVelFlag = false;
+			}
+		}
+
 		transform->accel = finalAccel;
 		transform->accelMovement();
 
@@ -43,6 +64,7 @@ void PlayerSystem::fireGrapple(const Entity& pEntity, Player* player, Transform*
 	player->grappleState = GrappleState::SENT;
 
 	Entity grapple = Game::ecs.createEntity();
+	player->grappleRef = grapple;
 
 	Game::ecs.assignComponent<Sprite>(grapple);
 	Game::ecs.assignComponent<Collision>(grapple);

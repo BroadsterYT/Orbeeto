@@ -1,6 +1,7 @@
 #pragma once
 #include "System.hpp"
 #include <vector>
+#include "../WindowManager.hpp"
 
 
 class SpriteSystem : public System {

@@ -8,8 +8,11 @@
 #include "../Components/Sprite.hpp"
 #include "../Components/Transform.hpp"
 
+#include "../WindowManager.hpp"
+#include "../InputManager.hpp"
 
-Camera Room::camera = Camera();
+
+Camera Room::camera = Camera(0, 0, WindowManager::SCREENWIDTH, WindowManager::SCREENHEIGHT);
 
 std::unordered_map<Entity, Entity> Room::portalLinks;
 
@@ -74,8 +77,19 @@ void Room::loadRoom(int x, int y) {
 
 void Room::update() {
 	Transform* pTransform = Game::ecs.getComponent<Transform>(player);
-
 	Room::camera.focus((int)pTransform->pos.x, (int)pTransform->pos.y);
+
+	// Zooming in and out
+	if (InputManager::keysPressed[SDLK_o]) {
+		std::cout << "O KEY PRESSED\n";
+		camera.setWidth(camera.getWidth() * 0.99);
+		camera.setHeight(camera.getWidth() / WindowManager::A_RATIO.first * WindowManager::A_RATIO.second);
+	}
+	if (InputManager::keysPressed[SDLK_p]) {
+		std::cout << "O KEY PRESSED\n";
+		camera.setWidth(camera.getWidth() * 1.01);
+		camera.setHeight(camera.getWidth() / WindowManager::A_RATIO.first * WindowManager::A_RATIO.second);
+	}
 }
 
 void Room::newPortalLink(Entity& first, Entity& second) {
@@ -146,6 +160,9 @@ void Room::readRoomData(const std::vector<int> roomDetails, const std::vector<st
 	canScrollX = roomDetails[2];
 	canScrollY = roomDetails[3];
 
+	std::cout << "Scroll X: " << roomDetails[2] << std::endl;
+	std::cout << "Scroll Y: " << roomDetails[3] << std::endl;
+
 	for (int y = 0; y < roomTiles.size(); y++) {
 		for (int x = 0; x < roomTiles[y].size(); x++) {
 			buildRoomEntity(roomTiles[y][x], x, y);
@@ -204,7 +221,7 @@ void Room::buildRoomEntity(const int tileId, int tilePosX, int tilePosY) {
 
 		Transform* wallTrans = Game::ecs.getComponent<Transform>(testWall);
 		*wallTrans = Transform{
-			.pos = Vector2(tileSize * tilePosX, tileSize * tilePosY)  // TODO: Verify this is correct
+			.pos = Vector2(tileSize * tilePosX + tileSize / 2, tileSize * tilePosY + tileSize / 2)  // TODO: Verify this is correct
 		};
 	}
 }

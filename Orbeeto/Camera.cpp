@@ -15,6 +15,29 @@ int Camera::getY() {
 	return camera.y;
 }
 
+int Camera::getWidth() {
+	return camera.w;
+}
+
+void Camera::setWidth(int newWidth) {
+	camera.w = newWidth;
+}
+
+int Camera::getHeight() {
+	return camera.h;
+}
+
+void Camera::setHeight(int newHeight) {
+	camera.h = newHeight;
+}
+
+void Camera::printDetails() {
+	std::cout << "Pos x: " << camera.x << std::endl;
+	std::cout << "Pos y: " << camera.y << std::endl;
+	std::cout << "width: " << camera.w << std::endl;
+	std::cout << "height: " << camera.h << std::endl << std::endl;
+}
+
 void Camera::focus(int posX, int posY) {
 	camera.x = posX - WindowManager::SCREENWIDTH / 2;
 	camera.y = posY - WindowManager::SCREENHEIGHT / 2;

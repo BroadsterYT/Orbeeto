@@ -32,16 +32,22 @@ void SpriteSystem::render(SDL_Renderer* renderer) {
 		Transform* transform = Game::ecs.getComponent<Transform>(entity);
 		
 		if (sprite->moveWithRoom) {
-			sprite->destRect.x = transform->pos.x - sprite->tileWidth / 2 - Room::camera.getX();
-			sprite->destRect.y = transform->pos.y - sprite->tileHeight / 2 - Room::camera.getY();
+			double widthRatio = static_cast<double>(Room::camera.getWidth()) / static_cast<double>(WindowManager::SCREENWIDTH);
+			double heightRatio = static_cast<double>(Room::camera.getHeight()) / static_cast<double>(WindowManager::SCREENHEIGHT);
+
+			sprite->destRect.x = (transform->pos.x - sprite->tileWidth / 2 - Room::camera.getX()) * widthRatio;
+			sprite->destRect.y = (transform->pos.y - sprite->tileHeight / 2 - Room::camera.getY()) * heightRatio;
+			sprite->destRect.w = sprite->tileWidth * widthRatio;
+			sprite->destRect.h = sprite->tileHeight * heightRatio;
 		}
 		else {
 			sprite->destRect.x = transform->pos.x - sprite->tileWidth / 2;
 			sprite->destRect.y = transform->pos.y - sprite->tileHeight / 2;
 		}
-
 		SDL_RenderCopyEx(renderer, sprite->spriteSheet, &sprite->srcRect, &sprite->destRect, sprite->angle, NULL, SDL_FLIP_NONE);
 	}
+	Room::camera.printDetails();
+	//SDL_RenderSetScale(renderer, 0.5, 0.5);
 
 	SDL_RenderPresent(renderer);
 }

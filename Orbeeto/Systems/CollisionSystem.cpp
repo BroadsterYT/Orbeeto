@@ -27,10 +27,15 @@ void CollisionSystem::update() {
 }
 
 bool CollisionSystem::checkForCollision(const Collision* eColl, const Collision* oColl) {
-	if (eColl->hitPos.x + eColl->hitWidth / 2 >= oColl->hitPos.x - oColl->hitWidth / 2
-		&& eColl->hitPos.x - eColl->hitWidth / 2 <= oColl->hitPos.x + oColl->hitWidth / 2
-		&& eColl->hitPos.y + eColl->hitHeight / 2 >= oColl->hitPos.y - oColl->hitHeight / 2
-		&& eColl->hitPos.y - eColl->hitHeight / 2 <= oColl->hitPos.y + oColl->hitHeight / 2) {
+	double eHalfWidth = eColl->hitWidth / 2.0;
+	double eHalfHeight = eColl->hitHeight / 2.0;
+	double oHalfWidth = oColl->hitWidth / 2.0;
+	double oHalfHeight = oColl->hitHeight / 2.0;
+
+	if (eColl->hitPos.x + eHalfWidth >= oColl->hitPos.x - oHalfWidth
+		&& eColl->hitPos.x - eHalfWidth <= oColl->hitPos.x + oHalfWidth
+		&& eColl->hitPos.y + eHalfHeight >= oColl->hitPos.y - oHalfHeight
+		&& eColl->hitPos.y - eHalfHeight <= oColl->hitPos.y + oHalfHeight) {
 		return true;
 	}
 	return false;
@@ -169,13 +174,17 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 
 		if (hasPhysicsTag(oColl, "player") && player->grappleState == GrappleState::RETURNING) {
 			Game::ecs.destroyEntity(entity);
+			player->grappleRef = 0;  // Remove grapple reference from player
+			player->moveToGrapple = false;
+
 			player->grappleState = GrappleState::INACTIVE;
 			return;
 		}
 
 		if (hasPhysicsTag(oColl, "wall") && player->grappleState == GrappleState::SENT) {
 			player->grappleState = GrappleState::LATCHED;
-			grapple->grappledTo = &other;
+			grapple->grappledTo = other;
+			player->moveToGrapple = true;
 		}
 	}
 

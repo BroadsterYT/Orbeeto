@@ -8,6 +8,8 @@ std::unordered_map<int, bool> InputManager::keysPressed{
 	{SDLK_a, false},
 	{SDLK_s, false},
 	{SDLK_d, false},
+	{SDLK_o, false},
+	{SDLK_p, false},
 };
 
 std::unordered_map<int, unsigned int> InputManager::keysReleased{
@@ -15,6 +17,8 @@ std::unordered_map<int, unsigned int> InputManager::keysReleased{
 	{SDLK_a, 0},
 	{SDLK_s, 0},
 	{SDLK_d, 0},
+	{SDLK_o, 0},
+	{SDLK_p, 0},
 };
 
 std::unordered_map<int, bool> InputManager::mousePressed{
@@ -33,47 +37,12 @@ int InputManager::mousePosX = 0;
 int InputManager::mousePosY = 0;
 
 void InputManager::handleKeyPresses(SDL_Event event) {
-	switch (event.key.keysym.sym) {
-	case SDLK_w:
-		keysPressed[SDLK_w] = true;
-		break;
-
-	case SDLK_a:
-		keysPressed[SDLK_a] = true;
-		break;
-
-	case SDLK_s:
-		keysPressed[SDLK_s] = true;
-		break;
-
-	case SDLK_d:
-		keysPressed[SDLK_d] = true;
-		break;
-	}
+	keysPressed[event.key.keysym.sym] = true;
 }
 
 void InputManager::handleKeyReleases(SDL_Event event) {
-	switch (event.key.keysym.sym) {
-	case SDLK_w:
-		keysPressed[SDLK_w] = false;
-		keysReleased[SDLK_w]++;
-		break;
-
-	case SDLK_a:
-		keysPressed[SDLK_a] = false;
-		keysReleased[SDLK_a]++;
-		break;
-
-	case SDLK_s:
-		keysPressed[SDLK_s] = false;
-		keysReleased[SDLK_s]++;
-		break;
-
-	case SDLK_d:
-		keysPressed[SDLK_d] = false;
-		keysReleased[SDLK_d]++;
-		break;
-	}
+	keysPressed[event.key.keysym.sym] = false;
+	keysReleased[event.key.keysym.sym]++;
 }
 
 void InputManager::handleMousePresses(SDL_Event event) {
