@@ -77,7 +77,7 @@ void Room::loadRoom(int x, int y) {
 
 void Room::update() {
 	Transform* pTransform = Game::ecs.getComponent<Transform>(player);
-	Room::camera.cinematicFocus(pTransform->pos.x, pTransform->pos.y);
+	Room::camera.cinematicFocus(pTransform->pos.x, pTransform->pos.y, pTransform->accelConst);
 
 	// Zooming in and out
 	/*if (InputManager::keysPressed[SDLK_o]) {
