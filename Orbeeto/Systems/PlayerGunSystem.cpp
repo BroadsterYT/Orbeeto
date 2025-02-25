@@ -57,6 +57,9 @@ void PlayerGunSystem::fireBullet(Transform* ownerTrans, const int bulletId, cons
 
 	// ----- Bullet ----- //
 	Bullet* bBullet = Game::ecs.getComponent<Bullet>(bullet);
+	*bBullet = {
+		.bulletAI = 1
+	};
 
 	// ----- Collision ----- //
 	Collision* bColl = Game::ecs.getComponent<Collision>(bullet);
@@ -68,7 +71,7 @@ void PlayerGunSystem::fireBullet(Transform* ownerTrans, const int bulletId, cons
 	};
 
 	switch (bulletId) {
-	case 0:
+	case 0: // Regulat bullet
 		bTransform->vel = Vector2(0.0f, -3.0f);
 		bTransform->vel.rotate(rotAngle);
 		//bTransform->vel += ownerTrans->vel;

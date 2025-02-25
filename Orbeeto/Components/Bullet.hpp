@@ -1,6 +1,7 @@
 #pragma once
 #include "Component.hpp"
 #include "SDL.h"
+#include "../TimeManip.hpp"
 
 
 struct Bullet : Component {
@@ -9,4 +10,8 @@ struct Bullet : Component {
 	int bulletAI = 0;
 
 	uint32_t shotBy = 0;
+
+	// ----- Misc ----- //
+	bool homingCheck = false;
+	uint32_t closestTarget = 0;
 };
