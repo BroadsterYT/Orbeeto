@@ -13,21 +13,23 @@ void BulletSystem::update() {
 
 		// ----- Bullet AI ----- //
 		switch (bullet->bulletAI) {
-		case 0:  // Standard bullet movement
+		case BulletType::STANDARD:  // Standard bullet movement
 			transform->velMovement();
 			sprite->angle = -transform->vel.getAngle() + 180.0;
 			break;
 
-		case 1:  // Homing bullets
+		case BulletType::HOMING:  // Homing bullets
 			{
 			double closestDistance = std::numeric_limits<double>::max();
 
-			if (!bullet->homingCheck) {
-				// Getting the distances between this bullet and all possible targets
+			// Getting the distances between this bullet and all possible targets
+			if (TimeManip::getTimeDiff(bullet->lastHomingCheck) > 1000) {
 				for (auto& target : Game::ecs.getSystemGroup<Transform, Collision, Sprite>()) {
 					if (entity == target) continue;
+					// TODO: Replace testing with actual implementation
 					if (Game::ecs.getComponent<Player>(target) != nullptr) continue;  // Can't target players
 					if (Game::ecs.getComponent<Bullet>(target) != nullptr) continue;  // Can't target other bullets
+					if (Game::ecs.getComponent<Grapple>(target) != nullptr) continue;  // Can't target other bullets
 
 					Transform* targetTrans = Game::ecs.getComponent<Transform>(target);
 					double distance = transform->pos.getDistToPoint(targetTrans->pos);
@@ -36,20 +38,24 @@ void BulletSystem::update() {
 						closestDistance = distance;
 						bullet->closestTarget = target;
 					}
-
-					bullet->homingCheck = true;
 				}
+				bullet->lastHomingCheck = TimeManip::getTime();
 			}
 
-			if (bullet->closestTarget == 0) break;
+			if (bullet->closestTarget == 0) {
+				transform->velMovement();
+				break;
+			}
+
+			Transform* targetTrans = Game::ecs.getComponent<Transform>(bullet->closestTarget);
 
 			// Rotating bullet toward target
-			Transform* targetTrans = Game::ecs.getComponent<Transform>(bullet->closestTarget);
-			double angle = transform->pos.getAngleToPoint(targetTrans->pos);
+			if (transform->pos.getDistToPoint(targetTrans->pos) < bullet->homingRange) {
+				double angle = transform->pos.getAngleToPoint(targetTrans->pos);
 
-			std::cout << transform->vel.getAngle() << std::endl;
-			double difference = transform->vel.getAngle() - angle;
-			transform->vel.rotate(difference - 180);
+				double difference = transform->vel.getAngle() - angle;
+				transform->vel.rotate(difference - 180);
+			}
 
 			}  // End scope
 			transform->velMovement();
@@ -61,7 +67,7 @@ void BulletSystem::update() {
 		}
 
 		// Destroying bullet if its lifetime is too long
-		if (SDL_GetTicks() - bullet->birthTime >= 5000) {
+		if (TimeManip::getTimeDiff(bullet->birthTime) >= 5000) {
 			std::cout << "Bullet destroyed." << std::endl;
 
 			Game::ecs.destroyEntity(entity);

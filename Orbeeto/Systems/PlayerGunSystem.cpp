@@ -8,7 +8,7 @@ void PlayerGunSystem::update() {
 		PlayerGun* gun = Game::ecs.getComponent<PlayerGun>(entity);
 		Sprite* sprite = Game::ecs.getComponent<Sprite>(entity);
 		Transform* transform = Game::ecs.getComponent<Transform>(entity);
-		Transform* ownerTrans = Game::ecs.getComponent<Transform>(*gun->owner);  // Transform component of player
+		Transform* ownerTrans = Game::ecs.getComponent<Transform>(gun->owner);  // Transform component of player
 
 		transform->pos = ownerTrans->pos;
 
@@ -19,13 +19,13 @@ void PlayerGunSystem::update() {
 
 		// Firing bullets
 		if (InputManager::mousePressed[SDL_BUTTON_LEFT] && TimeManip::getTimeDiff(gun->lastShot) >= gun->cooldown) {
-			fireBullet(ownerTrans, 0, rotAngle);
+			fireBullet(ownerTrans, 0, rotAngle, gun->isLeft);
 			gun->lastShot = TimeManip::getTime();
 		}
 	}
 }
 
-void PlayerGunSystem::fireBullet(Transform* ownerTrans, const int bulletId, const double rotAngle) {
+void PlayerGunSystem::fireBullet(Transform* ownerTrans, const int bulletId, const double rotAngle, const bool isLeft) {
 	Entity bullet = Game::ecs.createEntity();
 
 	Game::ecs.assignComponent<Sprite>(bullet);
@@ -51,6 +51,11 @@ void PlayerGunSystem::fireBullet(Transform* ownerTrans, const int bulletId, cons
 	double barrelOffsetX = -offsetX * cos(-rotAngle * M_PI / 180) - offsetY * sin(-rotAngle * M_PI / 180);
 	double barrelOffsetY = offsetX * sin(-rotAngle * M_PI / 180) - offsetY * cos(-rotAngle * M_PI / 180);
 
+	if (!isLeft) {
+		barrelOffsetX = offsetX * cos(-rotAngle * M_PI / 180) - offsetY * sin(-rotAngle * M_PI / 180);
+		barrelOffsetY = -offsetX * sin(-rotAngle * M_PI / 180) - offsetY * cos(-rotAngle * M_PI / 180);
+	}
+
 	*bTransform = Transform{
 		.pos = Vector2(ownerTrans->pos.x + barrelOffsetX, ownerTrans->pos.y + barrelOffsetY)
 	};
@@ -58,7 +63,7 @@ void PlayerGunSystem::fireBullet(Transform* ownerTrans, const int bulletId, cons
 	// ----- Bullet ----- //
 	Bullet* bBullet = Game::ecs.getComponent<Bullet>(bullet);
 	*bBullet = {
-		.bulletAI = 1
+		.bulletAI = BulletType::STANDARD
 	};
 
 	// ----- Collision ----- //
@@ -71,10 +76,10 @@ void PlayerGunSystem::fireBullet(Transform* ownerTrans, const int bulletId, cons
 	};
 
 	switch (bulletId) {
-	case 0: // Regulat bullet
+	case BulletType::STANDARD: // Regular bullet
 		bTransform->vel = Vector2(0.0f, -3.0f);
 		bTransform->vel.rotate(rotAngle);
-		//bTransform->vel += ownerTrans->vel;
+		bTransform->vel += ownerTrans->vel;
 		break;
 
 	default:

@@ -77,6 +77,7 @@ void PlayerSystem::fireGrapple(const Entity& pEntity, Player* player, Transform*
 		.tileHeight = 32,
 		.angle = pSprite->angle,
 		.srcRect = SDL_Rect(0, 64, 32, 32),
+		.index = 16,
 		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/bullets.png"),
 	};
 

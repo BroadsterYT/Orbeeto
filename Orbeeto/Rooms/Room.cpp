@@ -29,6 +29,10 @@ Room::Room(int roomX, int roomY) {
 	Game::ecs.assignComponent<PlayerGun>(leftGun);
 	Game::ecs.assignComponent<Transform>(leftGun);
 
+	Game::ecs.assignComponent<Sprite>(rightGun);
+	Game::ecs.assignComponent<PlayerGun>(rightGun);
+	Game::ecs.assignComponent<Transform>(rightGun);
+
 	// ----- Player ----- //
 	Sprite* playerSprite = Game::ecs.getComponent<Sprite>(player);
 	*playerSprite = Sprite{
@@ -63,8 +67,25 @@ Room::Room(int roomX, int roomY) {
 
 	PlayerGun* lGun = Game::ecs.getComponent<PlayerGun>(leftGun);
 	*lGun = PlayerGun{
-		.owner = &player,
+		.owner = player,
 	};
+
+	// ----- Right Gun ----- //
+	PlayerGun* rGun = Game::ecs.getComponent<PlayerGun>(rightGun);
+	*rGun = PlayerGun{
+		.owner = player,
+		.isLeft = false
+	};
+
+	Sprite* rGunSprite = Game::ecs.getComponent<Sprite>(rightGun);
+	*rGunSprite = Sprite{
+		.layer = 1,
+		.tileWidth = 64,
+		.tileHeight = 64,
+		.index = 5,
+		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeetoguns.png"),
+	};
+
 
 	loadRoom(0, 0);
 }
@@ -80,16 +101,6 @@ void Room::update() {
 	Room::camera.cinematicFocus(pTransform->pos.x, pTransform->pos.y, pTransform->accelConst);
 
 	// Zooming in and out
-	/*if (InputManager::keysPressed[SDLK_o]) {
-		std::cout << "O KEY PRESSED\n";
-		camera.setWidth(camera.getWidth() * 0.99);
-		camera.setHeight(camera.getWidth() / WindowManager::A_RATIO.first * WindowManager::A_RATIO.second);
-	}
-	if (InputManager::keysPressed[SDLK_p]) {
-		std::cout << "O KEY PRESSED\n";
-		camera.setWidth(camera.getWidth() * 1.01);
-		camera.setHeight(camera.getWidth() / WindowManager::A_RATIO.first * WindowManager::A_RATIO.second);
-	}*/
 	if (zoomOutInputCopy < InputManager::keysReleased[SDLK_o]) {
 		camera.setWidth(camera.getWidth() - 256);
 		camera.setHeight(camera.getWidth() / WindowManager::A_RATIO.first * WindowManager::A_RATIO.second);

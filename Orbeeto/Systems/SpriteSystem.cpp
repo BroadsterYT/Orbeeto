@@ -2,6 +2,7 @@
 #include "../Rooms/Room.hpp"
 #include "../WindowManager.hpp"
 #include <algorithm>
+#include "SDL.h"
 
 
 SpriteSystem::SpriteSystem(SDL_Renderer* renderer) : System() {
@@ -30,7 +31,16 @@ void SpriteSystem::render(SDL_Renderer* renderer) {
 		Entity entity = pair.second;
 		Sprite* sprite = Game::ecs.getComponent<Sprite>(entity);
 		Transform* transform = Game::ecs.getComponent<Transform>(entity);
-		
+
+		// Showing correct sprite given sprite index
+		int width, height;
+		SDL_QueryTexture(sprite->spriteSheet, NULL, NULL, &width, &height);
+		int spritesPerRow = width / sprite->tileWidth;
+
+		sprite->srcRect.x = sprite->index % spritesPerRow * sprite->tileWidth;
+		sprite->srcRect.y = sprite->index / spritesPerRow * sprite->tileHeight;
+
+
 		if (sprite->moveWithRoom) {
 			double widthRatio = static_cast<double>(Room::camera.getWidth()) / static_cast<double>(WindowManager::SCREENWIDTH);
 			double heightRatio = static_cast<double>(Room::camera.getHeight()) / static_cast<double>(WindowManager::SCREENHEIGHT);
@@ -46,8 +56,6 @@ void SpriteSystem::render(SDL_Renderer* renderer) {
 		}
 		SDL_RenderCopyEx(renderer, sprite->spriteSheet, &sprite->srcRect, &sprite->destRect, sprite->angle, NULL, SDL_FLIP_NONE);
 	}
-	//Room::camera.printDetails();
-	//SDL_RenderSetScale(renderer, 0.5, 0.5);
 
 	SDL_RenderPresent(renderer);
 }

@@ -10,5 +10,5 @@ public:
 	void update();
 
 private:
-	void fireBullet(Transform* ownerTrans, const int bulletId, const double rotAngle);
+	void fireBullet(Transform* ownerTrans, const int bulletId, const double rotAngle, const bool isLeft);
 };
