@@ -24,11 +24,15 @@ public:
 	double accelConst = 0.07;
 	double fric = -0.03;
 
+	bool isShifting = false;
+	uint64_t lastShiftStart = TimeManip::getTime();
+	uint64_t lastShiftEnd = TimeManip::getTime();
+	uint64_t maxShift = 2000;
+	uint64_t shiftCooldown = 500;
+
 	void focus(int posX, int posY);
-	void cinematicFocus(int posX, int posY, double accelC);
+	void cinematicFocus(int posX, int posY, const Vector2& entityVel, double entityAccelConst);
 
 private:
 	SDL_Rect camera;
-
-
 };
