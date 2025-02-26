@@ -44,21 +44,28 @@ void Camera::printDetails() {
 }
 
 void Camera::focus(int posX, int posY) {
+	vel = { 0.0, 0.0 };
+	accel = { 0.0, 0.0 };
 	camera.x = posX - WindowManager::SCREENWIDTH / 2;
 	camera.y = posY - WindowManager::SCREENHEIGHT / 2;
 }
 
-void Camera::cinematicFocus(int posX, int posY, double accelC) {
+void Camera::cinematicFocus(int posX, int posY, const Vector2& entityVel, double entityAccelConst) {
 	// https://www.desmos.com/calculator/3y1viny0hg
+
+	Vector2 speedFactor = { std::clamp(entityVel.x, 1.0, 2.4) , std::clamp(entityVel.y, 1.0, 2.4) };
+	double adjustedAccelC_X = entityAccelConst * speedFactor.x;
+	double adjustedAccelC_Y = entityAccelConst * speedFactor.y;
+
 	double tanFuncX = tan(M_PI / (2.0 * (double)WindowManager::SCREENWIDTH) * ((double)camera.x - (double)posX + (double)WindowManager::SCREENWIDTH) - M_PI / 4.0);
 	double tanFuncY = tan(M_PI / (2.0 * (double)WindowManager::SCREENHEIGHT) * ((double)camera.y - (double)posY + (double)WindowManager::SCREENHEIGHT) - M_PI / 4.0);
 
-	double mult = 6.0;
-	double clampLimitX = accelC * 2;
-	double clampLimitY = clampLimitX;
+	double mult = 0.4 * speedFactor.getMagnitude();
+	double clampLimitX = adjustedAccelC_X * 2;
+	double clampLimitY = adjustedAccelC_Y * 2;
 
-	double tempAccelX = std::clamp(-mult * pow(tanFuncX, 3.0), -clampLimitX, clampLimitX);
-	double tempAccelY = std::clamp(-mult * pow(tanFuncY, 3.0), -clampLimitY, clampLimitY);
+	double tempAccelX = std::clamp(-mult * tanFuncX, -clampLimitX, clampLimitX);
+	double tempAccelY = std::clamp(-mult * tanFuncY, -clampLimitY, clampLimitY);
 
 	// Prevents movement along tangent outside of first period if tp takes player grater than window borders
 	if (-3.0 * (double)WindowManager::SCREENWIDTH / 2.0 + (double)posX > camera.x) {

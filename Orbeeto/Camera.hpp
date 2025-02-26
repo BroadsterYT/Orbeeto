@@ -25,10 +25,8 @@ public:
 	double fric = -0.03;
 
 	void focus(int posX, int posY);
-	void cinematicFocus(int posX, int posY, double accelC);
+	void cinematicFocus(int posX, int posY, const Vector2& entityVel, double entityAccelConst);
 
 private:
 	SDL_Rect camera;
-
-
 };
