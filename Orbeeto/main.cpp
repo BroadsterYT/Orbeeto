@@ -12,6 +12,7 @@
 #include "Systems/BulletSystem.hpp"
 #include "Systems/CollisionSystem.hpp"
 #include "Systems/GrappleSystem.hpp"
+#include "Systems/MovementAISystem.hpp"
 #include "Systems/PlayerGunSystem.hpp"
 #include "Systems/PlayerSystem.hpp"
 #include "Systems/SpriteSystem.hpp"
@@ -26,6 +27,7 @@ int main(int argc, char* argv[]) {
 	BulletSystem bulletSystem;
 	CollisionSystem collisionSystem;
 	GrappleSystem grappleSystem;
+	MovementAISystem movementAISystem;
 	PlayerGunSystem playerGunSystem;
 	PlayerSystem playerSystem;
 	SpriteSystem spriteSystem(Game::renderer);
@@ -46,6 +48,7 @@ int main(int argc, char* argv[]) {
 		grappleSystem.update();
 		playerGunSystem.update();
 		bulletSystem.update();
+		movementAISystem.update();
 
 		room.update();
 		

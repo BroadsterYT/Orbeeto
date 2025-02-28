@@ -3,26 +3,69 @@
 #include "../Rooms/Room.hpp"
 
 
-CollisionSystem::CollisionSystem() {}
+CollisionSystem::CollisionSystem() : tree(QuadBoundingBox{0, 0, 1280, 720}) {}
 
 void CollisionSystem::update() {
-	for (Entity& entity : Game::ecs.getSystemGroup<Collision, Transform>()) {
-		Collision* collision = Game::ecs.getComponent<Collision>(entity);
-		Transform* transform = Game::ecs.getComponent<Transform>(entity);
+	rebuildQuadtree(QuadBoundingBox{0, 0, 1280, 720});
+	
+	std::vector<Entity> found;
+	/*tree.query(QuadBoundingBox{ 0, 0, 1280*2, 720*2 }, found);
+	std::cout << found.size() << std::endl;*/
 
-		collision->hitPos = transform->pos;
+	// TODO:: Adjust to confine to current room
+	for (int i = 0; i < 720; i = i + 80) {
+		for (int j = 0; j < 1280; j = j + 80) {
+			tree.query(QuadBoundingBox{ (float)j, (float)i, 80, 80 }, found);
+			//std::cout << "Bound posX: " << j << " Bound posY: " << i << " Found: " << found.size() << std::endl;
 
-		// Evaluating every entity in the system for a collision
-		for (Entity& other : Game::ecs.getSystemGroup<Collision, Transform>()) {
-			if (other == entity) continue;
-			Collision* oCollide = Game::ecs.getComponent<Collision>(other);
+			for (Entity& entity : found) {
+				std::cout << entity << std::endl;
+				Collision* collision = Game::ecs.getComponent<Collision>(entity);
+				Transform* transform = Game::ecs.getComponent<Transform>(entity);
 
-			if (oCollide == nullptr) continue;
+				collision->hitPos = transform->pos;
 
-			if (checkForCollision(collision, oCollide)) {
-				evaluateCollision(entity, collision, transform, other, oCollide);
+				for (auto& other : found) {
+					if (other == entity) continue;
+
+					Collision* oCollide = Game::ecs.getComponent<Collision>(other);
+
+					if (oCollide == nullptr) continue;
+
+					if (checkForCollision(collision, oCollide)) {
+						evaluateCollision(entity, collision, transform, other, oCollide);
+					}
+				}
 			}
+			found.clear();
 		}
+	}
+
+	//for (Entity& entity : Game::ecs.getSystemGroup<Collision, Transform>()) {
+	//	Collision* collision = Game::ecs.getComponent<Collision>(entity);
+	//	Transform* transform = Game::ecs.getComponent<Transform>(entity);
+
+	//	collision->hitPos = transform->pos;
+
+	//	// Evaluating every entity in the system for a collision
+	//	for (Entity& other : Game::ecs.getSystemGroup<Collision, Transform>()) {
+	//		if (other == entity) continue;
+	//		Collision* oCollide = Game::ecs.getComponent<Collision>(other);
+
+	//		if (oCollide == nullptr) continue;
+
+	//		if (checkForCollision(collision, oCollide)) {
+	//			evaluateCollision(entity, collision, transform, other, oCollide);
+	//		}
+	//	}
+	//}
+}
+
+void CollisionSystem::rebuildQuadtree(QuadBoundingBox boundary) {
+	tree = Quadtree(boundary);
+	for (Entity& entity : Game::ecs.getSystemGroup<Collision, Transform>()) {
+		//std::cout << tree.insert(entity) << std::endl;
+		tree.insert(entity);
 	}
 }
 

@@ -93,14 +93,44 @@ Room::Room(int roomX, int roomY) {
 void Room::loadRoom(int x, int y) {
 	if (roomX == 0 && roomY == 0) {
 		readRoomData(vectorizeRoomDetails("Rooms/RoomLayouts/test.dat"), vectorizeRoomTiles("Rooms/RoomLayouts/test.dat"));
+
+		// ----- Test Enemy 1 ----- //
+		Entity enemyTest = Game::ecs.createEntity();
+
+		Game::ecs.assignComponent<Transform>(enemyTest);
+		Game::ecs.assignComponent<Sprite>(enemyTest);
+		Game::ecs.assignComponent<Collision>(enemyTest);
+		Game::ecs.assignComponent<MovementAI>(enemyTest);
+
+		Transform* e1Trans = Game::ecs.getComponent<Transform>(enemyTest);
+		*e1Trans = Transform{
+			.pos = { 200, 200 }
+		};
+
+		Sprite* e1Sprite = Game::ecs.getComponent<Sprite>(enemyTest);
+		*e1Sprite = Sprite{
+			.tileWidth = 64,
+			.tileHeight = 64,
+			.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png")
+		};
+
+		Collision* e1Coll = Game::ecs.getComponent<Collision>(enemyTest);
+		*e1Coll = Collision{
+			.hitWidth = 64,
+			.hitHeight = 64,
+			.physicsTags = { "enemy", "pushable" }
+		};
+
+		MovementAI* e1AI = Game::ecs.getComponent<MovementAI>(enemyTest);
+		*e1AI = MovementAI{
+			.ai = M_AI::OCTOGRUNT
+		};
 	}
 }
 
 void Room::update() {
 	Transform* pTransform = Game::ecs.getComponent<Transform>(player);
 	Room::camera.cinematicFocus(pTransform->pos.x, pTransform->pos.y, pTransform->vel, pTransform->accelConst);
-	//Room::camera.focus(pTransform->pos.x, pTransform->pos.y);
-	//Room::camera.dynamicFocus(pTransform->pos.x, pTransform->pos.y, pTransform->accelConst);
 
 	// Zooming in and out
 	if (zoomOutInputCopy < InputManager::keysReleased[SDLK_o]) {

@@ -11,6 +11,7 @@
 #include "Components/Defense.hpp"
 #include "Components/Grapple.hpp"
 #include "Components/Hp.hpp"
+#include "Components/MovementAI.hpp"
 #include "Components/Player.hpp"
 #include "Components/PlayerGun.hpp"
 #include "Components/Sprite.hpp"
@@ -20,7 +21,7 @@
 
 using Entity = uint32_t;
 
-const uint32_t MAX_ENTITIES = 1000;
+const uint32_t MAX_ENTITIES = 2000;
 const uint32_t MAX_COMPONENTS = 32;
 using ComponentMask = std::bitset<MAX_COMPONENTS>;
 
@@ -44,6 +45,7 @@ public:
 		std::cout << "Defense component registered. ID: " << getComponentId<Defense>() << std::endl;
 		std::cout << "Grapple component registered. ID: " << getComponentId<Grapple>() << std::endl;
 		std::cout << "Hp component registered. ID: " << getComponentId<Hp>() << std::endl;
+		std::cout << "MovementAI component registered. ID: " << getComponentId<MovementAI>() << std::endl;
 		std::cout << "Player component registered. ID: " << getComponentId<Player>() << std::endl;
 		std::cout << "PlayerGun component registered. ID: " << getComponentId<PlayerGun>() << std::endl;
 		std::cout << "Sprite component registered. ID: " << getComponentId<Sprite>() << std::endl;
@@ -91,14 +93,14 @@ public:
 				}
 				
 				entities.erase(entities.begin() + count);
-				std::cout << "Entity " << entity << " was successfully destroyed." << std::endl;
+				// std::cout << "Entity " << entity << " was successfully destroyed." << std::endl;
 				freeEntities.push_back(entity);
 				return;
 			}
 			count++;
 		}
 
-		std::cout << "Entity " << entity << " could not be destroyed because it was not found or does not exist." << std::endl;
+		// std::cout << "Entity " << entity << " could not be destroyed because it was not found or does not exist." << std::endl;
 	}
 
 	template<typename T>
@@ -110,7 +112,7 @@ public:
 				edesc.mask.set(getComponentId<T>());
 				edesc.components[getComponentId<T>()] = new T;
 
-				std::cout << "Component for entity " << entity << " set successfully." << std::endl;
+				// std::cout << "Component for entity " << entity << " set successfully." << std::endl;
 				return;
 			}
 		}
@@ -128,12 +130,12 @@ public:
 				delete edesc.components[getComponentId<T>()];
 				edesc.components[getComponentId<T>()] = nullptr;
 
-				std::cout << "Removal of component from entity " << entity << " was successful." << std::endl;
+				// std::cout << "Removal of component from entity " << entity << " was successful." << std::endl;
 				return;
 			}
 		}
 
-		std::cout << "Component for entity " << entity << " could not be removed because entity could not be found or does not exist." << std::endl;
+		// std::cout << "Component for entity " << entity << " could not be removed because entity could not be found or does not exist." << std::endl;
 	}
 
 	template<typename T>

@@ -144,6 +144,7 @@
     <ClCompile Include="Systems\BulletSystem.cpp" />
     <ClCompile Include="Systems\CollisionSystem.cpp" />
     <ClCompile Include="Systems\GrappleSystem.cpp" />
+    <ClCompile Include="Systems\MovementAISystem.cpp" />
     <ClCompile Include="Systems\PlayerGunSystem.cpp" />
     <ClCompile Include="Systems\PlayerSystem.cpp" />
     <ClCompile Include="Systems\PortalSystem.cpp" />
@@ -158,6 +159,7 @@
     <ClInclude Include="Components\Bullet.hpp" />
     <ClInclude Include="Components\Component.hpp" />
     <ClInclude Include="Components\Grapple.hpp" />
+    <ClInclude Include="Components\MovementAI.hpp" />
     <ClInclude Include="Components\TeleportLink.hpp" />
     <ClInclude Include="Components\Transform.hpp" />
     <ClInclude Include="Components\Defense.hpp" />
@@ -174,6 +176,7 @@
     <ClInclude Include="Systems\BulletSystem.hpp" />
     <ClInclude Include="Systems\CollisionSystem.hpp" />
     <ClInclude Include="Systems\GrappleSystem.hpp" />
+    <ClInclude Include="Systems\MovementAISystem.hpp" />
     <ClInclude Include="Systems\PlayerGunSystem.hpp" />
     <ClInclude Include="Systems\PlayerSystem.hpp" />
     <ClInclude Include="Systems\PortalSystem.hpp" />

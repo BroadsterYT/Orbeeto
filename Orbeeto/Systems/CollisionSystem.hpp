@@ -2,6 +2,97 @@
 #include "System.hpp"
 
 
+struct QuadBoundingBox {
+	float x, y, width, height;
+
+	bool contains(const Entity& entity) const {
+		Transform* transform = Game::ecs.getComponent<Transform>(entity);
+		if (transform == nullptr) return false;
+
+		return (transform->pos.x >= x && transform->pos.x <= x + width &&
+			transform->pos.y >= y && transform->pos.y <= y + height);
+	}
+
+	bool intersects(const QuadBoundingBox& range) {
+		return !(range.x > x + width || range.x + range.width < x ||
+			range.y > y + height || range.y + range.height < y);
+	}
+};
+
+
+class Quadtree {
+public:
+	Quadtree(const QuadBoundingBox& boundary) : boundary(boundary) {}
+
+	~Quadtree() {
+		delete northwest;
+		delete northeast;
+		delete southwest;
+		delete southeast;
+	}
+
+	QuadBoundingBox boundary;
+
+	bool insert(const Entity entity) {
+		if (!boundary.contains(entity)) return false;
+
+		if (entities.size() < CAPACITY) {
+			entities.push_back(entity);
+			return true;
+		}
+
+		// Too many entities, must subdivide
+		if (!divided) subdivide();
+
+		if (northwest->insert(entity) || northeast->insert(entity) || southwest->insert(entity) || southeast->insert(entity)) {
+			return true;
+		}
+
+		return false;
+	}
+
+	void query(const QuadBoundingBox range, std::vector<Entity>& found) {
+		if (!boundary.intersects(range)) {
+			return;
+		};
+
+		for (const auto& entity : entities) {
+			if (range.contains(entity)) found.push_back(entity);
+		}
+
+		if (divided) {
+			northwest->query(range, found);
+			northeast->query(range, found);
+			southwest->query(range, found);
+			southeast->query(range, found);
+		}
+	}
+
+private:
+	static constexpr int CAPACITY = 4;
+	std::vector<Entity> entities;
+	bool divided = false;
+
+	Quadtree* northwest = nullptr;
+	Quadtree* northeast = nullptr;
+	Quadtree* southwest = nullptr;
+	Quadtree* southeast = nullptr;
+
+	void subdivide() {
+		float x = boundary.x;
+		float y = boundary.y;
+		float w = boundary.width / 2;
+		float h = boundary.height / 2;
+
+		northwest = new Quadtree(QuadBoundingBox{ x, y, w, h });
+		northeast = new Quadtree(QuadBoundingBox{ x + w, y, w, h });
+		southwest = new Quadtree(QuadBoundingBox{ x, y + h, w, h });
+		southeast = new Quadtree(QuadBoundingBox{ x + w, y + h, w, h });
+		divided = true;
+	}
+};
+
+
 class CollisionSystem : public System {
 public:
 	CollisionSystem();
@@ -9,6 +100,10 @@ public:
 	void update();
 
 private:
+	Quadtree tree;
+
+	void rebuildQuadtree(QuadBoundingBox boundary);
+
 	/// <summary>
 	/// Checks for a collision between two entites given their collision components
 	/// </summary>
