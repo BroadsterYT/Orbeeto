@@ -66,7 +66,6 @@ void MovementAISystem::update() {
 				}
 
 				mvmAI->intervalTime = TimeManip::getTime();
-				mvmAI->angle += M_PI * 4;
 			}
 		}
 			break;

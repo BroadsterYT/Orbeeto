@@ -7,10 +7,13 @@ struct QuadBoundingBox {
 
 	bool contains(const Entity& entity) const {
 		Transform* transform = Game::ecs.getComponent<Transform>(entity);
+		Collision* coll = Game::ecs.getComponent<Collision>(entity);
 		if (transform == nullptr) return false;
+		if (coll == nullptr) return false;
 
-		return (transform->pos.x >= x && transform->pos.x <= x + width &&
-			transform->pos.y >= y && transform->pos.y <= y + height);
+		// Need to get position from transform and not hitPos because floating precision is needed
+		return (transform->pos.x + coll->hitWidth / 2 >= x && transform->pos.x - coll->hitWidth / 2 <= x + width &&
+				transform->pos.y + coll->hitHeight / 2 >= y && transform->pos.y - coll->hitHeight / 2 <= y + height);
 	}
 
 	bool intersects(const QuadBoundingBox& range) {
@@ -69,7 +72,7 @@ public:
 	}
 
 private:
-	static constexpr int CAPACITY = 4;
+	static constexpr int CAPACITY = 8;
 	std::vector<Entity> entities;
 	bool divided = false;
 
@@ -121,14 +124,17 @@ private:
 	/// </returns>
 	int intersection(const Collision* eColl, const Collision* oColl);
 
-	/// <summary>
-	/// Causes entity 1 to be pushed by entity 2
-	/// </summary>
-	/// <param name="coll1">Pointer to entity 1's collision component</param>
-	/// <param name="trans1">Pointer to entity 1's transform component</param>
-	/// <param name="coll2">Pointer to entity 2's collision component</param>
-	/// <param name="trans2">Pointer to entity 2's transform component</param>
+	int intersectX(const Collision* eColl, const Collision* oColl);
+	int intersectY(const Collision* eColl, const Collision* oColl);
+
 	void pushEntity(Collision* coll1, Transform* trans1, Collision* coll2, Transform* trans2);
+
+	void pushEntityX(Collision* coll1, Transform* trans1, Collision* coll2, Transform* trans2);
+	void pushEntityY(Collision* coll1, Transform* trans1, Collision* coll2, Transform* trans2);
+
+	Vector2 intersectionDepth(const Collision* eColl, const Collision* oColl);
+	void resolveCollision(Collision* coll1, Transform* trans1, Collision* coll2, Transform* trans2);
+
 	void evaluateCollision(Entity& entity, Collision* eColl, Transform* eTrans, Entity& other, Collision* oColl);
 	bool hasPhysicsTag(const Collision* coll, std::string tag);
 };
