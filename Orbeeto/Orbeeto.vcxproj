@@ -188,6 +188,7 @@
     <ClInclude Include="WindowManager.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Rooms\RoomLayouts\newSerializeTest.dat" />
     <None Include="Rooms\RoomLayouts\test.dat" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

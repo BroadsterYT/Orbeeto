@@ -176,5 +176,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Rooms\RoomLayouts\test.dat" />
+    <None Include="Rooms\RoomLayouts\newSerializeTest.dat" />
   </ItemGroup>
 </Project>

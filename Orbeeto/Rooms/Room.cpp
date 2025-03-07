@@ -92,10 +92,12 @@ Room::Room(int roomX, int roomY) {
 
 void Room::loadRoom(int x, int y) {
 	if (roomX == 0 && roomY == 0) {
-		readRoomData(vectorizeRoomDetails("Rooms/RoomLayouts/test.dat"), vectorizeRoomTiles("Rooms/RoomLayouts/test.dat"));
+		canScrollX = true;
+		canScrollY = true;
+		readRoomData(extractRoomTiles("Rooms/RoomLayouts/newSerializeTest.dat"));
 
 		// ----- Test Enemy 1 ----- //
-		Entity enemyTest = Game::ecs.createEntity();
+		/*Entity enemyTest = Game::ecs.createEntity();
 
 		Game::ecs.assignComponent<Transform>(enemyTest);
 		Game::ecs.assignComponent<Sprite>(enemyTest);
@@ -124,7 +126,7 @@ void Room::loadRoom(int x, int y) {
 		MovementAI* e1AI = Game::ecs.getComponent<MovementAI>(enemyTest);
 		*e1AI = MovementAI{
 			.ai = M_AI::OCTOGRUNT
-		};
+		};*/
 	}
 }
 
@@ -163,8 +165,8 @@ void Room::clearPortalLinks() {
 	portalLinks.clear();
 }
 
-std::vector<int> Room::vectorizeRoomDetails(const std::string roomFilePath) {
-	std::vector<int> roomDetails;
+std::vector<int> Room::extractRoomDetails(const std::string roomFilePath) {
+	std::vector<int> roomDetails;/*
 
 	std::ifstream roomFile(roomFilePath);
 
@@ -175,106 +177,162 @@ std::vector<int> Room::vectorizeRoomDetails(const std::string roomFilePath) {
 	}
 
 	roomFile.close();
+	return roomDetails;*/
 	return roomDetails;
 }
 
-std::vector<std::vector<int>> Room::vectorizeRoomTiles(const std::string roomFileName) {
+std::vector<std::vector<uint64_t>> Room::extractRoomTiles(const std::string roomFileName) {
 	std::ifstream roomFile(roomFileName);
 	assert(roomFile.is_open() && "Error opening room data file.");
 
-	int roomTileWidth, roomTileHeight;
-	roomFile >> roomTileWidth >> roomTileHeight;
+	std::vector<std::vector<uint64_t>> output;
+	if (roomFile.peek() == EOF) return output;
 
-	// We don't care about the scrolling values so we skip over them
-	int temp;
-	roomFile >> temp >> temp;
+	std::vector<uint64_t> currentRow;
+	std::string currentTile = "";
+	char ch;
 
-	// Taking each tile ID in the room data file and putting them into vectors
-	std::vector<std::vector<int>> finalData;
-	std::vector<int> tempData;
+	while (roomFile.get(ch)) {
+		if (ch == ' ') {
+			uint64_t tile = std::stoull(currentTile, nullptr, 16);
+			currentTile = "";
+			currentRow.push_back(tile);
+		}
+		else if (ch == '\n') {
+			// Includes last tile in the row before pushing back
+			uint64_t tile = std::stoull(currentTile, nullptr, 16);
+			currentTile = "";
+			currentRow.push_back(tile);
 
-	int currentTile;
-	for (int i = 0; i < roomTileWidth * roomTileHeight; i++) {
-		roomFile >> currentTile;
-
-		tempData.push_back(currentTile);
-
-		if ((i + 1) % roomTileWidth == 0) {
-			finalData.push_back(tempData);
-			tempData.clear();
+			output.push_back(currentRow);
+			currentRow.clear();
+		}
+		else {
+			currentTile += ch;
 		}
 	}
+	// Including last tile in final row
+	uint64_t tile = std::stoull(currentTile, nullptr, 16);
+	currentTile = "";
+	currentRow.push_back(tile);
 
-	roomFile.close();
-	return finalData;
+	// Including last row in final output
+	output.push_back(currentRow);
+	currentRow.clear();
+
+	return output;
 }
 
-void Room::readRoomData(const std::vector<int> roomDetails, const std::vector<std::vector<int>> roomTiles) {
-	canScrollX = roomDetails[2];
-	canScrollY = roomDetails[3];
+void Room::readRoomData(const std::vector<std::vector<uint64_t>> roomTiles) {
+	if (roomTiles.size() == 0) return;
+	
+	int rows = roomTiles.size();
+	int cols = roomTiles[0].size();
 
-	std::cout << "Scroll X: " << roomDetails[2] << std::endl;
-	std::cout << "Scroll Y: " << roomDetails[3] << std::endl;
-
-	for (int y = 0; y < roomTiles.size(); y++) {
-		for (int x = 0; x < roomTiles[y].size(); x++) {
+	for (int y = 0; y < rows; y++) {
+		for (int x = 0; x < cols; x++) {
+			std::cout << "New tile" << std::endl;
 			buildRoomEntity(roomTiles[y][x], x, y);
 		}
 	}
 }
 
-void Room::buildRoomEntity(const int tileId, int tilePosX, int tilePosY) {
-	const int tileSize = 64;
+enum TileProperties {
+	SOLID,
+};
 
-	if (tileId == 0) return;
+void Room::buildRoomEntity(const uint64_t tileId, int tilePosX, int tilePosY) {
+	const int tileSize = 32;
 
-	else if (tileId == 1) {
-		Entity testWall = Game::ecs.createEntity();
-		Game::ecs.assignComponent<Collision>(testWall);
-		Game::ecs.assignComponent<Sprite>(testWall);
-		Game::ecs.assignComponent<Transform>(testWall);
+	//if (tileId == 0) return;
 
-		// Building wall tile image
-		// TODO: finalWallImage texture must be destroyed when switching rooms
-		SDL_Texture* finalWallImage = SDL_CreateTexture(Game::renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, tileSize, tileSize);
-		SDL_Texture* tileSheet = TextureManager::loadTexture(Game::renderer, "Assets/wall.png");
+	//else if (tileId == 1) {
+	//	Entity testWall = Game::ecs.createEntity();
+	//	Game::ecs.assignComponent<Collision>(testWall);
+	//	Game::ecs.assignComponent<Sprite>(testWall);
+	//	Game::ecs.assignComponent<Transform>(testWall);
 
-		SDL_SetTextureBlendMode(finalWallImage, SDL_BLENDMODE_BLEND);
-		SDL_SetRenderTarget(Game::renderer, finalWallImage);
+	//	// Building wall tile image
+	//	// TODO: finalWallImage texture must be destroyed when switching rooms
+	//	SDL_Texture* finalWallImage = SDL_CreateTexture(Game::renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, tileSize, tileSize);
+	//	SDL_Texture* tileSheet = TextureManager::loadTexture(Game::renderer, "Assets/wall.png");
 
-		const int tileStampSize = 32;  // The size of each little tile being stitched together to make the final tile (may not be the size of the tile in the tile sheet!)
-		SDL_Rect finalSrcRect(0, 0, 16, 16);
-		SDL_Rect finalDestRect(0, 0, tileStampSize, tileStampSize);
+	//	SDL_SetTextureBlendMode(finalWallImage, SDL_BLENDMODE_BLEND);
+	//	SDL_SetRenderTarget(Game::renderer, finalWallImage);
 
-		// Blitting each little tile onto the final tile texture
-		for (int y = 0; y < 2; y++) {
-			for (int x = 0; x < 2; x++) {
-				finalDestRect.x = x * tileStampSize;
-				finalDestRect.y = y * tileStampSize;
-				SDL_RenderCopy(Game::renderer, tileSheet, &finalSrcRect, &finalDestRect);
-			}
-		}
-		SDL_DestroyTexture(tileSheet);
-		SDL_SetRenderTarget(Game::renderer, NULL);
+	//	const int tileStampSize = 32;  // The size of each little tile being stitched together to make the final tile (may not be the size of the tile in the tile sheet!)
+	//	SDL_Rect finalSrcRect(0, 0, 16, 16);
+	//	SDL_Rect finalDestRect(0, 0, tileStampSize, tileStampSize);
 
-		// Assigning components
-		Collision* wallColl = Game::ecs.getComponent<Collision>(testWall);
-		*wallColl = Collision{
-			.hitWidth = 64,
-			.hitHeight = 64,
-			.physicsTags = {"wall", "canPush", "canHoldPortal"}
-		};
+	//	// Blitting each little tile onto the final tile texture
+	//	for (int y = 0; y < 2; y++) {
+	//		for (int x = 0; x < 2; x++) {
+	//			finalDestRect.x = x * tileStampSize;
+	//			finalDestRect.y = y * tileStampSize;
+	//			SDL_RenderCopy(Game::renderer, tileSheet, &finalSrcRect, &finalDestRect);
+	//		}
+	//	}
+	//	SDL_DestroyTexture(tileSheet);
+	//	SDL_SetRenderTarget(Game::renderer, NULL);
 
-		Sprite* wallSprite = Game::ecs.getComponent<Sprite>(testWall);
-		*wallSprite = Sprite{
-			.tileWidth = tileSize,
-			.tileHeight = tileSize,
-			.spriteSheet = finalWallImage
-		};
+	//	// Assigning components
+	//	Collision* wallColl = Game::ecs.getComponent<Collision>(testWall);
+	//	*wallColl = Collision{
+	//		.hitWidth = 64,
+	//		.hitHeight = 64,
+	//		.physicsTags = {"wall", "canPush", "canHoldPortal"}
+	//	};
 
-		Transform* wallTrans = Game::ecs.getComponent<Transform>(testWall);
-		*wallTrans = Transform{
-			.pos = Vector2(tileSize * tilePosX + tileSize / 2, tileSize * tilePosY + tileSize / 2)  // TODO: Verify this is correct
-		};
+	//	Sprite* wallSprite = Game::ecs.getComponent<Sprite>(testWall);
+	//	*wallSprite = Sprite{
+	//		.tileWidth = tileSize,
+	//		.tileHeight = tileSize,
+	//		.spriteSheet = finalWallImage
+	//	};
+
+	//	Transform* wallTrans = Game::ecs.getComponent<Transform>(testWall);
+	//	*wallTrans = Transform{
+	//		.pos = Vector2(tileSize * tilePosX + tileSize / 2, tileSize * tilePosY + tileSize / 2)  // TODO: Verify this is correct
+	//	};
+	//}
+	if (tileId == 0x000000000) return;
+
+	Entity tile = Game::ecs.createEntity();
+
+	int tileWidth = tileId >> (4 * 9);
+	int tileHeight = (tileId >> (4 * 7)) & 0xFF;
+	std::bitset<8> properties{ (tileId >> (4 * 5)) & 0xFF };
+	int tileSet = (tileId >> (4 * 3)) & 0xFF;
+	int tileType = (tileId >> (4 * 1)) & 0xFF;
+	int adjacent = tileId & 0xF;
+
+	// Position setup
+	Game::ecs.assignComponent<Transform>(tile);
+	Transform* trans = Game::ecs.getComponent<Transform>(tile);
+	*trans = Transform{
+		.pos = { tilePosX * tileSize + (tileWidth * tileSize) / 2, 
+				 tilePosY * tileSize + (tileHeight * tileSize) / 2 }
+	};
+
+	// Sprite Setup
+	Game::ecs.assignComponent<Sprite>(tile);
+	Sprite* sprite = Game::ecs.getComponent<Sprite>(tile);
+
+	// Building wall image
+	switch (tileSet) {
+	case 0x00:
+	{
+		
+	}
+		break;
+
+	default:
+		break;
+	}
+	
+	// Hitbox setup
+	if (properties.test(TileProperties::SOLID)) {
+		Game::ecs.assignComponent<Collision>(tile);
+		Collision* coll = Game::ecs.getComponent<Collision>(tile);
 	}
 }
