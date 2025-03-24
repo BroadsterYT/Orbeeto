@@ -44,52 +44,44 @@ void Camera::printDetails() {
 }
 
 void Camera::focus(int posX, int posY) {
-	vel = { 0.0, 0.0 };
-	accel = { 0.0, 0.0 };
 	camera.x = posX - WindowManager::SCREENWIDTH / 2;
 	camera.y = posY - WindowManager::SCREENHEIGHT / 2;
 }
 
 void Camera::cinematicFocus(int posX, int posY, const Vector2& entityVel, double entityAccelConst) {
-	// https://www.desmos.com/calculator/3y1viny0hg
+	float teleportThresh = 75.0f;
+	Vector2 distVec = { posX - WindowManager::SCREENWIDTH / 2 - (double)camera.x, posY - WindowManager::SCREENHEIGHT / 2 - (double)camera.y };
+	float distMag = distVec.getMagnitude();
 
-	Vector2 speedFactor = { std::clamp(entityVel.x, 1.0, 2.4) , std::clamp(entityVel.y, 1.0, 2.4) };
-	double adjustedAccelC_X = entityAccelConst * speedFactor.x;
-	double adjustedAccelC_Y = entityAccelConst * speedFactor.y;
-
-	double tanFuncX = tan(M_PI / (2.0 * (double)WindowManager::SCREENWIDTH) * ((double)camera.x - (double)posX + (double)WindowManager::SCREENWIDTH) - M_PI / 4.0);
-	double tanFuncY = tan(M_PI / (2.0 * (double)WindowManager::SCREENHEIGHT) * ((double)camera.y - (double)posY + (double)WindowManager::SCREENHEIGHT) - M_PI / 4.0);
-
-	double mult = 0.4 * speedFactor.getMagnitude();
-	double clampLimitX = adjustedAccelC_X * 2;
-	double clampLimitY = adjustedAccelC_Y * 2;
-
-	double tempAccelX = std::clamp(-mult * tanFuncX, -clampLimitX, clampLimitX);
-	double tempAccelY = std::clamp(-mult * tanFuncY, -clampLimitY, clampLimitY);
-
-	// Prevents movement along tangent outside of first period if tp takes player grater than window borders
-	if (-3.0 * (double)WindowManager::SCREENWIDTH / 2.0 + (double)posX > camera.x) {
-		tempAccelX = clampLimitX;
-	}
-	else if ((double)WindowManager::SCREENWIDTH / 2.0 + (double)posX < camera.x) {
-		tempAccelX = -clampLimitX;
+	if (distMag > teleportThresh) {
+		if (!isTeleporting) {
+			tpWeight = 0.0f;
+			isTeleporting = true;
+		}
 	}
 
-	if (-3.0 * (double)WindowManager::SCREENHEIGHT / 2.0 + (double)posY > camera.y) {
-		tempAccelY = clampLimitY;
+	if (isTeleporting) {
+		Vector2 cameraVec = { (double)camera.x, (double)camera.y };
+		Vector2 targetVec = {
+			(double)posX - WindowManager::SCREENWIDTH / 2,
+			(double)posY - WindowManager::SCREENHEIGHT / 2
+		};
+
+		float deltaTime = TimeManip::getDeltaAdjuster();
+		cameraVec = Math::cerp(cameraVec, targetVec, tpWeight);
+		camera.x = (int)cameraVec.x;
+		camera.y = (int)cameraVec.y;
+
+		tpWeight = tpWeight + 0.003f * deltaTime;
+		//std::cout << tpWeight << std::endl;
+
+		if (distMag <= 2.0f) {
+			isTeleporting = false;
+			tpWeight = 0.0f;
+		}
 	}
-	else if ((double)WindowManager::SCREENHEIGHT / 2.0 + (double)posY < camera.y) {
-		tempAccelY = -clampLimitY;
+	else {
+		camera.x = posX - WindowManager::SCREENWIDTH / 2;
+		camera.y = posY - WindowManager::SCREENHEIGHT / 2;
 	}
-
-	accel.x = tempAccelX;
-	accel.y = tempAccelY;
-
-	accel.x += vel.x * fric;
-	accel.y += vel.y * fric;
-	vel += accel * TimeManip::getDeltaAdjuster();
-	pos += vel * TimeManip::getDeltaAdjuster() + accel * accelConst;
-
-	camera.x = pos.x;
-	camera.y = pos.y;
 }

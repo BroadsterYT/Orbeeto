@@ -5,6 +5,11 @@
 struct QuadBoundingBox {
 	float x, y, width, height;
 
+	/// <summary>
+	/// Determines if a specified entity is within the bounding box
+	/// </summary>
+	/// <param name="entity">The entity to search for</param>
+	/// <returns>True if the box contains the entity, false otherwise</returns>
 	bool contains(const Entity& entity) const {
 		Transform* transform = Game::ecs.getComponent<Transform>(entity);
 		Collision* coll = Game::ecs.getComponent<Collision>(entity);
@@ -16,6 +21,11 @@ struct QuadBoundingBox {
 				transform->pos.y + coll->hitHeight / 2 >= y && transform->pos.y - coll->hitHeight / 2 <= y + height);
 	}
 
+	/// <summary>
+	/// Determines if the given bounding box intersects with this one
+	/// </summary>
+	/// <param name="range">The bounding box to compare against this one</param>
+	/// <returns>True if the boxes are intersecting, false otherwise</returns>
 	bool intersects(const QuadBoundingBox& range) {
 		return !(range.x > x + width || range.x + range.width < x ||
 			range.y > y + height || range.y + range.height < y);
@@ -36,6 +46,11 @@ public:
 
 	QuadBoundingBox boundary;
 
+	/// <summary>
+	/// Inserts an entity into the QuadTree
+	/// </summary>
+	/// <param name="entity">The entity to insert</param>
+	/// <returns>True if insertion is successful, false otherwise</returns>
 	bool insert(const Entity entity) {
 		if (!boundary.contains(entity)) return false;
 
@@ -54,6 +69,11 @@ public:
 		return false;
 	}
 
+	/// <summary>
+	/// Retrieves the entities within a specified snippet of the QuadTree
+	/// </summary>
+	/// <param name="range">The QuadBoundingBox to search for entities within</param>
+	/// <param name="found">The vector to insert the found entities into</param>
 	void query(const QuadBoundingBox range, std::vector<Entity>& found) {
 		if (!boundary.intersects(range)) {
 			return;
@@ -72,7 +92,7 @@ public:
 	}
 
 private:
-	static constexpr int CAPACITY = 8;
+	static constexpr int CAPACITY = 4;
 	std::vector<Entity> entities;
 	bool divided = false;
 
@@ -104,7 +124,10 @@ public:
 
 private:
 	Quadtree tree;
-
+	/// <summary>
+	/// Resets the collision tree and reinserts all entities
+	/// </summary>
+	/// <param name="boundary">The QuadBoundingBox to reset the tree with</param>
 	void rebuildQuadtree(QuadBoundingBox boundary);
 
 	/// <summary>
@@ -124,17 +147,16 @@ private:
 	/// </returns>
 	int intersection(const Collision* eColl, const Collision* oColl);
 
-	int intersectX(const Collision* eColl, const Collision* oColl);
-	int intersectY(const Collision* eColl, const Collision* oColl);
-
 	void pushEntity(Collision* coll1, Transform* trans1, Collision* coll2, Transform* trans2);
 
-	void pushEntityX(Collision* coll1, Transform* trans1, Collision* coll2, Transform* trans2);
-	void pushEntityY(Collision* coll1, Transform* trans1, Collision* coll2, Transform* trans2);
-
-	Vector2 intersectionDepth(const Collision* eColl, const Collision* oColl);
-	void resolveCollision(Collision* coll1, Transform* trans1, Collision* coll2, Transform* trans2);
-
+	/// <summary>
+	/// Performs all game logic related to collisions
+	/// </summary>
+	/// <param name="entity">The instigating entity</param>
+	/// <param name="eColl">The instigating entity's collision component</param>
+	/// <param name="eTrans">The instigating entity's transform component</param>
+	/// <param name="other">The receiving entity</param>
+	/// <param name="oColl">The receiving entity's collision component</param>
 	void evaluateCollision(Entity& entity, Collision* eColl, Transform* eTrans, Entity& other, Collision* oColl);
 	bool hasPhysicsTag(const Collision* coll, std::string tag);
 };

@@ -28,7 +28,7 @@ void TimeManip::calculateDeltaTime() {
 }
 
 float TimeManip::getDeltaAdjuster() {
-	return avgDeltaTime * 10000.0f;
+	return avgDeltaTime * 10000.0f;  // I have no clue why using 10000 works but it does for now
 }
 
 uint64_t TimeManip::getTime() {

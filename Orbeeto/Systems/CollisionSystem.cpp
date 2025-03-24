@@ -1,19 +1,23 @@
 #include "CollisionSystem.hpp"
 #include <algorithm>
 #include "../Rooms/Room.hpp"
+#include "../WindowManager.hpp"
 
 
 CollisionSystem::CollisionSystem() : tree(QuadBoundingBox{0, 0, 1280, 720}) {}
 
 void CollisionSystem::update() {
-	rebuildQuadtree(QuadBoundingBox{0, 0, 1280, 720});
-	
+	float roomW = Room::getRoomWidth();
+	float roomH = Room::getRoomHeight();
+
+	rebuildQuadtree(QuadBoundingBox{ 0.0f, 0.0f, roomW, roomH });
 	std::vector<Entity> found;
 
-	// TODO:: Adjust to confine to current room
-	/*for (int i = 0; i < 720; i = i + 250) {
-		for (int j = 0; j < 1280; j = j + 250) {*/
-			tree.query(QuadBoundingBox{ (float)0, (float)0, 1280, 720 }, found);
+	int clipSize = 160;
+	for (int y = 0; y <= roomH; y = y + clipSize) {
+		for (int x = 0; x <= roomW; x = x + clipSize) {
+			//std::cout << "Bound x: " << x << ", Bound y: " << y << std::endl;
+			tree.query(QuadBoundingBox{ (float)x, (float)y, (float)clipSize, (float)clipSize }, found);
 			//std::cout << "Bound posX: " << j << " Bound posY: " << i << " Found: " << found.size() << std::endl;
 
 			for (Entity& entity : found) {
@@ -36,18 +40,22 @@ void CollisionSystem::update() {
 				}
 			}
 			found.clear();
-	/*	}
-	}*/
+		}
+	}
 
-	/*for (Entity& entity : Game::ecs.getSystemGroup<Collision, Transform>()) {
+	/*tree.query(QuadBoundingBox{(float)Room::camera.getX(), (float)Room::camera.getY(), 1280, 720}, found);
+	//std::cout << "Bound posX: " << j << " Bound posY: " << i << " Found: " << found.size() << std::endl;
+
+	for (Entity& entity : found) {
 		Collision* collision = Game::ecs.getComponent<Collision>(entity);
+		if (collision == nullptr) continue;
 		Transform* transform = Game::ecs.getComponent<Transform>(entity);
 
 		collision->hitPos = transform->pos;
 
-		// Evaluating every entity in the system for a collision
-		for (Entity& other : Game::ecs.getSystemGroup<Collision, Transform>()) {
+		for (auto& other : found) {
 			if (other == entity) continue;
+
 			Collision* oCollide = Game::ecs.getComponent<Collision>(other);
 
 			if (oCollide == nullptr) continue;
@@ -56,7 +64,8 @@ void CollisionSystem::update() {
 				evaluateCollision(entity, collision, transform, other, oCollide);
 			}
 		}
-	}*/
+	}
+	found.clear();*/
 }
 
 void CollisionSystem::rebuildQuadtree(QuadBoundingBox boundary) {
@@ -130,31 +139,6 @@ void CollisionSystem::pushEntity(Collision* coll1, Transform* trans1, Collision*
 		&& trans1->pos.x + coll1->hitWidth / 2 >= trans2->pos.x - coll2->hitWidth / 2) {
 		trans1->vel.x = 0;
 		trans1->pos.x = trans2->pos.x - coll2->hitWidth / 2 - coll1->hitWidth / 2;
-	}
-}
-
-Vector2 CollisionSystem::intersectionDepth(const Collision* eColl, const Collision* oColl) {
-	float distX = eColl->hitPos.x - oColl->hitPos.x;
-	float minDistX = (eColl->hitWidth + oColl->hitWidth) / 2;
-	float depthX = distX > 0 ? minDistX - distX : -minDistX - distX;
-
-	float distY = eColl->hitPos.y - oColl->hitPos.y;
-	float minDistY = (eColl->hitHeight + oColl->hitHeight) / 2;
-	float depthY = distY > 0 ? minDistY - distY : -minDistY - distY;
-
-	return { depthX, depthY }; // Return how much overlap exists on both axes
-}
-
-void CollisionSystem::resolveCollision(Collision* coll1, Transform* trans1, Collision* coll2, Transform* trans2) {
-	Vector2 depth = intersectionDepth(coll1, coll2);
-
-	if (abs(depth.x) < abs(depth.y)) {
-		// Resolve X first if it's the smaller penetration
-		trans1->pos.x += depth.x;
-	}
-	else {
-		// Resolve Y first otherwise
-		trans1->pos.y += depth.y;
 	}
 }
 

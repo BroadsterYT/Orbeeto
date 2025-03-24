@@ -15,6 +15,19 @@ public:
 
 	static Camera camera;
 
+	/// <summary>
+	/// Retrieves the room's x-value
+	/// </summary>
+	/// <returns>The room's x-value</returns>
+	static int getRoomX();
+	/// <summary>
+	/// Retrieves the room's y-value
+	/// </summary>
+	/// <returns>The room's y-value</returns>
+	static int getRoomY();
+	static int getRoomWidth();
+	static int getRoomHeight();
+
 	void loadRoom(int x, int y);
 	void update();
 
@@ -34,8 +47,10 @@ public:
 	static void clearPortalLinks();
 
 private:
-	int roomX;
-	int roomY;
+	static int roomX;
+	static int roomY;
+	static int roomWidth;  // Width of the room in pixels
+	static int roomHeight;  // Height of the room in pixels
 
 	bool canScrollX;
 	bool canScrollY;
@@ -50,49 +65,29 @@ private:
 	static std::unordered_map<Entity, Entity> portalLinks;  // Handles links between all portals
 
 	/// <summary>
-	/// Reads the values of the room details and returns them as a vector
-	/// </summary>
-	/// <param name="roomFilePath">The file path of the room data file to read</param>
-	/// <returns>A vector of integers containing room details</returns>
-	std::vector<int> extractRoomDetails(const std::string roomFilePath);
-	/// <summary>
 	/// Pulls the tile IDs of a room's .dat file and places them into a nested vector
 	/// </summary>
 	/// <param name="roomFileName">The file path of the room data file to read from</param>
 	/// <returns>The nested vector of room tiles</returns>
-	std::vector<std::vector<uint64_t>> extractRoomTiles(const std::string roomFileName);
+	std::vector<std::vector<uint8_t>> extractRoomTiles(const std::string roomFileName);
 	/// <summary>
 	/// Constructs the entities within a room given vectors of the room details and tile IDs
 	/// </summary>
 	/// <param name="roomDetails">A vector of room details</param>
 	/// <param name="roomTiles">A nested vector containing the room's tile IDs</param>
-	void readRoomData(const std::vector<std::vector<uint64_t>> roomTiles);
+	void readRoomData(const std::vector<std::vector<uint8_t>> roomTiles);
 	/// <summary>
-	///		Creates the entities associated with a given tile ID from a room layout file.
-	///		<para>
-	///			0x123456789AB
-	///		</para>
-	///		<para>
-	///			Nibble 1 and 2 - Tile width
-	///		</para>
-	///		<para>
-	///			Nibble 3 and 4 - Tile height
-	///		</para>
-	///		<para>
-	///			Nibble 5 and 6 - Tile properties
-	///		</para>
-	///		<para>
-	///			Nibble 7 and 8 - Tile set
-	///		</para>
-	///		<para>
-	///			Nibble 9 and A - Tile type
-	///		</para>
-	///		<para>
-	///			Nibble B	   - Tiles adjacent
-	///		</para>
+	///		Creates an entity with the specified information within a tile info vector. The information in each hex value is as follows:
+	///		<para>1. Tile x-axis position</para>
+	///		<para>2. Tile y-axis position</para>
+	///		<para>3. Tile width (in tile size, which depends on the tile set)</para>
+	///		<para>4. Tile height (in tile size, which depends on the tile set)</para>
+	///		<para>5. Tile properties</para>
+	///		<para>6. Tile set</para>
+	///		<para>7. Tile type</para>
+	///		<para>8. Tiling style</para>
+	///		<para>9. Tiles adjacent</para>
 	/// </summary>
-	/// <param name="tileId">The ID of the tile to construct</param>
-	/// <param name="tilePosX">The x-axis position (in TILES) of where to place the tile</param>
-	/// <param name="tilePosY">The y-axis position (in TILES) of where to place the tile</param>
-	void buildRoomEntity(const uint64_t tileId, int tilePosX, int tilePosY);
+	/// <param name="tileInfo">The vector of information for the tile to be constructed with</param>
+	void buildRoomEntity(const std::vector<uint8_t>& tileInfo);
 };

@@ -53,7 +53,21 @@ Vector2 Vector2::operator*(const float& val) {
 	return Vector2(x * val, y * val);
 }
 
+Vector2 Vector2::operator/(const float& val) {
+	return Vector2(x / val, y / val);
+}
+
 void Vector2::operator+=(const Vector2& other) {
 	x += other.x;
 	y += other.y;
+}
+
+bool Vector2::operator==(const Vector2& other) {
+	if (x != other.x) return false;
+	if (y != other.y) return false;
+	return true;
+}
+
+bool Vector2::operator!=(const Vector2& other) {
+	return !operator==(other);
 }

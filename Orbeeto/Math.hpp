@@ -14,7 +14,7 @@ public:
 	/// <param name="weight">Interpolation weight between a and b</param>
 	/// <returns>Linear interpolation between a and b</returns>
 	template<class T>
-	static double lerp(T a, T b, double weight) {
+	static T lerp(T a, T b, double weight) {
 		double trueWeight = weight; // The actual weight the interpolation will use
 		if (weight < 0) trueWeight = 0.0;
 		if (weight > 1.0) trueWeight = 1.0;
@@ -31,9 +31,9 @@ public:
 	/// <param name="weight">Interpolation weight between a and b</param>
 	/// <returns>Cosinusoidal interpolation between a and b</returns>
 	template<class T>
-	static double cerp(T a, T b, double weight) {
+	static T cerp(T a, T b, double weight) {
 		double trueWeight = weight;
-		if (weight < 0.0) trueWeight = 0;
+		if (weight < 0.0) trueWeight = 0.0;
 		if (weight > 1.0) trueWeight = 1.0;
 
 		return ((a - b) / 2) * cos(M_PI * trueWeight) + ((a + b) / 2);
