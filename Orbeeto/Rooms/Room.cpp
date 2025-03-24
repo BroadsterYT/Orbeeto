@@ -115,6 +115,8 @@ int Room::getRoomHeight() {
 }
 
 void Room::loadRoom(int x, int y) {
+	
+	
 	if (roomX == 0 && roomY == 0) {
 		roomWidth = 1280;
 		roomHeight = 720;

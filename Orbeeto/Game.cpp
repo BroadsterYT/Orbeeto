@@ -39,7 +39,7 @@ Game::Game(const char* title, int posX, int posY, int width, int height, bool fu
 		isRunning = true;
 	}
 	else {
-		std::cout << "Error initializing" << std::endl;
+		std::cout << "Error initializing SDL2" << std::endl;
 		isRunning = false;
 	}
 }

@@ -65,21 +65,20 @@ private:
 	static std::unordered_map<Entity, Entity> portalLinks;  // Handles links between all portals
 
 	/// <summary>
-	/// Pulls the tile IDs of a room's .dat file and places them into a nested vector
+	/// Retrieves the information for each tile in a room data file
 	/// </summary>
 	/// <param name="roomFileName">The file path of the room data file to read from</param>
-	/// <returns>The nested vector of room tiles</returns>
+	/// <returns>The vector of room tile info</returns>
 	std::vector<std::vector<uint8_t>> extractRoomTiles(const std::string roomFileName);
 	/// <summary>
-	/// Constructs the entities within a room given vectors of the room details and tile IDs
+	/// Using tile information, constructs the tiles within the room
 	/// </summary>
-	/// <param name="roomDetails">A vector of room details</param>
 	/// <param name="roomTiles">A nested vector containing the room's tile IDs</param>
 	void readRoomData(const std::vector<std::vector<uint8_t>> roomTiles);
 	/// <summary>
 	///		Creates an entity with the specified information within a tile info vector. The information in each hex value is as follows:
-	///		<para>1. Tile x-axis position</para>
-	///		<para>2. Tile y-axis position</para>
+	///		<para>1. Tile x-axis position (in tile size, which depends on the tile set)</para>
+	///		<para>2. Tile y-axis position (in tile size, which depends on the tile set)</para>
 	///		<para>3. Tile width (in tile size, which depends on the tile set)</para>
 	///		<para>4. Tile height (in tile size, which depends on the tile set)</para>
 	///		<para>5. Tile properties</para>

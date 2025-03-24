@@ -81,7 +81,7 @@ public:
 			if (edesc.entity == entity) {
 				// Freeing memory taken up by spritesheet if the entity has a sprite
 				if (edesc.mask.test(getComponentId<Sprite>())) {
-					std::cout << "Sprite sheet for entity " << entity << " is being destroyed.\n";
+					//std::cout << "Sprite sheet for entity " << entity << " is being destroyed.\n";
 					Sprite* sprite = getComponent<Sprite>(entity);
 					SDL_DestroyTexture(sprite->spriteSheet);
 					sprite->spriteSheet = nullptr;

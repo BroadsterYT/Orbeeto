@@ -22,7 +22,7 @@ Game* game = nullptr;
 
 int main(int argc, char* argv[]) {
 	game = new Game("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WindowManager::SCREENWIDTH, WindowManager::SCREENHEIGHT, false);
-
+	
 	// Initializing systems
 	BulletSystem bulletSystem;
 	CollisionSystem collisionSystem;
