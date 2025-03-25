@@ -59,8 +59,12 @@ Room::Room(int roomX, int roomY) {
 		.hitWidth = 32,
 		.hitHeight = 32,
 		.hitPos = Vector2(300.0f, 300.0f),
-		.physicsTags = { "player", "pushable", "canPush", "hurtable", "canTeleport" }
 	};
+	playerColl->physicsTags.set(PTags::PLAYER);
+	playerColl->physicsTags.set(PTags::PUSHABLE);
+	playerColl->physicsTags.set(PTags::CAN_PUSH);
+	playerColl->physicsTags.set(PTags::HURTABLE);
+	playerColl->physicsTags.set(PTags::CAN_TELEPORT);
 
 	// ----- Left Gun ----- //
 	Sprite* lGunSprite = Game::ecs.getComponent<Sprite>(leftGun);
@@ -148,8 +152,9 @@ void Room::loadRoom(int x, int y) {
 		*e1Coll = Collision{
 			.hitWidth = 64,
 			.hitHeight = 64,
-			.physicsTags = { "enemy", "pushable" }
 		};
+		e1Coll->physicsTags.set(PTags::ENEMY);
+		e1Coll->physicsTags.set(PTags::PUSHABLE);
 
 		MovementAI* e1AI = Game::ecs.getComponent<MovementAI>(enemyTest);
 		*e1AI = MovementAI{
@@ -358,8 +363,10 @@ void Room::buildRoomEntity(const std::vector<uint8_t>& tileInfo) {
 		*coll = Collision{
 			.hitWidth = finalWidth,
 			.hitHeight = finalHeight,
-			.physicsTags = { "wall", "canPush", "canHoldPortal" }
 		};
+		coll->physicsTags.set(PTags::WALL);
+		coll->physicsTags.set(PTags::CAN_PUSH);
+		coll->physicsTags.set(PTags::CAN_HOLD_PORTAL);
 	}
 
 	if (!props.test(TileProperties::INVISIBLE)) {

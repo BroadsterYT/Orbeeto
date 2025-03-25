@@ -72,8 +72,9 @@ void PlayerGunSystem::fireBullet(Transform* ownerTrans, const int bulletId, cons
 		.hitWidth = 8,
 		.hitHeight = 8,
 		.hitPos = Vector2(ownerTrans->pos.x + barrelOffsetX, ownerTrans->pos.y + barrelOffsetY),
-		.physicsTags = { "projectile", "canTeleport" }
 	};
+	bColl->physicsTags.set(PTags::PROJECTILE);
+	bColl->physicsTags.set(PTags::CAN_TELEPORT);
 
 	switch (bulletId) {
 	case BulletType::STANDARD: // Regular bullet

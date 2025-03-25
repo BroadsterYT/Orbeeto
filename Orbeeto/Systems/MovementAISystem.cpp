@@ -43,8 +43,9 @@ void MovementAISystem::update() {
 					*bColl = Collision{
 						.hitWidth = 8,
 						.hitHeight = 8,
-						.physicsTags = { "projectile", "canTeleport" }
 					};
+					bColl->physicsTags.set(PTags::PROJECTILE);
+					bColl->physicsTags.set(PTags::CAN_TELEPORT);
 
 					Sprite* bSprite = Game::ecs.getComponent<Sprite>(bullet);
 					*bSprite = Sprite{

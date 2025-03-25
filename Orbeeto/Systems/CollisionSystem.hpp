@@ -158,5 +158,5 @@ private:
 	/// <param name="other">The receiving entity</param>
 	/// <param name="oColl">The receiving entity's collision component</param>
 	void evaluateCollision(Entity& entity, Collision* eColl, Transform* eTrans, Entity& other, Collision* oColl);
-	bool hasPhysicsTag(const Collision* coll, std::string tag);
+	bool hasPhysicsTag(const Collision* coll, int tag);
 };
