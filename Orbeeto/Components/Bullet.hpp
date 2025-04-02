@@ -15,6 +15,7 @@ struct Bullet : Component {
 	uint64_t birthTime = TimeManip::getTime();
 
 	// ----- General ----- //
+	bool persistent = false; // Should the bullet disappear after a certain length of time?
 	int damage = 5;
 	uint32_t shotBy = 0;  // The entity responsible for shooting this bullet
 

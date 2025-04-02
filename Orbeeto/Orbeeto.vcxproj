@@ -149,6 +149,7 @@
     <ClCompile Include="Systems\PlayerSystem.cpp" />
     <ClCompile Include="Systems\PortalSystem.cpp" />
     <ClCompile Include="Systems\SpriteSystem.cpp" />
+    <ClCompile Include="Systems\StatBarSystem.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="TimeManip.cpp" />
     <ClCompile Include="Vector2.cpp" />
@@ -160,6 +161,7 @@
     <ClInclude Include="Components\Component.hpp" />
     <ClInclude Include="Components\Grapple.hpp" />
     <ClInclude Include="Components\MovementAI.hpp" />
+    <ClInclude Include="Components\StatBar.hpp" />
     <ClInclude Include="Components\TeleportLink.hpp" />
     <ClInclude Include="Components\Transform.hpp" />
     <ClInclude Include="Components\Defense.hpp" />
@@ -181,6 +183,7 @@
     <ClInclude Include="Systems\PlayerSystem.hpp" />
     <ClInclude Include="Systems\PortalSystem.hpp" />
     <ClInclude Include="Systems\SpriteSystem.hpp" />
+    <ClInclude Include="Systems\StatBarSystem.hpp" />
     <ClInclude Include="Systems\System.hpp" />
     <ClInclude Include="TextureManager.hpp" />
     <ClInclude Include="TimeManip.hpp" />
@@ -190,6 +193,9 @@
   <ItemGroup>
     <None Include="Rooms\RoomLayouts\newSerializeTest.dat" />
     <None Include="Rooms\RoomLayouts\test.dat" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\Documents\GitHub\Orbeeto\sprites\stat_bars\health_bar.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

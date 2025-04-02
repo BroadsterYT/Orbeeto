@@ -17,6 +17,15 @@ void MovementAISystem::update() {
 			transform->accelMovement();
 			break;
 
+		case M_AI::FOLLOW_ENTITY:
+		{
+			if (mvmAI->entityRef != 0) {
+				Transform* eTrans = Game::ecs.getComponent<Transform>(mvmAI->entityRef);
+				transform->pos = eTrans->pos + mvmAI->distance;
+			}
+		}
+			break;
+
 		case M_AI::OCTOGRUNT:
 		{
 			if (TimeManip::getTimeDiff(mvmAI->intervalTime) >= 100) {

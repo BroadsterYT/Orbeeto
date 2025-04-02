@@ -33,6 +33,7 @@ Room::Room(int roomX, int roomY) {
 	Game::ecs.assignComponent<Player>(player);
 	Game::ecs.assignComponent<Transform>(player);
 	Game::ecs.assignComponent<Collision>(player);
+	Game::ecs.assignComponent<Hp>(player);
 
 	Game::ecs.assignComponent<Sprite>(leftGun);
 	Game::ecs.assignComponent<PlayerGun>(leftGun);
@@ -66,6 +67,12 @@ Room::Room(int roomX, int roomY) {
 	playerColl->physicsTags.set(PTags::HURTABLE);
 	playerColl->physicsTags.set(PTags::CAN_TELEPORT);
 
+	Hp* playerHp = Game::ecs.getComponent<Hp>(player);
+	*playerHp = Hp{
+		.maxHp = 50,
+		.hp = 25,
+	};
+
 	// ----- Left Gun ----- //
 	Sprite* lGunSprite = Game::ecs.getComponent<Sprite>(leftGun);
 	*lGunSprite = Sprite{
@@ -97,6 +104,40 @@ Room::Room(int roomX, int roomY) {
 		.tileHeight = 64,
 		.index = 5,
 		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeetoguns.png"),
+	};
+
+	// Player's HP Bar
+	Entity playerHpBar = Game::ecs.createEntity();
+
+	Game::ecs.assignComponent<StatBar>(playerHpBar);
+	Game::ecs.assignComponent<Sprite>(playerHpBar);
+	Game::ecs.assignComponent<Transform>(playerHpBar);
+	Game::ecs.assignComponent<MovementAI>(playerHpBar);
+
+	MovementAI* phbMove = Game::ecs.getComponent<MovementAI>(playerHpBar);
+	*phbMove = MovementAI{
+		.ai = M_AI::FOLLOW_ENTITY,
+		.entityRef = player,
+		.distance = { 0, 40 }
+	};
+
+	Transform* phbTrans = Game::ecs.getComponent<Transform>(playerHpBar);
+	*phbTrans = Transform{
+		.pos = { 0, 0 }
+	};
+
+	Sprite* phbSprite = Game::ecs.getComponent<Sprite>(playerHpBar);
+	*phbSprite = Sprite{
+		.tileWidth = 128,
+		.tileHeight = 16,
+		.ignoreScaling = true,
+		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/health_bar.png"),
+	};
+
+	StatBar* phbStatBar = Game::ecs.getComponent<StatBar>(playerHpBar);
+	*phbStatBar = StatBar{
+		.maxVal = &playerHp->maxHp,
+		.val = &playerHp->hp
 	};
 
 	loadRoom(0, 0);

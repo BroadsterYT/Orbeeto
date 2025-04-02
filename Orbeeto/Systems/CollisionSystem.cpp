@@ -42,30 +42,6 @@ void CollisionSystem::update() {
 			found.clear();
 		}
 	}
-
-	/*tree.query(QuadBoundingBox{(float)Room::camera.getX(), (float)Room::camera.getY(), 1280, 720}, found);
-	//std::cout << "Bound posX: " << j << " Bound posY: " << i << " Found: " << found.size() << std::endl;
-
-	for (Entity& entity : found) {
-		Collision* collision = Game::ecs.getComponent<Collision>(entity);
-		if (collision == nullptr) continue;
-		Transform* transform = Game::ecs.getComponent<Transform>(entity);
-
-		collision->hitPos = transform->pos;
-
-		for (auto& other : found) {
-			if (other == entity) continue;
-
-			Collision* oCollide = Game::ecs.getComponent<Collision>(other);
-
-			if (oCollide == nullptr) continue;
-
-			if (checkForCollision(collision, oCollide)) {
-				evaluateCollision(entity, collision, transform, other, oCollide);
-			}
-		}
-	}
-	found.clear();*/
 }
 
 void CollisionSystem::rebuildQuadtree(QuadBoundingBox boundary) {
@@ -331,8 +307,5 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 }
 
 bool CollisionSystem::hasPhysicsTag(const Collision* coll, int tag) {
-	/*const auto it = std::find(coll->physicsTags.begin(), coll->physicsTags.end(), tag);
-	if (it != coll->physicsTags.end()) return true;
-	else return false;*/
 	return coll->physicsTags.test(tag);
 }

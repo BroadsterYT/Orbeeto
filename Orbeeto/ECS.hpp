@@ -15,6 +15,7 @@
 #include "Components/Player.hpp"
 #include "Components/PlayerGun.hpp"
 #include "Components/Sprite.hpp"
+#include "Components/StatBar.hpp"
 #include "Components/TeleportLink.hpp"
 #include "Components/Transform.hpp"
 
@@ -49,6 +50,7 @@ public:
 		std::cout << "Player component registered. ID: " << getComponentId<Player>() << std::endl;
 		std::cout << "PlayerGun component registered. ID: " << getComponentId<PlayerGun>() << std::endl;
 		std::cout << "Sprite component registered. ID: " << getComponentId<Sprite>() << std::endl;
+		std::cout << "StatBar component registered. ID: " << getComponentId<StatBar>() << std::endl;
 		std::cout << "TeleportLink component registered. ID: " << getComponentId<TeleportLink>() << std::endl;
 		std::cout << "Transform component registered. ID: " << getComponentId<Transform>() << std::endl;
 

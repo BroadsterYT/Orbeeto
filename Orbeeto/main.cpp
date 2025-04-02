@@ -16,6 +16,7 @@
 #include "Systems/PlayerGunSystem.hpp"
 #include "Systems/PlayerSystem.hpp"
 #include "Systems/SpriteSystem.hpp"
+#include "Systems/StatBarSystem.hpp"
 
 
 Game* game = nullptr;
@@ -31,6 +32,7 @@ int main(int argc, char* argv[]) {
 	PlayerGunSystem playerGunSystem;
 	PlayerSystem playerSystem;
 	SpriteSystem spriteSystem(Game::renderer);
+	StatBarSystem statBarSystem;
 
 	// Initializing room
 	Room room(0, 0);
@@ -49,6 +51,7 @@ int main(int argc, char* argv[]) {
 		playerGunSystem.update();
 		bulletSystem.update();
 		movementAISystem.update();
+		statBarSystem.update();
 
 		room.update();
 		

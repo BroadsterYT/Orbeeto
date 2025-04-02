@@ -16,7 +16,7 @@ enum PTags {  // Physics tags
 	CAN_HOLD_PORTAL,
 	CAN_TELEPORT,
 	PROJECTILE,
-	HURTABLE,
+	HURTABLE,  // The entity can take damage
 	ENEMY
 };
 

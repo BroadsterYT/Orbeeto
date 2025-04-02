@@ -40,7 +40,7 @@ void SpriteSystem::render(SDL_Renderer* renderer) {
 		sprite->srcRect.x = sprite->index % spritesPerRow * sprite->tileWidth;
 		sprite->srcRect.y = sprite->index / spritesPerRow * sprite->tileHeight;
 
-
+		// TODO: Implement no-scaling functionaliity
 		if (sprite->moveWithRoom) {
 			double widthRatio = static_cast<double>(Room::camera.getWidth()) / static_cast<double>(WindowManager::SCREENWIDTH);
 			double heightRatio = static_cast<double>(Room::camera.getHeight()) / static_cast<double>(WindowManager::SCREENHEIGHT);
