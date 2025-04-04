@@ -135,6 +135,15 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 		Transform* outPortalTrans = Game::ecs.getComponent<Transform>(Room::getPortalLink(other));
 		Collision* outPortalColl = Game::ecs.getComponent<Collision>(Room::getPortalLink(other));
 
+		// Getting offset from center of portal
+		float offset = 0.0;
+		if (firstLink->facing == Facing::SOUTH || firstLink->facing == Facing::NORTH) {
+			offset = oColl->hitPos.x - eColl->hitPos.x;
+		}
+		else {
+			offset = oColl->hitPos.y - eColl->hitPos.y;
+		}
+
 		std::unordered_map<int, double> directionMap = {  // Defaults to first portal facing south
 			{Facing::SOUTH, 180.0},
 			{Facing::EAST, 90.0},
@@ -148,16 +157,16 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 			float height = (outPortalColl->hitHeight + eColl->hitHeight) / 2 + 1;
 
 			if (secondLink->facing == Facing::SOUTH) {
-				eTrans->pos = { outPortalTrans->pos.x, outPortalTrans->pos.y + height };
+				eTrans->pos = { outPortalTrans->pos.x + offset, outPortalTrans->pos.y + height };
 			}
 			else if (secondLink->facing == Facing::EAST) {
-				eTrans->pos = { outPortalTrans->pos.x + width, outPortalTrans->pos.y };
+				eTrans->pos = { outPortalTrans->pos.x + width, outPortalTrans->pos.y + offset };
 			}
 			else if (secondLink->facing == Facing::NORTH) {
-				eTrans->pos = { outPortalTrans->pos.x, outPortalTrans->pos.y - height };
+				eTrans->pos = { outPortalTrans->pos.x + offset, outPortalTrans->pos.y - height };
 			}
 			else if (secondLink->facing == Facing::WEST) {
-				eTrans->pos = { outPortalTrans->pos.x - width, outPortalTrans->pos.y };
+				eTrans->pos = { outPortalTrans->pos.x - width, outPortalTrans->pos.y + offset };
 			}
 
 			// Rotating velocity
