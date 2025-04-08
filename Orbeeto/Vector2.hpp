@@ -27,6 +27,7 @@ public:
 	Vector2 operator*(const float& val);
 	Vector2 operator/(const float& val);
 	void operator+=(const Vector2& other);
+	void operator*=(const float& val);
 	bool operator==(const Vector2& other);
 	bool operator!=(const Vector2& other);
 };

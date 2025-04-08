@@ -68,7 +68,7 @@ void BulletSystem::update() {
 
 		// Destroying bullet if its lifetime is too long
 		if (TimeManip::getTimeDiff(bullet->birthTime) >= 5000) {
-			std::cout << "Bullet destroyed." << std::endl;
+			//std::cout << "Bullet destroyed." << std::endl;
 
 			Game::ecs.destroyEntity(entity);
 		}

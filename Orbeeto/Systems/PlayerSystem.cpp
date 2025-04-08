@@ -1,5 +1,6 @@
 #include "PlayerSystem.hpp"
 #include "../InputManager.hpp"
+#include "../Math.hpp"
 
 
 PlayerSystem::PlayerSystem() : System() {}
@@ -21,20 +22,11 @@ void PlayerSystem::update() {
 			if (player->grappleState == GrappleState::RETURNING && player->moveToGrapple) {
 				Grapple* grapple = Game::ecs.getComponent<Grapple>(player->grappleRef);
 				Transform* gTrans = Game::ecs.getComponent<Transform>(player->grappleRef);
-				double angle = transform->pos.getAngleToPoint(gTrans->pos);
 				
-				if (!player->cancelVelFlag) {
-					std::cout << "Vel canceled! \n";
-					transform->vel = { 0, 0 };
-					player->cancelVelFlag = true;
-				}
-
-				std::cout << "Return angle: " << angle << std::endl;
-				finalAccel.x += gTrans->accelConst * cos(-angle);
-				finalAccel.y += gTrans->accelConst * sin(-angle);
-			}
-			else {
-				player->cancelVelFlag = false;
+				double angle = Math::rad(transform->pos.getAngleToPoint(gTrans->pos));
+				
+				finalAccel.x += gTrans->accelConst * -sin(angle);
+				finalAccel.y += gTrans->accelConst * -cos(angle);
 			}
 		}
 

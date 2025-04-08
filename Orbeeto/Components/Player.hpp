@@ -4,17 +4,16 @@
 
 
 enum GrappleState {
-	INACTIVE = 0,
-	SENT = 1,
-	LATCHED = 2,
-	RETURNING = 3
+	INACTIVE,
+	SENT,
+	LATCHED,
+	RETURNING
 };
 
 struct Player : Component {
 	int grappleState = GrappleState::INACTIVE;
 	uint32_t grappleRef = 0; // The ID of the active grappling hook. Is 0 when no grappling hook is deployed
 	bool moveToGrapple = false;
-	bool cancelVelFlag = false;
 	
 	int grappleInputCopy = 0; // A copy of the value of the number of middle mouse releases
 	int portalInputCopy = 0; // A copy of the number of right mouse releases

@@ -1,6 +1,6 @@
 #include "GrappleSystem.hpp"
 #include "../InputManager.hpp"
-#include <cmath>
+#include "../Math.hpp"
 
 
 GrappleSystem::GrappleSystem() : System() {}
@@ -17,6 +17,9 @@ void GrappleSystem::update() {
 		case GrappleState::SENT:
 			if (player->grappleInputCopy < InputManager::mouseReleased[SDL_BUTTON_MIDDLE]) {
 				player->grappleState = GrappleState::RETURNING;
+				transform->vel = { 0, 0 };
+				//grapple->lastReturn = TimeManip::getTime();
+				//std::cout << grapple->lastReturn << std::endl;
 				player->grappleInputCopy = InputManager::mouseReleased[SDL_BUTTON_MIDDLE];
 			}
 
@@ -44,9 +47,11 @@ void GrappleSystem::update() {
 			}
 
 			if (grapple->grappledTo == 0) {
-				double angle = transform->pos.getAngleToPoint(pTrans->pos);
-				transform->accel.x = transform->accelConst * cos(-angle);
-				transform->accel.y = transform->accelConst * sin(-angle);
+				double angle = Math::rad(transform->pos.getAngleToPoint(pTrans->pos));
+
+				transform->accel.x = transform->accelConst * -sin(angle);
+				transform->accel.y = transform->accelConst * -cos(angle);
+
 				transform->accelMovement();
 			}
 			else {

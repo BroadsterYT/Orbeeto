@@ -38,4 +38,26 @@ public:
 
 		return ((a - b) / 2) * cos(M_PI * trueWeight) + ((a + b) / 2);
 	}
+
+	/// <summary>
+	/// Takes an angle in degrees and returns the output in radians
+	/// </summary>
+	/// <typeparam name="T">Data type of input and output</typeparam>
+	/// <param name="angle">The angle to convert from degrees to radians</param>
+	/// <returns>The angle, in radians</returns>
+	template<class T>
+	static T rad(T angle) {
+		return angle * (M_PI / 180.0);
+	}
+
+	/// <summary>
+	/// Takes an angle in radians and returns the output in degrees
+	/// </summary>
+	/// <typeparam name="T">Data type of input and output</typeparam>
+	/// <param name="angle">The angle to convert from radians to degrees</param>
+	/// <returns>The angle, in degrees</returns>
+	template<class T>
+	static T deg(T angle) {
+		return angle * (180.0 / M_PI);
+	}
 };

@@ -1,5 +1,5 @@
 #pragma once
-#include <cmath>
+#include "Math.hpp"
 #include "Vector2.hpp"
 #include <SDL_stdinc.h>
 
@@ -13,7 +13,7 @@ Vector2::~Vector2() {}
 
 double Vector2::getAngle() const {
 	double answerRad = atan2(x, y);
-	return answerRad * (180.0 / M_PI);
+	return Math::deg(answerRad);
 }
 
 double Vector2::getDistToPoint(const Vector2& other) const {
@@ -22,12 +22,12 @@ double Vector2::getDistToPoint(const Vector2& other) const {
 
 double Vector2::getAngleToPoint(const Vector2& other) const {
 	double answerRad = atan2(x - other.x, y - other.y);
-	return answerRad * (180.0 / M_PI);
+	return Math::deg(answerRad);
 }
 
 double Vector2::getAngleToPoint(const int& x, const int& y) const {
 	double answerRad = atan2(this->x - x, this->y - y);
-	return answerRad * (180.0 / M_PI);
+	return Math::deg(answerRad);
 }
 
 double Vector2::getMagnitude() const {
@@ -60,6 +60,11 @@ Vector2 Vector2::operator/(const float& val) {
 void Vector2::operator+=(const Vector2& other) {
 	x += other.x;
 	y += other.y;
+}
+
+void Vector2::operator*=(const float& val) {
+	x *= val;
+	y *= val;
 }
 
 bool Vector2::operator==(const Vector2& other) {

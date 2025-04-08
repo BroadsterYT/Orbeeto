@@ -8,14 +8,20 @@
 enum PTags {  // Physics tags
 	CAN_PUSH,
 	PUSHABLE,
+
 	WALL,
 	PLAYER,
 	GRAPPLE,
 	PORTAL,
 	PORTAL_BULLET,
+
 	CAN_HOLD_PORTAL,
 	CAN_TELEPORT,
+	
 	PROJECTILE,
+	P_PROJECTILE,  // Player projectile
+	E_PROJECTILE,  // Enemy projectile
+
 	HURTABLE,  // The entity can take damage
 	ENEMY
 };

@@ -202,6 +202,8 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 		}
 	}
 
+	// 
+
 	// Grappling hook collisions
 	if (hasPhysicsTag(eColl, PTags::GRAPPLE)) {
 		Grapple* grapple = Game::ecs.getComponent<Grapple>(entity);

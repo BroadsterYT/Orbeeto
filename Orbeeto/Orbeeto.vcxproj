@@ -171,6 +171,7 @@
     <ClInclude Include="Components\PlayerGun.hpp" />
     <ClInclude Include="ECS.hpp" />
     <ClInclude Include="Game.hpp" />
+    <ClInclude Include="GameState.hpp" />
     <ClInclude Include="InputManager.hpp" />
     <ClInclude Include="Components\Sprite.hpp" />
     <ClInclude Include="Math.hpp" />
@@ -193,9 +194,6 @@
   <ItemGroup>
     <None Include="Rooms\RoomLayouts\newSerializeTest.dat" />
     <None Include="Rooms\RoomLayouts\test.dat" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\..\..\Documents\GitHub\Orbeeto\sprites\stat_bars\health_bar.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
