@@ -5,6 +5,7 @@
 #include <iostream>
 #include <algorithm>
 
+#include "States/GameStack.hpp"
 #include "Components/Bullet.hpp"
 #include "Components/Collision.hpp"
 #include "Components/Component.hpp"
@@ -23,7 +24,7 @@
 using Entity = uint32_t;
 
 const uint32_t MAX_ENTITIES = 2000;
-const uint32_t MAX_COMPONENTS = 32;
+const uint32_t MAX_COMPONENTS = 16;
 using ComponentMask = std::bitset<MAX_COMPONENTS>;
 
 
@@ -65,7 +66,12 @@ public:
 		return componentId;
 	}
 
-	Entity createEntity() {
+	/// <summary>
+	/// Creates a new entity.
+	/// </summary>
+	/// <param name="gameState"></param>
+	/// <returns></returns>
+	Entity createEntity(std::string gameStateName = "action") {
 		assert(freeEntities.size() > 0 && "An entity overflow has occurred.");
 		Entity temp = freeEntities[0];
 		freeEntities.erase(freeEntities.begin());
