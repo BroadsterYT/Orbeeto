@@ -2,5 +2,5 @@
 
 
 struct Component {
-
+	virtual ~Component() {};
 };

@@ -35,12 +35,17 @@ void PlayerGunSystem::fireBullet(Transform* ownerTrans, const int bulletId, cons
 
 	// ----- Sprite ----- //
 	Sprite* bSprite = Game::ecs.getComponent<Sprite>(bullet);
-	*bSprite = Sprite{
+	/**bSprite = Sprite{
 		.tileWidth = 32,
 		.tileHeight = 32,
 		.angle = rotAngle,
 		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/bullets.png"),
-	};
+	};*/
+	*bSprite = Sprite();
+	bSprite->tileWidth = 32;
+	bSprite->tileHeight = 32;
+	bSprite->angle = rotAngle;
+	bSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/bullets.png");
 
 	// ----- Transform ----- //
 	Transform* bTransform = Game::ecs.getComponent<Transform>(bullet);
@@ -56,23 +61,32 @@ void PlayerGunSystem::fireBullet(Transform* ownerTrans, const int bulletId, cons
 		barrelOffsetY = -offsetX * sin(-rotAngle * M_PI / 180) - offsetY * cos(-rotAngle * M_PI / 180);
 	}
 
-	*bTransform = Transform{
+	/**bTransform = Transform{
 		.pos = Vector2(ownerTrans->pos.x + barrelOffsetX, ownerTrans->pos.y + barrelOffsetY)
-	};
+	};*/
+	*bTransform = Transform();
+	bTransform->pos = Vector2(ownerTrans->pos.x + barrelOffsetX, ownerTrans->pos.y + barrelOffsetY);
 
 	// ----- Bullet ----- //
 	Bullet* bBullet = Game::ecs.getComponent<Bullet>(bullet);
-	*bBullet = {
+	/**bBullet = {
 		.bulletAI = BulletType::STANDARD
-	};
+	};*/
+	*bBullet = Bullet();
+	bBullet->bulletAI = BulletType::STANDARD;
 
 	// ----- Collision ----- //
 	Collision* bColl = Game::ecs.getComponent<Collision>(bullet);
-	*bColl = Collision{
+	/**bColl = Collision{
 		.hitWidth = 8,
 		.hitHeight = 8,
 		.hitPos = Vector2(ownerTrans->pos.x + barrelOffsetX, ownerTrans->pos.y + barrelOffsetY),
-	};
+	};*/
+	*bColl = Collision();
+	bColl->hitWidth = 8;
+	bColl->hitHeight = 8;
+	bColl->hitPos = Vector2(ownerTrans->pos.x + barrelOffsetX, ownerTrans->pos.y + barrelOffsetY);
+
 	bColl->physicsTags.set(PTags::PROJECTILE);
 	bColl->physicsTags.set(PTags::CAN_TELEPORT);
 

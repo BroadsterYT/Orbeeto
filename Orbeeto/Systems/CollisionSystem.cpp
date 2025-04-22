@@ -237,30 +237,41 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 		Game::ecs.assignComponent<TeleportLink>(portal);
 
 		Sprite* pSprite = Game::ecs.getComponent<Sprite>(portal);
-		*pSprite = Sprite{
+		/**pSprite = Sprite{
 			.tileWidth = 64,
 			.tileHeight = 64,
 			.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png"),
-		};
+		};*/
+		*pSprite = Sprite();
+		pSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png");
 
 		// Need spawning bullet's position
 		Transform* eTrans = Game::ecs.getComponent<Transform>(entity);
 
 		Transform* pTrans = Game::ecs.getComponent<Transform>(portal);
-		*pTrans = Transform{
+		/**pTrans = Transform{
 			.pos = eTrans->pos,
-		};
+		};*/
+		*pTrans = Transform();
+		pTrans->pos = eTrans->pos;
 
 		Collision* pColl = Game::ecs.getComponent<Collision>(portal);
-		*pColl = Collision{
+		/**pColl = Collision{
 			.hitWidth = 64,
 			.hitHeight = 64,
 			.hitPos = eTrans->pos,
-		};
+		};*/
+		*pColl = Collision();
+		pColl->hitWidth = 64;
+		pColl->hitHeight = 64;
+		pColl->hitPos = eTrans->pos;
+
 		pColl->physicsTags.set(PTags::PORTAL);
 
 		TeleportLink* pTLink = Game::ecs.getComponent<TeleportLink>(portal);
-		*pTLink = TeleportLink{ .facing = side };
+		//*pTLink = TeleportLink{ .facing = side };
+		*pTLink = TeleportLink();
+		pTLink->facing = side;
 
 		Bullet* pBullet = Game::ecs.getComponent<Bullet>(entity);
 		Player* player = Game::ecs.getComponent<Player>(pBullet->shotBy);

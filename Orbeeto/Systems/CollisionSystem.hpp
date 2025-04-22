@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include "System.hpp"
 
 
@@ -37,12 +38,15 @@ class Quadtree {
 public:
 	Quadtree(const QuadBoundingBox& boundary) : boundary(boundary) {}
 
-	~Quadtree() {
-		delete northwest;
-		delete northeast;
-		delete southwest;
-		delete southeast;
-	}
+	~Quadtree() = default;
+
+	// Prevent copying
+	Quadtree(const Quadtree&) = delete;
+	Quadtree& operator=(const Quadtree&) = delete;
+
+	// Allow moving
+	Quadtree(Quadtree&&) = default;
+	Quadtree& operator=(Quadtree&&) = default;
 
 	QuadBoundingBox boundary;
 
@@ -96,10 +100,10 @@ private:
 	std::vector<Entity> entities;
 	bool divided = false;
 
-	Quadtree* northwest = nullptr;
-	Quadtree* northeast = nullptr;
-	Quadtree* southwest = nullptr;
-	Quadtree* southeast = nullptr;
+	std::unique_ptr<Quadtree> northwest = nullptr;
+	std::unique_ptr<Quadtree> northeast = nullptr;
+	std::unique_ptr<Quadtree> southwest = nullptr;
+	std::unique_ptr<Quadtree> southeast = nullptr;
 
 	void subdivide() {
 		float x = boundary.x;
@@ -107,10 +111,10 @@ private:
 		float w = boundary.width / 2;
 		float h = boundary.height / 2;
 
-		northwest = new Quadtree(QuadBoundingBox{ x, y, w, h });
-		northeast = new Quadtree(QuadBoundingBox{ x + w, y, w, h });
-		southwest = new Quadtree(QuadBoundingBox{ x, y + h, w, h });
-		southeast = new Quadtree(QuadBoundingBox{ x + w, y + h, w, h });
+		northwest = std::make_unique<Quadtree>(QuadBoundingBox{ x, y, w, h });
+		northeast = std::make_unique<Quadtree>(QuadBoundingBox{ x + w, y, w, h });
+		southwest = std::make_unique<Quadtree>(QuadBoundingBox{ x, y + h, w, h });
+		southeast = std::make_unique<Quadtree>(QuadBoundingBox{ x + w, y + h, w, h });
 		divided = true;
 	}
 };

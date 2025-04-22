@@ -1,3 +1,7 @@
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+
 #include <vector>
 #include <algorithm>
 #include <numeric>
@@ -22,6 +26,19 @@
 Game* game = nullptr;
 
 int main(int argc, char* argv[]) {
+	int tmpFlag;
+
+	// Get the current state of the flag
+	// and store it in a temporary variable
+	tmpFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+
+	// Turn On (OR) - Keep freed memory blocks in the
+	// heap’s linked list and mark them as freed
+	tmpFlag |= _CRTDBG_LEAK_CHECK_DF;
+
+	// Set the new state for the flag
+	_CrtSetDbgFlag(tmpFlag);
+
 	game = new Game("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WindowManager::SCREENWIDTH, WindowManager::SCREENHEIGHT, false);
 	
 	// Initializing systems
@@ -59,6 +76,6 @@ int main(int argc, char* argv[]) {
 	}
 
 	game->clean();
-
+	_CrtDumpMemoryLeaks();
 	return 0;
 }

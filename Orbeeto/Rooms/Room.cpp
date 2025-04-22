@@ -45,22 +45,31 @@ Room::Room(int roomX, int roomY) {
 
 	// ----- Player ----- //
 	Sprite* playerSprite = Game::ecs.getComponent<Sprite>(player);
-	*playerSprite = Sprite{
+	/**playerSprite = Sprite{
 		.layer = 0,
 		.tileWidth = 64,
 		.tileHeight = 64,
 		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png")
-	};
+	};*/
+	*playerSprite = Sprite();
+	playerSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png");
 	
 	Transform* playerTrans = Game::ecs.getComponent<Transform>(player);
-	*playerTrans = Transform{ .pos = Vector2(300, 300) };
+	//*playerTrans = Transform{ .pos = Vector2(300, 300) };
+	*playerTrans = Transform();
+	playerTrans->pos = Vector2(300, 300);
 	
 	Collision* playerColl = Game::ecs.getComponent<Collision>(player);
-	*playerColl = Collision{
+	/**playerColl = Collision{
 		.hitWidth = 32,
 		.hitHeight = 32,
 		.hitPos = Vector2(300.0f, 300.0f),
-	};
+	};*/
+	*playerColl = Collision();
+	playerColl->hitWidth = 32;
+	playerColl->hitHeight = 32;
+	playerColl->hitPos = Vector2(300.0f, 300.0f);
+	
 	playerColl->physicsTags.set(PTags::PLAYER);
 	playerColl->physicsTags.set(PTags::PUSHABLE);
 	playerColl->physicsTags.set(PTags::CAN_PUSH);
@@ -68,43 +77,60 @@ Room::Room(int roomX, int roomY) {
 	playerColl->physicsTags.set(PTags::CAN_TELEPORT);
 
 	Hp* playerHp = Game::ecs.getComponent<Hp>(player);
-	*playerHp = Hp{
+	/**playerHp = Hp{
 		.maxHp = 50,
 		.hp = 25,
-	};
+	};*/
+	*playerHp = Hp();
+	playerHp->hp = 25;
+	playerHp->maxHp = 50;
 
 	// ----- Left Gun ----- //
 	Sprite* lGunSprite = Game::ecs.getComponent<Sprite>(leftGun);
-	*lGunSprite = Sprite{
+	/**lGunSprite = Sprite{
 		.layer = 1,
 		.tileWidth = 64,
 		.tileHeight = 64,
 		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeetoguns.png")
-	};
+	};*/
+	*lGunSprite = Sprite();
+	lGunSprite->layer = 1;
+	lGunSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeetoguns.png");
 
 	Transform* lGunTrans = Game::ecs.getComponent<Transform>(leftGun);
-	*lGunTrans = Transform{ .pos = Vector2(300.0f, 300.0f) };
+	//*lGunTrans = Transform{ .pos = Vector2(300.0f, 300.0f) };
+	*lGunTrans = Transform();
+	lGunTrans->pos = Vector2(300.0f, 300.0f);
 
 	PlayerGun* lGun = Game::ecs.getComponent<PlayerGun>(leftGun);
-	*lGun = PlayerGun{
+	/**lGun = PlayerGun{
 		.owner = player,
-	};
+	};*/
+	*lGun = PlayerGun();
+	lGun->owner = player;
 
 	// ----- Right Gun ----- //
 	PlayerGun* rGun = Game::ecs.getComponent<PlayerGun>(rightGun);
-	*rGun = PlayerGun{
+	/**rGun = PlayerGun{
 		.owner = player,
 		.isLeft = false
-	};
+	};*/
+	*rGun = PlayerGun();
+	rGun->owner = player;
+	rGun->isLeft = false;
 
 	Sprite* rGunSprite = Game::ecs.getComponent<Sprite>(rightGun);
-	*rGunSprite = Sprite{
+	/**rGunSprite = Sprite{
 		.layer = 1,
 		.tileWidth = 64,
 		.tileHeight = 64,
 		.index = 5,
 		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeetoguns.png"),
-	};
+	};*/
+	*rGunSprite = Sprite();
+	rGunSprite->layer = 1;
+	rGunSprite->index = 5;
+	rGunSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeetoguns.png");
 
 	// Player's HP Bar
 	Entity playerHpBar = Game::ecs.createEntity();
@@ -115,30 +141,48 @@ Room::Room(int roomX, int roomY) {
 	Game::ecs.assignComponent<MovementAI>(playerHpBar);
 
 	MovementAI* phbMove = Game::ecs.getComponent<MovementAI>(playerHpBar);
-	*phbMove = MovementAI{
+	/**phbMove = MovementAI{
 		.ai = M_AI::FOLLOW_ENTITY,
 		.entityRef = player,
 		.distance = { 0, 40 }
-	};
+	};*/
+	*phbMove = MovementAI();
+	phbMove->ai = M_AI::FOLLOW_ENTITY;
+	phbMove->entityRef = player;
+	phbMove->distance = { 0, 40 };
 
 	Transform* phbTrans = Game::ecs.getComponent<Transform>(playerHpBar);
-	*phbTrans = Transform{
+	/**phbTrans = Transform{
 		.pos = { 0, 0 }
-	};
+	};*/
+	*phbTrans = Transform();
+	phbTrans->pos = { 0, 0 };
 
 	Sprite* phbSprite = Game::ecs.getComponent<Sprite>(playerHpBar);
-	*phbSprite = Sprite{
+	/**phbSprite = Sprite{
 		.tileWidth = 128,
 		.tileHeight = 16,
 		.ignoreScaling = true,
 		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/health_bar.png"),
-	};
+	};*/
+	*phbSprite = Sprite();
+	phbSprite->tileWidth = 128;
+	phbSprite->tileHeight = 16;
+	phbSprite->srcRect.w = 128;
+	phbSprite->srcRect.h = 16;
+	phbSprite->destRect.w = 128;
+	phbSprite->destRect.h = 16;
+	phbSprite->ignoreScaling = true;
+	phbSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/health_bar.png");
 
 	StatBar* phbStatBar = Game::ecs.getComponent<StatBar>(playerHpBar);
-	*phbStatBar = StatBar{
+	/**phbStatBar = StatBar{
 		.maxVal = &playerHp->maxHp,
 		.val = &playerHp->hp
-	};
+	};*/
+	*phbStatBar = StatBar();
+	phbStatBar->maxVal = &playerHp->maxHp;
+	phbStatBar->val = &playerHp->hp;
 
 	loadRoom(0, 0);
 }
@@ -167,7 +211,7 @@ void Room::loadRoom(int x, int y) {
 		roomHeight = 720;
 		canScrollX = true;
 		canScrollY = true;
-		readRoomData(extractRoomTiles("Rooms/RoomLayouts/newSerializeTest.dat"));
+		readRoomData(extractRoomTiles("Rooms/RoomLayouts/test.dat"));
 
 		// ----- Test Enemy 1 ----- //
 		Entity enemyTest = Game::ecs.createEntity();
@@ -178,29 +222,37 @@ void Room::loadRoom(int x, int y) {
 		Game::ecs.assignComponent<MovementAI>(enemyTest);
 
 		Transform* e1Trans = Game::ecs.getComponent<Transform>(enemyTest);
-		*e1Trans = Transform{
-			.pos = { 200, 200 }
-		};
+		///**e1Trans = Transform{
+		//	.pos = { 200, 200 }
+		//};*/
+		*e1Trans = Transform();
+		e1Trans->pos = { 200, 200 };
 
 		Sprite* e1Sprite = Game::ecs.getComponent<Sprite>(enemyTest);
-		*e1Sprite = Sprite{
-			.tileWidth = 64,
-			.tileHeight = 64,
-			.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png")
-		};
+		///**e1Sprite = Sprite{
+		//	.tileWidth = 64,
+		//	.tileHeight = 64,
+		//	.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png")
+		//};*/
+		*e1Sprite = Sprite();
+		e1Sprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png");
 
 		Collision* e1Coll = Game::ecs.getComponent<Collision>(enemyTest);
-		*e1Coll = Collision{
-			.hitWidth = 64,
-			.hitHeight = 64,
-		};
+		///**e1Coll = Collision{
+		//	.hitWidth = 64,
+		//	.hitHeight = 64,
+		//};*/
+		*e1Coll = Collision();
+
 		e1Coll->physicsTags.set(PTags::ENEMY);
 		e1Coll->physicsTags.set(PTags::PUSHABLE);
 
 		MovementAI* e1AI = Game::ecs.getComponent<MovementAI>(enemyTest);
-		*e1AI = MovementAI{
-			.ai = M_AI::OCTOGRUNT
-		};
+		///**e1AI = MovementAI{
+		//	.ai = M_AI::OCTOGRUNT
+		//};*/
+		*e1AI = MovementAI();
+		e1AI->ai = M_AI::OCTOGRUNT;
 	}
 }
 
@@ -392,19 +444,26 @@ void Room::buildRoomEntity(const std::vector<uint8_t>& tileInfo) {
 
 	Game::ecs.assignComponent<Transform>(tile);
 	Transform* transform = Game::ecs.getComponent<Transform>(tile);
-	*transform = {
+	/**transform = {
 		.pos = Vector2(tileSize * tileInfo[TileInfo::XPOS] + finalWidth / 2,
 					   tileSize * tileInfo[TileInfo::YPOS] + finalHeight / 2),
-	};
+	};*/
+	*transform = Transform();
+	transform->pos = Vector2(tileSize * tileInfo[TileInfo::XPOS] + finalWidth / 2,
+							tileSize * tileInfo[TileInfo::YPOS] + finalHeight / 2),
 	std::cout << transform->pos.x << " " << transform->pos.y << std::endl;
 		
 	if (props.test(TileProperties::SOLID)) {
 		Game::ecs.assignComponent<Collision>(tile);
 		Collision* coll = Game::ecs.getComponent<Collision>(tile);
-		*coll = Collision{
+		/**coll = Collision{
 			.hitWidth = finalWidth,
 			.hitHeight = finalHeight,
-		};
+		};*/
+		*coll = Collision();
+		coll->hitWidth = finalWidth;
+		coll->hitHeight = finalHeight;
+
 		coll->physicsTags.set(PTags::WALL);
 		coll->physicsTags.set(PTags::CAN_PUSH);
 		coll->physicsTags.set(PTags::CAN_HOLD_PORTAL);
@@ -413,10 +472,14 @@ void Room::buildRoomEntity(const std::vector<uint8_t>& tileInfo) {
 	if (!props.test(TileProperties::INVISIBLE)) {
 		Game::ecs.assignComponent<Sprite>(tile);
 		Sprite* sprite = Game::ecs.getComponent<Sprite>(tile);
-		*sprite = Sprite{
+		/**sprite = Sprite{
 			.tileWidth = finalWidth,
 			.tileHeight = finalHeight,
 			.spriteSheet = finalImage,
-		};
+		};*/
+		*sprite = Sprite();
+		sprite->tileWidth = finalWidth;
+		sprite->tileHeight = finalHeight;
+		sprite->spriteSheet = finalImage;
 	}
 }

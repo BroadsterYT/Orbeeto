@@ -1,10 +1,13 @@
 #pragma once
+
 #include <vector>
 #include "Component.hpp"
 #include "../TextureManager.hpp"
 
 
 struct Sprite : Component {
+	Sprite() {}
+	
 	int layer = 0;
 
 	int tileWidth = 64;
