@@ -6,9 +6,9 @@
 MovementAISystem::MovementAISystem() {}
 
 void MovementAISystem::update() {
-	for (auto& entity : Game::ecs.getSystemGroup<Transform, MovementAI>()) {
-		MovementAI* mvmAI = Game::ecs.getComponent<MovementAI>(entity);
-		Transform* transform = Game::ecs.getComponent<Transform>(entity);
+	for (auto& entity : Game::ecs.getSystemGroup<Transform, MovementAI>(Game::stack.peek())) {
+		MovementAI* mvmAI = Game::ecs.getComponent<MovementAI>(Game::stack.peek(), entity);
+		Transform* transform = Game::ecs.getComponent<Transform>(Game::stack.peek(), entity);
 
 		switch (mvmAI->ai) {
 		case M_AI::CIRCLE_ACCEL:
@@ -20,7 +20,7 @@ void MovementAISystem::update() {
 		case M_AI::FOLLOW_ENTITY:
 		{
 			if (mvmAI->entityRef != 0) {
-				Transform* eTrans = Game::ecs.getComponent<Transform>(mvmAI->entityRef);
+				Transform* eTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), mvmAI->entityRef);
 				transform->pos = eTrans->pos + mvmAI->distance;
 			}
 		}
@@ -35,14 +35,14 @@ void MovementAISystem::update() {
 
 				// Fire 8 bullets
 				for (int i = 0; i < 8; i++) {
-					Entity bullet = Game::ecs.createEntity();
+					Entity bullet = Game::ecs.createEntity(Game::stack.peek());
 
-					Game::ecs.assignComponent<Transform>(bullet);
-					Game::ecs.assignComponent<Collision>(bullet);
-					Game::ecs.assignComponent<Sprite>(bullet);
-					Game::ecs.assignComponent<Bullet>(bullet);
+					Game::ecs.assignComponent<Transform>(Game::stack.peek(), bullet);
+					Game::ecs.assignComponent<Collision>(Game::stack.peek(), bullet);
+					Game::ecs.assignComponent<Sprite>(Game::stack.peek(), bullet);
+					Game::ecs.assignComponent<Bullet>(Game::stack.peek(), bullet);
 
-					Transform* bTrans = Game::ecs.getComponent<Transform>(bullet);
+					Transform* bTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), bullet);
 					/**bTrans = Transform{
 						.pos = { transform->pos.x + posAdjust.x, transform->pos.y + posAdjust.y },\
 						.vel = bulletVel
@@ -51,7 +51,7 @@ void MovementAISystem::update() {
 					bTrans->pos = { transform->pos.x + posAdjust.x, transform->pos.y + posAdjust.y };
 					bTrans->vel = bulletVel;
 
-					Collision* bColl = Game::ecs.getComponent<Collision>(bullet);
+					Collision* bColl = Game::ecs.getComponent<Collision>(Game::stack.peek(), bullet);
 					/**bColl = Collision{
 						.hitWidth = 8,
 						.hitHeight = 8,
@@ -63,7 +63,7 @@ void MovementAISystem::update() {
 					bColl->physicsTags.set(PTags::PROJECTILE);
 					bColl->physicsTags.set(PTags::CAN_TELEPORT);
 
-					Sprite* bSprite = Game::ecs.getComponent<Sprite>(bullet);
+					Sprite* bSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), bullet);
 					/**bSprite = Sprite{
 						.tileWidth = 32,
 						.tileHeight = 32,
@@ -76,7 +76,7 @@ void MovementAISystem::update() {
 					bSprite->index = 3;
 					bSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/bullets.png");
 
-					Bullet* bBullet = Game::ecs.getComponent<Bullet>(bullet);
+					Bullet* bBullet = Game::ecs.getComponent<Bullet>(Game::stack.peek(), bullet);
 					/**bBullet = Bullet{
 						.bulletAI = BulletType::STANDARD,
 						.damage = 7,

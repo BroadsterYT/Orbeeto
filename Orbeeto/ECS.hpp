@@ -31,7 +31,8 @@ inline void _cdecl operator delete(void* __p, const char*, int) {
 #include <iostream>
 #include <algorithm>
 
-#include "States/GameStack.hpp"
+#include "Entity.hpp"
+#include "States/StateBase.hpp"
 #include "Components/Bullet.hpp"
 #include "Components/Collision.hpp"
 #include "Components/Component.hpp"
@@ -45,20 +46,6 @@ inline void _cdecl operator delete(void* __p, const char*, int) {
 #include "Components/StatBar.hpp"
 #include "Components/TeleportLink.hpp"
 #include "Components/Transform.hpp"
-
-
-using Entity = uint32_t;
-
-const uint32_t MAX_ENTITIES = 2000;
-const uint32_t MAX_COMPONENTS = 16;
-using ComponentMask = std::bitset<MAX_COMPONENTS>;
-
-
-struct EntityDesc {
-	Entity entity;
-	ComponentMask mask;
-	std::vector<Component*> components;
-};
 
 
 class ECS {
@@ -97,49 +84,47 @@ public:
 	/// </summary>
 	/// <param name="gameState"></param>
 	/// <returns></returns>
-	Entity createEntity() {
+	Entity createEntity(StateBase* state) {
 		assert(freeEntities.size() > 0 && "An entity overflow has occurred.");
 		Entity temp = freeEntities[0];
 		freeEntities.erase(freeEntities.begin());
 
 		std::vector<Component*> tempComponents;
 		tempComponents.assign(MAX_COMPONENTS, nullptr);
-		entities.push_back({ temp, ComponentMask(), tempComponents });
+		//entities.push_back({ temp, ComponentMask(), tempComponents });
+		state->addEntityDesc({ temp, ComponentMask(), tempComponents });
 
 		return temp;
 	}
 
-	void destroyEntity(Entity& entity) {
-		int count = 0;
-		for (EntityDesc& edesc : entities) {
-			if (edesc.entity == entity) {
-				// Freeing memory taken up by spritesheet if the entity has a sprite
-				if (edesc.mask.test(getComponentId<Sprite>())) {
-					//std::cout << "Sprite sheet for entity " << entity << " is being destroyed.\n";
-					Sprite* sprite = getComponent<Sprite>(entity);
+	void destroyEntity(StateBase* state, Entity& entity) {
+		auto& entityDescs = state->getEntityDescs();
+
+		for (auto it = entityDescs.begin(); it != entityDescs.end(); ++it) {
+			if (it->entity == entity) {
+				// Free sprite texture if it exists
+				if (it->mask.test(getComponentId<Sprite>())) {
+					Sprite* sprite = getComponent<Sprite>(state, entity);
 					SDL_DestroyTexture(sprite->spriteSheet);
 					sprite->spriteSheet = nullptr;
 				}
 
-				for (auto& comp : edesc.components) {
+				for (auto& comp : it->components) {
 					delete comp;
-					comp = nullptr;  // Only need to free component memory because of manual memory allocation
+					comp = nullptr;
 				}
-				
-				entities.erase(entities.begin() + count);
-				// std::cout << "Entity " << entity << " was successfully destroyed." << std::endl;
+
+				entityDescs.erase(it);
+
 				freeEntities.push_back(entity);
 				return;
 			}
-			count++;
 		}
-
-		// std::cout << "Entity " << entity << " could not be destroyed because it was not found or does not exist." << std::endl;
 	}
 
 	template<typename T>
-	void assignComponent(Entity& entity) {
-		for (EntityDesc& edesc : entities) {
+	void assignComponent(StateBase* state, Entity& entity) {
+		for (EntityDesc& edesc : state->getEntityDescs()) {
 			if (edesc.entity == entity) {
 				assert(!edesc.mask.test(getComponentId<T>()) && "Component already added to entity.");
 				
@@ -155,8 +140,8 @@ public:
 	}
 
 	template<typename T>
-	void removeComponent(Entity& entity) {
-		for (EntityDesc& edesc : entities) {
+	void removeComponent(StateBase* state, Entity& entity) {
+		for (EntityDesc& edesc : state->getEntityDescs()) {
 			if (edesc.entity == entity) {
 				assert(edesc.mask.test(getComponentId<T>()) && "Trying to remove non-existent component");
 
@@ -173,8 +158,8 @@ public:
 	}
 
 	template<typename T>
-	T* getComponent(Entity entity) {
-		for (EntityDesc& edesc : entities) {
+	T* getComponent(StateBase* state, Entity entity) {
+		for (EntityDesc& edesc : state->getEntityDescs()) {
 			if (edesc.entity == entity) {
 				return static_cast<T*>(edesc.components[getComponentId<T>()]);
 			}
@@ -184,7 +169,7 @@ public:
 	}
 
 	template<typename... ComponentTypes>
-	std::vector<Entity> getSystemGroup() {
+	std::vector<Entity> getSystemGroup(StateBase* state) {
 		std::vector<Entity> output;
 		ComponentMask maskRef;
 
@@ -196,7 +181,7 @@ public:
 		}
 
 		// Finding entities that belong in system group
-		for (EntityDesc& edesc : entities) {
+		for (EntityDesc& edesc : state->getEntityDescs()) {
 			if ((maskRef & edesc.mask) != maskRef) continue;
 			output.push_back(edesc.entity);
 		}

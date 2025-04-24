@@ -29,42 +29,30 @@ Room::Room(int roomX, int roomY) {
 	this->roomX = roomX;
 	this->roomY = roomY;
 
-	Game::ecs.assignComponent<Sprite>(player);
-	Game::ecs.assignComponent<Player>(player);
-	Game::ecs.assignComponent<Transform>(player);
-	Game::ecs.assignComponent<Collision>(player);
-	Game::ecs.assignComponent<Hp>(player);
+	Game::ecs.assignComponent<Sprite>(Game::stack.peek(), player);
+	Game::ecs.assignComponent<Player>(Game::stack.peek(), player);
+	Game::ecs.assignComponent<Transform>(Game::stack.peek(), player);
+	Game::ecs.assignComponent<Collision>(Game::stack.peek(), player);
+	Game::ecs.assignComponent<Hp>(Game::stack.peek(), player);
 
-	Game::ecs.assignComponent<Sprite>(leftGun);
-	Game::ecs.assignComponent<PlayerGun>(leftGun);
-	Game::ecs.assignComponent<Transform>(leftGun);
+	Game::ecs.assignComponent<Sprite>(Game::stack.peek(), leftGun);
+	Game::ecs.assignComponent<PlayerGun>(Game::stack.peek(), leftGun);
+	Game::ecs.assignComponent<Transform>(Game::stack.peek(), leftGun);
 
-	Game::ecs.assignComponent<Sprite>(rightGun);
-	Game::ecs.assignComponent<PlayerGun>(rightGun);
-	Game::ecs.assignComponent<Transform>(rightGun);
+	Game::ecs.assignComponent<Sprite>(Game::stack.peek(), rightGun);
+	Game::ecs.assignComponent<PlayerGun>(Game::stack.peek(), rightGun);
+	Game::ecs.assignComponent<Transform>(Game::stack.peek(), rightGun);
 
 	// ----- Player ----- //
-	Sprite* playerSprite = Game::ecs.getComponent<Sprite>(player);
-	/**playerSprite = Sprite{
-		.layer = 0,
-		.tileWidth = 64,
-		.tileHeight = 64,
-		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png")
-	};*/
+	Sprite* playerSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), player);
 	*playerSprite = Sprite();
 	playerSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png");
 	
-	Transform* playerTrans = Game::ecs.getComponent<Transform>(player);
-	//*playerTrans = Transform{ .pos = Vector2(300, 300) };
+	Transform* playerTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), player);
 	*playerTrans = Transform();
 	playerTrans->pos = Vector2(300, 300);
 	
-	Collision* playerColl = Game::ecs.getComponent<Collision>(player);
-	/**playerColl = Collision{
-		.hitWidth = 32,
-		.hitHeight = 32,
-		.hitPos = Vector2(300.0f, 300.0f),
-	};*/
+	Collision* playerColl = Game::ecs.getComponent<Collision>(Game::stack.peek(), player);
 	*playerColl = Collision();
 	playerColl->hitWidth = 32;
 	playerColl->hitHeight = 32;
@@ -76,95 +64,56 @@ Room::Room(int roomX, int roomY) {
 	playerColl->physicsTags.set(PTags::HURTABLE);
 	playerColl->physicsTags.set(PTags::CAN_TELEPORT);
 
-	Hp* playerHp = Game::ecs.getComponent<Hp>(player);
-	/**playerHp = Hp{
-		.maxHp = 50,
-		.hp = 25,
-	};*/
+	Hp* playerHp = Game::ecs.getComponent<Hp>(Game::stack.peek(), player);
 	*playerHp = Hp();
 	playerHp->hp = 25;
 	playerHp->maxHp = 50;
 
 	// ----- Left Gun ----- //
-	Sprite* lGunSprite = Game::ecs.getComponent<Sprite>(leftGun);
-	/**lGunSprite = Sprite{
-		.layer = 1,
-		.tileWidth = 64,
-		.tileHeight = 64,
-		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeetoguns.png")
-	};*/
+	Sprite* lGunSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), leftGun);
 	*lGunSprite = Sprite();
 	lGunSprite->layer = 1;
 	lGunSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeetoguns.png");
 
-	Transform* lGunTrans = Game::ecs.getComponent<Transform>(leftGun);
-	//*lGunTrans = Transform{ .pos = Vector2(300.0f, 300.0f) };
+	Transform* lGunTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), leftGun);
 	*lGunTrans = Transform();
 	lGunTrans->pos = Vector2(300.0f, 300.0f);
 
-	PlayerGun* lGun = Game::ecs.getComponent<PlayerGun>(leftGun);
-	/**lGun = PlayerGun{
-		.owner = player,
-	};*/
+	PlayerGun* lGun = Game::ecs.getComponent<PlayerGun>(Game::stack.peek(), leftGun);
 	*lGun = PlayerGun();
 	lGun->owner = player;
 
 	// ----- Right Gun ----- //
-	PlayerGun* rGun = Game::ecs.getComponent<PlayerGun>(rightGun);
-	/**rGun = PlayerGun{
-		.owner = player,
-		.isLeft = false
-	};*/
+	PlayerGun* rGun = Game::ecs.getComponent<PlayerGun>(Game::stack.peek(), rightGun);
 	*rGun = PlayerGun();
 	rGun->owner = player;
 	rGun->isLeft = false;
 
-	Sprite* rGunSprite = Game::ecs.getComponent<Sprite>(rightGun);
-	/**rGunSprite = Sprite{
-		.layer = 1,
-		.tileWidth = 64,
-		.tileHeight = 64,
-		.index = 5,
-		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeetoguns.png"),
-	};*/
+	Sprite* rGunSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), rightGun);
 	*rGunSprite = Sprite();
 	rGunSprite->layer = 1;
 	rGunSprite->index = 5;
 	rGunSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeetoguns.png");
 
 	// Player's HP Bar
-	Entity playerHpBar = Game::ecs.createEntity();
+	Entity playerHpBar = Game::ecs.createEntity(Game::stack.peek());
 
-	Game::ecs.assignComponent<StatBar>(playerHpBar);
-	Game::ecs.assignComponent<Sprite>(playerHpBar);
-	Game::ecs.assignComponent<Transform>(playerHpBar);
-	Game::ecs.assignComponent<MovementAI>(playerHpBar);
+	Game::ecs.assignComponent<StatBar>(Game::stack.peek(), playerHpBar);
+	Game::ecs.assignComponent<Sprite>(Game::stack.peek(), playerHpBar);
+	Game::ecs.assignComponent<Transform>(Game::stack.peek(), playerHpBar);
+	Game::ecs.assignComponent<MovementAI>(Game::stack.peek(), playerHpBar);
 
-	MovementAI* phbMove = Game::ecs.getComponent<MovementAI>(playerHpBar);
-	/**phbMove = MovementAI{
-		.ai = M_AI::FOLLOW_ENTITY,
-		.entityRef = player,
-		.distance = { 0, 40 }
-	};*/
+	MovementAI* phbMove = Game::ecs.getComponent<MovementAI>(Game::stack.peek(), playerHpBar);
 	*phbMove = MovementAI();
 	phbMove->ai = M_AI::FOLLOW_ENTITY;
 	phbMove->entityRef = player;
 	phbMove->distance = { 0, 40 };
 
-	Transform* phbTrans = Game::ecs.getComponent<Transform>(playerHpBar);
-	/**phbTrans = Transform{
-		.pos = { 0, 0 }
-	};*/
+	Transform* phbTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), playerHpBar);
 	*phbTrans = Transform();
 	phbTrans->pos = { 0, 0 };
 
-	Sprite* phbSprite = Game::ecs.getComponent<Sprite>(playerHpBar);
-	/**phbSprite = Sprite{
-		.tileWidth = 128,
-		.tileHeight = 16,
-		.ignoreScaling = true,
-		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/health_bar.png"),
-	};*/
+	Sprite* phbSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), playerHpBar);
 	*phbSprite = Sprite();
 	phbSprite->tileWidth = 128;
 	phbSprite->tileHeight = 16;
@@ -175,11 +124,7 @@ Room::Room(int roomX, int roomY) {
 	phbSprite->ignoreScaling = true;
 	phbSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/health_bar.png");
 
-	StatBar* phbStatBar = Game::ecs.getComponent<StatBar>(playerHpBar);
-	/**phbStatBar = StatBar{
-		.maxVal = &playerHp->maxHp,
-		.val = &playerHp->hp
-	};*/
+	StatBar* phbStatBar = Game::ecs.getComponent<StatBar>(Game::stack.peek(), playerHpBar);
 	*phbStatBar = StatBar();
 	phbStatBar->maxVal = &playerHp->maxHp;
 	phbStatBar->val = &playerHp->hp;
@@ -214,51 +159,38 @@ void Room::loadRoom(int x, int y) {
 		readRoomData(extractRoomTiles("Rooms/RoomLayouts/test.dat"));
 
 		// ----- Test Enemy 1 ----- //
-		Entity enemyTest = Game::ecs.createEntity();
+		Entity enemyTest = Game::ecs.createEntity(Game::stack.peek());
 
-		Game::ecs.assignComponent<Transform>(enemyTest);
-		Game::ecs.assignComponent<Sprite>(enemyTest);
-		Game::ecs.assignComponent<Collision>(enemyTest);
-		Game::ecs.assignComponent<MovementAI>(enemyTest);
+		Game::ecs.assignComponent<Transform>(Game::stack.peek(), enemyTest);
+		Game::ecs.assignComponent<Sprite>(Game::stack.peek(), enemyTest);
+		Game::ecs.assignComponent<Collision>(Game::stack.peek(), enemyTest);
+		Game::ecs.assignComponent<MovementAI>(Game::stack.peek(), enemyTest);
 
-		Transform* e1Trans = Game::ecs.getComponent<Transform>(enemyTest);
-		///**e1Trans = Transform{
-		//	.pos = { 200, 200 }
-		//};*/
+		Transform* e1Trans = Game::ecs.getComponent<Transform>(Game::stack.peek(), enemyTest);
 		*e1Trans = Transform();
 		e1Trans->pos = { 200, 200 };
 
-		Sprite* e1Sprite = Game::ecs.getComponent<Sprite>(enemyTest);
-		///**e1Sprite = Sprite{
-		//	.tileWidth = 64,
-		//	.tileHeight = 64,
-		//	.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png")
-		//};*/
+		Sprite* e1Sprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), enemyTest);
 		*e1Sprite = Sprite();
 		e1Sprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png");
 
-		Collision* e1Coll = Game::ecs.getComponent<Collision>(enemyTest);
-		///**e1Coll = Collision{
-		//	.hitWidth = 64,
-		//	.hitHeight = 64,
-		//};*/
+		Collision* e1Coll = Game::ecs.getComponent<Collision>(Game::stack.peek(), enemyTest);
 		*e1Coll = Collision();
 
 		e1Coll->physicsTags.set(PTags::ENEMY);
 		e1Coll->physicsTags.set(PTags::PUSHABLE);
 
-		MovementAI* e1AI = Game::ecs.getComponent<MovementAI>(enemyTest);
-		///**e1AI = MovementAI{
-		//	.ai = M_AI::OCTOGRUNT
-		//};*/
+		MovementAI* e1AI = Game::ecs.getComponent<MovementAI>(Game::stack.peek(), enemyTest);
 		*e1AI = MovementAI();
 		e1AI->ai = M_AI::OCTOGRUNT;
 	}
 }
 
 void Room::update() {
-	Transform* pTransform = Game::ecs.getComponent<Transform>(player);
-	Room::camera.cinematicFocus(pTransform->pos.x, pTransform->pos.y, pTransform->vel, pTransform->accelConst);
+	Transform* pTransform = Game::ecs.getComponent<Transform>(Game::stack.peek(), player);
+	if (pTransform != nullptr) {
+		Room::camera.cinematicFocus(pTransform->pos.x, pTransform->pos.y, pTransform->vel, pTransform->accelConst);
+	}
 
 	// Zooming in and out
 	if (zoomOutInputCopy < InputManager::keysReleased[SDLK_o]) {
@@ -356,7 +288,7 @@ enum TileProperties {
 
 void Room::buildRoomEntity(const std::vector<uint8_t>& tileInfo) {
 	assert(tileInfo[TileInfo::WIDTH] >= 0 && tileInfo[TileInfo::HEIGHT] >= 0 && "Tile must have positive, non-zero dimensions.");
-	Entity tile = Game::ecs.createEntity();
+	Entity tile = Game::ecs.createEntity(Game::stack.peek());
 
 	// Turning properties value into a bitset for easy manip
 	std::bitset<8> props = tileInfo[TileInfo::PROPERTIES];
@@ -442,8 +374,8 @@ void Room::buildRoomEntity(const std::vector<uint8_t>& tileInfo) {
 
 	// ----- Assigning Components ----- //
 
-	Game::ecs.assignComponent<Transform>(tile);
-	Transform* transform = Game::ecs.getComponent<Transform>(tile);
+	Game::ecs.assignComponent<Transform>(Game::stack.peek(), tile);
+	Transform* transform = Game::ecs.getComponent<Transform>(Game::stack.peek(), tile);
 	/**transform = {
 		.pos = Vector2(tileSize * tileInfo[TileInfo::XPOS] + finalWidth / 2,
 					   tileSize * tileInfo[TileInfo::YPOS] + finalHeight / 2),
@@ -454,12 +386,8 @@ void Room::buildRoomEntity(const std::vector<uint8_t>& tileInfo) {
 	std::cout << transform->pos.x << " " << transform->pos.y << std::endl;
 		
 	if (props.test(TileProperties::SOLID)) {
-		Game::ecs.assignComponent<Collision>(tile);
-		Collision* coll = Game::ecs.getComponent<Collision>(tile);
-		/**coll = Collision{
-			.hitWidth = finalWidth,
-			.hitHeight = finalHeight,
-		};*/
+		Game::ecs.assignComponent<Collision>(Game::stack.peek(), tile);
+		Collision* coll = Game::ecs.getComponent<Collision>(Game::stack.peek(), tile);
 		*coll = Collision();
 		coll->hitWidth = finalWidth;
 		coll->hitHeight = finalHeight;
@@ -470,13 +398,8 @@ void Room::buildRoomEntity(const std::vector<uint8_t>& tileInfo) {
 	}
 
 	if (!props.test(TileProperties::INVISIBLE)) {
-		Game::ecs.assignComponent<Sprite>(tile);
-		Sprite* sprite = Game::ecs.getComponent<Sprite>(tile);
-		/**sprite = Sprite{
-			.tileWidth = finalWidth,
-			.tileHeight = finalHeight,
-			.spriteSheet = finalImage,
-		};*/
+		Game::ecs.assignComponent<Sprite>(Game::stack.peek(), tile);
+		Sprite* sprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), tile);
 		*sprite = Sprite();
 		sprite->tileWidth = finalWidth;
 		sprite->tileHeight = finalHeight;

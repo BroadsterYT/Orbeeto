@@ -13,11 +13,11 @@ void SpriteSystem::render(SDL_Renderer* renderer) {
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0xFF, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(renderer);
 
-	auto entities = Game::ecs.getSystemGroup<Sprite, Transform>();
+	auto entities = Game::ecs.getSystemGroup<Sprite, Transform>(Game::stack.peek());
 	std::vector<std::pair<int, Entity>> sortedEntities;
 
 	for (auto& entity : entities) {
-		Sprite* sprite = Game::ecs.getComponent<Sprite>(entity);
+		Sprite* sprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), entity);
 		sortedEntities.emplace_back(sprite->layer, entity);
 	}
 
@@ -29,8 +29,8 @@ void SpriteSystem::render(SDL_Renderer* renderer) {
 
 	for (const auto& pair : sortedEntities) {
 		Entity entity = pair.second;
-		Sprite* sprite = Game::ecs.getComponent<Sprite>(entity);
-		Transform* transform = Game::ecs.getComponent<Transform>(entity);
+		Sprite* sprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), entity);
+		Transform* transform = Game::ecs.getComponent<Transform>(Game::stack.peek(), entity);
 
 		// Showing correct sprite given sprite index
 		int width, height;

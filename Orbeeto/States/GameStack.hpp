@@ -4,8 +4,15 @@
 #include "StateBase.hpp"
 
 
+enum class StateName {
+	ACTION,
+	INVENTORY,
+};
+
 class GameStack {
 public:
+	GameStack();
+
 	void registerState(StateName name, StateBase* gameState);
 	/// <summary>
 	/// Adds a game state to the top of the stack
@@ -23,6 +30,12 @@ public:
 	/// <param name="state">The state to replace the state on top of the stack with</param>
 	/// <returns>The name of the state that got replaced</returns>
 	StateName swap(StateName name);
+	/// <summary>
+	/// Returns the state at the top of the game stack
+	/// </summary>
+	/// <returns>Pointer to state at the top of the stack</returns>
+	StateBase* peek();
+	void update();
 
 private:
 	std::stack<StateBase*> stack;

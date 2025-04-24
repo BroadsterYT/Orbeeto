@@ -1,5 +1,6 @@
 #pragma once
 #include "ECS.hpp"
+#include "States/GameStack.hpp"
 #include "SDL.h"
 #include <memory>
 
@@ -12,6 +13,7 @@ public:
 	SDL_Window* window;
 	static SDL_Renderer* renderer;
 	static ECS ecs;
+	static GameStack stack;
 	
 	void handleEvents();
 	void update();

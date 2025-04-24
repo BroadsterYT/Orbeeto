@@ -4,11 +4,11 @@
 PlayerGunSystem::PlayerGunSystem() : System() {}
 
 void PlayerGunSystem::update() {
-	for (Entity& entity : Game::ecs.getSystemGroup<PlayerGun, Sprite, Transform>()) {
-		PlayerGun* gun = Game::ecs.getComponent<PlayerGun>(entity);
-		Sprite* sprite = Game::ecs.getComponent<Sprite>(entity);
-		Transform* transform = Game::ecs.getComponent<Transform>(entity);
-		Transform* ownerTrans = Game::ecs.getComponent<Transform>(gun->owner);  // Transform component of player
+	for (Entity& entity : Game::ecs.getSystemGroup<PlayerGun, Sprite, Transform>(Game::stack.peek())) {
+		PlayerGun* gun = Game::ecs.getComponent<PlayerGun>(Game::stack.peek(), entity);
+		Sprite* sprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), entity);
+		Transform* transform = Game::ecs.getComponent<Transform>(Game::stack.peek(), entity);
+		Transform* ownerTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), gun->owner);  // Transform component of player
 
 		transform->pos = ownerTrans->pos;
 
@@ -26,21 +26,15 @@ void PlayerGunSystem::update() {
 }
 
 void PlayerGunSystem::fireBullet(Transform* ownerTrans, const int bulletId, const double rotAngle, const bool isLeft) {
-	Entity bullet = Game::ecs.createEntity();
+	Entity bullet = Game::ecs.createEntity(Game::stack.peek());
 
-	Game::ecs.assignComponent<Sprite>(bullet);
-	Game::ecs.assignComponent<Transform>(bullet);
-	Game::ecs.assignComponent<Bullet>(bullet);
-	Game::ecs.assignComponent<Collision>(bullet);
+	Game::ecs.assignComponent<Sprite>(Game::stack.peek(), bullet);
+	Game::ecs.assignComponent<Transform>(Game::stack.peek(), bullet);
+	Game::ecs.assignComponent<Bullet>(Game::stack.peek(), bullet);
+	Game::ecs.assignComponent<Collision>(Game::stack.peek(), bullet);
 
 	// ----- Sprite ----- //
-	Sprite* bSprite = Game::ecs.getComponent<Sprite>(bullet);
-	/**bSprite = Sprite{
-		.tileWidth = 32,
-		.tileHeight = 32,
-		.angle = rotAngle,
-		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/bullets.png"),
-	};*/
+	Sprite* bSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), bullet);
 	*bSprite = Sprite();
 	bSprite->tileWidth = 32;
 	bSprite->tileHeight = 32;
@@ -48,7 +42,7 @@ void PlayerGunSystem::fireBullet(Transform* ownerTrans, const int bulletId, cons
 	bSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/bullets.png");
 
 	// ----- Transform ----- //
-	Transform* bTransform = Game::ecs.getComponent<Transform>(bullet);
+	Transform* bTransform = Game::ecs.getComponent<Transform>(Game::stack.peek(), bullet);
 
 	// Placing bullet at offset of barrel
 	int offsetX = 21;
@@ -61,27 +55,16 @@ void PlayerGunSystem::fireBullet(Transform* ownerTrans, const int bulletId, cons
 		barrelOffsetY = -offsetX * sin(-rotAngle * M_PI / 180) - offsetY * cos(-rotAngle * M_PI / 180);
 	}
 
-	/**bTransform = Transform{
-		.pos = Vector2(ownerTrans->pos.x + barrelOffsetX, ownerTrans->pos.y + barrelOffsetY)
-	};*/
 	*bTransform = Transform();
 	bTransform->pos = Vector2(ownerTrans->pos.x + barrelOffsetX, ownerTrans->pos.y + barrelOffsetY);
 
 	// ----- Bullet ----- //
-	Bullet* bBullet = Game::ecs.getComponent<Bullet>(bullet);
-	/**bBullet = {
-		.bulletAI = BulletType::STANDARD
-	};*/
+	Bullet* bBullet = Game::ecs.getComponent<Bullet>(Game::stack.peek(), bullet);
 	*bBullet = Bullet();
 	bBullet->bulletAI = BulletType::STANDARD;
 
 	// ----- Collision ----- //
-	Collision* bColl = Game::ecs.getComponent<Collision>(bullet);
-	/**bColl = Collision{
-		.hitWidth = 8,
-		.hitHeight = 8,
-		.hitPos = Vector2(ownerTrans->pos.x + barrelOffsetX, ownerTrans->pos.y + barrelOffsetY),
-	};*/
+	Collision* bColl = Game::ecs.getComponent<Collision>(Game::stack.peek(), bullet);
 	*bColl = Collision();
 	bColl->hitWidth = 8;
 	bColl->hitHeight = 8;

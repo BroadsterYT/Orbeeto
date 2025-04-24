@@ -1,13 +1,10 @@
 #pragma once
+#include "../Entity.hpp"
 
-
-enum class StateName {
-	ACTION,
-};
 
 class StateBase {
 public:
-	StateBase(StateName name, bool allowUpdateBelow = false);
+	StateBase(bool allowUpdateBelow = false);
 
 	/// <summary>
 	/// Called when the state is added to the game stack
@@ -25,12 +22,18 @@ public:
 	/// Called when the state above this one is popped from the game stack
 	/// </summary>
 	virtual void onWakeup() = 0;
+
 	/// <summary>
-	/// Returns the "name" of the game state
+	/// Returns the vector cointaining the entity descriptions for all entities in this state
 	/// </summary>
-	StateName getName();
+	std::vector<EntityDesc>& getEntityDescs();
+	/// <summary>
+	/// Adds an EntityDesc instance to the vector of all instances in the state
+	/// </summary>
+	/// <param name="edesc">The entity description to add</param>
+	void addEntityDesc(EntityDesc edesc);
 
 private:
-	StateName name;
+	std::vector<EntityDesc> entityDescs;  // A vector of all the entities currently in the game state
 	bool allowUpdateBelow = false;
 };
