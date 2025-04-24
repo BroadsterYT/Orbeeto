@@ -6,10 +6,10 @@
 BulletSystem::BulletSystem() {}
 
 void BulletSystem::update() {
-	for (Entity& entity : Game::ecs.getSystemGroup<Bullet, Sprite, Transform>()) {
-		Bullet* bullet = Game::ecs.getComponent<Bullet>(entity);
-		Transform* transform = Game::ecs.getComponent<Transform>(entity);
-		Sprite* sprite = Game::ecs.getComponent<Sprite>(entity);
+	for (Entity& entity : Game::ecs.getSystemGroup<Bullet, Sprite, Transform>(Game::stack.peek())) {
+		Bullet* bullet = Game::ecs.getComponent<Bullet>(Game::stack.peek(), entity);
+		Transform* transform = Game::ecs.getComponent<Transform>(Game::stack.peek(), entity);
+		Sprite* sprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), entity);
 
 		// ----- Bullet AI ----- //
 		switch (bullet->bulletAI) {
@@ -24,14 +24,14 @@ void BulletSystem::update() {
 
 			// Getting the distances between this bullet and all possible targets
 			if (TimeManip::getTimeDiff(bullet->lastHomingCheck) > 1000) {
-				for (auto& target : Game::ecs.getSystemGroup<Transform, Collision, Sprite>()) {
+				for (auto& target : Game::ecs.getSystemGroup<Transform, Collision, Sprite>(Game::stack.peek())) {
 					if (entity == target) continue;
 					// TODO: Replace testing with actual implementation
-					if (Game::ecs.getComponent<Player>(target) != nullptr) continue;  // Can't target players
-					if (Game::ecs.getComponent<Bullet>(target) != nullptr) continue;  // Can't target other bullets
-					if (Game::ecs.getComponent<Grapple>(target) != nullptr) continue;  // Can't target other bullets
+					if (Game::ecs.getComponent<Player>(Game::stack.peek(), target) != nullptr) continue;  // Can't target players
+					if (Game::ecs.getComponent<Bullet>(Game::stack.peek(), target) != nullptr) continue;  // Can't target other bullets
+					if (Game::ecs.getComponent<Grapple>(Game::stack.peek(), target) != nullptr) continue;  // Can't target other bullets
 
-					Transform* targetTrans = Game::ecs.getComponent<Transform>(target);
+					Transform* targetTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), target);
 					double distance = transform->pos.getDistToPoint(targetTrans->pos);
 
 					if (distance < closestDistance) {
@@ -47,7 +47,7 @@ void BulletSystem::update() {
 				break;
 			}
 
-			Transform* targetTrans = Game::ecs.getComponent<Transform>(bullet->closestTarget);
+			Transform* targetTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), bullet->closestTarget);
 
 			// Rotating bullet toward target
 			if (transform->pos.getDistToPoint(targetTrans->pos) < bullet->homingRange) {
@@ -70,7 +70,7 @@ void BulletSystem::update() {
 		if (TimeManip::getTimeDiff(bullet->birthTime) >= 5000) {
 			//std::cout << "Bullet destroyed." << std::endl;
 
-			Game::ecs.destroyEntity(entity);
+			Game::ecs.destroyEntity(Game::stack.peek(), entity);
 		}
 	}
 }

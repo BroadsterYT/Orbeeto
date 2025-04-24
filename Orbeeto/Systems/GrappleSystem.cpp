@@ -6,12 +6,12 @@
 GrappleSystem::GrappleSystem() : System() {}
 
 void GrappleSystem::update() {
-	for (auto& entity : Game::ecs.getSystemGroup<Collision, Grapple, Sprite, Transform>()) {
-		Transform* transform = Game::ecs.getComponent<Transform>(entity);
-		Grapple* grapple = Game::ecs.getComponent<Grapple>(entity);
+	for (auto& entity : Game::ecs.getSystemGroup<Collision, Grapple, Sprite, Transform>(Game::stack.peek())) {
+		Transform* transform = Game::ecs.getComponent<Transform>(Game::stack.peek(), entity);
+		Grapple* grapple = Game::ecs.getComponent<Grapple>(Game::stack.peek(), entity);
 
-		Player* player = Game::ecs.getComponent<Player>(grapple->owner);
-		Transform* pTrans = Game::ecs.getComponent<Transform>(grapple->owner);
+		Player* player = Game::ecs.getComponent<Player>(Game::stack.peek(), grapple->owner);
+		Transform* pTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), grapple->owner);
 
 		switch (player->grappleState) {
 		case GrappleState::SENT:
@@ -37,7 +37,7 @@ void GrappleSystem::update() {
 
 		case GrappleState::RETURNING: 
 			if (player->grappleInputCopy < InputManager::mouseReleased[SDL_BUTTON_MIDDLE]) {
-				Game::ecs.destroyEntity(entity);
+				Game::ecs.destroyEntity(Game::stack.peek(), entity);
 				player->grappleRef = 0;  // Remove grapple reference from player
 				player->moveToGrapple = false;
 

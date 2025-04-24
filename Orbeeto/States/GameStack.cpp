@@ -2,6 +2,18 @@
 #include <stdexcept>
 #include <cassert>
 
+#include <iostream>
+#include "../InputManager.hpp"
+
+#include "ActionState.hpp"
+#include "InventoryState.hpp"
+
+
+GameStack::GameStack() {
+	registerState(StateName::ACTION, new ActionState());
+	registerState(StateName::INVENTORY, new InventoryState());
+	push(StateName::ACTION);
+}
 
 void GameStack::registerState(StateName name, StateBase* gameState) {
 	assert(!isRegistered(name) && "Error: State has already been registered.");
@@ -57,4 +69,18 @@ StateName GameStack::swap(StateName name) {
 	nameToState[name]->onEnter();
 
 	return stateToName[popped];
+}
+
+StateBase* GameStack::peek() {
+	assert(!stack.empty() && "Error: Could not return top of stack because stack is empty.");
+	return stack.top();
+}
+
+void GameStack::update() {
+	if (InputManager::keysPressed[SDLK_q]) {
+		swap(StateName::INVENTORY);
+	}
+	if (InputManager::keysPressed[SDLK_z]) {
+		swap(StateName::ACTION);
+	}
 }

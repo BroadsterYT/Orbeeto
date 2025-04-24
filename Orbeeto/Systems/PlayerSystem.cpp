@@ -6,10 +6,10 @@
 PlayerSystem::PlayerSystem() : System() {}
 
 void PlayerSystem::update() {
-	for (auto entity : Game::ecs.getSystemGroup<Player, Sprite, Transform>()) {
-		Player* player = Game::ecs.getComponent<Player>(entity);
-		Sprite* sprite = Game::ecs.getComponent<Sprite>(entity);
-		Transform* transform = Game::ecs.getComponent<Transform>(entity);
+	for (auto entity : Game::ecs.getSystemGroup<Player, Sprite, Transform>(Game::stack.peek())) {
+		Player* player = Game::ecs.getComponent<Player>(Game::stack.peek(), entity);
+		Sprite* sprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), entity);
+		Transform* transform = Game::ecs.getComponent<Transform>(Game::stack.peek(), entity);
 
 		// Normal movement
 		Vector2 finalAccel(0.0f, 0.0f);
@@ -20,8 +20,8 @@ void PlayerSystem::update() {
 
 		if (player->grappleRef != 0) {
 			if (player->grappleState == GrappleState::RETURNING && player->moveToGrapple) {
-				Grapple* grapple = Game::ecs.getComponent<Grapple>(player->grappleRef);
-				Transform* gTrans = Game::ecs.getComponent<Transform>(player->grappleRef);
+				Grapple* grapple = Game::ecs.getComponent<Grapple>(Game::stack.peek(), player->grappleRef);
+				Transform* gTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), player->grappleRef);
 				
 				double angle = Math::rad(transform->pos.getAngleToPoint(gTrans->pos));
 				
@@ -55,23 +55,15 @@ void PlayerSystem::update() {
 void PlayerSystem::fireGrapple(const Entity& pEntity, Player* player, Transform* pTrans, Sprite* pSprite) {
 	player->grappleState = GrappleState::SENT;
 
-	Entity grapple = Game::ecs.createEntity();
+	Entity grapple = Game::ecs.createEntity(Game::stack.peek());
 	player->grappleRef = grapple;
 
-	Game::ecs.assignComponent<Sprite>(grapple);
-	Game::ecs.assignComponent<Collision>(grapple);
-	Game::ecs.assignComponent<Grapple>(grapple);
-	Game::ecs.assignComponent<Transform>(grapple);
+	Game::ecs.assignComponent<Sprite>(Game::stack.peek(), grapple);
+	Game::ecs.assignComponent<Collision>(Game::stack.peek(), grapple);
+	Game::ecs.assignComponent<Grapple>(Game::stack.peek(), grapple);
+	Game::ecs.assignComponent<Transform>(Game::stack.peek(), grapple);
 
-	Sprite* gSprite = Game::ecs.getComponent<Sprite>(grapple);
-	/**gSprite = Sprite{
-		.tileWidth = 32,
-		.tileHeight = 32,
-		.angle = pSprite->angle,
-		.srcRect = SDL_Rect(0, 64, 32, 32),
-		.index = 16,
-		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/bullets.png"),
-	};*/
+	Sprite* gSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), grapple);
 	*gSprite = Sprite();
 	gSprite->tileWidth = 32;
 	gSprite->tileHeight = 32;
@@ -80,30 +72,18 @@ void PlayerSystem::fireGrapple(const Entity& pEntity, Player* player, Transform*
 	gSprite->index = 16;
 	gSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/bullets.png");
 
-	Collision* gColl = Game::ecs.getComponent<Collision>(grapple);
-	/**gColl = Collision{
-		.hitWidth = 32,
-		.hitHeight = 32,
-	};*/
+	Collision* gColl = Game::ecs.getComponent<Collision>(Game::stack.peek(), grapple);
 	*gColl = Collision();
 	gColl->hitWidth = 32;
 	gColl->hitHeight = 32;
 
 	gColl->physicsTags.set(PTags::GRAPPLE);
 
-	Grapple* gGrapple = Game::ecs.getComponent<Grapple>(grapple);
-	/**gGrapple = Grapple{
-		.owner = pEntity
-	};*/
+	Grapple* gGrapple = Game::ecs.getComponent<Grapple>(Game::stack.peek(), grapple);
 	*gGrapple = Grapple();
 	gGrapple->owner = pEntity;
 
-	Transform* gTrans = Game::ecs.getComponent<Transform>(grapple);
-	/**gTrans = Transform{
-		.pos = Vector2(pTrans->pos.x, pTrans->pos.y),
-		.vel = Vector2(0, -2.0f),
-		.accelConst = 0.15f,
-	};*/
+	Transform* gTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), grapple);
 	*gTrans = Transform();
 	gTrans->pos = Vector2(pTrans->pos.x, pTrans->pos.y);
 	gTrans->vel = Vector2(0, -2.0f);
@@ -112,21 +92,14 @@ void PlayerSystem::fireGrapple(const Entity& pEntity, Player* player, Transform*
 }
 
 void PlayerSystem::firePortal(Entity pEntity, Player* player, Transform* pTrans, Sprite* pSprite) {
-	Entity portalBullet = Game::ecs.createEntity();
+	Entity portalBullet = Game::ecs.createEntity(Game::stack.peek());
 
-	Game::ecs.assignComponent<Sprite>(portalBullet);
-	Game::ecs.assignComponent<Collision>(portalBullet);
-	Game::ecs.assignComponent<Transform>(portalBullet);
-	Game::ecs.assignComponent<Bullet>(portalBullet);
+	Game::ecs.assignComponent<Sprite>(Game::stack.peek(), portalBullet);
+	Game::ecs.assignComponent<Collision>(Game::stack.peek(), portalBullet);
+	Game::ecs.assignComponent<Transform>(Game::stack.peek(), portalBullet);
+	Game::ecs.assignComponent<Bullet>(Game::stack.peek(), portalBullet);
 
-	Sprite* pbSprite = Game::ecs.getComponent<Sprite>(portalBullet);
-	/**pbSprite = Sprite{
-		.tileWidth = 32,
-		.tileHeight = 32,
-		.angle = pSprite->angle,
-		.srcRect = SDL_Rect(0, 32, 32, 32),
-		.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/bullets.png"),
-	};*/
+	Sprite* pbSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), portalBullet);
 	*pbSprite = Sprite();
 	pbSprite->tileWidth = 32;
 	pbSprite->tileHeight = 32;
@@ -134,11 +107,7 @@ void PlayerSystem::firePortal(Entity pEntity, Player* player, Transform* pTrans,
 	pbSprite->srcRect = SDL_Rect(0, 32, 32, 32);
 	pbSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/bullets.png");
 
-	Collision* pbColl = Game::ecs.getComponent<Collision>(portalBullet);
-	/**pbColl = Collision{
-		.hitWidth = 8,
-		.hitHeight = 8,
-	};*/
+	Collision* pbColl = Game::ecs.getComponent<Collision>(Game::stack.peek(), portalBullet);
 	*pbColl = Collision();
 	pbColl->hitWidth = 8;
 	pbColl->hitHeight = 8;
@@ -146,20 +115,13 @@ void PlayerSystem::firePortal(Entity pEntity, Player* player, Transform* pTrans,
 	pbColl->physicsTags.set(PTags::PORTAL_BULLET);
 	pbColl->physicsTags.set(PTags::PROJECTILE);
 
-	Transform* pbTrans = Game::ecs.getComponent<Transform>(portalBullet);
-	/**pbTrans = Transform{
-		.pos = Vector2(pTrans->pos.x, pTrans->pos.y),
-		.vel = Vector2(0, -2.0f),
-	};*/
+	Transform* pbTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), portalBullet);
 	*pbTrans = Transform();
 	pbTrans->pos = Vector2(pTrans->pos.x, pTrans->pos.y);
 	pbTrans->vel = Vector2(0, -2.0f);
 	pbTrans->vel.rotate(pSprite->angle);
 
-	Bullet* pbBullet = Game::ecs.getComponent<Bullet>(portalBullet);
-	/**pbBullet = Bullet{
-		.shotBy = pEntity,
-	};*/
+	Bullet* pbBullet = Game::ecs.getComponent<Bullet>(Game::stack.peek(), portalBullet);
 	*pbBullet = Bullet();
 	pbBullet->shotBy = pEntity;
 }

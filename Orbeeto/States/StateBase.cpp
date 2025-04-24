@@ -1,11 +1,16 @@
 #include "StateBase.hpp"
+#include <iostream>
+#include <algorithm>
 
 
-StateBase::StateBase(StateName name, bool allowUpdateBelow) {
-	this->name = name;
+StateBase::StateBase(bool allowUpdateBelow) {
 	this->allowUpdateBelow = allowUpdateBelow;
 }
 
-StateName StateBase::getName() {
-	return name;
+std::vector<EntityDesc>& StateBase::getEntityDescs() {
+	return entityDescs;
+}
+
+void StateBase::addEntityDesc(EntityDesc edesc) {
+	entityDescs.push_back(edesc);
 }

@@ -144,7 +144,9 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Math.cpp" />
     <ClCompile Include="Rooms\Room.cpp" />
+    <ClCompile Include="States\ActionState.cpp" />
     <ClCompile Include="States\GameStack.cpp" />
+    <ClCompile Include="States\InventoryState.cpp" />
     <ClCompile Include="States\StateBase.cpp" />
     <ClCompile Include="Systems\BulletSystem.cpp" />
     <ClCompile Include="Systems\CollisionSystem.cpp" />
@@ -175,12 +177,15 @@
     <ClInclude Include="Components\Player.hpp" />
     <ClInclude Include="Components\PlayerGun.hpp" />
     <ClInclude Include="ECS.hpp" />
+    <ClInclude Include="Entity.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="InputManager.hpp" />
     <ClInclude Include="Components\Sprite.hpp" />
     <ClInclude Include="Math.hpp" />
     <ClInclude Include="Rooms\Room.hpp" />
+    <ClInclude Include="States\ActionState.hpp" />
     <ClInclude Include="States\GameStack.hpp" />
+    <ClInclude Include="States\InventoryState.hpp" />
     <ClInclude Include="States\StateBase.hpp" />
     <ClInclude Include="Systems\BulletSystem.hpp" />
     <ClInclude Include="Systems\CollisionSystem.hpp" />

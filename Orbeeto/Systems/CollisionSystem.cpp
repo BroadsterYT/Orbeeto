@@ -21,16 +21,16 @@ void CollisionSystem::update() {
 			//std::cout << "Bound posX: " << j << " Bound posY: " << i << " Found: " << found.size() << std::endl;
 
 			for (Entity& entity : found) {
-				Collision* collision = Game::ecs.getComponent<Collision>(entity);
+				Collision* collision = Game::ecs.getComponent<Collision>(Game::stack.peek(), entity);
 				if (collision == nullptr) continue;
-				Transform* transform = Game::ecs.getComponent<Transform>(entity);
+				Transform* transform = Game::ecs.getComponent<Transform>(Game::stack.peek(), entity);
 
 				collision->hitPos = transform->pos;
 
 				for (auto& other : found) {
 					if (other == entity) continue;
 
-					Collision* oCollide = Game::ecs.getComponent<Collision>(other);
+					Collision* oCollide = Game::ecs.getComponent<Collision>(Game::stack.peek(), other);
 
 					if (oCollide == nullptr) continue;
 
@@ -46,7 +46,7 @@ void CollisionSystem::update() {
 
 void CollisionSystem::rebuildQuadtree(QuadBoundingBox boundary) {
 	tree = Quadtree(boundary);
-	for (Entity& entity : Game::ecs.getSystemGroup<Collision, Transform>()) {
+	for (Entity& entity : Game::ecs.getSystemGroup<Collision, Transform>(Game::stack.peek())) {
 		//std::cout << tree.insert(entity) << std::endl;
 		tree.insert(entity);
 	}
@@ -121,19 +121,19 @@ void CollisionSystem::pushEntity(Collision* coll1, Transform* trans1, Collision*
 void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transform* eTrans, Entity& other, Collision* oColl) {
 	// Pushing entities that can be pushed
 	if (hasPhysicsTag(eColl, PTags::PUSHABLE) && hasPhysicsTag(oColl, PTags::CAN_PUSH)) {
-		Transform* oTrans = Game::ecs.getComponent<Transform>(other);
+		Transform* oTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), other);
 		pushEntity(eColl, eTrans, oColl, oTrans);
 	}
 
 	// Portal teleportation
 	if (hasPhysicsTag(eColl, PTags::CAN_TELEPORT) && hasPhysicsTag(oColl, PTags::PORTAL)) {
-		TeleportLink* firstLink = Game::ecs.getComponent<TeleportLink>(other);
-		TeleportLink* secondLink = Game::ecs.getComponent<TeleportLink>(Room::getPortalLink(other));
+		TeleportLink* firstLink = Game::ecs.getComponent<TeleportLink>(Game::stack.peek(), other);
+		TeleportLink* secondLink = Game::ecs.getComponent<TeleportLink>(Game::stack.peek(), Room::getPortalLink(other));
 		
 		if (secondLink == nullptr) return;
 
-		Transform* outPortalTrans = Game::ecs.getComponent<Transform>(Room::getPortalLink(other));
-		Collision* outPortalColl = Game::ecs.getComponent<Collision>(Room::getPortalLink(other));
+		Transform* outPortalTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), Room::getPortalLink(other));
+		Collision* outPortalColl = Game::ecs.getComponent<Collision>(Game::stack.peek(), Room::getPortalLink(other));
 
 		// Getting offset from center of portal
 		float offset = 0.0;
@@ -206,11 +206,11 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 
 	// Grappling hook collisions
 	if (hasPhysicsTag(eColl, PTags::GRAPPLE)) {
-		Grapple* grapple = Game::ecs.getComponent<Grapple>(entity);
-		Player* player = Game::ecs.getComponent<Player>(grapple->owner);
+		Grapple* grapple = Game::ecs.getComponent<Grapple>(Game::stack.peek(), entity);
+		Player* player = Game::ecs.getComponent<Player>(Game::stack.peek(), grapple->owner);
 
 		if (hasPhysicsTag(oColl, PTags::PLAYER) && player->grappleState == GrappleState::RETURNING) {
-			Game::ecs.destroyEntity(entity);
+			Game::ecs.destroyEntity(Game::stack.peek(), entity);
 			player->grappleRef = 0;  // Remove grapple reference from player
 			player->moveToGrapple = false;
 
@@ -229,38 +229,28 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 	if (hasPhysicsTag(eColl, PTags::PORTAL_BULLET) && hasPhysicsTag(oColl, PTags::CAN_HOLD_PORTAL)) {
 		int side = intersection(eColl, oColl);  // The direction the spawned portal will face
 		std::cout << side << std::endl;
-		Entity portal = Game::ecs.createEntity();
+		Entity portal = Game::ecs.createEntity(Game::stack.peek());
 
-		Game::ecs.assignComponent<Sprite>(portal);
-		Game::ecs.assignComponent<Transform>(portal);
-		Game::ecs.assignComponent<Collision>(portal);
-		Game::ecs.assignComponent<TeleportLink>(portal);
+		Game::ecs.assignComponent<Sprite>(Game::stack.peek(), portal);
+		Game::ecs.assignComponent<Transform>(Game::stack.peek(), portal);
+		Game::ecs.assignComponent<Collision>(Game::stack.peek(), portal);
+		Game::ecs.assignComponent<TeleportLink>(Game::stack.peek(), portal);
 
-		Sprite* pSprite = Game::ecs.getComponent<Sprite>(portal);
-		/**pSprite = Sprite{
-			.tileWidth = 64,
-			.tileHeight = 64,
-			.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png"),
-		};*/
+		Sprite* pSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), portal);
+
 		*pSprite = Sprite();
 		pSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png");
 
 		// Need spawning bullet's position
-		Transform* eTrans = Game::ecs.getComponent<Transform>(entity);
+		Transform* eTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), entity);
 
-		Transform* pTrans = Game::ecs.getComponent<Transform>(portal);
-		/**pTrans = Transform{
-			.pos = eTrans->pos,
-		};*/
+		Transform* pTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), portal);
+
 		*pTrans = Transform();
 		pTrans->pos = eTrans->pos;
 
-		Collision* pColl = Game::ecs.getComponent<Collision>(portal);
-		/**pColl = Collision{
-			.hitWidth = 64,
-			.hitHeight = 64,
-			.hitPos = eTrans->pos,
-		};*/
+		Collision* pColl = Game::ecs.getComponent<Collision>(Game::stack.peek(), portal);
+
 		*pColl = Collision();
 		pColl->hitWidth = 64;
 		pColl->hitHeight = 64;
@@ -268,20 +258,20 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 
 		pColl->physicsTags.set(PTags::PORTAL);
 
-		TeleportLink* pTLink = Game::ecs.getComponent<TeleportLink>(portal);
+		TeleportLink* pTLink = Game::ecs.getComponent<TeleportLink>(Game::stack.peek(), portal);
 		//*pTLink = TeleportLink{ .facing = side };
 		*pTLink = TeleportLink();
 		pTLink->facing = side;
 
-		Bullet* pBullet = Game::ecs.getComponent<Bullet>(entity);
-		Player* player = Game::ecs.getComponent<Player>(pBullet->shotBy);
+		Bullet* pBullet = Game::ecs.getComponent<Bullet>(Game::stack.peek(), entity);
+		Player* player = Game::ecs.getComponent<Player>(Game::stack.peek(), pBullet->shotBy);
 
 		// Updating active player portals. If two are alredy active the oldest one will be replaced by the new one
 		if (player->portals.first == 0) {  // No portals fired yet
 			player->portals.first = portal;
 		}
 		else {
-			TeleportLink* otherLink = Game::ecs.getComponent<TeleportLink>(player->portals.first);
+			TeleportLink* otherLink = Game::ecs.getComponent<TeleportLink>(Game::stack.peek(), player->portals.first);
 
 			if (player->portals.second == 0) {  // Only 1 portal fired so far
 				player->portals.second = portal;
@@ -300,7 +290,7 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 			else {  // Currently 2 portals active
 				Room::removePortalLink(player->portals.first);
 				Room::removePortalLink(player->portals.second);
-				Game::ecs.destroyEntity(player->portals.first);
+				Game::ecs.destroyEntity(Game::stack.peek(), player->portals.first);
 
 				player->portals.first = player->portals.second;
 				player->portals.second = portal;
@@ -323,7 +313,7 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 
 	// Projectile deaths
 	if (hasPhysicsTag(eColl, PTags::PROJECTILE) && hasPhysicsTag(oColl, PTags::WALL)) {  // Destroys bullet if it hits wall
-		Game::ecs.destroyEntity(entity);
+		Game::ecs.destroyEntity(Game::stack.peek(), entity);
 		return;
 	}
 }

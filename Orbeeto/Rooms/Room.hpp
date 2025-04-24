@@ -58,9 +58,9 @@ private:
 	int zoomOutInputCopy = 0;
 	int zoomInInputCopy = 0;
 
-	Entity player = Game::ecs.createEntity();
-	Entity leftGun = Game::ecs.createEntity();
-	Entity rightGun = Game::ecs.createEntity();
+	Entity player = Game::ecs.createEntity(Game::stack.peek());
+	Entity leftGun = Game::ecs.createEntity(Game::stack.peek());
+	Entity rightGun = Game::ecs.createEntity(Game::stack.peek());
 
 	static std::unordered_map<Entity, Entity> portalLinks;  // Handles links between all portals
 

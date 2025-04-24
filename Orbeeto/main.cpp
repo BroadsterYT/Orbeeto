@@ -71,6 +71,8 @@ int main(int argc, char* argv[]) {
 		statBarSystem.update();
 
 		room.update();
+
+		Game::stack.update();
 		
 		TimeManip::calculateDeltaTime();
 	}

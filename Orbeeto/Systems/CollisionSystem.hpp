@@ -12,8 +12,8 @@ struct QuadBoundingBox {
 	/// <param name="entity">The entity to search for</param>
 	/// <returns>True if the box contains the entity, false otherwise</returns>
 	bool contains(const Entity& entity) const {
-		Transform* transform = Game::ecs.getComponent<Transform>(entity);
-		Collision* coll = Game::ecs.getComponent<Collision>(entity);
+		Transform* transform = Game::ecs.getComponent<Transform>(Game::stack.peek(), entity);
+		Collision* coll = Game::ecs.getComponent<Collision>(Game::stack.peek(), entity);
 		if (transform == nullptr) return false;
 		if (coll == nullptr) return false;
 
