@@ -1,6 +1,6 @@
 #pragma once
 #include "Component.hpp"
-#include "../TimeManip.hpp"
+#include "../Timer.hpp"
 
 
 enum BulletType {
@@ -12,7 +12,7 @@ enum BulletType {
 struct Bullet : Component {
 	// ----- Required ----- //
 	int bulletAI = BulletType::STANDARD;
-	uint64_t birthTime = TimeManip::getTime();
+	Timer timer = Timer();
 
 	// ----- General ----- //
 	bool persistent = false; // Should the bullet disappear after a certain length of time?

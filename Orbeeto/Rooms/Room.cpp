@@ -45,15 +45,12 @@ Room::Room(int roomX, int roomY) {
 
 	// ----- Player ----- //
 	Sprite* playerSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), player);
-	*playerSprite = Sprite();
 	playerSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png");
 	
 	Transform* playerTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), player);
-	*playerTrans = Transform();
 	playerTrans->pos = Vector2(300, 300);
 	
 	Collision* playerColl = Game::ecs.getComponent<Collision>(Game::stack.peek(), player);
-	*playerColl = Collision();
 	playerColl->hitWidth = 32;
 	playerColl->hitHeight = 32;
 	playerColl->hitPos = Vector2(300.0f, 300.0f);
@@ -65,32 +62,26 @@ Room::Room(int roomX, int roomY) {
 	playerColl->physicsTags.set(PTags::CAN_TELEPORT);
 
 	Hp* playerHp = Game::ecs.getComponent<Hp>(Game::stack.peek(), player);
-	*playerHp = Hp();
 	playerHp->hp = 25;
 	playerHp->maxHp = 50;
 
 	// ----- Left Gun ----- //
 	Sprite* lGunSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), leftGun);
-	*lGunSprite = Sprite();
 	lGunSprite->layer = 1;
 	lGunSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeetoguns.png");
 
 	Transform* lGunTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), leftGun);
-	*lGunTrans = Transform();
 	lGunTrans->pos = Vector2(300.0f, 300.0f);
 
 	PlayerGun* lGun = Game::ecs.getComponent<PlayerGun>(Game::stack.peek(), leftGun);
-	*lGun = PlayerGun();
 	lGun->owner = player;
 
 	// ----- Right Gun ----- //
 	PlayerGun* rGun = Game::ecs.getComponent<PlayerGun>(Game::stack.peek(), rightGun);
-	*rGun = PlayerGun();
 	rGun->owner = player;
 	rGun->isLeft = false;
 
 	Sprite* rGunSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), rightGun);
-	*rGunSprite = Sprite();
 	rGunSprite->layer = 1;
 	rGunSprite->index = 5;
 	rGunSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeetoguns.png");
@@ -104,17 +95,14 @@ Room::Room(int roomX, int roomY) {
 	Game::ecs.assignComponent<MovementAI>(Game::stack.peek(), playerHpBar);
 
 	MovementAI* phbMove = Game::ecs.getComponent<MovementAI>(Game::stack.peek(), playerHpBar);
-	*phbMove = MovementAI();
 	phbMove->ai = M_AI::FOLLOW_ENTITY;
 	phbMove->entityRef = player;
 	phbMove->distance = { 0, 40 };
 
 	Transform* phbTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), playerHpBar);
-	*phbTrans = Transform();
 	phbTrans->pos = { 0, 0 };
 
 	Sprite* phbSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), playerHpBar);
-	*phbSprite = Sprite();
 	phbSprite->tileWidth = 128;
 	phbSprite->tileHeight = 16;
 	phbSprite->srcRect.w = 128;
@@ -125,7 +113,6 @@ Room::Room(int roomX, int roomY) {
 	phbSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/health_bar.png");
 
 	StatBar* phbStatBar = Game::ecs.getComponent<StatBar>(Game::stack.peek(), playerHpBar);
-	*phbStatBar = StatBar();
 	phbStatBar->maxVal = &playerHp->maxHp;
 	phbStatBar->val = &playerHp->hp;
 
@@ -149,8 +136,6 @@ int Room::getRoomHeight() {
 }
 
 void Room::loadRoom(int x, int y) {
-	
-	
 	if (roomX == 0 && roomY == 0) {
 		roomWidth = 1280;
 		roomHeight = 720;
@@ -167,7 +152,6 @@ void Room::loadRoom(int x, int y) {
 		Game::ecs.assignComponent<MovementAI>(Game::stack.peek(), enemyTest);
 
 		Transform* e1Trans = Game::ecs.getComponent<Transform>(Game::stack.peek(), enemyTest);
-		*e1Trans = Transform();
 		e1Trans->pos = { 200, 200 };
 
 		Sprite* e1Sprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), enemyTest);
@@ -175,13 +159,11 @@ void Room::loadRoom(int x, int y) {
 		e1Sprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png");
 
 		Collision* e1Coll = Game::ecs.getComponent<Collision>(Game::stack.peek(), enemyTest);
-		*e1Coll = Collision();
 
 		e1Coll->physicsTags.set(PTags::ENEMY);
 		e1Coll->physicsTags.set(PTags::PUSHABLE);
 
 		MovementAI* e1AI = Game::ecs.getComponent<MovementAI>(Game::stack.peek(), enemyTest);
-		*e1AI = MovementAI();
 		e1AI->ai = M_AI::OCTOGRUNT;
 	}
 }

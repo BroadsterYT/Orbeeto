@@ -19,7 +19,7 @@ void BulletSystem::update() {
 			break;
 
 		case BulletType::HOMING:  // Homing bullets
-			{
+		{
 			double closestDistance = std::numeric_limits<double>::max();
 
 			// Getting the distances between this bullet and all possible targets
@@ -56,8 +56,7 @@ void BulletSystem::update() {
 				double difference = transform->vel.getAngle() - angle;
 				transform->vel.rotate(difference - 180);
 			}
-
-			}  // End scope
+		}  // End scope
 			transform->velMovement();
 			break;
 
@@ -67,9 +66,7 @@ void BulletSystem::update() {
 		}
 
 		// Destroying bullet if its lifetime is too long
-		if (TimeManip::getTimeDiff(bullet->birthTime) >= 5000) {
-			//std::cout << "Bullet destroyed." << std::endl;
-
+		if (bullet->timer.getTime() >= 5000) {
 			Game::ecs.destroyEntity(Game::stack.peek(), entity);
 		}
 	}

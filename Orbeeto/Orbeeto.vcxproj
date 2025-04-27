@@ -159,6 +159,7 @@
     <ClCompile Include="Systems\StatBarSystem.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="TimeManip.cpp" />
+    <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Vector2.cpp" />
     <ClCompile Include="WindowManager.cpp" />
   </ItemGroup>
@@ -199,6 +200,7 @@
     <ClInclude Include="Systems\System.hpp" />
     <ClInclude Include="TextureManager.hpp" />
     <ClInclude Include="TimeManip.hpp" />
+    <ClInclude Include="Timer.hpp" />
     <ClInclude Include="Vector2.hpp" />
     <ClInclude Include="WindowManager.hpp" />
   </ItemGroup>

@@ -80,10 +80,10 @@ public:
 	}
 
 	/// <summary>
-	/// Creates a new entity.
+	/// Creates a new entity in the given game state
 	/// </summary>
-	/// <param name="gameState"></param>
-	/// <returns></returns>
+	/// <param name="state">Pointer to the game state to create the entity within</param>
+	/// <returns>The created entity</returns>
 	Entity createEntity(StateBase* state) {
 		assert(freeEntities.size() > 0 && "An entity overflow has occurred.");
 		Entity temp = freeEntities[0];
@@ -97,6 +97,11 @@ public:
 		return temp;
 	}
 
+	/// <summary>
+	/// Destroys an entity from a given game state
+	/// </summary>
+	/// <param name="state">Pointer to the game state to search</param>
+	/// <param name="entity">The entity to delete</param>
 	void destroyEntity(StateBase* state, Entity& entity) {
 		auto& entityDescs = state->getEntityDescs();
 
@@ -129,7 +134,7 @@ public:
 				assert(!edesc.mask.test(getComponentId<T>()) && "Component already added to entity.");
 				
 				edesc.mask.set(getComponentId<T>());
-				edesc.components[getComponentId<T>()] = new T;
+				edesc.components[getComponentId<T>()] = new T();
 
 				// std::cout << "Component for entity " << entity << " set successfully." << std::endl;
 				return;

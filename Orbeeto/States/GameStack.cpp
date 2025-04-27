@@ -77,10 +77,5 @@ StateBase* GameStack::peek() {
 }
 
 void GameStack::update() {
-	if (InputManager::keysPressed[SDLK_q]) {
-		swap(StateName::INVENTORY);
-	}
-	if (InputManager::keysPressed[SDLK_z]) {
-		swap(StateName::ACTION);
-	}
+
 }
