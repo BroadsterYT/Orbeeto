@@ -311,10 +311,19 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 		// AN ENTITY WITH THE PORTALBULLET PHYSICS TAG MUST ALSO HAVE PROJECTILE TAG!
 	}
 
-	// Projectile deaths
+	// ----- Projectile deaths ----- //
 	if (hasPhysicsTag(eColl, PTags::PROJECTILE) && hasPhysicsTag(oColl, PTags::WALL)) {  // Destroys bullet if it hits wall
 		Game::ecs.destroyEntity(Game::stack.peek(), entity);
 		return;
+	}
+	else if (hasPhysicsTag(eColl, PTags::E_PROJECTILE) && hasPhysicsTag(oColl, PTags::PLAYER)) {  // Enemy hitting player
+		Hp* hp = Game::ecs.getComponent<Hp>(Game::stack.peek(), other);
+		Bullet* bullet = Game::ecs.getComponent<Bullet>(Game::stack.peek(), entity);
+
+		// TODO: Implement proper damage calculation
+		hp->hp -= 1;  // PLACEHOLDER
+		
+		Game::ecs.destroyEntity(Game::stack.peek(), entity);
 	}
 }
 

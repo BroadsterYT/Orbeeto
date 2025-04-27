@@ -43,45 +43,24 @@ void MovementAISystem::update() {
 					Game::ecs.assignComponent<Bullet>(Game::stack.peek(), bullet);
 
 					Transform* bTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), bullet);
-					/**bTrans = Transform{
-						.pos = { transform->pos.x + posAdjust.x, transform->pos.y + posAdjust.y },\
-						.vel = bulletVel
-					};*/
-					*bTrans = Transform();
 					bTrans->pos = { transform->pos.x + posAdjust.x, transform->pos.y + posAdjust.y };
 					bTrans->vel = bulletVel;
 
 					Collision* bColl = Game::ecs.getComponent<Collision>(Game::stack.peek(), bullet);
-					/**bColl = Collision{
-						.hitWidth = 8,
-						.hitHeight = 8,
-					};*/
-					*bColl = Collision();
 					bColl->hitWidth = 8;
 					bColl->hitHeight = 8;
 
 					bColl->physicsTags.set(PTags::PROJECTILE);
+					bColl->physicsTags.set(PTags::E_PROJECTILE);
 					bColl->physicsTags.set(PTags::CAN_TELEPORT);
 
 					Sprite* bSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), bullet);
-					/**bSprite = Sprite{
-						.tileWidth = 32,
-						.tileHeight = 32,
-						.index = 3,
-						.spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/bullets.png")
-					};*/
-					*bSprite = Sprite();
 					bSprite->tileWidth = 32;
 					bSprite->tileHeight = 32;
 					bSprite->index = 3;
 					bSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/bullets.png");
 
 					Bullet* bBullet = Game::ecs.getComponent<Bullet>(Game::stack.peek(), bullet);
-					/**bBullet = Bullet{
-						.bulletAI = BulletType::STANDARD,
-						.damage = 7,
-					};*/
-					*bBullet = Bullet();
 					bBullet->bulletAI = BulletType::STANDARD;
 					bBullet->damage = 7;
 
