@@ -2,6 +2,7 @@
 #include "SDL.h"
 #include "Game.hpp"
 #include "Vector2.hpp"
+#include "InterpToggle.hpp"
 
 
 class Camera {
@@ -19,11 +20,16 @@ public:
 	void printDetails();
 
 	void focus(int posX, int posY);
-	void cinematicFocus(int posX, int posY, const Vector2& entityVel, double entityAccelConst);
+	void cinematicFocus(Entity entity, const Vector2& entityVel, double entityAccelConst);
 
 private:
 	SDL_Rect camera;
 
+	InterpToggle<Vector2> tpToggle = InterpToggle<Vector2>(Math::cerp<Vector2>, Vector2(0, 0), Vector2(0, 0), 2);
+	InterpToggle<int> tpToggleX = InterpToggle<int>(Math::cerp<int>, 0, 0, 2);
+	InterpToggle<int> tpToggleY = InterpToggle<int>(Math::cerp<int>, 0, 0, 2);
+
 	bool isTeleporting = false;
+	bool lastTpCheck = true;
 	float tpWeight = 0.0f;
 };

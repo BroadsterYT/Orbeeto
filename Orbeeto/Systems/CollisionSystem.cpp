@@ -199,10 +199,16 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 			}
 
 			eTrans->vel.rotate(directionMap[secondLink->facing]);
+			if (eColl->tpFlag == false) {
+				//std::cout << "Flipped true!\n";
+				eColl->tpFlag = true;
+			}
+			else {
+				//std::cout << "Flipped false!\n";
+				eColl->tpFlag = false;
+			}
 		}
 	}
-
-	// 
 
 	// Grappling hook collisions
 	if (hasPhysicsTag(eColl, PTags::GRAPPLE)) {
@@ -318,10 +324,11 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 	}
 	else if (hasPhysicsTag(eColl, PTags::E_PROJECTILE) && hasPhysicsTag(oColl, PTags::PLAYER)) {  // Enemy hitting player
 		Hp* hp = Game::ecs.getComponent<Hp>(Game::stack.peek(), other);
+		Defense* def = Game::ecs.getComponent<Defense>(Game::stack.peek(), other);
 		Bullet* bullet = Game::ecs.getComponent<Bullet>(Game::stack.peek(), entity);
 
-		// TODO: Implement proper damage calculation
-		hp->hp -= 1;  // PLACEHOLDER
+		int halving = 50;
+		hp->hp -= std::floor(halving * bullet->damage / (halving + def->def));
 		
 		Game::ecs.destroyEntity(Game::stack.peek(), entity);
 	}

@@ -48,40 +48,27 @@ void Camera::focus(int posX, int posY) {
 	camera.y = posY - WindowManager::SCREENHEIGHT / 2;
 }
 
-void Camera::cinematicFocus(int posX, int posY, const Vector2& entityVel, double entityAccelConst) {
-	float teleportThresh = 75.0f;
-	Vector2 distVec = { posX - WindowManager::SCREENWIDTH / 2 - (double)camera.x, posY - WindowManager::SCREENHEIGHT / 2 - (double)camera.y };
-	float distMag = distVec.getMagnitude();
+void Camera::cinematicFocus(Entity entity, const Vector2& entityVel, double entityAccelConst) {
+	Transform* trans = Game::ecs.getComponent<Transform>(Game::stack.peek(), entity);
+	Collision* coll = Game::ecs.getComponent<Collision>(Game::stack.peek(), entity);
 
-	if (distMag > teleportThresh) {
-		if (!isTeleporting) {
-			tpWeight = 0.0f;
-			isTeleporting = true;
-		}
+	if (lastTpCheck != coll->tpFlag) {
+		tpToggle.setState(false);
+		tpToggle.setWeight(0.0);
+		tpToggle.toggle();
+
+		lastTpCheck = coll->tpFlag;
 	}
 
-	if (isTeleporting) {
-		Vector2 cameraVec = { (double)camera.x, (double)camera.y };
-		Vector2 targetVec = {
-			(double)posX - WindowManager::SCREENWIDTH / 2,
-			(double)posY - WindowManager::SCREENHEIGHT / 2
-		};
+	Vector2 cameraVec = { (double)camera.x, (double)camera.y };
+	Vector2 targetVec = {
+		std::floor(trans->pos.x - WindowManager::SCREENWIDTH / 2),
+		std::floor(trans->pos.y - WindowManager::SCREENHEIGHT / 2)
+	};
 
-		float deltaTime = TimeManip::getDeltaAdjuster();
-		cameraVec = Math::cerp(cameraVec, targetVec, tpWeight);
-		camera.x = (int)cameraVec.x;
-		camera.y = (int)cameraVec.y;
+	tpToggle.setValue1(cameraVec);
+	tpToggle.setValue2(targetVec);
 
-		tpWeight = tpWeight + 0.003f * deltaTime;
-		//std::cout << tpWeight << std::endl;
-
-		if (distMag <= 2.0f) {
-			isTeleporting = false;
-			tpWeight = 0.0f;
-		}
-	}
-	else {
-		camera.x = posX - WindowManager::SCREENWIDTH / 2;
-		camera.y = posY - WindowManager::SCREENHEIGHT / 2;
-	}
+	camera.x = tpToggle.getValue().x;
+	camera.y = tpToggle.getValue().y;
 }

@@ -182,6 +182,7 @@
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="InputManager.hpp" />
     <ClInclude Include="Components\Sprite.hpp" />
+    <ClInclude Include="InterpToggle.hpp" />
     <ClInclude Include="Math.hpp" />
     <ClInclude Include="Rooms\Room.hpp" />
     <ClInclude Include="States\ActionState.hpp" />

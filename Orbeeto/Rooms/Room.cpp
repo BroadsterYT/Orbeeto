@@ -34,6 +34,7 @@ Room::Room(int roomX, int roomY) {
 	Game::ecs.assignComponent<Transform>(Game::stack.peek(), player);
 	Game::ecs.assignComponent<Collision>(Game::stack.peek(), player);
 	Game::ecs.assignComponent<Hp>(Game::stack.peek(), player);
+	Game::ecs.assignComponent<Defense>(Game::stack.peek(), player);
 
 	Game::ecs.assignComponent<Sprite>(Game::stack.peek(), leftGun);
 	Game::ecs.assignComponent<PlayerGun>(Game::stack.peek(), leftGun);
@@ -64,6 +65,10 @@ Room::Room(int roomX, int roomY) {
 	Hp* playerHp = Game::ecs.getComponent<Hp>(Game::stack.peek(), player);
 	playerHp->hp = 25;
 	playerHp->maxHp = 50;
+
+	Defense* pDef = Game::ecs.getComponent<Defense>(Game::stack.peek(), player);
+	pDef->maxDef = 10;
+	pDef->def = 10;
 
 	// ----- Left Gun ----- //
 	Sprite* lGunSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), leftGun);
@@ -141,10 +146,10 @@ void Room::loadRoom(int x, int y) {
 		roomHeight = 720;
 		canScrollX = true;
 		canScrollY = true;
-		readRoomData(extractRoomTiles("Rooms/RoomLayouts/test.dat"));
+		readRoomData(extractRoomTiles("Rooms/RoomLayouts/newSerializeTest.dat"));
 
 		// ----- Test Enemy 1 ----- //
-		Entity enemyTest = Game::ecs.createEntity(Game::stack.peek());
+		/*Entity enemyTest = Game::ecs.createEntity(Game::stack.peek());
 
 		Game::ecs.assignComponent<Transform>(Game::stack.peek(), enemyTest);
 		Game::ecs.assignComponent<Sprite>(Game::stack.peek(), enemyTest);
@@ -164,14 +169,14 @@ void Room::loadRoom(int x, int y) {
 		e1Coll->physicsTags.set(PTags::PUSHABLE);
 
 		MovementAI* e1AI = Game::ecs.getComponent<MovementAI>(Game::stack.peek(), enemyTest);
-		e1AI->ai = M_AI::OCTOGRUNT;
+		e1AI->ai = M_AI::OCTOGRUNT;*/
 	}
 }
 
 void Room::update() {
 	Transform* pTransform = Game::ecs.getComponent<Transform>(Game::stack.peek(), player);
 	if (pTransform != nullptr) {
-		Room::camera.cinematicFocus(pTransform->pos.x, pTransform->pos.y, pTransform->vel, pTransform->accelConst);
+		Room::camera.cinematicFocus(player, pTransform->vel, pTransform->accelConst);
 	}
 
 	// Zooming in and out

@@ -31,5 +31,7 @@ struct Collision : Component {
 	int hitHeight = 64;
 	Vector2 hitPos = { 0, 0 };
 
+	bool tpFlag = false;  // Lets other objects detect entity teleportation
+
 	std::bitset<32> physicsTags = std::bitset<32>().reset();
 };
