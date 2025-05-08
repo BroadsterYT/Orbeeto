@@ -26,8 +26,6 @@ private:
 	SDL_Rect camera;
 
 	InterpToggle<Vector2> tpToggle = InterpToggle<Vector2>(Math::cerp<Vector2>, Vector2(0, 0), Vector2(0, 0), 2);
-	InterpToggle<int> tpToggleX = InterpToggle<int>(Math::cerp<int>, 0, 0, 2);
-	InterpToggle<int> tpToggleY = InterpToggle<int>(Math::cerp<int>, 0, 0, 2);
 
 	bool isTeleporting = false;
 	bool lastTpCheck = true;
