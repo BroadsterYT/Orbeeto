@@ -52,7 +52,40 @@ Entity RoomTile::buildTile() {
 		}
 		break;
 
-	case 1:
+	case 1:  // Full bordering
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				if (y == 0 && x == 0) {  // Northwest corner
+					srcRect.x = tileSize * 7;
+				}
+				else if (y == 0 && x == width - 1) {  // Northeast
+					srcRect.x = tileSize * 6;
+				}
+				else if (y == height - 1 && x == 0) {  // Southwest
+					srcRect.x = tileSize * 8;
+				}
+				else if (y == height - 1 && x == width - 1) {  // Southeast
+					srcRect.x = tileSize * 5;
+				}
+				else if (y == height - 1) {  // Southern border
+					srcRect.x = tileSize * 1;
+				}
+				else if (x == width - 1) {  // Eastern border
+					srcRect.x = tileSize * 2;
+				}
+				else if (y == 0) {  // Northern border
+					srcRect.x = tileSize * 3;
+				}
+				else if (x == 0) {  // Western border
+					srcRect.x = tileSize * 4;
+				}
+
+				destRect.x = x * tileSize;
+				destRect.y = y * tileSize;
+				SDL_RenderCopy(Game::renderer, tileSheet, &srcRect, &destRect);
+				srcRect.x = 0;
+			}
+		}
 		break;
 
 	default:
