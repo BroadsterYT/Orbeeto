@@ -9,7 +9,7 @@
 #include "TimeManip.hpp"
 #include "Game.hpp"
 #include "InputManager.hpp"
-#include "Rooms/Room.hpp"
+#include "Room.hpp"
 #include "TextureManager.hpp"
 #include "WindowManager.hpp"
 

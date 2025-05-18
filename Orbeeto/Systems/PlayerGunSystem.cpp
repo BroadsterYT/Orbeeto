@@ -35,9 +35,7 @@ void PlayerGunSystem::fireBullet(Transform* ownerTrans, const int bulletId, cons
 
 	// ----- Sprite ----- //
 	Sprite* bSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), bullet);
-	*bSprite = Sprite();
-	bSprite->tileWidth = 32;
-	bSprite->tileHeight = 32;
+	*bSprite = Sprite(0, 0, 32, 32);
 	bSprite->angle = rotAngle;
 	bSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/bullets.png");
 

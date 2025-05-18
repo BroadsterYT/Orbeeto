@@ -6,7 +6,15 @@
 
 
 struct Sprite : Component {
-	Sprite() {}
+	Sprite(int x = 0, int y = 0, int w = 64, int h = 64) {
+		posX = x;
+		posY = y;
+		tileWidth = w;
+		tileHeight = h;
+
+		srcRect = { 0, 0, w, h };
+		destRect = { x, y, w, h };
+	}
 	
 	int layer = 0;
 
@@ -17,8 +25,8 @@ struct Sprite : Component {
 	double angle = 0;  // The angle the texture should be rotated to
 	bool moveWithRoom = true;  // Does this sprite move with the room?
 
-	SDL_Rect srcRect = {0, 0, tileWidth, tileHeight};
-	SDL_Rect destRect = {posX, posY, tileWidth, tileHeight};
+	SDL_Rect srcRect = { 0, 0, tileWidth, tileHeight };
+	SDL_Rect destRect = { posX, posY, tileWidth, tileHeight };
 
 	bool ignoreScaling = false; // Should this sprite ignore the scalaing of the viewport?
 

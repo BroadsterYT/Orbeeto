@@ -5,12 +5,12 @@
 #include <memory>
 #include <cassert>
 
-#include "../Components/Player.hpp"
-#include "../Components/Sprite.hpp"
-#include "../Components/Transform.hpp"
+#include "Components/Player.hpp"
+#include "Components/Sprite.hpp"
+#include "Components/Transform.hpp"
 
-#include "../WindowManager.hpp"
-#include "../InputManager.hpp"
+#include "WindowManager.hpp"
+#include "InputManager.hpp"
 
 
 Camera Room::camera = Camera(300, 300, WindowManager::SCREENWIDTH, WindowManager::SCREENHEIGHT);
@@ -146,7 +146,7 @@ void Room::loadRoom(int x, int y) {
 		roomHeight = 720;
 		canScrollX = true;
 		canScrollY = true;
-		readRoomData(extractRoomTiles("Rooms/RoomLayouts/newSerializeTest.dat"));
+		readRoomData(extractRoomTiles("RoomLayouts/newSerializeTest.dat"));
 
 		// ----- Test Enemy 1 ----- //
 		/*Entity enemyTest = Game::ecs.createEntity(Game::stack.peek());
@@ -176,7 +176,7 @@ void Room::loadRoom(int x, int y) {
 void Room::update() {
 	Transform* pTransform = Game::ecs.getComponent<Transform>(Game::stack.peek(), player);
 	if (pTransform != nullptr) {
-		Room::camera.cinematicFocus(player, pTransform->vel, pTransform->accelConst);
+		Room::camera.cinematicFocus(player);
 	}
 
 	// Zooming in and out

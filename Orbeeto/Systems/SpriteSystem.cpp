@@ -1,5 +1,5 @@
 #include "SpriteSystem.hpp"
-#include "../Rooms/Room.hpp"
+#include "../Room.hpp"
 #include "../WindowManager.hpp"
 #include <algorithm>
 #include "SDL.h"

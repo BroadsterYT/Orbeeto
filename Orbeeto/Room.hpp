@@ -3,10 +3,10 @@
 #include <vector>
 #include <unordered_map>
 
-#include "../Vector2.hpp"
-#include "../Game.hpp"
-#include "../Camera.hpp"
-#include "../ECS.hpp"
+#include "Vector2.hpp"
+#include "Game.hpp"
+#include "Camera.hpp"
+#include "ECS.hpp"
 
 
 class Room {

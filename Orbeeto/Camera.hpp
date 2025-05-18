@@ -20,12 +20,12 @@ public:
 	void printDetails();
 
 	void focus(int posX, int posY);
-	void cinematicFocus(Entity entity, const Vector2& entityVel, double entityAccelConst);
+	void cinematicFocus(Entity entity);
 
 private:
 	SDL_Rect camera;
 
-	InterpToggle<Vector2> tpToggle = InterpToggle<Vector2>(Math::cerp<Vector2>, Vector2(0, 0), Vector2(0, 0), 2);
+	InterpToggle<Vector2> tpToggle = InterpToggle<Vector2>(Math::cerp<Vector2>, Vector2(0, 0), Vector2(0, 0), 2.5);
 
 	bool isTeleporting = false;
 	bool lastTpCheck = true;

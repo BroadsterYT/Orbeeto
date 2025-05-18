@@ -48,7 +48,7 @@ void Camera::focus(int posX, int posY) {
 	camera.y = posY - WindowManager::SCREENHEIGHT / 2;
 }
 
-void Camera::cinematicFocus(Entity entity, const Vector2& entityVel, double entityAccelConst) {
+void Camera::cinematicFocus(Entity entity) {
 	Transform* trans = Game::ecs.getComponent<Transform>(Game::stack.peek(), entity);
 	Collision* coll = Game::ecs.getComponent<Collision>(Game::stack.peek(), entity);
 
