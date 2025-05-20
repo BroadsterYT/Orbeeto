@@ -9,6 +9,7 @@
 #include "Components/Sprite.hpp"
 #include "Components/Transform.hpp"
 
+#include "RoomTile.hpp"
 #include "WindowManager.hpp"
 #include "InputManager.hpp"
 
@@ -146,7 +147,12 @@ void Room::loadRoom(int x, int y) {
 		roomHeight = 720;
 		canScrollX = true;
 		canScrollY = true;
-		readRoomData(extractRoomTiles("RoomLayouts/newSerializeTest.dat"));
+		//readRoomData(extractRoomTiles("RoomLayouts/newSerializeTest.dat"));
+
+		RoomTile tile1 = RoomTile(0, 0, 1, 8, 0, 0, 1);
+		RoomTile tile2 = RoomTile(4, 0, 8, 1, 0, 0, 1);
+		tile1.buildTile();
+		tile2.buildTile();
 
 		// ----- Test Enemy 1 ----- //
 		/*Entity enemyTest = Game::ecs.createEntity(Game::stack.peek());
