@@ -24,18 +24,17 @@ Entity RoomTile::buildTile() {
 	int finalHeight = tileSize * height;
 	SDL_Texture* tileSheet = nullptr;  // The original image file to extract all needed tiles from
 	SDL_Texture* finalImage = SDL_CreateTexture(Game::renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, finalWidth, finalHeight);  // The final image/spritesheet to use for the tile's sprite
+	SDL_SetTextureBlendMode(finalImage, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderTarget(Game::renderer, finalImage);
 
 	SDL_Rect srcRect = { 0, 0, tileSize, tileSize };
 	SDL_Rect destRect = { 0, 0, tileSize, tileSize };
 
 	switch (tileSet) {  // Selecting a tile sheet
 	case 0:
-		tileSheet = TextureManager::loadTexture(Game::renderer, "Assets/tile1.png");
+		tileSheet = TextureManager::loadTexture(Game::renderer, "Assets/tile1_separate_borders.png");
 		
 		// Don't need to destroy/reassign finalImage; uses default
-		SDL_SetTextureBlendMode(finalImage, SDL_BLENDMODE_BLEND);
-		SDL_SetRenderTarget(Game::renderer, finalImage);
-
 		srcRect.y = tileSize * subset;
 
 		noAnimTilingScheme1(style, tileSize, tileSheet, srcRect, destRect);
@@ -88,20 +87,27 @@ void RoomTile::setCanHoldPortal(bool canHold) {
 	canHoldPortal = canHold;
 }
 
+void RoomTile::fullTesselate(int tileSize, SDL_Texture* tileSheet, SDL_Rect& srcRect, SDL_Rect& destRect) {
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			destRect.x = x * tileSize;
+			destRect.y = y * tileSize;
+			SDL_RenderCopy(Game::renderer, tileSheet, &srcRect, &destRect);
+		}
+	}
+}
+
 void RoomTile::noAnimTilingScheme1(int style, int tileSize, SDL_Texture* tileSheet, SDL_Rect& srcRect, SDL_Rect& destRect) {
 	switch (style) {
-	case 0:  // Standard tiling, tesselate image with first tile
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
-				destRect.x = x * tileSize;
-				destRect.y = y * tileSize;
-				SDL_RenderCopy(Game::renderer, tileSheet, &srcRect, &destRect);
-			}
-		}
+	// Standard tiling, tesselate image with first tile
+	case 0:
+		fullTesselate(tileSize, tileSheet, srcRect, destRect);
 		break;
 
-	case 1:  // Full bordering
+	// Full bordering
+	case 1:
 	{
+		fullTesselate(tileSize, tileSheet, srcRect, destRect);
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
 				double angle = 0.0;
@@ -176,6 +182,48 @@ void RoomTile::noAnimTilingScheme1(int style, int tileSize, SDL_Texture* tileShe
 			}
 		}
 	}
+		break;
+
+	// Southern border only
+	case 2:
+		fullTesselate(tileSize, tileSheet, srcRect, destRect);
+		break;
+
+	// Eastern border only
+	case 3:
+	{
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				double angle = 0.0;
+
+				if (x == width - 1) {
+					srcRect.x = tileSize * 1;
+					angle = 270.0;
+				}
+
+				destRect.x = x * tileSize;
+				destRect.y = y * tileSize;
+				SDL_RenderCopyEx(Game::renderer, tileSheet, &srcRect, &destRect, angle, NULL, SDL_FLIP_NONE);
+				srcRect.x = 0;
+			}
+		}
+	}
+		break;
+
+	// Northern border only
+	case 4:
+		break;
+
+	// Western border only
+	case 5:
+		break;
+
+	// Southern and eastern borders only
+	case 6:
+		break;
+
+	// Eastern and northern borders only
+	case 7:
 		break;
 
 	default:

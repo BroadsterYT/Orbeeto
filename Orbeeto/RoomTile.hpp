@@ -44,7 +44,15 @@ private:
 	int style;  // Tesselation style
 
 	/// <summary>
-	/// Performs the basic tiling scheme given a tile sheet without multiple animation frames
+	/// Fully tesselates a sprite with a single tile. MAKE SURE THE RENDERING TARGET IS THE TILE BEING CONSTRUCTED!
+	/// </summary>
+	/// <param name="tileSize">The size of the tile to tesselate with</param>
+	/// <param name="tileSheet">The sprite sheet to retrieve the tile from</param>
+	/// <param name="srcRect">The Rect to use to "snip" the desired tile to use for tesselation</param>
+	/// <param name="destRect">The Rect to use as the destination</param>
+	void fullTesselate(int tileSize, SDL_Texture* tileSheet, SDL_Rect& srcRect, SDL_Rect& destRect);
+	/// <summary>
+	/// Performs the basic tiling scheme given a tile sheet without multiple animation frames. MAKE SURE THE RENDERING TARGET IS THE TILE BEING CONSTRUCTED!
 	/// </summary>
 	/// <param name="style">The tesselation style to use</param>
 	/// <param name="tileSize">The size of each individual tile in the tile sheet</param>
