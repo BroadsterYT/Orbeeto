@@ -187,39 +187,83 @@ void RoomTile::noAnimTilingScheme1(int style, int tileSize, SDL_Texture* tileShe
 	// Southern border only
 	case 2:
 		fullTesselate(tileSize, tileSheet, srcRect, destRect);
+
+		srcRect.x = tileSize * 1;
+		destRect.y = tileSize * (height - 1);
+		for (int x = 0; x < width; x++) {
+			destRect.x = x * tileSize;
+			SDL_RenderCopy(Game::renderer, tileSheet, &srcRect, &destRect);
+		}
 		break;
 
 	// Eastern border only
 	case 3:
 	{
+		fullTesselate(tileSize, tileSheet, srcRect, destRect);
+
+		srcRect.x = tileSize * 1;
+		destRect.x = tileSize * (width - 1);
+		double angle = 270.0;
 		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
-				double angle = 0.0;
-
-				if (x == width - 1) {
-					srcRect.x = tileSize * 1;
-					angle = 270.0;
-				}
-
-				destRect.x = x * tileSize;
-				destRect.y = y * tileSize;
-				SDL_RenderCopyEx(Game::renderer, tileSheet, &srcRect, &destRect, angle, NULL, SDL_FLIP_NONE);
-				srcRect.x = 0;
-			}
+			destRect.y = y * tileSize;
+			SDL_RenderCopyEx(Game::renderer, tileSheet, &srcRect, &destRect, angle, NULL, SDL_FLIP_NONE);
 		}
 	}
 		break;
 
 	// Northern border only
 	case 4:
+	{
+		fullTesselate(tileSize, tileSheet, srcRect, destRect);
+		
+		srcRect.x = tileSize * 1;
+		destRect.y = 0;
+		double angle = 180.0;
+		for (int x = 0; x < width; x++) {
+			destRect.x = x * tileSize;
+			SDL_RenderCopyEx(Game::renderer, tileSheet, &srcRect, &destRect, angle, NULL, SDL_FLIP_NONE);
+		}
+	}
 		break;
 
 	// Western border only
 	case 5:
+	{
+		fullTesselate(tileSize, tileSheet, srcRect, destRect);
+
+		srcRect.x = tileSize * 1;
+		destRect.x = 0;
+		double angle = 90.0;
+		for (int y = 0; y < height; y++) {
+			destRect.y = y * tileSize;
+			SDL_RenderCopyEx(Game::renderer, tileSheet, &srcRect, &destRect, angle, NULL, SDL_FLIP_NONE);
+		}
+	}
 		break;
 
 	// Southern and eastern borders only
 	case 6:
+	{
+		fullTesselate(tileSize, tileSheet, srcRect, destRect);
+
+		destRect.x = tileSize * (width - 1);
+		destRect.y = tileSize * (height - 1);
+		srcRect.x = tileSize * 2;
+		SDL_RenderCopy(Game::renderer, tileSheet, &srcRect, &destRect);
+
+		srcRect.x = tileSize * 1;
+		destRect.y = tileSize * (height - 1);
+		for (int x = 0; x < width - 1; x++) {
+			destRect.x = x * tileSize;
+			SDL_RenderCopy(Game::renderer, tileSheet, &srcRect, &destRect);
+		}
+
+		destRect.x = tileSize * (width - 1);
+		for (int y = 0; y < height - 1; y++) {
+			destRect.y = y * tileSize;
+			SDL_RenderCopyEx(Game::renderer, tileSheet, &srcRect, &destRect, 270.0, NULL, SDL_FLIP_NONE);
+		}
+	}
 		break;
 
 	// Eastern and northern borders only

@@ -149,10 +149,13 @@ void Room::loadRoom(int x, int y) {
 		canScrollY = true;
 		//readRoomData(extractRoomTiles("RoomLayouts/newSerializeTest.dat"));
 
-		RoomTile tile1 = RoomTile(0, 0, 2, 8, 0, 0, 1);
-		RoomTile tile2 = RoomTile(4, 0, 8, 2, 0, 0, 1);
+		RoomTile tile1 = RoomTile(0, 0, 2, 8, 0, 0, 2);
+		RoomTile tile2 = RoomTile(4, 0, 8, 2, 0, 0, 2);
+		RoomTile tile3 = RoomTile(6, 4, 2, 8, 0, 0, 6);
+		//RoomTile tile4 = RoomTile(4, 0, 8, 2, 0, 0, 2);
 		tile1.buildTile();
 		tile2.buildTile();
+		tile3.buildTile();
 
 		// ----- Test Enemy 1 ----- //
 		/*Entity enemyTest = Game::ecs.createEntity(Game::stack.peek());
