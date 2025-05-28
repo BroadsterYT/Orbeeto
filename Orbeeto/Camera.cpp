@@ -48,25 +48,25 @@ void Camera::focus(int posX, int posY) {
 	camera.y = posY - WindowManager::SCREENHEIGHT / 2;
 }
 
-void Camera::cinematicFocus(Entity entity, const Vector2& entityVel, double entityAccelConst) {
+void Camera::cinematicFocus(Entity entity) {
 	Transform* trans = Game::ecs.getComponent<Transform>(Game::stack.peek(), entity);
 	Collision* coll = Game::ecs.getComponent<Collision>(Game::stack.peek(), entity);
-
-	if (lastTpCheck != coll->tpFlag) {
-		tpToggle.setState(false);
-		tpToggle.setWeight(0.0);
-		tpToggle.toggle();
-
-		lastTpCheck = coll->tpFlag;
-	}
-
+	
 	Vector2 cameraVec = { (double)camera.x, (double)camera.y };
 	Vector2 targetVec = {
 		std::floor(trans->pos.x - WindowManager::SCREENWIDTH / 2),
 		std::floor(trans->pos.y - WindowManager::SCREENHEIGHT / 2)
 	};
 
-	tpToggle.setValue1(cameraVec);
+	if (lastTpCheck != coll->tpFlag) {
+		tpToggle.setState(false);
+		tpToggle.setWeight(0.0);
+		tpToggle.setValue1(cameraVec);
+		tpToggle.toggle();
+
+		lastTpCheck = coll->tpFlag;
+	}
+
 	tpToggle.setValue2(targetVec);
 
 	camera.x = tpToggle.getValue().x;

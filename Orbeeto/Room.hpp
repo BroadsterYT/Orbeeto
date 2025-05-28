@@ -3,10 +3,10 @@
 #include <vector>
 #include <unordered_map>
 
-#include "../Vector2.hpp"
-#include "../Game.hpp"
-#include "../Camera.hpp"
-#include "../ECS.hpp"
+#include "Vector2.hpp"
+#include "Game.hpp"
+#include "Camera.hpp"
+#include "ECS.hpp"
 
 
 class Room {
@@ -63,30 +63,4 @@ private:
 	Entity rightGun = Game::ecs.createEntity(Game::stack.peek());
 
 	static std::unordered_map<Entity, Entity> portalLinks;  // Handles links between all portals
-
-	/// <summary>
-	/// Retrieves the information for each tile in a room data file
-	/// </summary>
-	/// <param name="roomFileName">The file path of the room data file to read from</param>
-	/// <returns>The vector of room tile info</returns>
-	std::vector<std::vector<uint8_t>> extractRoomTiles(const std::string roomFileName);
-	/// <summary>
-	/// Using tile information, constructs the tiles within the room
-	/// </summary>
-	/// <param name="roomTiles">A nested vector containing the room's tile IDs</param>
-	void readRoomData(const std::vector<std::vector<uint8_t>> roomTiles);
-	/// <summary>
-	///		Creates an entity with the specified information within a tile info vector. The information in each hex value is as follows:
-	///		<para>1. Tile x-axis position (in tile size, which depends on the tile set)</para>
-	///		<para>2. Tile y-axis position (in tile size, which depends on the tile set)</para>
-	///		<para>3. Tile width (in tile size, which depends on the tile set)</para>
-	///		<para>4. Tile height (in tile size, which depends on the tile set)</para>
-	///		<para>5. Tile properties</para>
-	///		<para>6. Tile set</para>
-	///		<para>7. Tile type</para>
-	///		<para>8. Tiling style</para>
-	///		<para>9. Tiles adjacent</para>
-	/// </summary>
-	/// <param name="tileInfo">The vector of information for the tile to be constructed with</param>
-	void buildRoomEntity(const std::vector<uint8_t>& tileInfo);
 };

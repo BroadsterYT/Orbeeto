@@ -1,6 +1,6 @@
 #include "CollisionSystem.hpp"
 #include <algorithm>
-#include "../Rooms/Room.hpp"
+#include "../Room.hpp"
 #include "../WindowManager.hpp"
 
 
