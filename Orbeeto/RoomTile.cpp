@@ -43,7 +43,7 @@ Entity RoomTile::buildTile() {
 	default:
 		throw std::invalid_argument("Error: \"tileSet\" must be a valid input.");
 	}
-	SDL_SetRenderTarget(Game::renderer, NULL);
+	std::cout << SDL_SetRenderTarget(Game::renderer, NULL) << std::endl;
 	SDL_DestroyTexture(tileSheet);
 
 	// ----- Assigning components ----- //
