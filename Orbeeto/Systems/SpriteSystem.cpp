@@ -10,7 +10,7 @@ SpriteSystem::SpriteSystem(SDL_Renderer* renderer) : System() {
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0xFF, SDL_ALPHA_OPAQUE);
 
-	renderBuffer = SDL_CreateTexture(Game::renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WindowManager::SCREENWIDTH * 2, WindowManager::SCREENHEIGHT * 2); 
+	renderBuffer = SDL_CreateTexture(Game::renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, Window::WIDTH * 2, Window::HEIGHT * 2); 
 	SDL_SetTextureBlendMode(renderBuffer, SDL_BLENDMODE_BLEND);
 }
 
@@ -56,23 +56,29 @@ void SpriteSystem::render(SDL_Renderer* renderer) {
 			sprite->destRect.x = transform->pos.x - sprite->tileWidth / 2;
 			sprite->destRect.y = transform->pos.y - sprite->tileHeight / 2;
 		}
-		SDL_RenderCopyEx(renderer, sprite->spriteSheet, &sprite->srcRect, &sprite->destRect, sprite->angle, NULL, SDL_FLIP_NONE);
+
+		// Adjusting for buffer's double size without changing sprite's location
+		SDL_Rect trueDestRect = sprite->destRect;
+		trueDestRect.x += Window::WIDTH / 2;
+		trueDestRect.y += Window::HEIGHT / 2;
+
+		SDL_RenderCopyEx(renderer, sprite->spriteSheet, &sprite->srcRect, &trueDestRect, sprite->angle, NULL, SDL_FLIP_NONE);
 	}
 
-	//std::cout << "Room w: " << Room::camera.getWidth() << " h: " << Room::camera.getHeight() << std::endl;
+	std::cout << "Room w: " << Room::camera.getWidth() << " h: " << Room::camera.getHeight() << std::endl;
 
 	SDL_SetRenderTarget(Game::renderer, NULL);
 	SDL_Rect srcRect = {
 		0,
 		0,
-		WindowManager::SCREENWIDTH,
-		WindowManager::SCREENHEIGHT,
+		Window::WIDTH * 2,
+		Window::HEIGHT * 2,
 	};
 	SDL_Rect destRect = {
-		(Room::camera.getWidth() - WindowManager::SCREENWIDTH) / 2,
-		(Room::camera.getHeight() - WindowManager::SCREENHEIGHT) / 2,
-		WindowManager::SCREENWIDTH + (WindowManager::SCREENWIDTH - Room::camera.getWidth()),
-		WindowManager::SCREENHEIGHT + (WindowManager::SCREENHEIGHT - Room::camera.getHeight())
+		(Room::camera.getWidth() - Window::WIDTH) / 2,
+		(Room::camera.getHeight() - Window::HEIGHT) / 2,
+		Window::WIDTH + (Window::WIDTH - Room::camera.getWidth()),
+		Window::HEIGHT + (Window::HEIGHT - Room::camera.getHeight())
 	};
 	SDL_RenderCopy(Game::renderer, renderBuffer, &srcRect, &destRect);
 	SDL_RenderPresent(renderer);

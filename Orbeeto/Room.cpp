@@ -14,7 +14,7 @@
 #include "InputManager.hpp"
 
 
-Camera Room::camera = Camera(300, 300, WindowManager::SCREENWIDTH, WindowManager::SCREENHEIGHT);
+Camera Room::camera = Camera(300, 300, 0, 0);
 
 int Room::roomX = 0;
 
@@ -191,12 +191,12 @@ void Room::update() {
 	// Zooming in and out
 	if (zoomOutInputCopy < InputManager::keysReleased[SDLK_o]) {
 		camera.setWidth(camera.getWidth() - 256);
-		camera.setHeight(camera.getWidth() / WindowManager::A_RATIO.first * WindowManager::A_RATIO.second);
+		camera.setHeight(camera.getWidth() / Window::A_RATIO.first * Window::A_RATIO.second);
 		zoomOutInputCopy = InputManager::keysReleased[SDLK_o];
 	}
 	if (zoomInInputCopy < InputManager::keysReleased[SDLK_p]) {
 		camera.setWidth(camera.getWidth() + 256);
-		camera.setHeight(camera.getWidth() / WindowManager::A_RATIO.first * WindowManager::A_RATIO.second);
+		camera.setHeight(camera.getWidth() / Window::A_RATIO.first * Window::A_RATIO.second);
 		zoomInInputCopy = InputManager::keysReleased[SDLK_p];
 	}
 }

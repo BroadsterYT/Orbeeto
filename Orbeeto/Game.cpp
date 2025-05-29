@@ -21,8 +21,8 @@ Game::Game(const char* title, int posX, int posY, int width, int height, bool fu
 			"Orbeeto",
 			SDL_WINDOWPOS_CENTERED, 
 			SDL_WINDOWPOS_CENTERED, 
-			WindowManager::SCREENWIDTH, 
-			WindowManager::SCREENHEIGHT, 
+			Window::WIDTH, 
+			Window::HEIGHT, 
 			flags
 		);
 
