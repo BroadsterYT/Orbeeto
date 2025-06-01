@@ -32,6 +32,8 @@ void SpriteSystem::render(SDL_Renderer* renderer) {
 			return a.first < b.first;
 		});
 
+	double scale = -(1.0 / 2560.0) * Room::camera.getWidth() + 1;
+
 	for (const auto& pair : sortedEntities) {
 		Entity entity = pair.second;
 		Sprite* sprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), entity);
@@ -62,10 +64,12 @@ void SpriteSystem::render(SDL_Renderer* renderer) {
 		trueDestRect.x += Window::WIDTH / 2;
 		trueDestRect.y += Window::HEIGHT / 2;
 
-		SDL_RenderCopyEx(renderer, sprite->spriteSheet, &sprite->srcRect, &trueDestRect, sprite->angle, NULL, SDL_FLIP_NONE);
+		if (sprite->destRect.x >= 0 && sprite->destRect.x <= Window::WIDTH) {
+			SDL_RenderCopyEx(renderer, sprite->spriteSheet, &sprite->srcRect, &trueDestRect, sprite->angle, NULL, SDL_FLIP_NONE);
+		}
 	}
-
-	std::cout << "Room w: " << Room::camera.getWidth() << " h: " << Room::camera.getHeight() << std::endl;
+	
+	std::cout << "Scale: " << scale << std::endl;
 
 	SDL_SetRenderTarget(Game::renderer, NULL);
 	SDL_Rect srcRect = {
