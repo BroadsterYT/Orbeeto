@@ -8,7 +8,7 @@
 #include "Math.hpp"
 
 
-Camera::Camera(int posX, int posY, int width, int height) {
+Camera::Camera(int posX = 0, int posY = 0, int width = Window::WIDTH, int height = Window::HEIGHT) {
 	camera = SDL_Rect(posX, posY, width, height);
 }
 
@@ -44,8 +44,8 @@ void Camera::printDetails() {
 }
 
 void Camera::focus(int posX, int posY) {
-	camera.x = posX - WindowManager::SCREENWIDTH / 2;
-	camera.y = posY - WindowManager::SCREENHEIGHT / 2;
+	camera.x = posX - Window::WIDTH / 2;
+	camera.y = posY - Window::HEIGHT / 2;
 }
 
 void Camera::cinematicFocus(Entity entity) {
@@ -54,8 +54,8 @@ void Camera::cinematicFocus(Entity entity) {
 	
 	Vector2 cameraVec = { (double)camera.x, (double)camera.y };
 	Vector2 targetVec = {
-		std::floor(trans->pos.x - WindowManager::SCREENWIDTH / 2),
-		std::floor(trans->pos.y - WindowManager::SCREENHEIGHT / 2)
+		std::floor(trans->pos.x - Window::WIDTH / 2),
+		std::floor(trans->pos.y - Window::HEIGHT / 2)
 	};
 
 	if (lastTpCheck != coll->tpFlag) {

@@ -1,8 +1,8 @@
 #include "WindowManager.hpp"
 
 
-int WindowManager::SCREENWIDTH = 1280;
+int Window::WIDTH = 1280;
 
-int WindowManager::SCREENHEIGHT = 720;
+int Window::HEIGHT = 720;
 
-std::pair<int, int> WindowManager::A_RATIO = { 16, 9 };
+std::pair<int, int> Window::A_RATIO = { 16, 9 };

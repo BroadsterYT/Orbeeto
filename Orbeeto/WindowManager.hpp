@@ -2,9 +2,9 @@
 #include <utility>
 
 
-class WindowManager {
+class Window {
 public:
-	static int SCREENWIDTH;
-	static int SCREENHEIGHT;
-	static std::pair<int, int> A_RATIO;
+	static int WIDTH;  // Window width
+	static int HEIGHT;  // Window height
+	static std::pair<int, int> A_RATIO;  // Window aspect ratio
 };

@@ -7,7 +7,7 @@
 
 class Camera {
 public:
-	Camera(int posX = 0, int posY = 0, int width = 0, int height = 0);
+	Camera(int posX, int posY, int width, int height);
 
 	int getX();
 	int getY();

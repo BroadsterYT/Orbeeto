@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
 	// Set the new state for the flag
 	_CrtSetDbgFlag(tmpFlag);
 
-	game = new Game("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WindowManager::SCREENWIDTH, WindowManager::SCREENHEIGHT, false);
+	game = new Game("Orbeeto", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Window::WIDTH, Window::HEIGHT, false);
 	
 	// Initializing systems
 	BulletSystem bulletSystem;
