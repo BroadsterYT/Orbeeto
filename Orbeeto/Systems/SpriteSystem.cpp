@@ -73,8 +73,6 @@ void SpriteSystem::render(SDL_Renderer* renderer) {
 			SDL_RenderCopyEx(renderer, sprite->spriteSheet, &sprite->srcRect, &trueDestRect, sprite->angle, NULL, SDL_FLIP_NONE);
 		}
 	}
-	
-	std::cout << "Scale: " << scale << std::endl;
 
 	SDL_SetRenderTarget(Game::renderer, NULL);
 	SDL_Rect srcRect = {
