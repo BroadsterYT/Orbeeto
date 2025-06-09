@@ -1,4 +1,5 @@
 #include "TimeManip.hpp"
+#include <iostream>
 #include <chrono>
 #include <SDL.h>
 #include <numeric>
@@ -16,15 +17,16 @@ float TimeManip::avgDeltaTime = 0.0f;
 
 void TimeManip::calculateDeltaTime() {
 	// Delta Time
-	TimeManip::currentTime = SDL_GetPerformanceCounter();
-	TimeManip::deltaTime = (TimeManip::currentTime - TimeManip::previousTime) / (float)SDL_GetPerformanceFrequency();
-	TimeManip::previousTime = TimeManip::currentTime;
+	currentTime = SDL_GetPerformanceCounter();
+	deltaTime = (currentTime - previousTime) / (float)SDL_GetPerformanceFrequency();
+	previousTime = currentTime;
 
 	// Update Buffer
-	TimeManip::deltaBuffer[TimeManip::bufferIndex] = TimeManip::deltaTime;
-	TimeManip::bufferIndex = (TimeManip::bufferIndex) % TimeManip::deltaBuffer.size();
+	deltaBuffer[bufferIndex] = deltaTime;
+	bufferIndex = (bufferIndex) % deltaBuffer.size();
 
-	TimeManip::avgDeltaTime = std::accumulate(TimeManip::deltaBuffer.begin(), TimeManip::deltaBuffer.end(), 0.0f) / TimeManip::bufferSize;
+	avgDeltaTime = std::accumulate(deltaBuffer.begin(), deltaBuffer.end(), 0.0f) / bufferSize;
+	//std::cout << avgDeltaTime << std::endl;
 }
 
 float TimeManip::getDeltaAdjuster() {
