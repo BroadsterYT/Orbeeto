@@ -26,7 +26,7 @@ void TimeManip::calculateDeltaTime() {
 	bufferIndex = (bufferIndex) % deltaBuffer.size();
 
 	avgDeltaTime = std::accumulate(deltaBuffer.begin(), deltaBuffer.end(), 0.0f) / bufferSize;
-	//std::cout << avgDeltaTime << std::endl;
+	//std::cout << pow(avgDeltaTime, -1) << std::endl;
 }
 
 float TimeManip::getDeltaAdjuster() {
@@ -36,6 +36,11 @@ float TimeManip::getDeltaAdjuster() {
 uint64_t TimeManip::getTime() {
 	using namespace std::chrono;
 	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+	//return SDL_GetPerformanceCounter();
+}
+
+double TimeManip::getSDLTime() {
+	return (double)SDL_GetPerformanceCounter() / (double)SDL_GetPerformanceFrequency();
 }
 
 uint64_t TimeManip::getTimeDiff(uint64_t compTime) {

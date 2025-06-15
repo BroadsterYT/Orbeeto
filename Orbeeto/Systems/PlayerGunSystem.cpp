@@ -18,9 +18,10 @@ void PlayerGunSystem::update() {
 		sprite->angle = rotAngle;
 
 		// Firing bullets
-		if (InputManager::mousePressed[SDL_BUTTON_LEFT] && TimeManip::getTimeDiff(gun->lastShot) >= gun->cooldown) {
-			fireBullet(ownerTrans, 0, rotAngle, gun->isLeft);
-			gun->lastShot = TimeManip::getTime();
+		gun->shotBuildup += (gun->shotBuildup < 60.0f) ? TimeManip::deltaTime : 0.0f;
+		if (InputManager::mousePressed[SDL_BUTTON_LEFT] && gun->shotBuildup >= gun->cooldown) {
+			fireBullet(ownerTrans, gun->bulletId, rotAngle, gun->isLeft);
+			gun->shotBuildup = 0;
 		}
 	}
 }
@@ -58,8 +59,7 @@ void PlayerGunSystem::fireBullet(Transform* ownerTrans, const int bulletId, cons
 
 	// ----- Bullet ----- //
 	Bullet* bBullet = Game::ecs.getComponent<Bullet>(Game::stack.peek(), bullet);
-	*bBullet = Bullet();
-	bBullet->bulletAI = BulletType::STANDARD;
+	bBullet->bulletAI = bulletId;
 
 	// ----- Collision ----- //
 	Collision* bColl = Game::ecs.getComponent<Collision>(Game::stack.peek(), bullet);

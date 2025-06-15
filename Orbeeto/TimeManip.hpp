@@ -22,6 +22,10 @@ public:
 	/// <returns>The time (in milliseconds) since January 1st, 1970</returns>
 	static uint64_t getTime();
 	/// <summary>
+	/// Returns the quotient of the performance counter and the performance frequency
+	/// </summary>
+	static double getSDLTime();
+	/// <summary>
 	/// Returns the difference between the current time and the given time
 	/// </summary>
 	/// <param name="compTime">The time (in milliseconds) to compare to the current time</param>

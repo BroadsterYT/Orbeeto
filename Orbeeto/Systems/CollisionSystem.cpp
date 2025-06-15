@@ -4,20 +4,26 @@
 #include "../WindowManager.hpp"
 
 
-CollisionSystem::CollisionSystem() : tree(QuadBoundingBox{0, 0, 1280, 720}) {}
+Quadtree CollisionSystem::tree = Quadtree(QuadBox{ 0, 0, 1280, 720 });
+
+CollisionSystem::CollisionSystem() {}
+
+void CollisionSystem::queryTree(QuadBox box, std::vector<Entity>& found) {
+	tree.query(box, found);
+}
 
 void CollisionSystem::update() {
 	float roomW = Room::getRoomWidth();
 	float roomH = Room::getRoomHeight();
 
-	rebuildQuadtree(QuadBoundingBox{ 0.0f, 0.0f, roomW, roomH });
+	rebuildQuadtree(QuadBox{ 0.0f, 0.0f, roomW, roomH });
 	std::vector<Entity> found;
 
 	int clipSize = 160;
 	for (int y = 0; y <= roomH; y = y + clipSize) {
 		for (int x = 0; x <= roomW; x = x + clipSize) {
 			//std::cout << "Bound x: " << x << ", Bound y: " << y << std::endl;
-			tree.query(QuadBoundingBox{ (float)x, (float)y, (float)clipSize, (float)clipSize }, found);
+			tree.query(QuadBox{ (float)x, (float)y, (float)clipSize, (float)clipSize }, found);
 			//std::cout << "Bound posX: " << j << " Bound posY: " << i << " Found: " << found.size() << std::endl;
 
 			for (Entity& entity : found) {
@@ -44,7 +50,7 @@ void CollisionSystem::update() {
 	}
 }
 
-void CollisionSystem::rebuildQuadtree(QuadBoundingBox boundary) {
+void CollisionSystem::rebuildQuadtree(QuadBox boundary) {
 	tree = Quadtree(boundary);
 	for (Entity& entity : Game::ecs.getSystemGroup<Collision, Transform>(Game::stack.peek())) {
 		//std::cout << tree.insert(entity) << std::endl;

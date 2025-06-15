@@ -143,6 +143,7 @@
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Math.cpp" />
+    <ClCompile Include="Raycast.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="States\ActionState.cpp" />
     <ClCompile Include="States\GameStack.cpp" />
@@ -185,6 +186,7 @@
     <ClInclude Include="Components\Sprite.hpp" />
     <ClInclude Include="InterpToggle.hpp" />
     <ClInclude Include="Math.hpp" />
+    <ClInclude Include="Raycast.hpp" />
     <ClInclude Include="Room.hpp" />
     <ClInclude Include="RoomTile.hpp" />
     <ClInclude Include="States\ActionState.hpp" />
