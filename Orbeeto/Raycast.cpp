@@ -1,29 +1,37 @@
 #include "Raycast.hpp"
+#include "Room.hpp"
 #include <iostream>
 
 
-Raycast::Raycast(Vector2 origin, double angle) {
+Raycast::Raycast(Vector2 origin, int width, double angle) {
 	this->origin = origin;
 	this->angle = angle;
-	rotDir = Vector2(0, -16);
+	rotDir = Vector2(0, -width);
 	rotDir.rotate(angle);
-	callcount = 0;
+
+	this->width = width;
 }
 
 void Raycast::getAllIntersects() {
-	std::vector<Entity> inter;  // Entities intersected
-	for (int x = 0; x < 100; x++) { // TODO: Calulate the number of checks to do based on closest stopping distance
-		CollisionSystem::queryTree(QuadBox{ (float)(origin.x + rotDir.x * x), (float)(origin.y + rotDir.y * x), 16, 16}, inter);
-		//SDL_SetRenderTarget(Game::renderer, NULL);
-		//SDL_SetRenderDrawColor(Game::renderer, 255, 0, 0, 255);
-		//SDL_Rect draw = { (int)(origin.x + rotDir.x), (int)(origin.y + rotDir.y), 16, 16 };
-		//SDL_RenderFillRect(Game::renderer, &draw);
-		//SDL_SetRenderDrawColor(Game::renderer, 0, 0, 0xFF, SDL_ALPHA_OPAQUE);
-		//std::cout << "x: " << origin.x + rotDirCopy.x << " y: " << origin.y + rotDirCopy.y << std::endl;
-		callcount++;
-	}
+	rotDir = Vector2(0, -(width - getWidthAdj()));
+	rotDir.rotate(angle);
 
-	for (auto& ent : inter) {
-		std::cout << callcount << " Entity " << ent << " present in raycast search." << std::endl;
+	std::vector<Entity> inter;  // Entities intersected
+	for (int i = 0; i < 100; i++) {
+		/*Entity e = Game::ecs.createEntity(Game::stack.peek());
+		Game::ecs.assignComponent<Sprite>(Game::stack.peek(), e);
+		Game::ecs.assignComponent<Transform>(Game::stack.peek(), e);
+
+		Transform* eTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), e);
+		eTrans->pos = Vector2(origin.x + rotDir.x * i, origin.y + rotDir.y * i);
+
+		Sprite* eSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), e);
+		*eSprite = Sprite(0, 0, 16, 16);
+		eSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/tile1.png");*/
+		CollisionSystem::queryTree(QuadBox{ (float)(origin.x + rotDir.x * i + width / 2), (float)(origin.y + rotDir.y * i + width / 2), 16, 16}, inter);
 	}
+}
+
+double Raycast::getWidthAdj() {
+	return -(width * sqrt(2) - width) * abs(sin(2 * angle));
 }

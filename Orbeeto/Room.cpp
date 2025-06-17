@@ -30,7 +30,7 @@ Room::Room(int roomX, int roomY) {
 	this->roomX = roomX;
 	this->roomY = roomY;
 
-	rayTest = Raycast(Vector2(300, 500), 0);
+	rayTest = Raycast(Vector2(300, 300), 16, 45);
 
 	Game::ecs.assignComponent<Sprite>(Game::stack.peek(), player);
 	Game::ecs.assignComponent<Player>(Game::stack.peek(), player);
