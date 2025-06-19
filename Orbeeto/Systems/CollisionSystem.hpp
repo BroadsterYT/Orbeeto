@@ -3,7 +3,7 @@
 #include "System.hpp"
 
 
-struct QuadBoundingBox {
+struct QuadBox {
 	float x, y, width, height;
 
 	/// <summary>
@@ -27,7 +27,7 @@ struct QuadBoundingBox {
 	/// </summary>
 	/// <param name="range">The bounding box to compare against this one</param>
 	/// <returns>True if the boxes are intersecting, false otherwise</returns>
-	bool intersects(const QuadBoundingBox& range) {
+	bool intersects(const QuadBox& range) {
 		return !(range.x > x + width || range.x + range.width < x ||
 			range.y > y + height || range.y + range.height < y);
 	}
@@ -36,7 +36,7 @@ struct QuadBoundingBox {
 
 class Quadtree {
 public:
-	Quadtree(const QuadBoundingBox& boundary) : boundary(boundary) {}
+	Quadtree(const QuadBox& boundary) : boundary(boundary) {}
 
 	~Quadtree() = default;
 
@@ -48,7 +48,7 @@ public:
 	Quadtree(Quadtree&&) = default;
 	Quadtree& operator=(Quadtree&&) = default;
 
-	QuadBoundingBox boundary;
+	QuadBox boundary;
 
 	/// <summary>
 	/// Inserts an entity into the QuadTree
@@ -78,7 +78,7 @@ public:
 	/// </summary>
 	/// <param name="range">The QuadBoundingBox to search for entities within</param>
 	/// <param name="found">The vector to insert the found entities into</param>
-	void query(const QuadBoundingBox range, std::vector<Entity>& found) {
+	void query(const QuadBox range, std::vector<Entity>& found) {
 		if (!boundary.intersects(range)) {
 			return;
 		};
@@ -111,10 +111,10 @@ private:
 		float w = boundary.width / 2;
 		float h = boundary.height / 2;
 
-		northwest = std::make_unique<Quadtree>(QuadBoundingBox{ x, y, w, h });
-		northeast = std::make_unique<Quadtree>(QuadBoundingBox{ x + w, y, w, h });
-		southwest = std::make_unique<Quadtree>(QuadBoundingBox{ x, y + h, w, h });
-		southeast = std::make_unique<Quadtree>(QuadBoundingBox{ x + w, y + h, w, h });
+		northwest = std::make_unique<Quadtree>(QuadBox{ x, y, w, h });
+		northeast = std::make_unique<Quadtree>(QuadBox{ x + w, y, w, h });
+		southwest = std::make_unique<Quadtree>(QuadBox{ x, y + h, w, h });
+		southeast = std::make_unique<Quadtree>(QuadBox{ x + w, y + h, w, h });
 		divided = true;
 	}
 };
@@ -124,15 +124,16 @@ class CollisionSystem : public System {
 public:
 	CollisionSystem();
 
+	static void queryTree(QuadBox box, std::vector<Entity>& found);
 	void update();
 
 private:
-	Quadtree tree;
+	static Quadtree tree;
 	/// <summary>
 	/// Resets the collision tree and reinserts all entities
 	/// </summary>
 	/// <param name="boundary">The QuadBoundingBox to reset the tree with</param>
-	void rebuildQuadtree(QuadBoundingBox boundary);
+	void rebuildQuadtree(QuadBox boundary);
 
 	/// <summary>
 	/// Checks for a collision between two entites given their collision components

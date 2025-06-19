@@ -30,6 +30,8 @@ Room::Room(int roomX, int roomY) {
 	this->roomX = roomX;
 	this->roomY = roomY;
 
+	rayTest = Raycast(Vector2(300, 300), 16, 45);
+
 	Game::ecs.assignComponent<Sprite>(Game::stack.peek(), player);
 	Game::ecs.assignComponent<Player>(Game::stack.peek(), player);
 	Game::ecs.assignComponent<Transform>(Game::stack.peek(), player);
@@ -187,6 +189,8 @@ void Room::update() {
 	if (pTransform != nullptr) {
 		Room::camera.cinematicFocus(player);
 	}
+
+	rayTest.getAllIntersects();
 
 	// Zooming in and out
 	if (zoomOutInputCopy < InputManager::keysReleased[SDLK_o]) {

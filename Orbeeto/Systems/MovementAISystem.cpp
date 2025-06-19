@@ -12,8 +12,8 @@ void MovementAISystem::update() {
 
 		switch (mvmAI->ai) {
 		case M_AI::CIRCLE_ACCEL:
-			transform->accel.x = transform->accelConst * cos((double)TimeManip::getTime() / 1000);
-			transform->accel.y = transform->accelConst * sin((double)TimeManip::getTime() / 1000);
+			transform->accel.x = transform->accelConst * cos(TimeManip::getSDLTime() / 1000);
+			transform->accel.y = transform->accelConst * sin(TimeManip::getSDLTime() / 1000);
 			transform->accelMovement();
 			break;
 

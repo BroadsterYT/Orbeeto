@@ -7,6 +7,7 @@
 #include "Game.hpp"
 #include "Camera.hpp"
 #include "ECS.hpp"
+#include "Raycast.hpp"
 
 
 class Room {
@@ -57,6 +58,8 @@ private:
 
 	int zoomOutInputCopy = 0;
 	int zoomInInputCopy = 0;
+
+	Raycast rayTest;
 
 	Entity player = Game::ecs.createEntity(Game::stack.peek());
 	Entity leftGun = Game::ecs.createEntity(Game::stack.peek());

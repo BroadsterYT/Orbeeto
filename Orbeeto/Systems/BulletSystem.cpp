@@ -29,7 +29,7 @@ void BulletSystem::update() {
 					// TODO: Replace testing with actual implementation
 					if (Game::ecs.getComponent<Player>(Game::stack.peek(), target) != nullptr) continue;  // Can't target players
 					if (Game::ecs.getComponent<Bullet>(Game::stack.peek(), target) != nullptr) continue;  // Can't target other bullets
-					if (Game::ecs.getComponent<Grapple>(Game::stack.peek(), target) != nullptr) continue;  // Can't target other bullets
+					if (Game::ecs.getComponent<Grapple>(Game::stack.peek(), target) != nullptr) continue;  // Can't target grappling hook
 
 					Transform* targetTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), target);
 					double distance = transform->pos.getDistToPoint(targetTrans->pos);

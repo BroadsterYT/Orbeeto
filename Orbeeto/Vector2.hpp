@@ -3,7 +3,7 @@
 
 class Vector2 {
 public:
-	Vector2(double x = 0.0f, double y = 0.0f);
+	Vector2(double x = 0.0, double y = 0.0);
 	~Vector2();
 
 	double x, y;
@@ -20,6 +20,10 @@ public:
 	double getAngleToPoint(const int& x, const int& y) const;
 	double getMagnitude() const;
 
+	/// <summary>
+	/// Rotates the vector by a given angle counter-clockwise
+	/// </summary>
+	/// <param name="x">The angle to rotate the vector by (in degrees)</param>
 	void rotate(const double x);
 
 	Vector2 operator+(const Vector2& other);

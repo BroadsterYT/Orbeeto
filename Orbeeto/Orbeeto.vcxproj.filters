@@ -99,6 +99,12 @@
     <ClCompile Include="RoomTile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Raycast.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Systems\ParticleSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TextureManager.hpp">
@@ -222,6 +228,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RoomTile.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Raycast.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\Particle.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Systems\ParticleSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
