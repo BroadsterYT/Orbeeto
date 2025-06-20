@@ -41,6 +41,7 @@ inline void _cdecl operator delete(void* __p, const char*, int) {
 #include "Components/Hp.hpp"
 #include "Components/MovementAI.hpp"
 #include "Components/Particle.hpp"
+#include "Components/ParticleEmitter.hpp"
 #include "Components/Player.hpp"
 #include "Components/PlayerGun.hpp"
 #include "Components/Sprite.hpp"
@@ -51,7 +52,7 @@ inline void _cdecl operator delete(void* __p, const char*, int) {
 
 class ECS {
 public:
-	std::vector<EntityDesc> entities;  // All entities currently in existence
+	//std::vector<EntityDesc> entities;  // All entities currently in existence
 	std::vector<Entity> freeEntities;  // All entity values that are unused
 
 	ECS() {
@@ -63,6 +64,7 @@ public:
 		std::cout << "Hp component registered. ID: " << getComponentId<Hp>() << std::endl;
 		std::cout << "MovementAI component registered. ID: " << getComponentId<MovementAI>() << std::endl;
 		std::cout << "Particle component registered. ID: " << getComponentId<Particle>() << std::endl;
+		std::cout << "ParticleEmitter component registered. ID: " << getComponentId<ParticleEmitter>() << std::endl;
 		std::cout << "Player component registered. ID: " << getComponentId<Player>() << std::endl;
 		std::cout << "PlayerGun component registered. ID: " << getComponentId<PlayerGun>() << std::endl;
 		std::cout << "Sprite component registered. ID: " << getComponentId<Sprite>() << std::endl;

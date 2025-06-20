@@ -173,6 +173,7 @@
     <ClInclude Include="Components\Grapple.hpp" />
     <ClInclude Include="Components\MovementAI.hpp" />
     <ClInclude Include="Components\Particle.hpp" />
+    <ClInclude Include="Components\ParticleEmitter.hpp" />
     <ClInclude Include="Components\StatBar.hpp" />
     <ClInclude Include="Components\TeleportLink.hpp" />
     <ClInclude Include="Components\Transform.hpp" />
