@@ -153,6 +153,7 @@
     <ClCompile Include="Systems\CollisionSystem.cpp" />
     <ClCompile Include="Systems\GrappleSystem.cpp" />
     <ClCompile Include="Systems\MovementAISystem.cpp" />
+    <ClCompile Include="Systems\ParticleEmitterSystem.cpp" />
     <ClCompile Include="Systems\ParticleSystem.cpp" />
     <ClCompile Include="Systems\PlayerGunSystem.cpp" />
     <ClCompile Include="Systems\PlayerSystem.cpp" />
@@ -200,6 +201,7 @@
     <ClInclude Include="Systems\CollisionSystem.hpp" />
     <ClInclude Include="Systems\GrappleSystem.hpp" />
     <ClInclude Include="Systems\MovementAISystem.hpp" />
+    <ClInclude Include="Systems\ParticleEmitterSystem.hpp" />
     <ClInclude Include="Systems\ParticleSystem.hpp" />
     <ClInclude Include="Systems\PlayerGunSystem.hpp" />
     <ClInclude Include="Systems\PlayerSystem.hpp" />

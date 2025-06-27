@@ -18,6 +18,8 @@
 #include "Systems/GrappleSystem.hpp"
 #include "Systems/MovementAISystem.hpp"
 #include "Systems/PlayerGunSystem.hpp"
+#include "Systems/ParticleEmitterSystem.hpp"
+#include "Systems/ParticleSystem.hpp"
 #include "Systems/PlayerSystem.hpp"
 #include "Systems/SpriteSystem.hpp"
 #include "Systems/StatBarSystem.hpp"
@@ -46,6 +48,8 @@ int main(int argc, char* argv[]) {
 	CollisionSystem collisionSystem;
 	GrappleSystem grappleSystem;
 	MovementAISystem movementAISystem;
+	ParticleEmitterSystem PE_System;
+	ParticleSystem particleSystem;
 	PlayerGunSystem playerGunSystem;
 	PlayerSystem playerSystem;
 	SpriteSystem spriteSystem(Game::renderer);
@@ -62,6 +66,8 @@ int main(int argc, char* argv[]) {
 
 		// Update game components here
 		spriteSystem.render(Game::renderer);
+		PE_System.update();
+		particleSystem.update();
 		collisionSystem.update();
 		playerSystem.update();
 		grappleSystem.update();
