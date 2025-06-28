@@ -1,6 +1,6 @@
 # Orbeeto
 
-[![cc-by-nc-nd-shield]][cc-by-nc-nd]
+[![gplv3-shield]][gplv3]
 
 ## Description
 
@@ -22,10 +22,10 @@ Take on the challenge, protect the Cygnus Ascendant, and become the hero the uni
 ## License
 
 This work is licensed under a
-[Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License][cc-by-nc-nd].
+[GNU General Public License v3.0][gplv3].
 
-[![cc-by-nc-nd-image]][cc-by-nc-nd]
+[![gplv3-image]][gplv3]
 
-[cc-by-nc-nd]: https://creativecommons.org/licenses/by-nc-nd/4.0/
-[cc-by-nc-nd-image]: https://i.creativecommons.org/l/by-nc-nd/4.0/88x31.png
-[cc-by-nc-nd-shield]: https://img.shields.io/badge/license-CC%20BY%20NC%20%20ND%204.0-lightgrey
+[gplv3]: https://www.gnu.org/licenses/gpl-3.0.en.html
+[gplv3-image]: https://www.gnu.org/graphics/gplv3-127x51.png
+[gplv3-shield]: https://img.shields.io/badge/license-%20%20GNU%20GPLv3%20-green
