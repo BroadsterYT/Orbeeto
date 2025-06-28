@@ -1,4 +1,5 @@
 #pragma once
+#include <random>
 #include <vector>
 
 
@@ -13,6 +14,9 @@ public:
 
 	static float deltaTime;
 	static float avgDeltaTime;
+
+	// RNG engine
+	static std::mt19937 prng;
 
 	static void calculateDeltaTime();
 	static float getDeltaAdjuster();

@@ -15,6 +15,8 @@ uint64_t TimeManip::currentTime = 0;
 float TimeManip::deltaTime = 0.0f;
 float TimeManip::avgDeltaTime = 0.0f;
 
+std::mt19937 TimeManip::prng(std::chrono::system_clock::now().time_since_epoch().count());
+
 void TimeManip::calculateDeltaTime() {
 	// Delta Time
 	currentTime = SDL_GetPerformanceCounter();

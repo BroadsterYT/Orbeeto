@@ -3,7 +3,7 @@
 
 
 struct PlayerGun : Component {
-	uint32_t owner;  // Pointer to player entity
+	uint32_t owner = 0;  // Pointer to player entity
 	bool isLeft = true;  // Is this gun on Orbeeto's left? Left if true; right if false
 
 	float shotBuildup = 60.0f;  /// The time since the last shot was fired

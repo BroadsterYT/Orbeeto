@@ -34,6 +34,7 @@ Room::Room(int roomX, int roomY) {
 	Game::ecs.assignComponent<Player>(Game::stack.peek(), player);
 	Game::ecs.assignComponent<Transform>(Game::stack.peek(), player);
 	Game::ecs.assignComponent<Collision>(Game::stack.peek(), player);
+	Game::ecs.assignComponent<ParticleEmitter>(Game::stack.peek(), player);
 	Game::ecs.assignComponent<Hp>(Game::stack.peek(), player);
 	Game::ecs.assignComponent<Defense>(Game::stack.peek(), player);
 
