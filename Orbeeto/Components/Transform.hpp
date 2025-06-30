@@ -17,6 +17,8 @@ struct Transform : Component {
 		accel.y += vel.y * fric;
 		vel += accel * TimeManip::getDeltaAdjuster();
 		pos += vel * TimeManip::getDeltaAdjuster() + accel * accelConst;
+
+		accel = Vector2(0, 0);
 	}
 
 	void velMovement() {

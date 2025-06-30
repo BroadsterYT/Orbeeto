@@ -12,14 +12,16 @@ void ParticleSystem::update() {
 		if (pcl->lifetime <= pcl->maxLifetime) {
 			switch (pcl->type) {
 			case ParticleAI::AWAY_FROM_CENTER:
-				// TODO: Correct acceleration and velocity for direction permissions (issue for ParticleEmitterSystem)
-
 				trans->accelMovement();
+				break;
+
+			default:
 				break;
 			}
 		}
 		else {
 			Game::ecs.destroyEntity(Game::stack.peek(), entity);
 		}
+		pcl->lifetime += TimeManip::deltaTime;
 	}
 }
