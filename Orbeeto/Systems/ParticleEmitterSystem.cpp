@@ -22,12 +22,12 @@ void ParticleEmitterSystem::update() {
 			pclSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png");
 			pclTrans->pos = trans->pos;
 
-			// Random angle selection
 			std::uniform_real_distribution<float> angleDist(0, 360);
+			std::uniform_real_distribution<float> emitDist(pe->minEmitIntensity, pe->maxEmitIntensity);
 
 			switch (pe->type) {
 			case PE_Type::FULL_SCATTER:
-				pclTrans->vel.x = -5;
+				pclTrans->vel.y = -emitDist(TimeManip::prng);
 				pclTrans->vel.rotate(angleDist(TimeManip::prng));
 				break;
 

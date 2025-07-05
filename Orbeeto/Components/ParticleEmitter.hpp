@@ -14,4 +14,7 @@ struct ParticleEmitter : Component {
 	float minFreq = 0.1f;
 	float maxFreq = 0.5f;
 	float nextFreq = 1.0f;
+
+	float minEmitIntensity = 3.0f;
+	float maxEmitIntensity = 5.0f;
 };

@@ -1,0 +1,10 @@
+<test>
+Hello, World!
+This is a parsing test.
+</test>
+
+<test2>
+This is the second parsing test.
+I hope it works well.
+Would be a shame if it didn't.
+</test2>

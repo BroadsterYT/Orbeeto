@@ -141,6 +141,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="InputManager.cpp" />
+    <ClCompile Include="TextParser.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Math.cpp" />
     <ClCompile Include="Raycast.cpp" />
@@ -157,9 +158,9 @@
     <ClCompile Include="Systems\ParticleSystem.cpp" />
     <ClCompile Include="Systems\PlayerGunSystem.cpp" />
     <ClCompile Include="Systems\PlayerSystem.cpp" />
-    <ClCompile Include="Systems\PortalSystem.cpp" />
     <ClCompile Include="Systems\SpriteSystem.cpp" />
     <ClCompile Include="Systems\StatBarSystem.cpp" />
+    <ClCompile Include="Systems\TextRenderSystem.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="RoomTile.cpp" />
     <ClCompile Include="TimeManip.cpp" />
@@ -177,6 +178,8 @@
     <ClInclude Include="Components\ParticleEmitter.hpp" />
     <ClInclude Include="Components\StatBar.hpp" />
     <ClInclude Include="Components\TeleportLink.hpp" />
+    <ClInclude Include="TextParser.hpp" />
+    <ClInclude Include="Components\TextRender.hpp" />
     <ClInclude Include="Components\Transform.hpp" />
     <ClInclude Include="Components\Defense.hpp" />
     <ClInclude Include="Components\Hp.hpp" />
@@ -205,10 +208,10 @@
     <ClInclude Include="Systems\ParticleSystem.hpp" />
     <ClInclude Include="Systems\PlayerGunSystem.hpp" />
     <ClInclude Include="Systems\PlayerSystem.hpp" />
-    <ClInclude Include="Systems\PortalSystem.hpp" />
     <ClInclude Include="Systems\SpriteSystem.hpp" />
     <ClInclude Include="Systems\StatBarSystem.hpp" />
     <ClInclude Include="Systems\System.hpp" />
+    <ClInclude Include="Systems\TextRenderSystem.hpp" />
     <ClInclude Include="TextureManager.hpp" />
     <ClInclude Include="TimeManip.hpp" />
     <ClInclude Include="Timer.hpp" />
@@ -218,6 +221,9 @@
   <ItemGroup>
     <None Include="RoomLayouts\newSerializeTest.dat" />
     <None Include="RoomLayouts\test.dat" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Languages\English.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
