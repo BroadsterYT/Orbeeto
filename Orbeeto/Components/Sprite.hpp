@@ -31,5 +31,5 @@ struct Sprite : Component {
 	bool ignoreScaling = false; // Should this sprite ignore the scalaing of the viewport?
 
 	int index = 0;  // The index of the image in the image vector to display
-	SDL_Texture* spriteSheet = nullptr;
+	std::shared_ptr<SDL_Texture> spriteSheet = nullptr;
 };

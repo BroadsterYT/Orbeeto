@@ -105,6 +105,12 @@
     <ClCompile Include="Systems\ParticleEmitterSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TextParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Systems\TextRenderSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TextureManager.hpp">
@@ -242,9 +248,21 @@
     <ClInclude Include="Systems\ParticleEmitterSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TextParser.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Components\TextRender.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Systems\TextRenderSystem.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="RoomLayouts\test.dat" />
     <None Include="RoomLayouts\newSerializeTest.dat" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Languages\English.txt" />
   </ItemGroup>
 </Project>

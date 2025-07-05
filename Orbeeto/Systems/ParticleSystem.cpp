@@ -18,10 +18,10 @@ void ParticleSystem::update() {
 			default:
 				break;
 			}
+			pcl->lifetime += TimeManip::deltaTime;
 		}
 		else {
 			Game::ecs.destroyEntity(Game::stack.peek(), entity);
 		}
-		pcl->lifetime += TimeManip::deltaTime;
 	}
 }

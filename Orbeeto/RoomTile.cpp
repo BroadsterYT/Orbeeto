@@ -22,10 +22,12 @@ Entity RoomTile::buildTile() {
 	int tileSize = 16;  // The size of each individual tile
 	int finalWidth = tileSize * width;
 	int finalHeight = tileSize * height;
-	SDL_Texture* tileSheet = nullptr;  // The original image file to extract all needed tiles from
-	SDL_Texture* finalImage = SDL_CreateTexture(Game::renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, finalWidth, finalHeight);  // The final image/spritesheet to use for the tile's sprite
-	SDL_SetTextureBlendMode(finalImage, SDL_BLENDMODE_BLEND);
-	SDL_SetRenderTarget(Game::renderer, finalImage);
+	std::shared_ptr<SDL_Texture> tileSheet = nullptr;  // The original image file to extract all needed tiles from
+	std::shared_ptr<SDL_Texture> finalImage(
+		SDL_CreateTexture(Game::renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, finalWidth, finalHeight),  // The final image/spritesheet to use for the tile's sprite
+		SDL_DestroyTexture);
+	SDL_SetTextureBlendMode(finalImage.get(), SDL_BLENDMODE_BLEND);
+	SDL_SetRenderTarget(Game::renderer, finalImage.get());
 
 	SDL_Rect srcRect = { 0, 0, tileSize, tileSize };
 	SDL_Rect destRect = { 0, 0, tileSize, tileSize };
@@ -37,14 +39,14 @@ Entity RoomTile::buildTile() {
 		// Don't need to destroy/reassign finalImage; uses default
 		srcRect.y = tileSize * subset;
 
-		noAnimTilingScheme1(style, tileSize, tileSheet, srcRect, destRect);
+		noAnimTilingScheme1(style, tileSize, tileSheet.get(), srcRect, destRect);
 		break;
 
 	default:
 		throw std::invalid_argument("Error: \"tileSet\" must be a valid input.");
 	}
 	std::cout << SDL_SetRenderTarget(Game::renderer, NULL) << std::endl;
-	SDL_DestroyTexture(tileSheet);
+	//SDL_DestroyTexture(tileSheet);
 
 	// ----- Assigning components ----- //
 

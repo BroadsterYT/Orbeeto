@@ -108,14 +108,12 @@ public:
 	/// <param name="entity">The entity to delete</param>
 	void destroyEntity(StateBase* state, Entity& entity) {
 		auto& entityDescs = state->getEntityDescs();
-
 		for (auto it = entityDescs.begin(); it != entityDescs.end(); ++it) {
 			if (it->entity == entity) {
 				// Free sprite texture if it exists
 				if (it->mask.test(getComponentId<Sprite>())) {
 					Sprite* sprite = getComponent<Sprite>(state, entity);
-					SDL_DestroyTexture(sprite->spriteSheet);
-					sprite->spriteSheet = nullptr;
+					TextureManager::cleanupTextures();  // TODO: Get this bitchass O(n) out my damn function
 				}
 
 				for (auto& comp : it->components) {

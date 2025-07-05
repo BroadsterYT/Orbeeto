@@ -41,7 +41,7 @@ void SpriteSystem::render(SDL_Renderer* renderer) {
 
 		// Showing correct sprite given sprite index
 		int width, height;
-		SDL_QueryTexture(sprite->spriteSheet, NULL, NULL, &width, &height);
+		SDL_QueryTexture(sprite->spriteSheet.get(), NULL, NULL, &width, &height);
 		int spritesPerRow = width / sprite->tileWidth;
 
 		sprite->srcRect.x = sprite->index % spritesPerRow * sprite->tileWidth;
@@ -70,7 +70,7 @@ void SpriteSystem::render(SDL_Renderer* renderer) {
 			sprite->destRect.x <= spriteClip(true, false, scale) + sprite->tileWidth  &&
 			sprite->destRect.y >= spriteClip(false, true, scale) - sprite->tileHeight &&
 			sprite->destRect.y <= spriteClip(false, false, scale) + sprite->tileHeight) {
-			SDL_RenderCopyEx(renderer, sprite->spriteSheet, &sprite->srcRect, &trueDestRect, sprite->angle, NULL, SDL_FLIP_NONE);
+			SDL_RenderCopyEx(renderer, sprite->spriteSheet.get(), &sprite->srcRect, &trueDestRect, sprite->angle, NULL, SDL_FLIP_NONE);
 		}
 	}
 
