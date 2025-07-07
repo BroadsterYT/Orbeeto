@@ -35,5 +35,5 @@ public:
 
 private:
 	std::vector<EntityDesc> entityDescs;  // A vector of all the entities currently in the game state
-	bool allowUpdateBelow = false;
+	bool allowUpdateBelow = false;  // When true, will allow entities in the state immediately below to continue updating
 };

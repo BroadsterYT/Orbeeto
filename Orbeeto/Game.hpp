@@ -10,7 +10,9 @@ public:
 	Game(const char* title, int posX, int posY, int width, int height, bool fullscreen);
 	~Game();
 
+	bool isRunning;
 	SDL_Window* window;
+	
 	static SDL_Renderer* renderer;
 	static ECS ecs;
 	static GameStack stack;
@@ -18,6 +20,4 @@ public:
 	void handleEvents();
 	void update();
 	void clean();
-
-	bool isRunning;
 };	

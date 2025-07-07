@@ -79,7 +79,6 @@ void Game::handleEvents() {
 }
 
 void Game::update() {
-
 	// Rendering
 }
 

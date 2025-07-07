@@ -28,7 +28,7 @@ void TextureManager::cleanupTextures() {
 	for (auto it = textures.begin(); it != textures.end(); ) {
 		if (it->second.use_count() == 1) {
 			it = textures.erase(it);
-			std::cout << "Texture was deleted\n";
+			//std::cout << "Texture was deleted\n";
 		}
 		else {
 			it++;

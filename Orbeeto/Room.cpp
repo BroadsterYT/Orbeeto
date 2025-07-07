@@ -189,6 +189,16 @@ void Room::update() {
 		Room::camera.cinematicFocus(player);
 	}
 
+	// Gamestate change test
+	if (stateChanges != InputManager::keysReleased[SDLK_x] && InputManager::keysReleased[SDLK_x] % 2 != 0) {
+		Game::stack.push(StateName::INVENTORY);
+		stateChanges = InputManager::keysReleased[SDLK_x];
+	}
+	else if (stateChanges != InputManager::keysReleased[SDLK_x]) {
+		Game::stack.pop();
+		stateChanges = InputManager::keysReleased[SDLK_x];
+	}
+
 	// Zooming in and out
 	if (zoomOutInputCopy < InputManager::keysReleased[SDLK_o]) {
 		camera.setWidth(camera.getWidth() + Window::WIDTH / 2);

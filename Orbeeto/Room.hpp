@@ -59,6 +59,9 @@ private:
 	int zoomOutInputCopy = 0;
 	int zoomInInputCopy = 0;
 
+	// Gamestate change test vars
+	int stateChanges = 0;
+
 	Entity player = Game::ecs.createEntity(Game::stack.peek());
 	Entity leftGun = Game::ecs.createEntity(Game::stack.peek());
 	Entity rightGun = Game::ecs.createEntity(Game::stack.peek());

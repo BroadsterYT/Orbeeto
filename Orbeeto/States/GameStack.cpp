@@ -10,6 +10,7 @@
 
 
 GameStack::GameStack() {
+	// All states must be added here before they can be implemented
 	registerState(StateName::ACTION, new ActionState());
 	registerState(StateName::INVENTORY, new InventoryState());
 	push(StateName::ACTION);

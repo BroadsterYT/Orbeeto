@@ -66,8 +66,9 @@ void BulletSystem::update() {
 		}
 
 		// Destroying bullet if its lifetime is too long
-		if (bullet->timer.getTime() >= 5000) {
+		if (bullet->lifeTime >= 5.0f) {
 			Game::ecs.destroyEntity(Game::stack.peek(), entity);
 		}
+		bullet->lifeTime += TimeManip::deltaTime;
 	}
 }

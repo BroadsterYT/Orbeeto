@@ -1,6 +1,5 @@
 #pragma once
 #include <functional>
-#include "Timer.hpp"
 #include "Math.hpp"
 #include <iostream>
 
