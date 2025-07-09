@@ -105,9 +105,6 @@
     <ClCompile Include="Systems\ParticleEmitterSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TextParser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Systems\TextRenderSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -246,9 +243,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Systems\ParticleEmitterSystem.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TextParser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Components\TextRender.hpp">

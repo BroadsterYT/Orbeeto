@@ -48,6 +48,7 @@ inline void _cdecl operator delete(void* __p, const char*, int) {
 #include "Components/StatBar.hpp"
 #include "Components/TeleportLink.hpp"
 #include "Components/Transform.hpp"
+#include "Components/TextRender.hpp"
 
 
 class ECS {
@@ -71,6 +72,7 @@ public:
 		std::cout << "StatBar component registered. ID: " << getComponentId<StatBar>() << std::endl;
 		std::cout << "TeleportLink component registered. ID: " << getComponentId<TeleportLink>() << std::endl;
 		std::cout << "Transform component registered. ID: " << getComponentId<Transform>() << std::endl;
+		std::cout << "TextRender component registered. ID: " << getComponentId<TextRender>() << std::endl;
 
 		for (Entity i = 1; i < MAX_ENTITIES; i++) {
 			freeEntities.push_back(i);

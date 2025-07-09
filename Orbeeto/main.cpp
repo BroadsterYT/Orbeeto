@@ -23,6 +23,7 @@
 #include "Systems/PlayerSystem.hpp"
 #include "Systems/SpriteSystem.hpp"
 #include "Systems/StatBarSystem.hpp"
+#include "Systems/TextRenderSystem.hpp"
 
 
 Game* game = nullptr;
@@ -54,6 +55,7 @@ int main(int argc, char* argv[]) {
 	PlayerSystem playerSystem;
 	SpriteSystem spriteSystem(Game::renderer);
 	StatBarSystem statBarSystem;
+	TextRenderSystem textRenderSystem;
 
 	// Initializing room
 	Room room(0, 0);
@@ -75,10 +77,9 @@ int main(int argc, char* argv[]) {
 		bulletSystem.update();
 		movementAISystem.update();
 		statBarSystem.update();
+		textRenderSystem.update();
 
 		room.update();
-
-		Game::stack.update();
 		
 		TimeManip::calculateDeltaTime();
 	}

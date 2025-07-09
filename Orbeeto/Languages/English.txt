@@ -1,6 +1,6 @@
 <test>
-Hello, World!
-This is a parsing test.
+<tremble>HELLO</tremble>, WORLD
+THIS IS A PARSING TEST.
 </test>
 
 <test2>

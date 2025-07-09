@@ -158,6 +158,9 @@ void Room::loadRoom(int x, int y) {
 		tile2.buildTile();
 		tile3.buildTile();
 
+		Entity testText = Game::ecs.createEntity(Game::stack.peek());
+		Game::ecs.assignComponent<TextRender>(Game::stack.peek(), testText);
+
 		// ----- Test Enemy 1 ----- //
 		/*Entity enemyTest = Game::ecs.createEntity(Game::stack.peek());
 
