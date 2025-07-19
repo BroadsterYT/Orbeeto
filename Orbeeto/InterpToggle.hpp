@@ -27,19 +27,19 @@ public:
 		}
 
 		lastWeight = weight;
-		lastToggle = TimeManip::getTime();
+		lastToggle = TimeManip::getSDLTime();
 	}
 
 	T getValue() {
 		if (active) {
-			weight = lastWeight + (TimeManip::getTimeDiff(lastToggle) / 1000.0) / cycleTime;
+			weight = lastWeight + (TimeManip::getSDLTime() - lastToggle) / cycleTime;
 			weight = std::min(weight, 1.0);
 		}
 		else {
-			weight = 1 - (TimeManip::getTimeDiff(lastToggle) / 1000.0) / cycleTime - (1 - lastWeight);
+			weight = 1 - (TimeManip::getSDLTime() - lastToggle) / cycleTime - (1 - lastWeight);
 			weight = std::max(weight, 0.0);
 		}
-		//std::cout << "Weight: " << weight << std::endl;
+
 		return func(val1, val2, weight);
 	}
 
@@ -72,6 +72,6 @@ private:
 	double weight;  // Interpolation weight
 	double lastWeight;
 
-	uint64_t lastToggle;  // The time when the last toggle occurred
+	double lastToggle;
 	bool active;
 };
