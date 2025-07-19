@@ -28,49 +28,7 @@ void MovementAISystem::update() {
 
 		case M_AI::OCTOGRUNT:
 		{
-			if (TimeManip::getTimeDiff(mvmAI->intervalTime) >= 100) {
-				double angle = 0.0 + mvmAI->angle;
-				Vector2 posAdjust = { 0.0, -32.0 };
-				Vector2 bulletVel = { 0.0, -4.0 };
-
-				// Fire 8 bullets
-				for (int i = 0; i < 8; i++) {
-					Entity bullet = Game::ecs.createEntity(Game::stack.peek());
-
-					Game::ecs.assignComponent<Transform>(Game::stack.peek(), bullet);
-					Game::ecs.assignComponent<Collision>(Game::stack.peek(), bullet);
-					Game::ecs.assignComponent<Sprite>(Game::stack.peek(), bullet);
-					Game::ecs.assignComponent<Bullet>(Game::stack.peek(), bullet);
-
-					Transform* bTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), bullet);
-					bTrans->pos = { trans->pos.x + posAdjust.x, trans->pos.y + posAdjust.y };
-					bTrans->vel = bulletVel;
-
-					Collision* bColl = Game::ecs.getComponent<Collision>(Game::stack.peek(), bullet);
-					bColl->hitWidth = 8;
-					bColl->hitHeight = 8;
-
-					bColl->physicsTags.set(PTags::PROJECTILE);
-					bColl->physicsTags.set(PTags::E_PROJECTILE);
-					bColl->physicsTags.set(PTags::CAN_TELEPORT);
-
-					Sprite* bSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), bullet);
-					bSprite->tileWidth = 32;
-					bSprite->tileHeight = 32;
-					bSprite->index = 3;
-					bSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/bullets.png");
-
-					Bullet* bBullet = Game::ecs.getComponent<Bullet>(Game::stack.peek(), bullet);
-					bBullet->bulletAI = BulletType::STANDARD;
-					bBullet->damage = 7;
-
-					angle += 45.0;
-					posAdjust.rotate(angle);
-					bulletVel.rotate(angle);
-				}
-
-				mvmAI->intervalTime = TimeManip::getTime();
-			}
+			// TODO: Complete at later date, need to remove to update MovementAI struct
 		}
 			break;
 
@@ -84,6 +42,13 @@ void MovementAISystem::update() {
 			mvmAI->distance.y = randMag(TimeManip::prng);
 
 			trans->pos = mvmAI->vec1 + mvmAI->distance;  
+		}
+			break;
+
+		case M_AI::TEXT_WAVE:
+		{
+			trans->pos.y = mvmAI->vec1.y + mvmAI->mag * sin(10 * mvmAI->intervalTime);
+			mvmAI->intervalTime += TimeManip::deltaTime;
 		}
 			break;
 

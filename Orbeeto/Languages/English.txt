@@ -1,10 +1,10 @@
 <test>
-<tremble>HELLO</tremble>, WORLD
+<wave>HELLO</wave>, WORLD!
 THIS IS A PARSING TEST.
 </test>
 
 <test2>
-This is the second parsing test.
-I hope it works well.
-Would be a shame if it didn't.
+THIS \nTHIS IS A LINE TEST.
+I HOPE IT WORKS WELL.
+WOULD BE A SHAME IF IT DIDN'T.
 </test2>

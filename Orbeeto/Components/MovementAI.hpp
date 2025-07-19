@@ -13,6 +13,7 @@ enum class M_AI {
 
 	// ----- Text Movements ----- //
 	TEXT_TREMBLE,
+	TEXT_WAVE,
 };
 
 
@@ -21,7 +22,7 @@ struct MovementAI : public Component {
 
 	// --- Misc --- //
 	uint32_t entityRef = 0;  // General entity reference, can be used for anything
-	uint64_t intervalTime = 0;  // Standard interval timer. Can be used for anything
+	float intervalTime = 0;  // Standard interval timer. Can be used for anything
 	
 	Vector2 vec1 = { 0, 0 };  // Can be used for anything
 	Vector2 distance = { 0, 0 };  // Can be used for anything

@@ -21,7 +21,9 @@ void TextRenderSystem::update() {
 			temp = tr->lineStack.top();
 			tr->lineStack.pop();
 
-			// ----- Parsing Tags ----- //
+			int w = 32;  // Width of letter sprite
+			int h = 32;  // Height of letter sprite
+
 			if (temp == '<') {
 				tr->parsingTag = true;
 				continue;
@@ -29,38 +31,47 @@ void TextRenderSystem::update() {
 			else if (temp == '>') {
 				tr->parsingTag = false;
 
+				if (tr->tagTemp == "/" + tr->interTag) {
+					Game::ecs.destroyEntity(Game::stack.peek(), entity);
+					continue;
+				}
+
 				// Removing tag if its opening tag is already in activeTags, otherwise adds it
 				for (auto it = tr->activeTags.begin(); it != tr->activeTags.end(); ++it) {
 					if ("/" + *it == tr->tagTemp) {
 						tr->activeTags.erase(it);
-						//std::cout << "\"" << tr->tagTemp << "\" reached and removed from activeTags" << std::endl;
 						tr->tagTemp = "";
 						break;
 					}
 				}
 				if (tr->tagTemp != "") {
 					tr->activeTags.push_back(tr->tagTemp);
-					//std::cout << "Added tag \"" << tr->tagTemp << "\" to activeTags" << std::endl;
 				}
 				tr->tagTemp = "";
 				continue;
+			}
+			else if (temp == '\\') {
+				if (tr->lineStack.top() == 'n') {
+					tr->letterOffset.x = 0;
+					tr->letterOffset.y += h;
+					tr->lineStack.pop();
+					continue;
+				}
 			}
 
 			if (tr->parsingTag) {
 				tr->tagTemp += temp;
 				continue;
 			}
-			// ------------------------ //
 
 			// Creating letter entity
 			Entity letter = Game::ecs.createEntity(Game::stack.peek());
+			tr->textEntities.push_back(letter);
 
 			Game::ecs.assignComponent<Transform>(Game::stack.peek(), letter);
 			Game::ecs.assignComponent<Sprite>(Game::stack.peek(), letter);
 
 			Transform* ltrTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), letter);
-			int w = 32;  // Width of letter sprite
-			int h = 32;  // Height of letter sprite
 			if (tr->letterOffset.x > tr->maxOffset.x - w / 2) {
 				tr->letterOffset.x = 0;
 				tr->letterOffset.y += h;
@@ -75,7 +86,7 @@ void TextRenderSystem::update() {
 			ltrSprite->ignoreScaling = true;
 			ltrSprite->layer = 1000;
 
-			tr->letterOffset.x += w;
+			tr->letterOffset.x += w - 8;
 
 			// Applying movement tags
 			if (hasTag(tr->activeTags, "tremble")) {
@@ -85,8 +96,26 @@ void TextRenderSystem::update() {
 				ai->vec1 = ltrTrans->pos;
 				ai->mag = 5.0f;
 			}
+			else if (hasTag(tr->activeTags, "wave")) {
+				Game::ecs.assignComponent<MovementAI>(Game::stack.peek(), letter);
+				MovementAI* ai = Game::ecs.getComponent<MovementAI>(Game::stack.peek(), letter);
+				ai->ai = M_AI::TEXT_WAVE;
+				ai->vec1 = ltrTrans->pos;
+				ai->mag = 5.0f;
+			}
 
 			tr->waitTime = 0.0f;
+		}
+		else if (tr->keyPressCount < InputManager::keysReleased[SDLK_SPACE] && tr->lineStack.empty()) {
+			tr->lineGenerated = false;
+			tr->line++;
+			tr->letterOffset.x = 0;
+			tr->letterOffset.y = 0;
+			
+			for (auto& e : tr->textEntities) {
+				Game::ecs.destroyEntity(Game::stack.peek(), e);
+			}
+			tr->keyPressCount = InputManager::keysReleased[SDLK_SPACE];
 		}
 		tr->waitTime += TimeManip::deltaTime;
 	}

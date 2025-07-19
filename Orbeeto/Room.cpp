@@ -160,6 +160,8 @@ void Room::loadRoom(int x, int y) {
 
 		Entity testText = Game::ecs.createEntity(Game::stack.peek());
 		Game::ecs.assignComponent<TextRender>(Game::stack.peek(), testText);
+		TextRender* tr = Game::ecs.getComponent<TextRender>(Game::stack.peek(), testText);
+		tr->interTag = "test2";
 
 		// ----- Test Enemy 1 ----- //
 		/*Entity enemyTest = Game::ecs.createEntity(Game::stack.peek());
