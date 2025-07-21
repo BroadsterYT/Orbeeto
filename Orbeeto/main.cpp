@@ -24,6 +24,7 @@
 #include "Systems/SpriteSystem.hpp"
 #include "Systems/StatBarSystem.hpp"
 #include "Systems/TextRenderSystem.hpp"
+#include "Systems/TrinketSystem.hpp"
 
 
 Game* game = nullptr;
@@ -56,6 +57,7 @@ int main(int argc, char* argv[]) {
 	SpriteSystem spriteSystem(Game::renderer);
 	StatBarSystem statBarSystem;
 	TextRenderSystem textRenderSystem;
+	TrinketSystem trinketSystem;
 
 	// Initializing room
 	Room room(0, 0);
@@ -78,6 +80,7 @@ int main(int argc, char* argv[]) {
 		movementAISystem.update();
 		statBarSystem.update();
 		textRenderSystem.update();
+		trinketSystem.update();
 
 		room.update();
 		

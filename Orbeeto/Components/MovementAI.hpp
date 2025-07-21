@@ -7,9 +7,13 @@ enum class M_AI {
 	DEFAULT,  // Default behavior (nothing)
 	CIRCLE_ACCEL,  // Uses acceleration to move entity in a circle
 	FOLLOW_ENTITY,  // Follows entity specified by entityRef from a distance specified in distance vector
+
+	// ----- Trinkets ----- //
+	TWO_POINT_SHIFT,  // Moves back and forth between two points when the trigger entity toggles
 	
-	GRUNT,  // Standard grunt enemy
-	OCTOGRUNT,
+	// ----- Enemies ----- //
+	MYTE,
+	KILOMYTE,
 
 	// ----- Text Movements ----- //
 	TEXT_TREMBLE,
@@ -25,6 +29,7 @@ struct MovementAI : public Component {
 	float intervalTime = 0;  // Standard interval timer. Can be used for anything
 	
 	Vector2 vec1 = { 0, 0 };  // Can be used for anything
+	Vector2 vec2 = { 0, 0 };  // Can be used for anything
 	Vector2 distance = { 0, 0 };  // Can be used for anything
 	float mag = 1.0f; // Magnitude. Can be used for anything
 	double angle = 0.0;

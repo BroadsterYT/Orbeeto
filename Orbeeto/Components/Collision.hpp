@@ -5,7 +5,7 @@
 #include <iostream>
 #include <SDL_stdinc.h>
 
-enum PTags {  // Physics tags
+enum class PTags {  // Physics tags
 	CAN_PUSH,
 	PUSHABLE,
 
@@ -14,6 +14,8 @@ enum PTags {  // Physics tags
 	GRAPPLE,
 	PORTAL,
 	PORTAL_BULLET,
+
+	BUTTON_TRINKET,
 
 	CAN_HOLD_PORTAL,
 	CAN_TELEPORT,

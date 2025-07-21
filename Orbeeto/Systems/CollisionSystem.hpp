@@ -141,7 +141,7 @@ private:
 	/// <param name="eColl">Pointer to the collision component of the instigating entitiy</param>
 	/// <param name="oColl">Pointer to the collision component of the receiving entity</param>
 	/// <returns>True if the entities are colliding, false otherwise</returns>
-	bool checkForCollision(const Collision* eColl, const Collision* oColl);
+	static bool checkForCollision(const Collision* eColl, const Collision* oColl);
 	/// <summary>
 	/// Returns the side a receiving entity is being hit by the instigating entity.
 	/// NOTE: This should only be called after a collision has been detected!
@@ -150,7 +150,7 @@ private:
 	/// <param name="oColl">Pointer to the collision component of receiving entity</param>
 	/// <returns>0 = South, 1 = East, 2 = North, 3 = West. If an error occurs, returns -1.
 	/// </returns>
-	int intersection(const Collision* eColl, const Collision* oColl);
+	static int intersection(const Collision* eColl, const Collision* oColl);
 
 	void pushEntity(Collision* coll1, Transform* trans1, Collision* coll2, Transform* trans2);
 

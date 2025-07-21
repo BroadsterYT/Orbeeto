@@ -58,11 +58,11 @@ Room::Room(int roomX, int roomY) {
 	playerColl->hitHeight = 32;
 	playerColl->hitPos = Vector2(300.0f, 300.0f);
 	
-	playerColl->physicsTags.set(PTags::PLAYER);
-	playerColl->physicsTags.set(PTags::PUSHABLE);
-	playerColl->physicsTags.set(PTags::CAN_PUSH);
-	playerColl->physicsTags.set(PTags::HURTABLE);
-	playerColl->physicsTags.set(PTags::CAN_TELEPORT);
+	playerColl->physicsTags.set((int)PTags::PLAYER);
+	playerColl->physicsTags.set((int)PTags::PUSHABLE);
+	playerColl->physicsTags.set((int)PTags::CAN_PUSH);
+	playerColl->physicsTags.set((int)PTags::HURTABLE);
+	playerColl->physicsTags.set((int)PTags::CAN_TELEPORT);
 
 	Hp* playerHp = Game::ecs.getComponent<Hp>(Game::stack.peek(), player);
 	playerHp->hp = 25;
@@ -184,7 +184,7 @@ void Room::loadRoom(int x, int y) {
 		e1Coll->physicsTags.set(PTags::PUSHABLE);
 
 		MovementAI* e1AI = Game::ecs.getComponent<MovementAI>(Game::stack.peek(), enemyTest);
-		e1AI->ai = M_AI::OCTOGRUNT;*/
+		e1AI->ai = M_AI::KILOMYTE;*/
 	}
 }
 

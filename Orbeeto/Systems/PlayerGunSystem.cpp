@@ -68,8 +68,8 @@ void PlayerGunSystem::fireBullet(Transform* ownerTrans, const int bulletId, cons
 	bColl->hitHeight = 8;
 	bColl->hitPos = Vector2(ownerTrans->pos.x + barrelOffsetX, ownerTrans->pos.y + barrelOffsetY);
 
-	bColl->physicsTags.set(PTags::PROJECTILE);
-	bColl->physicsTags.set(PTags::CAN_TELEPORT);
+	bColl->physicsTags.set((int)PTags::PROJECTILE);
+	bColl->physicsTags.set((int)PTags::CAN_TELEPORT);
 
 	switch (bulletId) {
 	case BulletType::STANDARD: // Regular bullet

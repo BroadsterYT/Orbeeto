@@ -19,7 +19,7 @@ void CollisionSystem::update() {
 	rebuildQuadtree(QuadBox{ 0.0f, 0.0f, roomW, roomH });
 	std::vector<Entity> found;
 
-	int clipSize = 160;
+	int clipSize = 80;
 	for (int y = 0; y <= roomH; y = y + clipSize) {
 		for (int x = 0; x <= roomW; x = x + clipSize) {
 			//std::cout << "Bound x: " << x << ", Bound y: " << y << std::endl;
@@ -37,7 +37,6 @@ void CollisionSystem::update() {
 					if (other == entity) continue;
 
 					Collision* oCollide = Game::ecs.getComponent<Collision>(Game::stack.peek(), other);
-
 					if (oCollide == nullptr) continue;
 
 					if (checkForCollision(collision, oCollide)) {
@@ -126,13 +125,13 @@ void CollisionSystem::pushEntity(Collision* coll1, Transform* trans1, Collision*
 
 void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transform* eTrans, Entity& other, Collision* oColl) {
 	// Pushing entities that can be pushed
-	if (hasPhysicsTag(eColl, PTags::PUSHABLE) && hasPhysicsTag(oColl, PTags::CAN_PUSH)) {
+	if (hasPhysicsTag(eColl, (int)PTags::PUSHABLE) && hasPhysicsTag(oColl, (int)PTags::CAN_PUSH)) {
 		Transform* oTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), other);
 		pushEntity(eColl, eTrans, oColl, oTrans);
 	}
 
 	// Portal teleportation
-	if (hasPhysicsTag(eColl, PTags::CAN_TELEPORT) && hasPhysicsTag(oColl, PTags::PORTAL)) {
+	if (hasPhysicsTag(eColl, (int)PTags::CAN_TELEPORT) && hasPhysicsTag(oColl, (int)PTags::PORTAL)) {
 		TeleportLink* firstLink = Game::ecs.getComponent<TeleportLink>(Game::stack.peek(), other);
 		TeleportLink* secondLink = Game::ecs.getComponent<TeleportLink>(Game::stack.peek(), Room::getPortalLink(other));
 		
@@ -217,11 +216,11 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 	}
 
 	// Grappling hook collisions
-	if (hasPhysicsTag(eColl, PTags::GRAPPLE)) {
+	if (hasPhysicsTag(eColl, (int)PTags::GRAPPLE)) {
 		Grapple* grapple = Game::ecs.getComponent<Grapple>(Game::stack.peek(), entity);
 		Player* player = Game::ecs.getComponent<Player>(Game::stack.peek(), grapple->owner);
 
-		if (hasPhysicsTag(oColl, PTags::PLAYER) && player->grappleState == GrappleState::RETURNING) {
+		if (hasPhysicsTag(oColl, (int)PTags::PLAYER) && player->grappleState == GrappleState::RETURNING) {
 			Game::ecs.destroyEntity(Game::stack.peek(), entity);
 			player->grappleRef = 0;  // Remove grapple reference from player
 			player->moveToGrapple = false;
@@ -230,7 +229,7 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 			return;
 		}
 
-		if (hasPhysicsTag(oColl, PTags::WALL) && player->grappleState == GrappleState::SENT) {
+		if (hasPhysicsTag(oColl, (int)PTags::WALL) && player->grappleState == GrappleState::SENT) {
 			player->grappleState = GrappleState::LATCHED;
 			grapple->grappledTo = other;
 			player->moveToGrapple = true;
@@ -238,7 +237,7 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 	}
 
 	// Portal Spawning
-	if (hasPhysicsTag(eColl, PTags::PORTAL_BULLET) && hasPhysicsTag(oColl, PTags::CAN_HOLD_PORTAL)) {
+	if (hasPhysicsTag(eColl, (int)PTags::PORTAL_BULLET) && hasPhysicsTag(oColl, (int)PTags::CAN_HOLD_PORTAL)) {
 		int side = intersection(eColl, oColl);  // The direction the spawned portal will face
 		std::cout << side << std::endl;
 		Entity portal = Game::ecs.createEntity(Game::stack.peek());
@@ -268,7 +267,7 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 		pColl->hitHeight = 64;
 		pColl->hitPos = eTrans->pos;
 
-		pColl->physicsTags.set(PTags::PORTAL);
+		pColl->physicsTags.set((int)PTags::PORTAL);
 
 		TeleportLink* pTLink = Game::ecs.getComponent<TeleportLink>(Game::stack.peek(), portal);
 		//*pTLink = TeleportLink{ .facing = side };
@@ -324,11 +323,11 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 	}
 
 	// ----- Projectile deaths ----- //
-	if (hasPhysicsTag(eColl, PTags::PROJECTILE) && hasPhysicsTag(oColl, PTags::WALL)) {  // Destroys bullet if it hits wall
+	if (hasPhysicsTag(eColl, (int)PTags::PROJECTILE) && hasPhysicsTag(oColl, (int)PTags::WALL)) {  // Destroys bullet if it hits wall
 		Game::ecs.destroyEntity(Game::stack.peek(), entity);
 		return;
 	}
-	else if (hasPhysicsTag(eColl, PTags::E_PROJECTILE) && hasPhysicsTag(oColl, PTags::PLAYER)) {  // Enemy hitting player
+	else if (hasPhysicsTag(eColl, (int)PTags::E_PROJECTILE) && hasPhysicsTag(oColl, (int)PTags::PLAYER)) {  // Enemy hitting player
 		Hp* hp = Game::ecs.getComponent<Hp>(Game::stack.peek(), other);
 		Defense* def = Game::ecs.getComponent<Defense>(Game::stack.peek(), other);
 		Bullet* bullet = Game::ecs.getComponent<Bullet>(Game::stack.peek(), entity);

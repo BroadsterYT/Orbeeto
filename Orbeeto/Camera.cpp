@@ -69,6 +69,6 @@ void Camera::cinematicFocus(Entity entity) {
 
 	tpToggle.setValue2(targetVec);
 
-	camera.x = tpToggle.getValue().x;
-	camera.y = tpToggle.getValue().y;
+	camera.x = (int)tpToggle.getValue().x;
+	camera.y = (int)tpToggle.getValue().y;
 }

@@ -160,6 +160,7 @@
     <ClCompile Include="Systems\SpriteSystem.cpp" />
     <ClCompile Include="Systems\StatBarSystem.cpp" />
     <ClCompile Include="Systems\TextRenderSystem.cpp" />
+    <ClCompile Include="Systems\TrinketSystem.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="RoomTile.cpp" />
     <ClCompile Include="TimeManip.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="Components\Collision.hpp" />
     <ClInclude Include="Components\Player.hpp" />
     <ClInclude Include="Components\PlayerGun.hpp" />
+    <ClInclude Include="Components\Trinket.hpp" />
     <ClInclude Include="ECS.hpp" />
     <ClInclude Include="Entity.hpp" />
     <ClInclude Include="Game.hpp" />
@@ -210,6 +212,7 @@
     <ClInclude Include="Systems\StatBarSystem.hpp" />
     <ClInclude Include="Systems\System.hpp" />
     <ClInclude Include="Systems\TextRenderSystem.hpp" />
+    <ClInclude Include="Systems\TrinketSystem.hpp" />
     <ClInclude Include="TextureManager.hpp" />
     <ClInclude Include="TimeManip.hpp" />
     <ClInclude Include="Timer.hpp" />

@@ -1,4 +1,5 @@
 #include "MovementAISystem.hpp"
+#include <cassert>
 #include <random>
 #include <cmath>
 
@@ -26,7 +27,17 @@ void MovementAISystem::update() {
 		}
 			break;
 
-		case M_AI::OCTOGRUNT:
+		case M_AI::TWO_POINT_SHIFT:
+		{
+			assert(mvmAI->entityRef != 0 && "Error: entityRef must point to a valid entity.");
+			Trinket* tt = Game::ecs.getComponent<Trinket>(Game::stack.peek(), mvmAI->entityRef);
+			assert(tt != nullptr && "Error: entityRef must have a Trinket component.");
+
+			// InterpToggle between two points using component as toggle
+		}
+			break;
+
+		case M_AI::KILOMYTE:
 		{
 			// TODO: Complete at later date, need to remove to update MovementAI struct
 		}

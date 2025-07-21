@@ -67,10 +67,10 @@ Entity RoomTile::buildTile() {
 		coll->hitWidth = finalWidth;
 		coll->hitHeight = finalHeight;
 
-		coll->physicsTags.set(PTags::WALL);
-		coll->physicsTags.set(PTags::CAN_PUSH);
+		coll->physicsTags.set((int)PTags::WALL);
+		coll->physicsTags.set((int)PTags::CAN_PUSH);
 		if (canHoldPortal) {
-			coll->physicsTags.set(PTags::CAN_HOLD_PORTAL);
+			coll->physicsTags.set((int)PTags::CAN_HOLD_PORTAL);
 		}
 	}
 
