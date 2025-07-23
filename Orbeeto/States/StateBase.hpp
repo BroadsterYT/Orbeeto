@@ -1,4 +1,7 @@
 #pragma once
+#include <memory>
+#include <unordered_map>
+#include "../ComponentPool.hpp"
 #include "../Entity.hpp"
 
 
@@ -33,7 +36,12 @@ public:
 	/// <param name="edesc">The entity description to add</param>
 	void addEntityDesc(EntityDesc edesc);
 
+	bool hasPool(int componentId);
+
+	void addPool(int componentId, IComponentPool* pool);
+
 private:
+	std::unordered_map<int, IComponentPool*> pools;
 	std::vector<EntityDesc> entityDescs;  // A vector of all the entities currently in the game state
 	bool allowUpdateBelow = false;  // When true, will allow entities in the state immediately below to continue updating
 };

@@ -99,7 +99,6 @@ public:
 
 		std::vector<Component*> tempComponents;
 		tempComponents.assign(MAX_COMPONENTS, nullptr);
-		//entities.push_back({ temp, ComponentMask(), tempComponents });
 		state->addEntityDesc({ temp, ComponentMask(), tempComponents });
 
 		return temp;
@@ -135,6 +134,11 @@ public:
 
 	template<typename T>
 	void assignComponent(StateBase* state, Entity& entity) {
+		if (!state->hasPool(getComponentId<T>())) {
+			IComponentPool* newPool = new ComponentPool<T>();
+			state->addPool(getComponentId<T>(), newPool);
+		}
+		
 		for (EntityDesc& edesc : state->getEntityDescs()) {
 			if (edesc.entity == entity) {
 				assert(!edesc.mask.test(getComponentId<T>()) && "Component already added to entity.");
