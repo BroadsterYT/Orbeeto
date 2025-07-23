@@ -336,6 +336,7 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 		hp->hp -= std::floor(halving * bullet->damage / (halving + def->def));
 		
 		Game::ecs.destroyEntity(Game::stack.peek(), entity);
+		return;
 	}
 }
 
