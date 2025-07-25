@@ -54,7 +54,6 @@ inline void _cdecl operator delete(void* __p, const char*, int) {
 
 class ECS {
 public:
-	//std::vector<EntityDesc> entities;  // All entities currently in existence
 	std::vector<Entity> freeEntities;  // All entity values that are unused
 
 	ECS() {
@@ -87,6 +86,16 @@ public:
 		return componentId;
 	}
 
+	template<class T>
+	ComponentPool<T>* getPool(StateBase* state) {
+		if (!state->hasPool(getComponentId<T>())) {
+			IComponentPool* newPool = new ComponentPool<T>();
+			state->addPool(getComponentId<T>(), newPool);
+		}
+		IComponentPool* basePtr = state->getPool(getComponentId<T>());
+		return static_cast<ComponentPool<T>*>(basePtr);
+	}
+
 	/// <summary>
 	/// Creates a new entity in the given game state
 	/// </summary>
@@ -97,9 +106,9 @@ public:
 		Entity temp = freeEntities[0];
 		freeEntities.erase(freeEntities.begin());
 
-		std::vector<Component*> tempComponents;
-		tempComponents.assign(MAX_COMPONENTS, nullptr);
-		state->addEntityDesc({ temp, ComponentMask(), tempComponents });
+		//std::vector<Component*> tempComponents;
+		//tempComponents.assign(MAX_COMPONENTS, nullptr);
+		//state->addEntityDesc({ temp, ComponentMask(), tempComponents });
 
 		return temp;
 	}
@@ -110,26 +119,12 @@ public:
 	/// <param name="state">Pointer to the game state to search</param>
 	/// <param name="entity">The entity to delete</param>
 	void destroyEntity(StateBase* state, Entity& entity) {
-		auto& entityDescs = state->getEntityDescs();
-		for (auto it = entityDescs.begin(); it != entityDescs.end(); ++it) {
-			if (it->entity == entity) {
-				// Free sprite texture if it exists
-				if (it->mask.test(getComponentId<Sprite>())) {
-					Sprite* sprite = getComponent<Sprite>(state, entity);
-					TextureManager::cleanupTextures();  // TODO: Get this bitchass O(n) out my damn function
-				}
-
-				for (auto& comp : it->components) {
-					delete comp;
-					comp = nullptr;
-				}
-
-				entityDescs.erase(it);
-
-				freeEntities.push_back(entity);
-				return;
+		for (auto& pool : state->getPools()) {
+			if (pool.second->hasComponent(entity)) {
+				pool.second->removeComponent(entity);
 			}
 		}
+		freeEntities.push_back(entity);
 	}
 
 	template<typename T>
@@ -138,67 +133,27 @@ public:
 			IComponentPool* newPool = new ComponentPool<T>();
 			state->addPool(getComponentId<T>(), newPool);
 		}
-		
-		for (EntityDesc& edesc : state->getEntityDescs()) {
-			if (edesc.entity == entity) {
-				assert(!edesc.mask.test(getComponentId<T>()) && "Component already added to entity.");
-				
-				edesc.mask.set(getComponentId<T>());
-				edesc.components[getComponentId<T>()] = new T();
 
-				// std::cout << "Component for entity " << entity << " set successfully." << std::endl;
-				return;
-			}
-		}
-
-		std::cout << "Component could not be added to entity " << entity << " because the entity could not be found" << std::endl;
+		getPool<T>(state)->addComponent(entity);
 	}
 
 	template<typename T>
 	void removeComponent(StateBase* state, Entity& entity) {
-		for (EntityDesc& edesc : state->getEntityDescs()) {
-			if (edesc.entity == entity) {
-				assert(edesc.mask.test(getComponentId<T>()) && "Trying to remove non-existent component");
-
-				edesc.mask.reset(getComponentId<T>());
-				delete edesc.components[getComponentId<T>()];
-				edesc.components[getComponentId<T>()] = nullptr;
-
-				// std::cout << "Removal of component from entity " << entity << " was successful." << std::endl;
-				return;
-			}
-		}
-
-		// std::cout << "Component for entity " << entity << " could not be removed because entity could not be found or does not exist." << std::endl;
+		getPool<T>(state)->removeComponent(entity);
 	}
 
 	template<typename T>
 	T* getComponent(StateBase* state, Entity entity) {
-		for (EntityDesc& edesc : state->getEntityDescs()) {
-			if (edesc.entity == entity) {
-				return static_cast<T*>(edesc.components[getComponentId<T>()]);
-			}
-		}
-
-		return nullptr;
+		return getPool<T>(state)->getComponent(entity);
 	}
 
-	template<typename... ComponentTypes>
+	template<typename First, typename... Rest>
 	std::vector<Entity> getSystemGroup(StateBase* state) {
 		std::vector<Entity> output;
-		ComponentMask maskRef;
-
-		assert(sizeof...(ComponentTypes) > 0 && "A group must be bound by at least 1 component.");
-
-		int componentIds[] = { getComponentId<ComponentTypes>() ... };
-		for (int& id : componentIds) {
-			maskRef.set(id);
-		}
-
-		// Finding entities that belong in system group
-		for (EntityDesc& edesc : state->getEntityDescs()) {
-			if ((maskRef & edesc.mask) != maskRef) continue;
-			output.push_back(edesc.entity);
+		for (auto& entity : getPool<First>(state)->getPacked()) {
+			if ((getPool<Rest>(state)->hasComponent(entity) && ...)) {
+				output.push_back(entity);
+			}
 		}
 
 		return output;

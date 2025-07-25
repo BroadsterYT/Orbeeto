@@ -1,4 +1,5 @@
 #pragma once
+#include <cassert>
 #include <iostream>
 #include "Entity.hpp"
 
@@ -7,6 +8,7 @@
 class IComponentPool {
 public:
 	virtual ~IComponentPool() = default;
+	virtual void addComponent(Entity entity) = 0;
 	virtual void removeComponent(Entity entity) = 0;
 	virtual bool hasComponent(Entity entity) = 0;
 };
@@ -19,7 +21,7 @@ public:
 	/// Adds the component of the component pool to an entity
 	/// </summary>
 	/// <param name="entity">The entity to give the component to</param>
-	void addComponent(Entity entity) {
+	void addComponent(Entity entity) override {
 		assert(!hasComponent(entity) && "Error: Component cannot be added because entity already has it");
 
 		packed.push_back(entity);
@@ -71,9 +73,14 @@ public:
 	/// <param name="entity"></param>
 	/// <returns>Pointer to entity's component, returns nullptr if it doesn't exist</returns>
 	T* getComponent(Entity entity) {
-		assert(hasComponent(entity) && "Error: No component to retrieve");
-
+		if (!hasComponent(entity)) {
+			return nullptr;
+		}
 		return components[sparse[entity]];
+	}
+
+	std::vector<Entity> getPacked() {
+		return packed;
 	}
 
 	void printPool() {
@@ -100,7 +107,7 @@ public:
 	}
 
 private:
-	std::vector<int> sparse = std::vector<int>(MAX_COMPONENTS, -1);
+	std::vector<int> sparse = std::vector<int>(MAX_ENTITIES, -1);
 	std::vector<Entity> packed;
 	std::vector<T*> components;
 };

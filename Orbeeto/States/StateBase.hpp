@@ -40,6 +40,10 @@ public:
 
 	void addPool(int componentId, IComponentPool* pool);
 
+	IComponentPool* getPool(int componentId);
+
+	std::unordered_map<int, IComponentPool*>& getPools();
+
 private:
 	std::unordered_map<int, IComponentPool*> pools;
 	std::vector<EntityDesc> entityDescs;  // A vector of all the entities currently in the game state

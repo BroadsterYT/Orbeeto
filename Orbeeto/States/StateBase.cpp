@@ -24,5 +24,14 @@ void StateBase::addPool(int componentId, IComponentPool* pool) {
 	assert(!hasPool(componentId) && "Error: Cannot add pool because it already exists.");
 
 	pools[componentId] = pool;
-	std::cout << "Pool with ID " << componentId << " added to pools.\n";
+}
+
+IComponentPool* StateBase::getPool(int componentId) {
+	assert(hasPool(componentId) && "Error: Cannot retrieve pool because it does not exist.");
+
+	return pools[componentId];
+}
+
+std::unordered_map<int, IComponentPool*>& StateBase::getPools() {
+	return pools;
 }
