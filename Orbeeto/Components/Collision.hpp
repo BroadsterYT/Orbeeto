@@ -28,6 +28,7 @@ enum class PTags {  // Physics tags
 	ENEMY
 };
 
+
 struct Collision : Component {
 	int hitWidth = 64;
 	int hitHeight = 64;

@@ -7,7 +7,7 @@ struct PlayerGun : Component {
 	bool isLeft = true;  // Is this gun on Orbeeto's left? Left if true; right if false
 
 	float shotBuildup = 60.0f;  /// The time since the last shot was fired
-	float cooldown = 1.0f; // The base rate at which the gun fires bullets
+	float cooldown = 0.25f; // The base rate at which the gun fires bullets
 
 	int bulletId = BulletType::STANDARD;  // The ID of the bullet the gun will fire
 

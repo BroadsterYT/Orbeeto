@@ -14,10 +14,17 @@ public:
 		active = false;
 	}
 
+	/// <summary>
+	/// Sets the current state of the InterpToggle. If true, interpolates forward. False interpolates backward.
+	/// </summary>
+	/// <param name="state">The state to set to.</param>
 	void setState(bool state) {
 		active = state;
 	}
 
+	/// <summary>
+	/// Toggles between forward/backward interpolation.
+	/// </summary>
 	void toggle() {
 		if (active) {
 			active = false;

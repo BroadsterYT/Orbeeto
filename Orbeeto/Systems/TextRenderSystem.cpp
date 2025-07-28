@@ -90,18 +90,26 @@ void TextRenderSystem::update() {
 
 			// Applying movement tags
 			if (hasTag(tr->activeTags, "tremble")) {
-				Game::ecs.assignComponent<MovementAI>(Game::stack.peek(), letter);
-				MovementAI* ai = Game::ecs.getComponent<MovementAI>(Game::stack.peek(), letter);
-				ai->ai = M_AI::TEXT_TREMBLE;
-				ai->vec1 = ltrTrans->pos;
-				ai->mag = 5.0f;
+				Game::ecs.assignComponent<EntityAI>(Game::stack.peek(), letter);
+				Game::ecs.assignComponent<TextTrembleAI>(Game::stack.peek(), letter);
+
+				auto* ai = Game::ecs.getComponent<EntityAI>(Game::stack.peek(), letter);
+				ai->ai = M_AI::text_tremble;
+				
+				auto* trem = Game::ecs.getComponent<TextTrembleAI>(Game::stack.peek(), letter);
+				trem->center = ltrTrans->pos;
+				trem->mag = 5.0f;
 			}
 			else if (hasTag(tr->activeTags, "wave")) {
-				Game::ecs.assignComponent<MovementAI>(Game::stack.peek(), letter);
-				MovementAI* ai = Game::ecs.getComponent<MovementAI>(Game::stack.peek(), letter);
-				ai->ai = M_AI::TEXT_WAVE;
-				ai->vec1 = ltrTrans->pos;
-				ai->mag = 5.0f;
+				Game::ecs.assignComponent<EntityAI>(Game::stack.peek(), letter);
+				Game::ecs.assignComponent<TextWaveAI>(Game::stack.peek(), letter);
+				
+				auto* ai = Game::ecs.getComponent<EntityAI>(Game::stack.peek(), letter);
+				ai->ai = M_AI::text_wave;
+				
+				auto* wave = Game::ecs.getComponent<TextWaveAI>(Game::stack.peek(), letter);
+				wave->center = ltrTrans->pos;
+				wave->mag = 5.0f;
 			}
 
 			tr->waitTime = 0.0f;

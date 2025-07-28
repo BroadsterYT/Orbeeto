@@ -37,9 +37,9 @@ inline void _cdecl operator delete(void* __p, const char*, int) {
 #include "Components/Collision.hpp"
 #include "Components/Component.hpp"
 #include "Components/Defense.hpp"
+#include "Components/EntityAI.hpp"
 #include "Components/Grapple.hpp"
 #include "Components/Hp.hpp"
-#include "Components/MovementAI.hpp"
 #include "Components/Particle.hpp"
 #include "Components/ParticleEmitter.hpp"
 #include "Components/Player.hpp"
@@ -64,7 +64,13 @@ public:
 		std::cout << "Defense component registered. ID: " << getComponentId<Defense>() << std::endl;
 		std::cout << "Grapple component registered. ID: " << getComponentId<Grapple>() << std::endl;
 		std::cout << "Hp component registered. ID: " << getComponentId<Hp>() << std::endl;
-		std::cout << "MovementAI component registered. ID: " << getComponentId<MovementAI>() << std::endl;
+		
+		std::cout << "EntityAI component registered. ID: " << getComponentId<EntityAI>() << std::endl;
+		std::cout << "FollowEntityAI component registered. ID: " << getComponentId<FollowEntityAI>() << std::endl;
+		std::cout << "TextTrembleAI component registered. ID: " << getComponentId<TextTrembleAI>() << std::endl;
+		std::cout << "TextWaveAI component registered. ID: " << getComponentId<TextWaveAI>() << std::endl;
+		std::cout << "TwoPointShiftAI component registered. ID: " << getComponentId<TwoPointShiftAI>() << std::endl;
+		
 		std::cout << "Particle component registered. ID: " << getComponentId<Particle>() << std::endl;
 		std::cout << "ParticleEmitter component registered. ID: " << getComponentId<ParticleEmitter>() << std::endl;
 		std::cout << "Player component registered. ID: " << getComponentId<Player>() << std::endl;

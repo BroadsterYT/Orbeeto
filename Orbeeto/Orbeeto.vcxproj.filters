@@ -72,7 +72,7 @@
     <ClCompile Include="Math.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Systems\MovementAISystem.cpp">
+    <ClCompile Include="Systems\EntityAISystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Systems\StatBarSystem.cpp">
@@ -197,10 +197,10 @@
     <ClInclude Include="Math.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Components\MovementAI.hpp">
+    <ClInclude Include="Components\EntityAI.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Systems\MovementAISystem.hpp">
+    <ClInclude Include="Systems\EntityAISystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Components\StatBar.hpp">

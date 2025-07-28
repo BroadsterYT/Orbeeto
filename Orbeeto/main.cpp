@@ -16,7 +16,7 @@
 #include "Systems/BulletSystem.hpp"
 #include "Systems/CollisionSystem.hpp"
 #include "Systems/GrappleSystem.hpp"
-#include "Systems/MovementAISystem.hpp"
+#include "Systems/EntityAISystem.hpp"
 #include "Systems/PlayerGunSystem.hpp"
 #include "Systems/ParticleEmitterSystem.hpp"
 #include "Systems/ParticleSystem.hpp"
@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
 	BulletSystem bulletSystem;
 	CollisionSystem collisionSystem;
 	GrappleSystem grappleSystem;
-	MovementAISystem movementAISystem;
+	EntityAISystem movementAISystem;
 	ParticleEmitterSystem PE_System;
 	ParticleSystem particleSystem;
 	PlayerGunSystem playerGunSystem;

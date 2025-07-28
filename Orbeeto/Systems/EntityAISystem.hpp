@@ -2,9 +2,9 @@
 #include "System.hpp"
 
 
-class MovementAISystem : public System {
+class EntityAISystem : public System {
 public:
-	MovementAISystem();
+	EntityAISystem();
 
 	void update();
 };

@@ -99,12 +99,15 @@ Room::Room(int roomX, int roomY) {
 	Game::ecs.assignComponent<StatBar>(Game::stack.peek(), playerHpBar);
 	Game::ecs.assignComponent<Sprite>(Game::stack.peek(), playerHpBar);
 	Game::ecs.assignComponent<Transform>(Game::stack.peek(), playerHpBar);
-	Game::ecs.assignComponent<MovementAI>(Game::stack.peek(), playerHpBar);
+	Game::ecs.assignComponent<EntityAI>(Game::stack.peek(), playerHpBar);
+	Game::ecs.assignComponent<FollowEntityAI>(Game::stack.peek(), playerHpBar);
 
-	MovementAI* phbMove = Game::ecs.getComponent<MovementAI>(Game::stack.peek(), playerHpBar);
-	phbMove->ai = M_AI::FOLLOW_ENTITY;
-	phbMove->entityRef = player;
-	phbMove->distance = { 0, 40 };
+	EntityAI* phbMove = Game::ecs.getComponent<EntityAI>(Game::stack.peek(), playerHpBar);
+	phbMove->ai = M_AI::follow_entity;
+
+	auto* feAI = Game::ecs.getComponent<FollowEntityAI>(Game::stack.peek(), playerHpBar);
+	feAI->entityRef = player;
+	feAI->distOffset = Vector2(0, 40);
 
 	Transform* phbTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), playerHpBar);
 	phbTrans->pos = { 0, 0 };
@@ -169,7 +172,7 @@ void Room::loadRoom(int x, int y) {
 		Game::ecs.assignComponent<Transform>(Game::stack.peek(), enemyTest);
 		Game::ecs.assignComponent<Sprite>(Game::stack.peek(), enemyTest);
 		Game::ecs.assignComponent<Collision>(Game::stack.peek(), enemyTest);
-		Game::ecs.assignComponent<MovementAI>(Game::stack.peek(), enemyTest);
+		Game::ecs.assignComponent<EntityAI>(Game::stack.peek(), enemyTest);
 
 		Transform* e1Trans = Game::ecs.getComponent<Transform>(Game::stack.peek(), enemyTest);
 		e1Trans->pos = { 200, 200 };
@@ -183,8 +186,8 @@ void Room::loadRoom(int x, int y) {
 		e1Coll->physicsTags.set(PTags::ENEMY);
 		e1Coll->physicsTags.set(PTags::PUSHABLE);
 
-		MovementAI* e1AI = Game::ecs.getComponent<MovementAI>(Game::stack.peek(), enemyTest);
-		e1AI->ai = M_AI::KILOMYTE;*/
+		EntityAI* e1AI = Game::ecs.getComponent<EntityAI>(Game::stack.peek(), enemyTest);
+		e1AI->ai = M_AI::kilomyte;*/
 	}
 }
 

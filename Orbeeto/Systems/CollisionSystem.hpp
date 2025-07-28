@@ -120,6 +120,16 @@ private:
 };
 
 
+class ICollisionHandler {
+public:
+	virtual ~ICollisionHandler() {};
+	virtual bool handle(Entity a, Collision* aColl, Transform* aTrans,
+						Entity b, Collision* bColl, Transform* bTrans) = 0;
+
+	virtual int intersection(const Collision* aColl, const Collision* bColl);
+};
+
+
 class CollisionSystem : public System {
 public:
 	CollisionSystem();
@@ -129,6 +139,8 @@ public:
 
 private:
 	static Quadtree tree;
+	std::vector<std::unique_ptr<ICollisionHandler>> handlers;
+
 	/// <summary>
 	/// Resets the collision tree and reinserts all entities
 	/// </summary>
@@ -143,18 +155,6 @@ private:
 	/// <returns>True if the entities are colliding, false otherwise</returns>
 	static bool checkForCollision(const Collision* eColl, const Collision* oColl);
 	/// <summary>
-	/// Returns the side a receiving entity is being hit by the instigating entity.
-	/// NOTE: This should only be called after a collision has been detected!
-	/// </summary>
-	/// <param name="eColl">Pointer to the collision component of instigating entity</param>
-	/// <param name="oColl">Pointer to the collision component of receiving entity</param>
-	/// <returns>0 = South, 1 = East, 2 = North, 3 = West. If an error occurs, returns -1.
-	/// </returns>
-	static int intersection(const Collision* eColl, const Collision* oColl);
-
-	void pushEntity(Collision* coll1, Transform* trans1, Collision* coll2, Transform* trans2);
-
-	/// <summary>
 	/// Performs all game logic related to collisions
 	/// </summary>
 	/// <param name="entity">The instigating entity</param>
@@ -164,4 +164,39 @@ private:
 	/// <param name="oColl">The receiving entity's collision component</param>
 	void evaluateCollision(Entity& entity, Collision* eColl, Transform* eTrans, Entity& other, Collision* oColl);
 	bool hasPhysicsTag(const Collision* coll, int tag);
+};
+
+
+class PushHandler : public ICollisionHandler {
+public:
+	bool handle(Entity a, Collision* aColl, Transform* aTrans,
+				Entity b, Collision* bColl, Transform* bTrans) override;
+};
+
+
+class PortalTeleportHandler : public ICollisionHandler {
+public:
+	bool handle(Entity a, Collision* aColl, Transform* aTrans,
+				Entity b, Collision* bColl, Transform* bTrans) override;
+};
+
+
+class GrappleHandler : public ICollisionHandler {
+public:
+	bool handle(Entity a, Collision* aColl, Transform* aTrans,
+				Entity b, Collision* bColl, Transform* bTrans) override;
+};
+
+
+class PortalSpawningHandler : public ICollisionHandler {
+public:
+	bool handle(Entity a, Collision* aColl, Transform* aTrans,
+				Entity b, Collision* bColl, Transform* bTrans) override;
+};
+
+
+class ProjHitHandler : public ICollisionHandler {
+public:
+	bool handle(Entity a, Collision* aColl, Transform* aTrans,
+		Entity b, Collision* bColl, Transform* bTrans) override;
 };

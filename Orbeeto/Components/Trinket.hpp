@@ -3,7 +3,6 @@
 
 
 enum class TrinketType {
-	NONE,
 	BUTTON,
 };
 
