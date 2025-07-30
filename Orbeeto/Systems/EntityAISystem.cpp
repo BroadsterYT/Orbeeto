@@ -29,11 +29,17 @@ void EntityAISystem::update() {
 		}
 
 		case M_AI::two_point_shift: {
-			auto* tpsAI = Game::ecs.getComponent<TwoPointShiftAI>(Game::stack.peek(), entity);
-			assert(tpsAI && "Error: Entity must have TwoPointShiftAI component.");
+			auto* tps = Game::ecs.getComponent<TwoPointShiftAI>(Game::stack.peek(), entity);
+			assert(tps && "Error: Entity must have TwoPointShiftAI component.");
+			assert(tps->toggleRef != 0 && "Error: toggleRef cannot be 0");
 			
-			// TODO: Finish implementation
-			
+			Trinket* trink = Game::ecs.getComponent<Trinket>(Game::stack.peek(), tps->toggleRef);
+			if (tps->lastToggleState != trink->active) {
+				tps->interp.toggle();
+				tps->lastToggleState = trink->active;
+			}
+
+			trans->pos = tps->interp.getValue();
 			break;
 		}
 

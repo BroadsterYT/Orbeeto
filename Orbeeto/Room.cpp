@@ -159,12 +159,37 @@ void Room::loadRoom(int x, int y) {
 		RoomTile tile4 = RoomTile(4, 0, 8, 2, 0, 0, 2);
 		tile1.buildTile();
 		tile2.buildTile();
-		tile3.buildTile();
+		Entity tile3Ent = tile3.buildTile();
 
 		Entity testText = Game::ecs.createEntity(Game::stack.peek());
 		Game::ecs.assignComponent<TextRender>(Game::stack.peek(), testText);
 		TextRender* tr = Game::ecs.getComponent<TextRender>(Game::stack.peek(), testText);
 		tr->interTag = "test2";
+
+		// TrinketToggle test
+		Entity toggle = Game::ecs.createEntity(Game::stack.peek());
+		Game::ecs.assignComponent<Transform>(Game::stack.peek(), toggle);
+		Game::ecs.assignComponent<Trinket>(Game::stack.peek(), toggle);
+		Game::ecs.assignComponent<Sprite>(Game::stack.peek(), toggle);
+
+		Transform* ttrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), toggle);
+		Trinket* ttrink = Game::ecs.getComponent<Trinket>(Game::stack.peek(), toggle);
+		Sprite* tsprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), toggle);
+
+		ttrans->pos.x = 500;
+		ttrans->pos.y = 500;
+		tsprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png");
+
+		Game::ecs.assignComponent<EntityAI>(Game::stack.peek(), tile3Ent);
+		Game::ecs.assignComponent<TwoPointShiftAI>(Game::stack.peek(), tile3Ent);
+		
+		EntityAI* eAI = Game::ecs.getComponent<EntityAI>(Game::stack.peek(), tile3Ent);
+		TwoPointShiftAI* tps = Game::ecs.getComponent<TwoPointShiftAI>(Game::stack.peek(), tile3Ent);
+
+		eAI->ai = M_AI::two_point_shift;
+		tps->interp.setValue1(Vector2(200, 200));
+		tps->interp.setValue2(Vector2(400, 200));
+		tps->toggleRef = toggle;
 
 		// ----- Test Enemy 1 ----- //
 		/*Entity enemyTest = Game::ecs.createEntity(Game::stack.peek());

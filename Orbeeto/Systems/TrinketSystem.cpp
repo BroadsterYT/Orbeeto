@@ -13,12 +13,16 @@ void TrinketSystem::update() {
 		case TrinketType::BUTTON:
 		{
 			std::vector<Entity> onTop;
-			CollisionSystem::queryTree(QuadBox{ (float)trans->pos.x, (float)trans->pos.y, 64, 64 }, onTop);
+			CollisionSystem::queryTree(QuadBox{ (float)trans->pos.x - 32, (float)trans->pos.y - 32, 64, 64 }, onTop);
 
 			if (onTop.size() > 0) {
+				std::cout << "ACTIVE!\n";
 				trinket->active = true;
 			}
-			else trinket->active = false;
+			else {
+				trinket->active = false;
+				std::cout << "inactive\n";
+			}
 		}
 			break;
 		}  // Switch end

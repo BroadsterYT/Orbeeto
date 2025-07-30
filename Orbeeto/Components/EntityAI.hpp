@@ -37,8 +37,9 @@ struct FollowEntityAI : public Component {
 
 
 struct TwoPointShiftAI : public Component {
-	Entity entityRef = 0;
+	Entity toggleRef = 0;
 	InterpToggle<Vector2> interp = InterpToggle<Vector2>(Math::cerp<Vector2>, Vector2(), Vector2(), 0.25f);
+	bool lastToggleState = false;
 };
 
 

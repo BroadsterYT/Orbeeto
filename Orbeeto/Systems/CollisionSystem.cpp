@@ -83,7 +83,7 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 	
 	for (auto& handler : handlers) {
 		if (handler->handle(entity, eColl, eTrans, other, oColl, oTrans)) {
-			continue;
+			return;
 		}
 	}
 }
@@ -344,8 +344,7 @@ bool PortalSpawningHandler::handle(Entity a, Collision* aColl, Transform* aTrans
 				std::cout << "Linked " << player->portals.second << " to " << Room::getPortalLink(player->portals.second) << std::endl;
 			}
 		}
-
-		// AN ENTITY WITH THE PORTALBULLET PHYSICS TAG MUST ALSO HAVE PROJECTILE TAG!
+		Game::ecs.destroyEntity(Game::stack.peek(), a);
 		return true;
 	}
 	return false;
