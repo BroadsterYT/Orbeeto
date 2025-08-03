@@ -113,6 +113,9 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <SupportJustMyCode>false</SupportJustMyCode>
       <SuppressStartupBanner>false</SuppressStartupBanner>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -196,6 +199,7 @@
     <ClInclude Include="Raycast.hpp" />
     <ClInclude Include="Room.hpp" />
     <ClInclude Include="RoomTile.hpp" />
+    <ClInclude Include="SerialHelper.hpp" />
     <ClInclude Include="States\ActionState.hpp" />
     <ClInclude Include="States\GameStack.hpp" />
     <ClInclude Include="States\InventoryState.hpp" />

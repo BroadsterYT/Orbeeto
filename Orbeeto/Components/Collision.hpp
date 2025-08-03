@@ -35,6 +35,14 @@ struct Collision : Component {
 	Vector2 hitPos = { 0, 0 };
 
 	bool tpFlag = false;  // Lets other objects detect entity teleportation
-
 	std::bitset<32> physicsTags = std::bitset<32>().reset();
+
+
+	void serialize(std::ofstream& out) override {
+		SerialHelper::serialize(out, &hitWidth, &hitHeight, &hitPos.x, &hitPos.y, &tpFlag, &physicsTags);
+	}
+
+	void deserialize(std::ifstream& in) override {
+		SerialHelper::deserialize(in, &hitWidth, &hitHeight, &hitPos.x, &hitPos.y, &tpFlag, &physicsTags);
+	}
 };

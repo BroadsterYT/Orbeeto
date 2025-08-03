@@ -187,8 +187,8 @@ void Room::loadRoom(int x, int y) {
 		TwoPointShiftAI* tps = Game::ecs.getComponent<TwoPointShiftAI>(Game::stack.peek(), tile3Ent);
 
 		eAI->ai = M_AI::two_point_shift;
-		tps->interp.setValue1(Vector2(200, 200));
-		tps->interp.setValue2(Vector2(400, 200));
+		tps->interp.val1 = Vector2(200, 200);
+		tps->interp.val2 = Vector2(400, 200);
 		tps->toggleRef = toggle;
 
 		// ----- Test Enemy 1 ----- //

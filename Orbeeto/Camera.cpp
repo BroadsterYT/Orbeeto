@@ -59,15 +59,15 @@ void Camera::cinematicFocus(Entity entity) {
 	};
 
 	if (lastTpCheck != coll->tpFlag) {
-		tpToggle.setState(false);
-		tpToggle.setWeight(0.0);
-		tpToggle.setValue1(cameraVec);
+		tpToggle.active = false;
+		tpToggle.weight = 0.0;
+		tpToggle.val1 = cameraVec;
 		tpToggle.toggle();
 
 		lastTpCheck = coll->tpFlag;
 	}
 
-	tpToggle.setValue2(targetVec);
+	tpToggle.val2 = targetVec;
 
 	camera.x = (int)tpToggle.getValue().x;
 	camera.y = (int)tpToggle.getValue().y;

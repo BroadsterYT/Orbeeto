@@ -54,11 +54,7 @@ inline void _cdecl operator delete(void* __p, const char*, int) {
 
 class ECS {
 public:
-	//std::vector<EntityDesc> entities;  // All entities currently in existence
-	std::vector<Entity> freeEntities;  // All entity values that are unused
-
 	ECS() {
-		// ----- Registering Components ----- //
 		std::cout << "Bullet component registered. ID: " << getComponentId<Bullet>() << std::endl;
 		std::cout << "Collision component registered. ID: " << getComponentId<Collision>() << std::endl;
 		std::cout << "Defense component registered. ID: " << getComponentId<Defense>() << std::endl;
@@ -81,10 +77,6 @@ public:
 		std::cout << "Transform component registered. ID: " << getComponentId<Transform>() << std::endl;
 		std::cout << "TextRender component registered. ID: " << getComponentId<TextRender>() << std::endl;
 		std::cout << "Trinket component registered. ID: " << getComponentId<Trinket>() << std::endl;
-
-		for (Entity i = 1; i < MAX_ENTITIES; i++) {
-			freeEntities.push_back(i);
-		}
 	}
 
 	template <class T>
@@ -99,13 +91,10 @@ public:
 	/// <param name="state">Pointer to the game state to create the entity within</param>
 	/// <returns>The created entity</returns>
 	Entity createEntity(StateBase* state) {
-		assert(freeEntities.size() > 0 && "An entity overflow has occurred.");
-		Entity temp = freeEntities[0];
-		freeEntities.erase(freeEntities.begin());
+		Entity temp = state->getNextFree();
 
 		std::vector<Component*> tempComponents;
 		tempComponents.assign(MAX_COMPONENTS, nullptr);
-		//entities.push_back({ temp, ComponentMask(), tempComponents });
 		state->addEntityDesc({ temp, ComponentMask(), tempComponents });
 
 		return temp;
@@ -133,7 +122,7 @@ public:
 
 				entityDescs.erase(it);
 
-				freeEntities.push_back(entity);
+				state->returnFreeEntity(entity);
 				return;
 			}
 		}
@@ -144,7 +133,7 @@ public:
 		for (EntityDesc& edesc : state->getEntityDescs()) {
 			if (edesc.entity == entity) {
 				assert(!edesc.mask.test(getComponentId<T>()) && "Component already added to entity.");
-				
+
 				edesc.mask.set(getComponentId<T>());
 				edesc.components[getComponentId<T>()] = new T();
 
@@ -152,7 +141,6 @@ public:
 				return;
 			}
 		}
-
 		std::cout << "Component could not be added to entity " << entity << " because the entity could not be found" << std::endl;
 	}
 
@@ -170,7 +158,6 @@ public:
 				return;
 			}
 		}
-
 		// std::cout << "Component for entity " << entity << " could not be removed because entity could not be found or does not exist." << std::endl;
 	}
 

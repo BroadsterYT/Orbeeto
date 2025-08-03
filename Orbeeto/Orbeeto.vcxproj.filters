@@ -260,6 +260,9 @@
     <ClInclude Include="Systems\TrinketSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SerialHelper.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="RoomLayouts\test.dat" />

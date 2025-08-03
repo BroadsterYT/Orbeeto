@@ -32,8 +32,19 @@ public:
 	/// </summary>
 	/// <param name="edesc">The entity description to add</param>
 	void addEntityDesc(EntityDesc edesc);
+	/// <summary>
+	/// Retrieves the next free entity, returns it, and removes it from the list of free entities
+	/// </summary>
+	/// <returns>The next free entity</returns>
+	Entity getNextFree();
+	/// <summary>
+	/// Puts a destroyed entity back into the vector of free entities
+	/// </summary>
+	/// <param name="entity">The entity that is now free</param>
+	void returnFreeEntity(const Entity entity);
 
 private:
+	std::vector<Entity> freeEntities;
 	std::vector<EntityDesc> entityDescs;  // A vector of all the entities currently in the game state
 	bool allowUpdateBelow = false;  // When true, will allow entities in the state immediately below to continue updating
 };

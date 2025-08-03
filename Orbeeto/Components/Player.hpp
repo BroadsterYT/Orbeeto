@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 
-enum GrappleState {
+enum class GrappleState {
 	INACTIVE,
 	SENT,
 	LATCHED,
@@ -11,12 +11,21 @@ enum GrappleState {
 };
 
 struct Player : Component {
-	int grappleState = GrappleState::INACTIVE;
-	uint32_t grappleRef = 0; // The ID of the active grappling hook. Is 0 when no grappling hook is deployed
+	GrappleState grappleState = GrappleState::INACTIVE;
+	Entity grappleRef = 0; // The ID of the active grappling hook.
 	bool moveToGrapple = false;
 	
 	int grappleInputCopy = 0; // A copy of the value of the number of middle mouse releases
 	int portalInputCopy = 0; // A copy of the number of right mouse releases
 
 	std::pair<uint32_t, uint32_t> portals = { 0, 0 };
+
+
+	void serialize(std::ofstream& out) override {
+
+	}
+
+	void deserialize(std::ifstream& in) override {
+
+	}
 };
