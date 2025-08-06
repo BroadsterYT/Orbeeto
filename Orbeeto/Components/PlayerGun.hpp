@@ -3,13 +3,29 @@
 
 
 struct PlayerGun : Component {
-	uint32_t owner = 0;  // Pointer to player entity
+	uint32_t owner = 0;  // Player entity
 	bool isLeft = true;  // Is this gun on Orbeeto's left? Left if true; right if false
 
 	float shotBuildup = 60.0f;  /// The time since the last shot was fired
 	float cooldown = 0.25f; // The base rate at which the gun fires bullets
 
-	int bulletId = BulletType::STANDARD;  // The ID of the bullet the gun will fire
+	BulletType bulletId = BulletType::STANDARD;  // The ID of the bullet the gun will fire
 
 	float heatDissipation = 100.0f;
+
+
+	void serialize(std::ofstream& out) {
+		uint32_t rawId = static_cast<uint32_t>(bulletId);
+		SerialHelper::serialize(out, &rawId);
+
+		SerialHelper::serialize(out, &owner, &isLeft, &shotBuildup, &cooldown, &heatDissipation);
+	}
+
+	void deserialize(std::ifstream& in) {
+		uint32_t rawId;
+		SerialHelper::deserialize(in, &rawId);
+		bulletId = static_cast<BulletType>(rawId);
+
+		SerialHelper::deserialize(in, &owner, &isLeft, &shotBuildup, &cooldown, &heatDissipation);
+	}
 };

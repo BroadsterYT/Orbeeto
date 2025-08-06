@@ -22,10 +22,17 @@ struct Player : Component {
 
 
 	void serialize(std::ofstream& out) override {
+		uint32_t rawState = static_cast<uint32_t>(grappleState);
+		SerialHelper::serialize(out, &rawState);
 
+		SerialHelper::serialize(out, &grappleRef, &moveToGrapple, &grappleInputCopy, &portalInputCopy, &portals);
 	}
 
 	void deserialize(std::ifstream& in) override {
+		uint32_t rawState;
+		SerialHelper::deserialize(in, &rawState);
+		grappleState = static_cast<GrappleState>(rawState);
 
+		SerialHelper::deserialize(in, &grappleRef, &moveToGrapple, &grappleInputCopy, &portalInputCopy, &portals);
 	}
 };

@@ -45,17 +45,11 @@ struct FollowEntityAI : public Component {
 
 
 	void serialize(std::ofstream& out) override {
-		out.write(reinterpret_cast<const char*>(&entityRef), sizeof(entityRef));
-
-		out.write(reinterpret_cast<const char*>(&distOffset.x), sizeof(distOffset.x));
-		out.write(reinterpret_cast<const char*>(&distOffset.y), sizeof(distOffset.y));
+		SerialHelper::serialize(out, &entityRef, &distOffset.x, &distOffset.y);
 	}
 
 	void deserialize(std::ifstream& in) override {
-		in.read(reinterpret_cast<char*>(&entityRef), sizeof(entityRef));
-
-		in.read(reinterpret_cast<char*>(&distOffset.x), sizeof(distOffset.x));
-		in.read(reinterpret_cast<char*>(&distOffset.y), sizeof(distOffset.y));
+		SerialHelper::deserialize(in, &entityRef, &distOffset.x, &distOffset.y);
 	}
 };
 
@@ -67,35 +61,25 @@ struct TwoPointShiftAI : public Component {
 
 
 	void serialize(std::ofstream& out) override {
-		out.write(reinterpret_cast<const char*>(&toggleRef), sizeof(toggleRef));
-
-		out.write(reinterpret_cast<const char*>(&interp.val1.x), sizeof(interp.val1.x));
-		out.write(reinterpret_cast<const char*>(&interp.val1.y), sizeof(interp.val1.y));
-		out.write(reinterpret_cast<const char*>(&interp.val2.x), sizeof(interp.val2.x));
-		out.write(reinterpret_cast<const char*>(&interp.val2.y), sizeof(interp.val2.y));
-		out.write(reinterpret_cast<const char*>(&interp.cycleTime), sizeof(interp.cycleTime));
-		out.write(reinterpret_cast<const char*>(&interp.weight), sizeof(interp.weight));
-		out.write(reinterpret_cast<const char*>(&interp.lastWeight), sizeof(interp.lastWeight));
-		out.write(reinterpret_cast<const char*>(&interp.lastToggle), sizeof(interp.lastToggle));
-		out.write(reinterpret_cast<const char*>(&interp.active), sizeof(interp.active));
-
-		out.write(reinterpret_cast<const char*>(&lastToggleState), sizeof(lastToggleState));
+		SerialHelper::serialize(out, &toggleRef,
+			&interp.val1.x, &interp.val1.y,
+			&interp.val2.x, &interp.val2.y,
+			&interp.cycleTime, &interp.weight,
+			&interp.lastWeight, &interp.lastToggle,
+			&interp.active,
+			&lastToggleState
+			);
 	}
 
 	void deserialize(std::ifstream& in) override {
-		in.read(reinterpret_cast<char*>(&toggleRef), sizeof(toggleRef));
-
-		in.read(reinterpret_cast<char*>(&interp.val1.x), sizeof(interp.val1.x));
-		in.read(reinterpret_cast<char*>(&interp.val1.y), sizeof(interp.val1.y));
-		in.read(reinterpret_cast<char*>(&interp.val2.x), sizeof(interp.val2.x));
-		in.read(reinterpret_cast<char*>(&interp.val2.y), sizeof(interp.val2.y));
-		in.read(reinterpret_cast<char*>(&interp.cycleTime), sizeof(interp.cycleTime));
-		in.read(reinterpret_cast<char*>(&interp.weight), sizeof(interp.weight));
-		in.read(reinterpret_cast<char*>(&interp.lastWeight), sizeof(interp.lastWeight));
-		in.read(reinterpret_cast<char*>(&interp.lastToggle), sizeof(interp.lastToggle));
-		in.read(reinterpret_cast<char*>(&interp.active), sizeof(interp.active));
-
-		in.read(reinterpret_cast<char*>(&lastToggleState), sizeof(lastToggleState));
+		SerialHelper::deserialize(in, &toggleRef,
+			&interp.val1.x, &interp.val1.y,
+			&interp.val2.x, &interp.val2.y,
+			&interp.cycleTime, &interp.weight,
+			&interp.lastWeight, &interp.lastToggle,
+			&interp.active,
+			&lastToggleState
+			);
 	}
 };
 
@@ -107,19 +91,11 @@ struct TextTrembleAI : public Component {
 
 
 	void serialize(std::ofstream& out) override {
-		out.write(reinterpret_cast<const char*>(&center.x), sizeof(center.x));
-		out.write(reinterpret_cast<const char*>(&center.y), sizeof(center.y));
-		out.write(reinterpret_cast<const char*>(&randOffset.x), sizeof(randOffset.x));
-		out.write(reinterpret_cast<const char*>(&randOffset.y), sizeof(randOffset.y));
-		out.write(reinterpret_cast<const char*>(&mag), sizeof(mag));
+		SerialHelper::serialize(out, &center.x, &center.y, &randOffset.x, &randOffset.y, &mag);
 	}
 
 	void deserialize(std::ifstream& in) override {
-		in.read(reinterpret_cast<char*>(&center.x), sizeof(center.x));
-		in.read(reinterpret_cast<char*>(&center.y), sizeof(center.y));
-		in.read(reinterpret_cast<char*>(&randOffset.x), sizeof(randOffset.x));
-		in.read(reinterpret_cast<char*>(&randOffset.y), sizeof(randOffset.y));
-		in.read(reinterpret_cast<char*>(&mag), sizeof(mag));
+		SerialHelper::deserialize(in, &center.x, &center.y, &randOffset.x, &randOffset.y, &mag);
 	}
 };
 
@@ -131,16 +107,10 @@ struct TextWaveAI : public Component {
 
 
 	void serialize(std::ofstream& out) override {
-		out.write(reinterpret_cast<const char*>(&center.x), sizeof(center.x));
-		out.write(reinterpret_cast<const char*>(&center.y), sizeof(center.y));
-		out.write(reinterpret_cast<const char*>(&mag), sizeof(mag));
-		out.write(reinterpret_cast<const char*>(&timeElapsed), sizeof(timeElapsed));
+		SerialHelper::serialize(out, &center.x, &center.y, &mag, &timeElapsed);
 	}
 
 	void deserialize(std::ifstream& in) override {
-		in.read(reinterpret_cast<char*>(&center.x), sizeof(center.x));
-		in.read(reinterpret_cast<char*>(&center.y), sizeof(center.y));
-		in.read(reinterpret_cast<char*>(&mag), sizeof(mag));
-		in.read(reinterpret_cast<char*>(&timeElapsed), sizeof(timeElapsed));
+		SerialHelper::deserialize(in, &center.x, &center.y, &mag, &timeElapsed);
 	}
 };

@@ -14,19 +14,17 @@ struct Particle : Component {
 
 
 	void serialize(std::ofstream& out) override {
-		uint32_t rawType = static_cast<uint32_t>(type);
-		out.write(reinterpret_cast<const char*>(&rawType), sizeof(rawType));
-		
-		out.write(reinterpret_cast<const char*>(&maxLifetime), sizeof(maxLifetime));
-		out.write(reinterpret_cast<const char*>(&lifetime), sizeof(lifetime));
+		uint32_t rawAi = static_cast<uint32_t>(type);
+		SerialHelper::serialize(out, &rawAi);
+
+		SerialHelper::serialize(out, &maxLifetime, &lifetime);
 	}
 
 	void deserialize(std::ifstream& in) override {
-		uint32_t rawType;
-		in.read(reinterpret_cast<char*>(&rawType), sizeof(rawType));
-		type = static_cast<ParticleAI>(rawType);
+		uint32_t rawAi;
+		SerialHelper::deserialize(in, &rawAi);
+		type = static_cast<ParticleAI>(rawAi);
 
-		in.read(reinterpret_cast<char*>(&maxLifetime), sizeof(maxLifetime));
-		in.read(reinterpret_cast<char*>(&lifetime), sizeof(lifetime));
+		SerialHelper::deserialize(in, &maxLifetime, &lifetime);
 	}
 };

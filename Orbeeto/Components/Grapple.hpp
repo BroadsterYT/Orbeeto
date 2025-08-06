@@ -8,12 +8,10 @@ struct Grapple : Component {
 
 
 	void serialize(std::ofstream& out) override {
-		out.write(reinterpret_cast<const char*>(&owner), sizeof(owner));
-		out.write(reinterpret_cast<const char*>(&grappledTo), sizeof(grappledTo));
+		SerialHelper::serialize(out, &owner, &grappledTo);
 	}
 
 	void deserialize(std::ifstream& in) override {
-		in.read(reinterpret_cast<char*>(&owner), sizeof(owner));
-		in.read(reinterpret_cast<char*>(&grappledTo), sizeof(grappledTo));
+		SerialHelper::deserialize(in, &owner, &grappledTo);
 	}
 };

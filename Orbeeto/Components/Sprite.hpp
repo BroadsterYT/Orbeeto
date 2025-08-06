@@ -32,4 +32,15 @@ struct Sprite : Component {
 
 	int index = 0;  // The index of the image in the image vector to display
 	std::shared_ptr<SDL_Texture> spriteSheet = nullptr;
+
+	// TODO: Add texture path as member variable to use when serializing
+
+
+	void serialize(std::ofstream& out) {
+
+	}
+
+	void deserialize(std::ifstream& in) {
+
+	}
 };

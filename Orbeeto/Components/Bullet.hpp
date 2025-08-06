@@ -2,15 +2,15 @@
 #include "Component.hpp"
 
 
-enum BulletType {
+enum class BulletType {
 	STANDARD,
 	HOMING
 };
 
-
+// TODO: Separate bullet struct into specialized components for each bullet
 struct Bullet : Component {
 	// ----- Required ----- //
-	int bulletAI = BulletType::STANDARD;
+	BulletType bulletAI = BulletType::STANDARD;
 	float lifeTime = 0.0f;
 
 	// ----- General ----- //
@@ -26,21 +26,21 @@ struct Bullet : Component {
 
 	void serialize(std::ofstream& out) override {
 		uint32_t rawAi = static_cast<uint32_t>(bulletAI);
-		SerialHelper::serializeOne(out, &rawAi);
+		SerialHelper::serialize(out, &rawAi);
 		
 		SerialHelper::serialize(out, &lifeTime, &persistent, &damage, &shotBy, &lastHomingCheck, &homingRange, &closestTarget);
 	}
 
 	void deserialize(std::ifstream& in) override {
 		uint32_t rawAi;
-		SerialHelper::deserializeOne(in, &rawAi);
+		SerialHelper::deserialize(in, &rawAi);
 		bulletAI = static_cast<BulletType>(rawAi);
 
 		SerialHelper::deserialize(in, &lifeTime, &persistent, &damage, &shotBy, &lastHomingCheck, &homingRange, &closestTarget);
 	}
 
 	void print() {
-		std::cout << "BulletAI: " << bulletAI << std::endl;
+		std::cout << "BulletAI: " << static_cast<int>(bulletAI) << std::endl;
 		std::cout << "lifeTime: " << lifeTime << std::endl;
 		std::cout << "Persistent: " << persistent << std::endl;
 		std::cout << "Damage: " << damage << std::endl;

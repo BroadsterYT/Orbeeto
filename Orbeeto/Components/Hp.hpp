@@ -10,16 +10,10 @@ struct Hp : Component {
 
 
 	void serialize(std::ofstream& out) override {
-		out.write(reinterpret_cast<const char*>(&maxHp), sizeof(maxHp));
-		out.write(reinterpret_cast<const char*>(&hp), sizeof(hp));
-
-		out.write(reinterpret_cast<const char*>(&hpMod), sizeof(hpMod));
+		SerialHelper::serialize(out, &maxHp, &hp, &hpMod);
 	}
 
 	void deserialize(std::ifstream& in) override {
-		in.read(reinterpret_cast<char*>(&maxHp), sizeof(maxHp));
-		in.read(reinterpret_cast<char*>(&hp), sizeof(hp));
-
-		in.read(reinterpret_cast<char*>(&hpMod), sizeof(hpMod));
+		SerialHelper::deserialize(in, &maxHp, &hp, &hpMod);
 	}
 };

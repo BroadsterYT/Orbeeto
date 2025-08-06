@@ -14,9 +14,13 @@ void TrinketSystem::update() {
 			std::vector<Entity> onTop;
 			CollisionSystem::queryTree(QuadBox{ (float)trans->pos.x - 32, (float)trans->pos.y - 32, 64, 64 }, onTop);
 
-			//TODO: Only allow players or boxes to trigger button
+			bool playerCheck = false;
+			for (auto& entity : onTop) {
+				Player* p = Game::ecs.getComponent<Player>(Game::stack.peek(), entity);
+				if (p) playerCheck = true;
+			}
 
-			if (onTop.size() > 0) {
+			if (playerCheck) {
 				//std::cout << "ACTIVE!\n";
 				trinket->active = true;
 			}

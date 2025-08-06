@@ -26,7 +26,7 @@ void PlayerGunSystem::update() {
 	}
 }
 
-void PlayerGunSystem::fireBullet(Transform* ownerTrans, const int bulletId, const double rotAngle, const bool isLeft) {
+void PlayerGunSystem::fireBullet(Transform* ownerTrans, BulletType bulletId, const double rotAngle, const bool isLeft) {
 	Entity bullet = Game::ecs.createEntity(Game::stack.peek());
 
 	Game::ecs.assignComponent<Sprite>(Game::stack.peek(), bullet);
