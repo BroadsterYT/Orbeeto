@@ -80,7 +80,6 @@ int main(int argc, char* argv[]) {
 	newBullet->print();
 	in.close();*/
 
-
 	while (game->isRunning) {
 		// ---------- Handling events ---------- //
 		game->handleEvents();

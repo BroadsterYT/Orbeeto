@@ -8,7 +8,7 @@
 using Entity = uint32_t;
 
 const uint32_t MAX_ENTITIES = 2000;
-const uint32_t MAX_COMPONENTS = 64;
+const uint32_t MAX_COMPONENTS = 512;
 using ComponentMask = std::bitset<MAX_COMPONENTS>;
 
 

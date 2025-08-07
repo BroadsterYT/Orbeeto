@@ -83,6 +83,30 @@ struct TwoPointShiftAI : public Component {
 	}
 };
 
+/*
+  ______                                       _____ 
+ |  ____|                                /\   |_   _|
+ | |__   _ __   ___ _ __ ___  _   _     /  \    | |  
+ |  __| | '_ \ / _ \ '_ ` _ \| | | |   / /\ \   | |  
+ | |____| | | |  __/ | | | | | |_| |  / ____ \ _| |_ 
+ |______|_| |_|\___|_| |_| |_|\__, | /_/    \_\_____|
+                               __/ |                 
+                              |___/                  
+*/
+
+struct MyteAI {
+
+
+
+	void serialize(std::ofstream& out) {
+
+	}
+
+	void deserialize(std::ifstream& in) {
+
+	}
+};
+
 
 struct TextTrembleAI : public Component {
 	Vector2 center = Vector2();

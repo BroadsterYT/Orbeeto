@@ -24,4 +24,12 @@ struct Transform : Component {
 	void velMovement() {
 		pos += vel * TimeManip::getDeltaAdjuster();
 	}
+
+	void serialize(std::ofstream& out) {
+		SerialHelper::serialize(out, &pos.x, &pos.y, &vel.x, &vel.y, &accel.x, &accel.y, &accelConst, &fric);
+	}
+
+	void deserialize(std::ifstream& in) {
+		SerialHelper::deserialize(in, &pos.x, &pos.y, &vel.x, &vel.y, &accel.x, &accel.y, &accelConst, &fric);
+	}
 };

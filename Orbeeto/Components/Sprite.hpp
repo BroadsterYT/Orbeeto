@@ -3,6 +3,7 @@
 #include <vector>
 #include "Component.hpp"
 #include "../TextureManager.hpp"
+#include "../Game.hpp"
 
 
 struct Sprite : Component {
@@ -31,16 +32,25 @@ struct Sprite : Component {
 	bool ignoreScaling = false; // Should this sprite ignore the scalaing of the viewport?
 
 	int index = 0;  // The index of the image in the image vector to display
+	std::string spritePath = "Assets/orbeeto.png";
 	std::shared_ptr<SDL_Texture> spriteSheet = nullptr;
-
-	// TODO: Add texture path as member variable to use when serializing
 
 
 	void serialize(std::ofstream& out) {
-
+		SerialHelper::serialize(out, &layer, &tileWidth, &tileHeight, 
+			&posX, &posY, &angle, &moveWithRoom,
+			&srcRect, &destRect,
+			&ignoreScaling, &index, &spritePath
+		);
 	}
 
 	void deserialize(std::ifstream& in) {
+		SerialHelper::deserialize(in, &layer, &tileWidth, &tileHeight,
+			&posX, &posY, &angle, &moveWithRoom,
+			&srcRect, &destRect,
+			&ignoreScaling, &index, &spritePath
+		);
 
+		//spriteSheet = TextureManager::loadTexture(Game::renderer, spritePath);
 	}
 };

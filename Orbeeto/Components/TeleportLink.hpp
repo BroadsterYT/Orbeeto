@@ -11,6 +11,15 @@ enum Facing {
 };
 
 struct TeleportLink : public Component {
-	uint32_t linkedTo = 0;
+	Entity linkedTo = 0;
 	int facing = Facing::SOUTH;
+
+
+	void serialize(std::ofstream& out) {
+		SerialHelper::serialize(out, &linkedTo, &facing);
+	}
+
+	void deserialize(std::ifstream& in) {
+		SerialHelper::deserialize(in, &linkedTo, &facing);
+	}
 };

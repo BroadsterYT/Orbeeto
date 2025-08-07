@@ -1,4 +1,5 @@
 #include "BulletSystem.hpp"
+#include "CollisionSystem.hpp"
 #include "../InputManager.hpp"
 #include <limits>
 
@@ -6,10 +7,11 @@
 BulletSystem::BulletSystem() {}
 
 void BulletSystem::update() {
-	for (Entity& entity : Game::ecs.getSystemGroup<Bullet, Sprite, Transform>(Game::stack.peek())) {
+	for (Entity& entity : Game::ecs.getSystemGroup<Bullet, Sprite, Transform, Collision>(Game::stack.peek())) {
 		Bullet* bullet = Game::ecs.getComponent<Bullet>(Game::stack.peek(), entity);
 		Transform* transform = Game::ecs.getComponent<Transform>(Game::stack.peek(), entity);
 		Sprite* sprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), entity);
+		Collision* coll = Game::ecs.getComponent<Collision>(Game::stack.peek(), entity);
 
 		// ----- Bullet AI ----- //
 		switch (bullet->bulletAI) {
@@ -18,13 +20,15 @@ void BulletSystem::update() {
 			sprite->angle = -transform->vel.getAngle() + 180.0;
 			break;
 
-		case BulletType::HOMING:  // Homing bullets
-		{
+		case BulletType::HOMING: {
 			double closestDistance = std::numeric_limits<double>::max();
 
 			// Getting the distances between this bullet and all possible targets
-			if (TimeManip::getTimeDiff(bullet->lastHomingCheck) > 1000) {
-				for (auto& target : Game::ecs.getSystemGroup<Transform, Collision, Sprite>(Game::stack.peek())) {
+			if (TimeManip::getTimeDiff(bullet->lastHomingCheck) > 1) {
+				std::vector<Entity> found;
+				CollisionSystem::queryTree(QuadBox{ (float)(transform->pos.x - 32), (float)(transform->pos.y - 32), 64, 64 }, found);
+
+				for (auto& target : found) {
 					if (entity == target) continue;
 					// TODO: Replace testing with actual implementation
 					if (Game::ecs.getComponent<Player>(Game::stack.peek(), target) != nullptr) continue;  // Can't target players
@@ -39,6 +43,7 @@ void BulletSystem::update() {
 						bullet->closestTarget = target;
 					}
 				}
+				
 				bullet->lastHomingCheck = TimeManip::getTime();
 			}
 
@@ -56,9 +61,10 @@ void BulletSystem::update() {
 				double difference = transform->vel.getAngle() - angle;
 				transform->vel.rotate(difference - 180);
 			}
-		}  // End scope
+
 			transform->velMovement();
 			break;
+		}  // End scope
 
 		default:
 			throw std::runtime_error("Error: Invalid bullet AI type.");

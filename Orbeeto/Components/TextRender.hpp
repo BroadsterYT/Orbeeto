@@ -24,4 +24,7 @@ struct TextRender : Component {
 	bool parsingTag = false;  // True if the system is currently parsing together a tag from lineStack
 	std::string tagTemp = "";
 	std::vector<std::string> activeTags;
+
+	
+	// TextRenders will not persist between room changes and do not need serialized
 };
