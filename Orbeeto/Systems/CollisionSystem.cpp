@@ -88,9 +88,9 @@ void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transf
 	}
 }
 
-bool CollisionSystem::hasPhysicsTag(const Collision* coll, int tag) {
-	return coll->physicsTags.test(tag);
-}
+//bool CollisionSystem::hasPhysicsTag(const Collision* coll, int tag) {
+//	return coll->physicsTags.test(tag);
+//}
 
 
 int ICollisionHandler::intersection(const Collision* aColl, const Collision* bColl) {
@@ -118,7 +118,7 @@ int ICollisionHandler::intersection(const Collision* aColl, const Collision* bCo
 
 bool PushHandler::handle(Entity a, Collision* aColl, Transform* aTrans,
 						 Entity b, Collision* bColl, Transform* bTrans) {
-	if (aColl->physicsTags.test((int)PTags::PUSHABLE) && bColl->physicsTags.test((int)PTags::CAN_PUSH)) {
+	if (Game::ecs.getComponent<Pushable_PTag>(Game::stack.peek(), a) && Game::ecs.getComponent<CanPush_PTag>(Game::stack.peek(), b)) {
 		int side = intersection(aColl, bColl);
 
 		if (side == 0  // South
@@ -154,7 +154,8 @@ bool PushHandler::handle(Entity a, Collision* aColl, Transform* aTrans,
 
 bool PortalTeleportHandler::handle(Entity a, Collision* aColl, Transform* aTrans,
 								   Entity b, Collision* bColl, Transform* bTrans) {
-	if (aColl->physicsTags.test((int)PTags::CAN_TELEPORT) && bColl->physicsTags.test((int)PTags::PORTAL)) {
+	//if (aColl->physicsTags.test((int)PTags::CAN_TELEPORT) && bColl->physicsTags.test((int)PTags::PORTAL)) {
+	if (Game::ecs.getComponent<CanTeleport_PTag>(Game::stack.peek(), a) && Game::ecs.getComponent<TeleportLink>(Game::stack.peek(), b)) {
 		TeleportLink* firstLink = Game::ecs.getComponent<TeleportLink>(Game::stack.peek(), b);
 		TeleportLink* secondLink = Game::ecs.getComponent<TeleportLink>(Game::stack.peek(), Room::getPortalLink(b));
 
@@ -244,11 +245,12 @@ bool PortalTeleportHandler::handle(Entity a, Collision* aColl, Transform* aTrans
 
 bool GrappleHandler::handle(Entity a, Collision* aColl, Transform* aTrans,
 							Entity b, Collision* bColl, Transform* bTrans) {
-	if (aColl->physicsTags.test((int)PTags::GRAPPLE)) {
+	if (Game::ecs.getComponent<Grapple>(Game::stack.peek(), a)) {
 		Grapple* grapple = Game::ecs.getComponent<Grapple>(Game::stack.peek(), a);
 		Player* player = Game::ecs.getComponent<Player>(Game::stack.peek(), grapple->owner);
 
-		if (bColl->physicsTags.test((int)PTags::PLAYER) && player->grappleState == GrappleState::RETURNING) {
+		//if (bColl->physicsTags.test((int)PTags::PLAYER) && player->grappleState == GrappleState::RETURNING) {
+		if (Game::ecs.getComponent<Player>(Game::stack.peek(), b) && player->grappleState == GrappleState::RETURNING) {
 			Game::ecs.destroyEntity(Game::stack.peek(), a);
 			player->grappleRef = 0;  // Remove grapple reference from player
 			player->moveToGrapple = false;
@@ -257,7 +259,8 @@ bool GrappleHandler::handle(Entity a, Collision* aColl, Transform* aTrans,
 			return true;
 		}
 
-		if (bColl->physicsTags.test((int)PTags::WALL) && player->grappleState == GrappleState::SENT) {
+		//if (bColl->physicsTags.test((int)PTags::WALL) && player->grappleState == GrappleState::SENT) {
+		if (Game::ecs.getComponent<Wall_PTag>(Game::stack.peek(), b) && player->grappleState == GrappleState::SENT) {
 			player->grappleState = GrappleState::LATCHED;
 			grapple->grappledTo = b;
 			player->moveToGrapple = true;
@@ -270,7 +273,7 @@ bool GrappleHandler::handle(Entity a, Collision* aColl, Transform* aTrans,
 
 bool PortalSpawningHandler::handle(Entity a, Collision* aColl, Transform* aTrans,
 								   Entity b, Collision* bColl, Transform* bTrans) {
-	if (aColl->physicsTags.test((int)PTags::PORTAL_BULLET) && bColl->physicsTags.test((int)PTags::CAN_HOLD_PORTAL)) {
+	if (Game::ecs.getComponent<PortalBullet_PTag>(Game::stack.peek(), a) && Game::ecs.getComponent<CanHoldPortal_PTag>(Game::stack.peek(), b)) {
 		int side = intersection(aColl, bColl);  // The direction the spawned portal will face
 		std::cout << side << std::endl;
 		Entity portal = Game::ecs.createEntity(Game::stack.peek());
@@ -293,8 +296,6 @@ bool PortalSpawningHandler::handle(Entity a, Collision* aColl, Transform* aTrans
 		pColl->hitWidth = 64;
 		pColl->hitHeight = 64;
 		pColl->hitPos = aTrans->pos;
-
-		pColl->physicsTags.set((int)PTags::PORTAL);
 
 		TeleportLink* pTLink = Game::ecs.getComponent<TeleportLink>(Game::stack.peek(), portal);
 		*pTLink = TeleportLink();
@@ -353,11 +354,12 @@ bool PortalSpawningHandler::handle(Entity a, Collision* aColl, Transform* aTrans
 
 bool ProjHitHandler::handle(Entity a, Collision* aColl, Transform* aTrans,
 									Entity b, Collision* bColl, Transform* bTrans) {
-	if (aColl->physicsTags.test((int)PTags::PROJECTILE) && bColl->physicsTags.test((int)PTags::WALL)) {
+	if (Game::ecs.getComponent<Projectile_PTag>(Game::stack.peek(), a) && Game::ecs.getComponent<Wall_PTag>(Game::stack.peek(), b)) {
 		Game::ecs.destroyEntity(Game::stack.peek(), a);
 		return true;
 	}
-	else if (aColl->physicsTags.test((int)PTags::E_PROJECTILE) && bColl->physicsTags.test((int)PTags::PLAYER)) {
+	//TODO: Change projectile tag to account for enemy bullets and player bullets
+	/*else if (aColl->physicsTags.test((int)PTags::E_PROJECTILE) && bColl->physicsTags.test((int)PTags::PLAYER)) {
 		Hp* hp = Game::ecs.getComponent<Hp>(Game::stack.peek(), b);
 		Defense* def = Game::ecs.getComponent<Defense>(Game::stack.peek(), b);
 		Bullet* bullet = Game::ecs.getComponent<Bullet>(Game::stack.peek(), b);
@@ -367,6 +369,6 @@ bool ProjHitHandler::handle(Entity a, Collision* aColl, Transform* aTrans,
 
 		Game::ecs.destroyEntity(Game::stack.peek(), a);
 		return true;
-	}
+	}*/
 	return false;
 }

@@ -43,11 +43,9 @@ void EntityAISystem::update() {
 			break;
 		}
 
-		case M_AI::kilomyte:
-		{
-			// TODO: Complete at later date
-		}
+		case M_AI::kilomyte: {
 			break;
+		}
 
 		case M_AI::text_tremble: {
 			auto* tt = Game::ecs.getComponent<TextTrembleAI>(Game::stack.peek(), entity);

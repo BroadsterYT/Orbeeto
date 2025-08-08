@@ -67,10 +67,10 @@ Entity RoomTile::buildTile() {
 		coll->hitWidth = finalWidth;
 		coll->hitHeight = finalHeight;
 
-		coll->physicsTags.set((int)PTags::WALL);
-		coll->physicsTags.set((int)PTags::CAN_PUSH);
+		Game::ecs.assignComponent<Wall_PTag>(Game::stack.peek(), tile);
+		Game::ecs.assignComponent<CanPush_PTag>(Game::stack.peek(), tile);
 		if (canHoldPortal) {
-			coll->physicsTags.set((int)PTags::CAN_HOLD_PORTAL);
+			Game::ecs.assignComponent<CanHoldPortal_PTag>(Game::stack.peek(), tile);
 		}
 	}
 

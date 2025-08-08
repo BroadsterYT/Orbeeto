@@ -58,11 +58,10 @@ Room::Room(int roomX, int roomY) {
 	playerColl->hitHeight = 32;
 	playerColl->hitPos = Vector2(300.0f, 300.0f);
 	
-	playerColl->physicsTags.set((int)PTags::PLAYER);
-	playerColl->physicsTags.set((int)PTags::PUSHABLE);
-	playerColl->physicsTags.set((int)PTags::CAN_PUSH);
-	playerColl->physicsTags.set((int)PTags::HURTABLE);
-	playerColl->physicsTags.set((int)PTags::CAN_TELEPORT);
+	Game::ecs.assignComponent<Pushable_PTag>(Game::stack.peek(), player);
+	Game::ecs.assignComponent<CanPush_PTag>(Game::stack.peek(), player);
+	Game::ecs.assignComponent<Hurtable_PTag>(Game::stack.peek(), player);
+	Game::ecs.assignComponent<CanTeleport_PTag>(Game::stack.peek(), player);
 
 	Hp* playerHp = Game::ecs.getComponent<Hp>(Game::stack.peek(), player);
 	playerHp->hp = 25;

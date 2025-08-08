@@ -56,7 +56,18 @@ class ECS {
 public:
 	ECS() {
 		std::cout << "Bullet component registered. ID: " << getComponentId<Bullet>() << std::endl;
+		
 		std::cout << "Collision component registered. ID: " << getComponentId<Collision>() << std::endl;
+		std::cout << "CanPush_PTag component registered. ID: " << getComponentId<CanPush_PTag>() << std::endl;
+		std::cout << "Pushable_PTag component registered. ID: " << getComponentId<Pushable_PTag>() << std::endl;
+		std::cout << "Wall_PTag component registered. ID: " << getComponentId<Wall_PTag>() << std::endl;
+		std::cout << "PortalBullet_PTag component registered. ID: " << getComponentId<PortalBullet_PTag>() << std::endl;
+		std::cout << "CanHoldPortal_PTag component registered. ID: " << getComponentId<CanHoldPortal_PTag>() << std::endl;
+		std::cout << "CanTeleport_PTag component registered. ID: " << getComponentId<CanTeleport_PTag>() << std::endl;
+		std::cout << "Projectile_PTag component registered. ID: " << getComponentId<Projectile_PTag>() << std::endl;
+		std::cout << "Hurtable_PTag component registered. ID: " << getComponentId<Hurtable_PTag>() << std::endl;
+		std::cout << "Enemy_PTag component registered. ID: " << getComponentId<Enemy_PTag>() << std::endl;
+		
 		std::cout << "Defense component registered. ID: " << getComponentId<Defense>() << std::endl;
 		std::cout << "Grapple component registered. ID: " << getComponentId<Grapple>() << std::endl;
 		std::cout << "Hp component registered. ID: " << getComponentId<Hp>() << std::endl;

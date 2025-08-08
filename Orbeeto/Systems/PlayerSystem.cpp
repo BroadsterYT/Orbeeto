@@ -77,8 +77,6 @@ void PlayerSystem::fireGrapple(const Entity& pEntity, Player* player, Transform*
 	gColl->hitWidth = 32;
 	gColl->hitHeight = 32;
 
-	gColl->physicsTags.set((int)PTags::GRAPPLE);
-
 	Grapple* gGrapple = Game::ecs.getComponent<Grapple>(Game::stack.peek(), grapple);
 	*gGrapple = Grapple();
 	gGrapple->owner = pEntity;
@@ -112,8 +110,8 @@ void PlayerSystem::firePortal(Entity pEntity, Player* player, Transform* pTrans,
 	pbColl->hitWidth = 8;
 	pbColl->hitHeight = 8;
 
-	pbColl->physicsTags.set((int)PTags::PORTAL_BULLET);
-	pbColl->physicsTags.set((int)PTags::PROJECTILE);
+	Game::ecs.assignComponent<PortalBullet_PTag>(Game::stack.peek(), portalBullet);
+	Game::ecs.assignComponent<Projectile_PTag>(Game::stack.peek(), portalBullet);
 
 	Transform* pbTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), portalBullet);
 	*pbTrans = Transform();
