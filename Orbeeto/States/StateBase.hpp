@@ -1,4 +1,5 @@
 #pragma once
+#include <unordered_map>
 #include "../Entity.hpp"
 
 
@@ -26,7 +27,7 @@ public:
 	/// <summary>
 	/// Returns the vector cointaining the entity descriptions for all entities in this state
 	/// </summary>
-	std::vector<EntityDesc>& getEntityDescs();
+	std::unordered_map<Entity, EntityDesc>& getEntityDescs();
 	/// <summary>
 	/// Adds an EntityDesc instance to the vector of all instances in the state
 	/// </summary>
@@ -45,6 +46,6 @@ public:
 
 private:
 	std::vector<Entity> freeEntities;
-	std::vector<EntityDesc> entityDescs;  // A vector of all the entities currently in the game state
+	std::unordered_map<Entity, EntityDesc> entityDescs;  // A vector of all the entities currently in the game state
 	bool allowUpdateBelow = false;  // When true, will allow entities in the state immediately below to continue updating
 };

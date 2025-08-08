@@ -5,6 +5,8 @@
 #include <vector>
 #include <algorithm>
 #include <numeric>
+#include <chrono>
+using namespace std::chrono;
 
 #include "TimeManip.hpp"
 #include "Game.hpp"
@@ -84,6 +86,8 @@ int main(int argc, char* argv[]) {
 		// ---------- Handling events ---------- //
 		game->handleEvents();
 
+		auto start = high_resolution_clock::now();
+
 		// Update game components here
 		spriteSystem.render(Game::renderer);
 		PE_System.update();
@@ -101,6 +105,11 @@ int main(int argc, char* argv[]) {
 		room.update();
 		
 		TimeManip::calculateDeltaTime();
+
+		auto end = high_resolution_clock::now();
+		auto duration = end - start;
+
+		std::cout << duration_cast<microseconds>(duration).count() << std::endl;
 	}
 
 	game->clean();

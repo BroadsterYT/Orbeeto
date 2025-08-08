@@ -26,7 +26,7 @@ std::shared_ptr<SDL_Texture> TextureManager::loadTexture(SDL_Renderer* renderer,
 
 void TextureManager::cleanupTextures() {
 	for (auto it = textures.begin(); it != textures.end(); ) {
-		if (it->second.use_count() == 1) {
+		if (it->second.use_count() <= 1) {
 			it = textures.erase(it);
 			//std::cout << "Texture was deleted\n";
 		}

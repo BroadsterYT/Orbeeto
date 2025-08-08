@@ -117,70 +117,102 @@ public:
 	/// <param name="state">Pointer to the game state to search</param>
 	/// <param name="entity">The entity to delete</param>
 	void destroyEntity(StateBase* state, Entity& entity) {
-		auto& entityDescs = state->getEntityDescs();
-		for (auto it = entityDescs.begin(); it != entityDescs.end(); ++it) {
-			if (it->entity == entity) {
-				// Free sprite texture if it exists
-				if (it->mask.test(getComponentId<Sprite>())) {
-					Sprite* sprite = getComponent<Sprite>(state, entity);
-					TextureManager::cleanupTextures();  // TODO: Get this bitchass O(n) out my damn function
-				}
+		//auto& entityDescs = state->getEntityDescs();
+		//for (auto it = entityDescs.begin(); it != entityDescs.end(); ++it) {
+		//	if (it->entity == entity) {
+		//		// Free sprite texture if it exists
+		//		if (it->mask.test(getComponentId<Sprite>())) {
+		//			Sprite* sprite = getComponent<Sprite>(state, entity);
+		//			TextureManager::cleanupTextures();  // TODO: Get this bitchass O(n) out my damn function
+		//		}
 
-				for (auto& comp : it->components) {
-					delete comp;
-					comp = nullptr;
-				}
+		//		for (auto& comp : it->components) {
+		//			delete comp;
+		//			comp = nullptr;
+		//		}
 
-				entityDescs.erase(it);
+		//		entityDescs.erase(it);
 
-				state->returnFreeEntity(entity);
-				return;
-			}
+		//		state->returnFreeEntity(entity);
+		//		return;
+		//	}
+		//}
+		auto& edesc = state->getEntityDescs().at(entity);
+
+		if (edesc.mask.test(getComponentId<Sprite>())) {
+			TextureManager::cleanupTextures();
 		}
+
+		for (auto& comp : edesc.components) {
+			delete comp;
+			comp = nullptr;
+		}
+
+		state->getEntityDescs().erase(entity);
 	}
 
 	template<typename T>
 	void assignComponent(StateBase* state, Entity& entity) {
-		for (EntityDesc& edesc : state->getEntityDescs()) {
-			if (edesc.entity == entity) {
-				assert(!edesc.mask.test(getComponentId<T>()) && "Component already added to entity.");
+		//for (EntityDesc& edesc : state->getEntityDescs()) {
+		//	if (edesc.entity == entity) {
+		//		assert(!edesc.mask.test(getComponentId<T>()) && "Component already added to entity.");
 
-				edesc.mask.set(getComponentId<T>());
-				edesc.components[getComponentId<T>()] = new T();
+		//		edesc.mask.set(getComponentId<T>());
+		//		edesc.components[getComponentId<T>()] = new T();
 
-				// std::cout << "Component for entity " << entity << " set successfully." << std::endl;
-				return;
-			}
-		}
-		std::cout << "Component could not be added to entity " << entity << " because the entity could not be found" << std::endl;
+		//		// std::cout << "Component for entity " << entity << " set successfully." << std::endl;
+		//		return;
+		//	}
+		//}
+		//std::cout << "Component could not be added to entity " << entity << " because the entity could not be found" << std::endl;
+		auto& edesc = state->getEntityDescs().at(entity);
+		assert(!edesc.mask.test(getComponentId<T>()) && "Component already added to entity.");
+
+		edesc.mask.set(getComponentId<T>());
+		edesc.components[getComponentId<T>()] = new T();
+		// std::cout << "Component for entity " << entity << " set successfully." << std::endl;
 	}
 
 	template<typename T>
 	void removeComponent(StateBase* state, Entity& entity) {
-		for (EntityDesc& edesc : state->getEntityDescs()) {
-			if (edesc.entity == entity) {
-				assert(edesc.mask.test(getComponentId<T>()) && "Trying to remove non-existent component");
+		//for (EntityDesc& edesc : state->getEntityDescs()) {
+		//	if (edesc.entity == entity) {
+		//		assert(edesc.mask.test(getComponentId<T>()) && "Trying to remove non-existent component");
 
-				edesc.mask.reset(getComponentId<T>());
-				delete edesc.components[getComponentId<T>()];
-				edesc.components[getComponentId<T>()] = nullptr;
+		//		edesc.mask.reset(getComponentId<T>());
+		//		delete edesc.components[getComponentId<T>()];
+		//		edesc.components[getComponentId<T>()] = nullptr;
 
-				// std::cout << "Removal of component from entity " << entity << " was successful." << std::endl;
-				return;
-			}
-		}
-		// std::cout << "Component for entity " << entity << " could not be removed because entity could not be found or does not exist." << std::endl;
+		//		// std::cout << "Removal of component from entity " << entity << " was successful." << std::endl;
+		//		return;
+		//	}
+		//}
+		//// std::cout << "Component for entity " << entity << " could not be removed because entity could not be found or does not exist." << std::endl;
+		auto& edesc = state->getEntityDescs().at(entity);
+		assert(edesc.mask.test(getComponentId<T>()) && "Trying to remove non-existent component");
+
+		edesc.mask.reset(getComponentId<T>());
+		delete edesc.components[getComponentId<T>()];
+		edesc.components[getComponentId<T>()] = nullptr;
+		// std::cout << "Removal of component from entity " << entity << " was successful." << std::endl;
 	}
 
 	template<typename T>
 	T* getComponent(StateBase* state, Entity entity) {
-		for (EntityDesc& edesc : state->getEntityDescs()) {
+		/*for (EntityDesc& edesc : state->getEntityDescs()) {
 			if (edesc.entity == entity) {
 				return static_cast<T*>(edesc.components[getComponentId<T>()]);
 			}
 		}
 
-		return nullptr;
+		return nullptr;*/
+		if (!state->getEntityDescs().contains(entity)) return nullptr;
+		auto& edesc = state->getEntityDescs().at(entity);
+
+		if (!edesc.components[getComponentId<T>()]) {
+			return nullptr;
+		}
+		return static_cast<T*>(edesc.components[getComponentId<T>()]);
 	}
 
 	template<typename... ComponentTypes>
@@ -196,7 +228,7 @@ public:
 		}
 
 		// Finding entities that belong in system group
-		for (EntityDesc& edesc : state->getEntityDescs()) {
+		for (auto& [entity, edesc] : state->getEntityDescs()) {
 			if ((maskRef & edesc.mask) != maskRef) continue;
 			output.push_back(edesc.entity);
 		}
