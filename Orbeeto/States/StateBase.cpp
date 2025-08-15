@@ -12,12 +12,12 @@ StateBase::StateBase(bool allowUpdateBelow) {
 	}
 }
 
-std::vector<EntityDesc>& StateBase::getEntityDescs() {
+std::unordered_map<Entity, EntityDesc>& StateBase::getEntityDescs() {
 	return entityDescs;
 }
 
 void StateBase::addEntityDesc(EntityDesc edesc) {
-	entityDescs.push_back(edesc);
+	entityDescs.insert({ edesc.entity, edesc });
 }
 
 Entity StateBase::getNextFree() {

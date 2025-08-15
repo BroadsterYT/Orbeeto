@@ -30,7 +30,7 @@ void PlayerSystem::update() {
 			}
 		}
 
-		transform->accel = finalAccel;
+		transform->accel += finalAccel;
 		transform->accelMovement();
 
 		// TODO: Add special rotational movement when grappled to wall

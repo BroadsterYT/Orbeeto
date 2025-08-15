@@ -102,7 +102,7 @@ Room::Room(int roomX, int roomY) {
 	Game::ecs.assignComponent<FollowEntityAI>(Game::stack.peek(), playerHpBar);
 
 	EntityAI* phbMove = Game::ecs.getComponent<EntityAI>(Game::stack.peek(), playerHpBar);
-	phbMove->ai = M_AI::follow_entity;
+	phbMove->ai = AiType::follow_entity;
 
 	auto* feAI = Game::ecs.getComponent<FollowEntityAI>(Game::stack.peek(), playerHpBar);
 	feAI->entityRef = player;
@@ -185,10 +185,32 @@ void Room::loadRoom(int x, int y) {
 		EntityAI* eAI = Game::ecs.getComponent<EntityAI>(Game::stack.peek(), tile3Ent);
 		TwoPointShiftAI* tps = Game::ecs.getComponent<TwoPointShiftAI>(Game::stack.peek(), tile3Ent);
 
-		eAI->ai = M_AI::two_point_shift;
+		eAI->ai = AiType::two_point_shift;
 		tps->interp.val1 = Vector2(200, 200);
 		tps->interp.val2 = Vector2(400, 200);
 		tps->toggleRef = toggle;
+
+
+		// Tractor Beam Test
+		Entity tractorBeam = Game::ecs.createEntity(Game::stack.peek());
+
+		Game::ecs.assignComponent<Transform>(Game::stack.peek(), tractorBeam);
+		Game::ecs.assignComponent<Sprite>(Game::stack.peek(), tractorBeam);
+		Game::ecs.assignComponent<EntityAI>(Game::stack.peek(), tractorBeam);
+		Game::ecs.assignComponent<TractorBeamAI>(Game::stack.peek(), tractorBeam);
+
+		Transform* tbTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), tractorBeam);
+		tbTrans->pos = Vector2(600, 100);
+
+		Sprite* tbSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), tractorBeam);
+		tbSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png");
+
+		EntityAI* tbEntityAi = Game::ecs.getComponent<EntityAI>(Game::stack.peek(), tractorBeam);
+		tbEntityAi->ai = AiType::tractor_beam;
+
+		TractorBeamAI* tbAi = Game::ecs.getComponent<TractorBeamAI>(Game::stack.peek(), tractorBeam);
+		tbAi->toggleRef = toggle;
+		tbAi->invertToggle = true;
 
 		// ----- Test Enemy 1 ----- //
 		/*Entity enemyTest = Game::ecs.createEntity(Game::stack.peek());
@@ -211,7 +233,7 @@ void Room::loadRoom(int x, int y) {
 		e1Coll->physicsTags.set(PTags::PUSHABLE);
 
 		EntityAI* e1AI = Game::ecs.getComponent<EntityAI>(Game::stack.peek(), enemyTest);
-		e1AI->ai = M_AI::kilomyte;*/
+		e1AI->ai = AiType::kilomyte;*/
 	}
 }
 

@@ -3,12 +3,12 @@
 
 
 enum class TrinketType {
-	BUTTON,
+	button,
 };
 
 
 struct Trinket : Component {
-	TrinketType type = TrinketType::BUTTON;
+	TrinketType type = TrinketType::button;
 	bool active = false;
 
 
