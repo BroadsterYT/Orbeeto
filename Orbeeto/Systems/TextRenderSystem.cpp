@@ -94,7 +94,7 @@ void TextRenderSystem::update() {
 				Game::ecs.assignComponent<TextTrembleAI>(Game::stack.peek(), letter);
 
 				auto* ai = Game::ecs.getComponent<EntityAI>(Game::stack.peek(), letter);
-				ai->ai = M_AI::text_tremble;
+				ai->ai = AiType::text_tremble;
 				
 				auto* trem = Game::ecs.getComponent<TextTrembleAI>(Game::stack.peek(), letter);
 				trem->center = ltrTrans->pos;
@@ -105,7 +105,7 @@ void TextRenderSystem::update() {
 				Game::ecs.assignComponent<TextWaveAI>(Game::stack.peek(), letter);
 				
 				auto* ai = Game::ecs.getComponent<EntityAI>(Game::stack.peek(), letter);
-				ai->ai = M_AI::text_wave;
+				ai->ai = AiType::text_wave;
 				
 				auto* wave = Game::ecs.getComponent<TextWaveAI>(Game::stack.peek(), letter);
 				wave->center = ltrTrans->pos;

@@ -4,13 +4,14 @@
 #include "../InterpToggle.hpp"
 
 
-enum class M_AI {
+enum class AiType {
 	default_ai,  // Default behavior (nothing)
 	circle_accel,  // Uses acceleration to move entity in a circle
 	follow_entity,  // Follows entity specified by entityRef from a distance specified in distance vector
 
 	// ----- Trinkets ----- //
 	two_point_shift,  // Moves back and forth between two points when the trigger entity toggles
+	tractor_beam,
 	
 	// ----- Enemies ----- //
 	myte,
@@ -23,7 +24,7 @@ enum class M_AI {
 
 
 struct EntityAI : public Component {
-	M_AI ai = M_AI::default_ai;
+	AiType ai = AiType::default_ai;
 
 
 	void serialize(std::ofstream& out) override {
@@ -34,7 +35,7 @@ struct EntityAI : public Component {
 	void deserialize(std::ifstream& in) override {
 		uint32_t rawAi;
 		in.read(reinterpret_cast<char*>(&rawAi), sizeof(rawAi));
-		ai = static_cast<M_AI>(rawAi);
+		ai = static_cast<AiType>(rawAi);
 	}
 };
 
@@ -53,8 +54,16 @@ struct FollowEntityAI : public Component {
 	}
 };
 
+/*
+  _______   _       _        _              _____
+ |__   __| (_)     | |      | |       /\   |_   _|
+	| |_ __ _ _ __ | | _____| |_     /  \    | |
+	| | '__| | '_ \| |/ / _ | __|   / /\ \   | |
+	| | |  | | | | |   |  __| |_   / ____ \ _| |_
+	|_|_|  |_|_| |_|_|\_\___|\__| /_/    \_|_____|
+*/
 
-struct TwoPointShiftAI : public Component {
+struct TwoPointShiftAI : Component {
 	Entity toggleRef = 0;
 	InterpToggle<Vector2> interp = InterpToggle<Vector2>(Math::cerp<Vector2>, Vector2(), Vector2(), 0.25f);
 	bool lastToggleState = false;
@@ -80,6 +89,41 @@ struct TwoPointShiftAI : public Component {
 			&interp.active,
 			&lastToggleState
 			);
+	}
+};
+
+
+struct TractorBeamAI : Component {
+	Entity toggleRef = 0;
+	bool lastToggleState = false;
+	bool invertToggle = false;
+	int width = 64;
+	int height = 64;
+
+	int direction = 0;
+	float strength = 0.05f;
+
+
+	void serialize(std::ofstream& out) override {
+		SerialHelper::serialize(out, 
+			&toggleRef, 
+			&lastToggleState, 
+			&invertToggle, 
+			&width, 
+			&height, 
+			&direction,
+			&strength);
+	}
+
+	void deserialize(std::ifstream& in) override {
+		SerialHelper::deserialize(in, 
+			&toggleRef, 
+			&lastToggleState,
+			&invertToggle, 
+			&width, 
+			&height, 
+			&direction,
+			&strength);
 	}
 };
 

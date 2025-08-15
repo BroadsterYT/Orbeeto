@@ -92,11 +92,11 @@ int main(int argc, char* argv[]) {
 		spriteSystem.render(Game::renderer);
 		PE_System.update();
 		particleSystem.update();
+		bulletSystem.update();
 		collisionSystem.update();
 		playerSystem.update();
 		grappleSystem.update();
 		playerGunSystem.update();
-		bulletSystem.update();
 		movementAISystem.update();
 		statBarSystem.update();
 		textRenderSystem.update();

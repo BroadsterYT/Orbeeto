@@ -10,7 +10,7 @@ void TrinketSystem::update() {
 		Trinket* trinket = Game::ecs.getComponent<Trinket>(Game::stack.peek(), entity);
 
 		switch (trinket->type) {
-		case TrinketType::BUTTON: {
+		case TrinketType::button: {
 			std::vector<Entity> onTop;
 			CollisionSystem::queryTree(QuadBox{ (float)trans->pos.x - 32, (float)trans->pos.y - 32, 64, 64 }, onTop);
 

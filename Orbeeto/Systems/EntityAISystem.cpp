@@ -3,6 +3,8 @@
 #include <random>
 #include <cmath>
 
+#include "CollisionSystem.hpp"
+
 
 EntityAISystem::EntityAISystem() {}
 
@@ -12,13 +14,13 @@ void EntityAISystem::update() {
 		Transform* trans = Game::ecs.getComponent<Transform>(Game::stack.peek(), entity);
 
 		switch (mvmAI->ai) {
-		case M_AI::circle_accel:
+		case AiType::circle_accel:
 			/*trans->accel.x = trans->accelConst * cos(TimeManip::getSDLTime() / 1000);
 			trans->accel.y = trans->accelConst * sin(TimeManip::getSDLTime() / 1000);
 			trans->accelMovement();*/
 			break;
 
-		case M_AI::follow_entity: {
+		case AiType::follow_entity: {
 			auto* feAI = Game::ecs.getComponent<FollowEntityAI>(Game::stack.peek(), entity);
 			assert(feAI && "Error: Entity must have FollowEntityAI component.");
 
@@ -28,7 +30,7 @@ void EntityAISystem::update() {
 			break;
 		}
 
-		case M_AI::two_point_shift: {
+		case AiType::two_point_shift: {
 			auto* tps = Game::ecs.getComponent<TwoPointShiftAI>(Game::stack.peek(), entity);
 			assert(tps && "Error: Entity must have TwoPointShiftAI component.");
 			assert(tps->toggleRef != 0 && "Error: toggleRef cannot be 0");
@@ -43,11 +45,54 @@ void EntityAISystem::update() {
 			break;
 		}
 
-		case M_AI::kilomyte: {
+		case AiType::tractor_beam: {
+			TractorBeamAI* tb = Game::ecs.getComponent<TractorBeamAI>(Game::stack.peek(), entity);
+			assert(tb && "Entity must have TractorBeamAI component");
+			assert(tb->toggleRef != 0 && "TractorBeamAI toggleRef cannot be 0");
+
+			Trinket* trink = Game::ecs.getComponent<Trinket>(Game::stack.peek(), tb->toggleRef);
+			if (trink->active || (!trink->active && tb->invertToggle)) {
+				// Finding entities in beam
+				std::vector<Entity> inside;
+				CollisionSystem::queryTree(QuadBox{ (float)(trans->pos.x - tb->width / 2), (float)(trans->pos.y - tb->height / 2), (float)tb->width, (float)tb->height }, inside);
+
+				// TODO: Add filters for certain entities
+
+				for (auto& e : inside) {
+					Transform* eTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), e);
+					
+					switch (tb->direction) {
+					case 0: {
+						eTrans->accel.y += tb->strength;
+						break;
+					}
+					case 1: {
+						eTrans->accel.x += tb->strength;
+						break;
+					}
+					case 2: {
+						eTrans->accel.y -= tb->strength;
+						break;
+					}
+					case 3: {
+						eTrans->accel.x -= tb->strength;
+						break;
+					}
+					default:
+						break;
+					}  // End switch
+				}
+
+			}
+
 			break;
 		}
 
-		case M_AI::text_tremble: {
+		case AiType::kilomyte: {
+			break;
+		}
+
+		case AiType::text_tremble: {
 			auto* tt = Game::ecs.getComponent<TextTrembleAI>(Game::stack.peek(), entity);
 			assert(tt && "Error: Entity must have TextTrembleAI component.");
 
@@ -63,7 +108,7 @@ void EntityAISystem::update() {
 			break;
 		}
 
-		case M_AI::text_wave: {
+		case AiType::text_wave: {
 			auto* tw = Game::ecs.getComponent<TextWaveAI>(Game::stack.peek(), entity);
 			assert(tw && "Error: Entity must have TextWaveAI component.");
 
