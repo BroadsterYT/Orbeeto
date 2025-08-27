@@ -23,30 +23,5 @@ struct Bullet : Component {
 	int homingRange = 128;  // The range that the bullet can begin homing into its target
 	uint32_t closestTarget = 0;  // The entity to home towards
 
-
-	void serialize(std::ofstream& out) override {
-		uint32_t rawAi = static_cast<uint32_t>(bulletAI);
-		SerialHelper::serialize(out, &rawAi);
-		
-		SerialHelper::serialize(out, &lifeTime, &persistent, &damage, &shotBy, &lastHomingCheck, &homingRange, &closestTarget);
-	}
-
-	void deserialize(std::ifstream& in) override {
-		uint32_t rawAi;
-		SerialHelper::deserialize(in, &rawAi);
-		bulletAI = static_cast<BulletType>(rawAi);
-
-		SerialHelper::deserialize(in, &lifeTime, &persistent, &damage, &shotBy, &lastHomingCheck, &homingRange, &closestTarget);
-	}
-
-	void print() {
-		std::cout << "BulletAI: " << static_cast<int>(bulletAI) << std::endl;
-		std::cout << "lifeTime: " << lifeTime << std::endl;
-		std::cout << "Persistent: " << persistent << std::endl;
-		std::cout << "Damage: " << damage << std::endl;
-		std::cout << "ShotBy: " << shotBy << std::endl;
-		std::cout << "lastHomingCheck: " << lastHomingCheck << std::endl;
-		std::cout << "homingRange: " << homingRange << std::endl;
-		std::cout << "closestTarget: " << closestTarget << std::endl;
-	}
+	// Bullets will not be serialized or deserialized between rooms
 };

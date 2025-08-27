@@ -179,6 +179,7 @@
     <ClInclude Include="Components\EntityAI.hpp" />
     <ClInclude Include="Components\Particle.hpp" />
     <ClInclude Include="Components\ParticleEmitter.hpp" />
+    <ClInclude Include="Components\RoomChange.hpp" />
     <ClInclude Include="Components\StatBar.hpp" />
     <ClInclude Include="Components\TeleportLink.hpp" />
     <ClInclude Include="Components\TextRender.hpp" />

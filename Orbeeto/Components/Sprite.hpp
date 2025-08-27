@@ -36,7 +36,7 @@ struct Sprite : Component {
 	std::shared_ptr<SDL_Texture> spriteSheet = nullptr;
 
 
-	void serialize(std::ofstream& out) {
+	void serialize(std::ofstream& out) override {
 		SerialHelper::serialize(out, &layer, &tileWidth, &tileHeight, 
 			&posX, &posY, &angle, &moveWithRoom,
 			&srcRect, &destRect,
@@ -44,7 +44,7 @@ struct Sprite : Component {
 		);
 	}
 
-	void deserialize(std::ifstream& in) {
+	void deserialize(std::ifstream& in) override {
 		SerialHelper::deserialize(in, &layer, &tileWidth, &tileHeight,
 			&posX, &posY, &angle, &moveWithRoom,
 			&srcRect, &destRect,

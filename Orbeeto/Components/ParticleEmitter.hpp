@@ -3,12 +3,12 @@
 
 
 enum class PE_Type {
-	FULL_SCATTER,
+	full_scatter,
 };
 
 
 struct ParticleEmitter : Component {
-	PE_Type type = PE_Type::FULL_SCATTER;
+	PE_Type type = PE_Type::full_scatter;
 	
 	float buildupTime = 0.0f;
 	float minFreq = 0.1f;
@@ -29,6 +29,7 @@ struct ParticleEmitter : Component {
 	void deserialize(std::ifstream& in) override {
 		uint32_t rawType;
 		SerialHelper::deserialize(in, &rawType);
+		type = static_cast<PE_Type>(rawType);
 
 		SerialHelper::deserialize(in, &buildupTime, &minFreq, &maxFreq, &nextFreq, &minEmitIntensity, &maxEmitIntensity);
 	}

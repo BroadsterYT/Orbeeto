@@ -29,7 +29,7 @@ public:
 	static int getRoomWidth();
 	static int getRoomHeight();
 
-	void loadRoom(int x, int y);
+	static void loadRoom(int x, int y);
 	void update();
 
 	/// <summary>
@@ -53,8 +53,8 @@ private:
 	static int roomWidth;  // Width of the room in pixels
 	static int roomHeight;  // Height of the room in pixels
 
-	bool canScrollX;
-	bool canScrollY;
+	static bool canScrollX;
+	static bool canScrollY;
 
 	int zoomOutInputCopy = 0;
 	int zoomInInputCopy = 0;

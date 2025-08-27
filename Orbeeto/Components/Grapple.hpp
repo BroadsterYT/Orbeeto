@@ -7,11 +7,5 @@ struct Grapple : Component {
 	uint32_t grappledTo = 0;
 
 
-	void serialize(std::ofstream& out) override {
-		SerialHelper::serialize(out, &owner, &grappledTo);
-	}
-
-	void deserialize(std::ifstream& in) override {
-		SerialHelper::deserialize(in, &owner, &grappledTo);
-	}
+	// Grappling hook will not be serialized or deserialized between rooms
 };

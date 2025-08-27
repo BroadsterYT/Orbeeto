@@ -26,7 +26,7 @@ void ParticleEmitterSystem::update() {
 			std::uniform_real_distribution<float> emitDist(pe->minEmitIntensity, pe->maxEmitIntensity);
 
 			switch (pe->type) {
-			case PE_Type::FULL_SCATTER:
+			case PE_Type::full_scatter:
 				pclTrans->vel.y = -emitDist(TimeManip::prng);
 				pclTrans->vel.rotate(angleDist(TimeManip::prng));
 				break;

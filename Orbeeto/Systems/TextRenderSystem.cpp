@@ -65,7 +65,7 @@ void TextRenderSystem::update() {
 			}
 
 			// Creating letter entity
-			Entity letter = Game::ecs.createEntity(Game::stack.peek());
+			Entity letter = Game::ecs.createEntity(Game::stack.peek());  // TODO: Add component tag to created letters to tell serializer to ignore
 			tr->textEntities.push_back(letter);
 
 			Game::ecs.assignComponent<Transform>(Game::stack.peek(), letter);

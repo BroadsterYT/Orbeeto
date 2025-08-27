@@ -24,36 +24,26 @@ int Room::roomWidth = 0;
 
 int Room::roomHeight = 0;
 
+bool Room::canScrollX = true;
+
+bool Room::canScrollY = true;
+
 std::unordered_map<Entity, Entity> Room::portalLinks;
 
 Room::Room(int roomX, int roomY) {
 	this->roomX = roomX;
 	this->roomY = roomY;
 
-	Game::ecs.assignComponent<Sprite>(Game::stack.peek(), player);
 	Game::ecs.assignComponent<Player>(Game::stack.peek(), player);
-	Game::ecs.assignComponent<Transform>(Game::stack.peek(), player);
-	Game::ecs.assignComponent<Collision>(Game::stack.peek(), player);
-	Game::ecs.assignComponent<ParticleEmitter>(Game::stack.peek(), player);
-	Game::ecs.assignComponent<Hp>(Game::stack.peek(), player);
-	Game::ecs.assignComponent<Defense>(Game::stack.peek(), player);
-
-	Game::ecs.assignComponent<Sprite>(Game::stack.peek(), leftGun);
-	Game::ecs.assignComponent<PlayerGun>(Game::stack.peek(), leftGun);
-	Game::ecs.assignComponent<Transform>(Game::stack.peek(), leftGun);
-
-	Game::ecs.assignComponent<Sprite>(Game::stack.peek(), rightGun);
-	Game::ecs.assignComponent<PlayerGun>(Game::stack.peek(), rightGun);
-	Game::ecs.assignComponent<Transform>(Game::stack.peek(), rightGun);
 
 	// ----- Player ----- //
-	Sprite* playerSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), player);
+	Sprite* playerSprite = Game::ecs.assignComponent<Sprite>(Game::stack.peek(), player);
 	playerSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png");
 	
-	Transform* playerTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), player);
+	Transform* playerTrans = Game::ecs.assignComponent<Transform>(Game::stack.peek(), player);
 	playerTrans->pos = Vector2(300, 300);
 	
-	Collision* playerColl = Game::ecs.getComponent<Collision>(Game::stack.peek(), player);
+	Collision* playerColl = Game::ecs.assignComponent<Collision>(Game::stack.peek(), player);
 	playerColl->hitWidth = 32;
 	playerColl->hitHeight = 32;
 	playerColl->hitPos = Vector2(300.0f, 300.0f);
@@ -63,55 +53,51 @@ Room::Room(int roomX, int roomY) {
 	Game::ecs.assignComponent<Hurtable_PTag>(Game::stack.peek(), player);
 	Game::ecs.assignComponent<CanTeleport_PTag>(Game::stack.peek(), player);
 
-	Hp* playerHp = Game::ecs.getComponent<Hp>(Game::stack.peek(), player);
+	Hp* playerHp = Game::ecs.assignComponent<Hp>(Game::stack.peek(), player);
 	playerHp->hp = 25;
 	playerHp->maxHp = 50;
 
-	Defense* pDef = Game::ecs.getComponent<Defense>(Game::stack.peek(), player);
+	Defense* pDef = Game::ecs.assignComponent<Defense>(Game::stack.peek(), player);
 	pDef->maxDef = 10;
 	pDef->def = 10;
 
 	// ----- Left Gun ----- //
-	Sprite* lGunSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), leftGun);
+	Sprite* lGunSprite = Game::ecs.assignComponent<Sprite>(Game::stack.peek(), leftGun);
 	lGunSprite->layer = 1;
 	lGunSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeetoguns.png");
 
-	Transform* lGunTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), leftGun);
+	Transform* lGunTrans = Game::ecs.assignComponent<Transform>(Game::stack.peek(), leftGun);
 	lGunTrans->pos = Vector2(300.0f, 300.0f);
 
-	PlayerGun* lGun = Game::ecs.getComponent<PlayerGun>(Game::stack.peek(), leftGun);
+	PlayerGun* lGun = Game::ecs.assignComponent<PlayerGun>(Game::stack.peek(), leftGun);
 	lGun->owner = player;
 
 	// ----- Right Gun ----- //
-	PlayerGun* rGun = Game::ecs.getComponent<PlayerGun>(Game::stack.peek(), rightGun);
+	PlayerGun* rGun = Game::ecs.assignComponent<PlayerGun>(Game::stack.peek(), rightGun);
 	rGun->owner = player;
 	rGun->isLeft = false;
 
-	Sprite* rGunSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), rightGun);
+	Sprite* rGunSprite = Game::ecs.assignComponent<Sprite>(Game::stack.peek(), rightGun);
 	rGunSprite->layer = 1;
 	rGunSprite->index = 5;
 	rGunSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeetoguns.png");
 
+	Game::ecs.assignComponent<Transform>(Game::stack.peek(), rightGun);
+
 	// Player's HP Bar
 	Entity playerHpBar = Game::ecs.createEntity(Game::stack.peek());
 
-	Game::ecs.assignComponent<StatBar>(Game::stack.peek(), playerHpBar);
-	Game::ecs.assignComponent<Sprite>(Game::stack.peek(), playerHpBar);
-	Game::ecs.assignComponent<Transform>(Game::stack.peek(), playerHpBar);
-	Game::ecs.assignComponent<EntityAI>(Game::stack.peek(), playerHpBar);
-	Game::ecs.assignComponent<FollowEntityAI>(Game::stack.peek(), playerHpBar);
-
-	EntityAI* phbMove = Game::ecs.getComponent<EntityAI>(Game::stack.peek(), playerHpBar);
+	EntityAI* phbMove = Game::ecs.assignComponent<EntityAI>(Game::stack.peek(), playerHpBar);
 	phbMove->ai = AiType::follow_entity;
 
-	auto* feAI = Game::ecs.getComponent<FollowEntityAI>(Game::stack.peek(), playerHpBar);
+	auto* feAI = Game::ecs.assignComponent<FollowEntityAI>(Game::stack.peek(), playerHpBar);
 	feAI->entityRef = player;
 	feAI->distOffset = Vector2(0, 40);
 
-	Transform* phbTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), playerHpBar);
+	Transform* phbTrans = Game::ecs.assignComponent<Transform>(Game::stack.peek(), playerHpBar);
 	phbTrans->pos = { 0, 0 };
 
-	Sprite* phbSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), playerHpBar);
+	Sprite* phbSprite = Game::ecs.assignComponent<Sprite>(Game::stack.peek(), playerHpBar);
 	phbSprite->tileWidth = 128;
 	phbSprite->tileHeight = 16;
 	phbSprite->srcRect.w = 128;
@@ -121,7 +107,7 @@ Room::Room(int roomX, int roomY) {
 	phbSprite->ignoreScaling = true;
 	phbSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/health_bar.png");
 
-	StatBar* phbStatBar = Game::ecs.getComponent<StatBar>(Game::stack.peek(), playerHpBar);
+	StatBar* phbStatBar = Game::ecs.assignComponent<StatBar>(Game::stack.peek(), playerHpBar);
 	phbStatBar->maxVal = &playerHp->maxHp;
 	phbStatBar->val = &playerHp->hp;
 
@@ -145,6 +131,9 @@ int Room::getRoomHeight() {
 }
 
 void Room::loadRoom(int x, int y) {
+	roomX = x;
+	roomY = y;
+
 	if (roomX == 0 && roomY == 0) {
 		roomWidth = 1280;
 		roomHeight = 720;
@@ -156,9 +145,14 @@ void Room::loadRoom(int x, int y) {
 		RoomTile tile2 = RoomTile(4, 0, 8, 2, 0, 0, 2);
 		RoomTile tile3 = RoomTile(6, 4, 2, 8, 0, 0, 6);
 		RoomTile tile4 = RoomTile(4, 0, 8, 2, 0, 0, 2);
-		tile1.buildTile();
+		Entity tile1Ent = tile1.buildTile();
 		tile2.buildTile();
 		Entity tile3Ent = tile3.buildTile();
+
+		Game::ecs.assignComponent<RoomChange>(Game::stack.peek(), tile1Ent);
+		RoomChange* rc = Game::ecs.getComponent<RoomChange>(Game::stack.peek(), tile1Ent);
+		rc->jumpTo = Vector2(0, 1);
+		rc->playerSpawnPos = Vector2(300, 300);
 
 		Entity testText = Game::ecs.createEntity(Game::stack.peek());
 		Game::ecs.assignComponent<TextRender>(Game::stack.peek(), testText);
@@ -234,6 +228,12 @@ void Room::loadRoom(int x, int y) {
 
 		EntityAI* e1AI = Game::ecs.getComponent<EntityAI>(Game::stack.peek(), enemyTest);
 		e1AI->ai = AiType::kilomyte;*/
+	}
+	else if (roomX == 0 && roomY == 1) {
+		roomWidth = 1280;
+		roomHeight = 720;
+		canScrollX = true;
+		canScrollY = true;
 	}
 }
 

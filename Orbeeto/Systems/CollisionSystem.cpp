@@ -7,6 +7,7 @@
 Quadtree CollisionSystem::tree = Quadtree(QuadBox{ 0, 0, 1280, 720 });
 
 CollisionSystem::CollisionSystem() {
+	handlers.emplace_back(std::make_unique<RoomChangeHandler>());
 	handlers.emplace_back(std::make_unique<PushHandler>());
 	handlers.emplace_back(std::make_unique<PortalTeleportHandler>());
 	handlers.emplace_back(std::make_unique<GrappleHandler>());
@@ -353,7 +354,7 @@ bool PortalSpawningHandler::handle(Entity a, Collision* aColl, Transform* aTrans
 
 
 bool ProjHitHandler::handle(Entity a, Collision* aColl, Transform* aTrans,
-									Entity b, Collision* bColl, Transform* bTrans) {
+							Entity b, Collision* bColl, Transform* bTrans) {
 	if (Game::ecs.getComponent<Projectile_PTag>(Game::stack.peek(), a) && Game::ecs.getComponent<Wall_PTag>(Game::stack.peek(), b)) {
 		Game::ecs.destroyEntity(Game::stack.peek(), a);
 		return true;
@@ -370,5 +371,33 @@ bool ProjHitHandler::handle(Entity a, Collision* aColl, Transform* aTrans,
 		Game::ecs.destroyEntity(Game::stack.peek(), a);
 		return true;
 	}*/
+	return false;
+}
+
+
+bool RoomChangeHandler::handle(Entity a, Collision* aColl, Transform* aTrans,
+							   Entity b, Collision* bColl, Transform* bTrans) {
+	if (Game::ecs.getComponent<Player>(Game::stack.peek(), a)
+		&& Game::ecs.getComponent<RoomChange>(Game::stack.peek(), b)) {
+		Game::ecs.serializeState(Game::stack.peek(), "RoomLayouts/center.dat");
+
+		RoomChange* roomChange = Game::ecs.getComponent<RoomChange>(Game::stack.peek(), b);
+		RoomChange rc = *roomChange;  // Can delete entity with RoomChange without losing data
+
+		std::vector<Entity> toDestroy;
+		for (auto& [entity, edesc] : Game::stack.peek()->getEntityDescs()) {
+			if (Game::ecs.getComponent<Player>(Game::stack.peek(), entity)) continue;
+			if (Game::ecs.getComponent<PlayerGun>(Game::stack.peek(), entity)) continue;
+
+			toDestroy.push_back(entity);
+		}
+
+		for (auto e : toDestroy) {
+			Game::ecs.destroyEntity(Game::stack.peek(), e);
+		}
+
+		Room::loadRoom(rc.jumpTo.x, rc.jumpTo.y);
+		return true;
+	}
 	return false;
 }

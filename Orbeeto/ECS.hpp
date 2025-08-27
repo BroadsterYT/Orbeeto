@@ -44,6 +44,7 @@ inline void _cdecl operator delete(void* __p, const char*, int) {
 #include "Components/ParticleEmitter.hpp"
 #include "Components/Player.hpp"
 #include "Components/PlayerGun.hpp"
+#include "Components/RoomChange.hpp"
 #include "Components/Sprite.hpp"
 #include "Components/StatBar.hpp"
 #include "Components/TeleportLink.hpp"
@@ -83,6 +84,7 @@ public:
 		std::cout << "ParticleEmitter component registered. ID: " << getComponentId<ParticleEmitter>() << std::endl;
 		std::cout << "Player component registered. ID: " << getComponentId<Player>() << std::endl;
 		std::cout << "PlayerGun component registered. ID: " << getComponentId<PlayerGun>() << std::endl;
+		std::cout << "RoomChange component registered. ID: " << getComponentId<RoomChange>() << std::endl;
 		std::cout << "Sprite component registered. ID: " << getComponentId<Sprite>() << std::endl;
 		std::cout << "StatBar component registered. ID: " << getComponentId<StatBar>() << std::endl;
 		std::cout << "TeleportLink component registered. ID: " << getComponentId<TeleportLink>() << std::endl;
@@ -136,12 +138,13 @@ public:
 	}
 
 	template<typename T>
-	void assignComponent(StateBase* state, Entity& entity) {
+	T* assignComponent(StateBase* state, Entity& entity) {
 		auto& edesc = state->getEntityDescs().at(entity);
 		assert(!edesc.mask.test(getComponentId<T>()) && "Component already added to entity.");
 
 		edesc.mask.set(getComponentId<T>());
 		edesc.components[getComponentId<T>()] = new T();
+		return static_cast<T*>(edesc.components[getComponentId<T>()]);
 		// std::cout << "Component for entity " << entity << " set successfully." << std::endl;
 	}
 
@@ -188,6 +191,83 @@ public:
 		return output;
 	}
 
+	// ---------- Serialization and Deserialization Batching ---------- //
+
+	void serializeState(StateBase* state, std::string filePath) {
+		std::ofstream out(filePath, std::ios::binary);
+		ComponentMask inclusionMask;
+		ComponentMask emptyMask;
+
+		//inclusionMask.set(getComponentId<Trinket>());
+		inclusionMask.set(getComponentId<Enemy_PTag>());
+		
+		for (auto& [entity, edesc] : state->getEntityDescs()) {
+			if ((edesc.mask & inclusionMask) == emptyMask) continue;
+
+			out << entity;
+			for (uint32_t i = 0; i < edesc.components.size(); ++i) {
+				if (!edesc.components[i]) continue;
+				out << i;
+				edesc.components[i]->serialize(out);
+			}
+			out << std::endl;
+		}
+		out.close();
+	}
+
+	void deserializeState(StateBase* state, std::string filePath) {
+		std::ifstream in(filePath, std::ios::binary);
+		std::unordered_map<Entity, Entity> entityRefMap;  // Key is serialized entity ID, value is new entity ID
+
+		while (true) {
+			int eofCheck = in.peek();
+			if (eofCheck == EOF) {
+				break;
+			}
+
+			Entity oldEntity;
+			SerialHelper::deserialize(in, &oldEntity);
+			Entity newEntity = state->getNextFree();
+			entityRefMap.insert({ oldEntity, newEntity });
+
+			bool relevantDataSerialized = false;  // If the entity was serialized without any important components, it can be deleted
+			while (true) {
+				int eolCheck = in.peek();
+				if (eolCheck == '\n') {
+					char absorb;
+					in.get(absorb);
+					break;
+				}
+
+				uint32_t newComp;
+				SerialHelper::deserialize(in, &newComp);
+				deserializeComponent(state, in, newEntity, newComp, relevantDataSerialized);
+				
+				if (!relevantDataSerialized) {
+					destroyEntity(state, newEntity);
+					entityRefMap.erase(oldEntity);
+				}
+			}
+		}
+		in.close();
+	}
+
 private:
 	int componentCounter = 0;
+
+	/// <summary>
+	/// Creates a new component for an entity and assigns it deserialized values
+	/// </summary>
+	/// <param name="state">The game state to perform this operation in</param>
+	/// <param name="in">The input file stream to deserialize component data from</param>
+	/// <param name="entity">The entity receiving the deserialized component</param>
+	/// <param name="compId">The ID of the component being assigned to the entity</param>
+	/// <param name="relevant">Reference to relevance bool, used to determine if the entity contains any critical serialized components</param>
+	void deserializeComponent(StateBase* state, std::ifstream& in, Entity& entity, uint32_t compId, bool& relevant) {
+		if (compId == getComponentId<Transform>()) {
+			assignComponent<Transform>(state, entity);
+			Transform* trans = getComponent<Transform>(state, entity);
+			trans->deserialize(in);
+		}
+	}
 };

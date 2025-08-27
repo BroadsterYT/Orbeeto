@@ -263,6 +263,9 @@
     <ClInclude Include="SerialHelper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Components\RoomChange.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="RoomLayouts\test.dat" />

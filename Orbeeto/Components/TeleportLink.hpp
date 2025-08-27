@@ -15,11 +15,11 @@ struct TeleportLink : public Component {
 	int facing = Facing::SOUTH;
 
 
-	void serialize(std::ofstream& out) {
+	void serialize(std::ofstream& out) override {
 		SerialHelper::serialize(out, &linkedTo, &facing);
 	}
 
-	void deserialize(std::ifstream& in) {
+	void deserialize(std::ifstream& in) override {
 		SerialHelper::deserialize(in, &linkedTo, &facing);
 	}
 };

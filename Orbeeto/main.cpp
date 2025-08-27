@@ -66,21 +66,7 @@ int main(int argc, char* argv[]) {
 
 	TimeManip::previousTime = SDL_GetPerformanceCounter();
 
-	// ----- Serialization/Deserialization Test ----- //
-	/*std::ofstream out("RoomLayouts/test.dat");
-
-	Bullet* bulletTest = new Bullet();
-	bulletTest->persistent = true;
-	bulletTest->lifeTime = 256;
-	bulletTest->print();
-	bulletTest->serialize(out);
-	out.close();
-
-	std::ifstream in("RoomLayouts/test.dat");
-	Bullet* newBullet = new Bullet();
-	newBullet->deserialize(in);
-	newBullet->print();
-	in.close();*/
+	game->ecs.serializeState(Game::stack.peek(), "RoomLayouts/test.dat");
 
 	while (game->isRunning) {
 		// ---------- Handling events ---------- //

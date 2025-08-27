@@ -11,7 +11,7 @@ void ParticleSystem::update() {
 
 		if (pcl->lifetime <= pcl->maxLifetime) {
 			switch (pcl->type) {
-			case ParticleAI::AWAY_FROM_CENTER:
+			case ParticleAI::away_from_center:
 				trans->accelMovement();
 				break;
 

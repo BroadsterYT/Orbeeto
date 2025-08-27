@@ -138,15 +138,15 @@ struct TractorBeamAI : Component {
                               |___/                  
 */
 
-struct MyteAI {
+struct MyteAI : Component {
 
 
 
-	void serialize(std::ofstream& out) {
+	void serialize(std::ofstream& out) override {
 
 	}
 
-	void deserialize(std::ifstream& in) {
+	void deserialize(std::ifstream& in) override {
 
 	}
 };
