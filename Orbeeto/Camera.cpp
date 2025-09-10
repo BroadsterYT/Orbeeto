@@ -48,7 +48,8 @@ void Camera::focus(int posX, int posY) {
 	camera.y = posY - Window::HEIGHT / 2;
 }
 
-void Camera::cinematicFocus(Entity entity) {
+void Camera::cinematicFocus(Entity entity, const bool followX, const bool followY,
+										   const int roomWidth, const int roomHeight) {
 	Transform* trans = Game::ecs.getComponent<Transform>(Game::stack.peek(), entity);
 	Collision* coll = Game::ecs.getComponent<Collision>(Game::stack.peek(), entity);
 	
@@ -69,6 +70,11 @@ void Camera::cinematicFocus(Entity entity) {
 
 	tpToggle.val2 = targetVec;
 
-	camera.x = (int)tpToggle.getValue().x;
+	if (followX) {
+		camera.x = (int)tpToggle.getValue().x;
+	}
+	else {
+		camera.x = (Window::WIDTH - roomWidth) / 2;
+	}
 	camera.y = (int)tpToggle.getValue().y;
 }

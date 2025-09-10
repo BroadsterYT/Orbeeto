@@ -141,106 +141,34 @@ void Room::loadRoom(int x, int y) {
 		canScrollY = true;
 		//readRoomData(extractRoomTiles("RoomLayouts/newSerializeTest.dat"));
 
-		RoomTile tile1 = RoomTile(0, 0, 2, 8, 0, 0, 2);
-		RoomTile tile2 = RoomTile(4, 0, 8, 2, 0, 0, 2);
-		RoomTile tile3 = RoomTile(6, 4, 2, 8, 0, 0, 6);
-		RoomTile tile4 = RoomTile(4, 0, 8, 2, 0, 0, 2);
-		Entity tile1Ent = tile1.buildTile();
-		tile2.buildTile();
-		Entity tile3Ent = tile3.buildTile();
+		RoomTile tile1 = RoomTile(0, 0, 4, 720 / 16, 0, 0, 2);
+		Entity w1 = tile1.buildTile();
 
-		Game::ecs.assignComponent<RoomChange>(Game::stack.peek(), tile1Ent);
-		RoomChange* rc = Game::ecs.getComponent<RoomChange>(Game::stack.peek(), tile1Ent);
+		RoomTile tile2 = RoomTile(1280 / 16 - 4, 8, 4, 4, 0, 0, 2);
+		Entity w2 = tile2.buildTile();
+
+		RoomTile border = RoomTile(4, 0, 76, 4, 0, 0, 0);
+		Entity b1 = border.buildTile();
+
+		/*RoomChange* rc = Game::ecs.assignComponent<RoomChange>(Game::stack.peek(), tile1Ent);
 		rc->jumpTo = Vector2(0, 1);
-		rc->playerSpawnPos = Vector2(300, 300);
-
-		Entity testText = Game::ecs.createEntity(Game::stack.peek());
-		Game::ecs.assignComponent<TextRender>(Game::stack.peek(), testText);
-		TextRender* tr = Game::ecs.getComponent<TextRender>(Game::stack.peek(), testText);
-		tr->interTag = "test2";
-
-		// TrinketToggle test
-		Entity toggle = Game::ecs.createEntity(Game::stack.peek());
-		Game::ecs.assignComponent<Transform>(Game::stack.peek(), toggle);
-		Game::ecs.assignComponent<Trinket>(Game::stack.peek(), toggle);
-		Game::ecs.assignComponent<Sprite>(Game::stack.peek(), toggle);
-
-		Transform* ttrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), toggle);
-		Trinket* ttrink = Game::ecs.getComponent<Trinket>(Game::stack.peek(), toggle);
-		Sprite* tsprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), toggle);
-
-		ttrans->pos.x = 500;
-		ttrans->pos.y = 500;
-		tsprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png");
-
-		Game::ecs.assignComponent<EntityAI>(Game::stack.peek(), tile3Ent);
-		Game::ecs.assignComponent<TwoPointShiftAI>(Game::stack.peek(), tile3Ent);
-		
-		EntityAI* eAI = Game::ecs.getComponent<EntityAI>(Game::stack.peek(), tile3Ent);
-		TwoPointShiftAI* tps = Game::ecs.getComponent<TwoPointShiftAI>(Game::stack.peek(), tile3Ent);
-
-		eAI->ai = AiType::two_point_shift;
-		tps->interp.val1 = Vector2(200, 200);
-		tps->interp.val2 = Vector2(400, 200);
-		tps->toggleRef = toggle;
-
-
-		// Tractor Beam Test
-		Entity tractorBeam = Game::ecs.createEntity(Game::stack.peek());
-
-		Game::ecs.assignComponent<Transform>(Game::stack.peek(), tractorBeam);
-		Game::ecs.assignComponent<Sprite>(Game::stack.peek(), tractorBeam);
-		Game::ecs.assignComponent<EntityAI>(Game::stack.peek(), tractorBeam);
-		Game::ecs.assignComponent<TractorBeamAI>(Game::stack.peek(), tractorBeam);
-
-		Transform* tbTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), tractorBeam);
-		tbTrans->pos = Vector2(600, 100);
-
-		Sprite* tbSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), tractorBeam);
-		tbSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png");
-
-		EntityAI* tbEntityAi = Game::ecs.getComponent<EntityAI>(Game::stack.peek(), tractorBeam);
-		tbEntityAi->ai = AiType::tractor_beam;
-
-		TractorBeamAI* tbAi = Game::ecs.getComponent<TractorBeamAI>(Game::stack.peek(), tractorBeam);
-		tbAi->toggleRef = toggle;
-		tbAi->invertToggle = true;
-
-		// ----- Test Enemy 1 ----- //
-		/*Entity enemyTest = Game::ecs.createEntity(Game::stack.peek());
-
-		Game::ecs.assignComponent<Transform>(Game::stack.peek(), enemyTest);
-		Game::ecs.assignComponent<Sprite>(Game::stack.peek(), enemyTest);
-		Game::ecs.assignComponent<Collision>(Game::stack.peek(), enemyTest);
-		Game::ecs.assignComponent<EntityAI>(Game::stack.peek(), enemyTest);
-
-		Transform* e1Trans = Game::ecs.getComponent<Transform>(Game::stack.peek(), enemyTest);
-		e1Trans->pos = { 200, 200 };
-
-		Sprite* e1Sprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), enemyTest);
-		*e1Sprite = Sprite();
-		e1Sprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/orbeeto.png");
-
-		Collision* e1Coll = Game::ecs.getComponent<Collision>(Game::stack.peek(), enemyTest);
-
-		e1Coll->physicsTags.set(PTags::ENEMY);
-		e1Coll->physicsTags.set(PTags::PUSHABLE);
-
-		EntityAI* e1AI = Game::ecs.getComponent<EntityAI>(Game::stack.peek(), enemyTest);
-		e1AI->ai = AiType::kilomyte;*/
+		rc->playerSpawnPos = Vector2(300, 300);*/
 	}
 	else if (roomX == 0 && roomY == 1) {
-		roomWidth = 1280;
-		roomHeight = 720;
+		roomWidth = 640;
+		roomHeight = 360;
 		canScrollX = true;
 		canScrollY = true;
+
+		RoomTile tile1 = RoomTile(0, 0, 4, 360 / 16, 0, 0, 2);
+		Entity w1 = tile1.buildTile();
 	}
 }
 
 void Room::update() {
 	Transform* pTransform = Game::ecs.getComponent<Transform>(Game::stack.peek(), player);
-	if (pTransform != nullptr) {
-		Room::camera.cinematicFocus(player);
+	if (pTransform) {
+		Room::camera.cinematicFocus(player, canScrollX, canScrollY, roomWidth, roomHeight);
 	}
 
 	// Gamestate change test
@@ -256,12 +184,12 @@ void Room::update() {
 	// Zooming in and out
 	if (zoomOutInputCopy < InputManager::keysReleased[SDLK_o]) {
 		camera.setWidth(camera.getWidth() + Window::WIDTH / 2);
-		camera.setHeight(camera.getWidth() / Window::A_RATIO.first * Window::A_RATIO.second);
+		camera.setHeight(camera.getWidth() / Window::getAspectRatio().first * Window::getAspectRatio().second);
 		zoomOutInputCopy = InputManager::keysReleased[SDLK_o];
 	}
 	if (zoomInInputCopy < InputManager::keysReleased[SDLK_p]) {
 		camera.setWidth(camera.getWidth() - Window::WIDTH / 2);
-		camera.setHeight(camera.getWidth() / Window::A_RATIO.first * Window::A_RATIO.second);
+		camera.setHeight(camera.getWidth() / Window::getAspectRatio().first * Window::getAspectRatio().second);
 		zoomInInputCopy = InputManager::keysReleased[SDLK_p];
 	}
 }

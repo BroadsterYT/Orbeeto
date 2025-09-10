@@ -53,7 +53,7 @@ void EntityAISystem::update() {
 			Trinket* trink = Game::ecs.getComponent<Trinket>(Game::stack.peek(), tb->toggleRef);
 			if (trink->active || (!trink->active && tb->invertToggle)) {
 				// Finding entities in beam
-				std::vector<Entity> inside;
+				std::unordered_set<Entity> inside;
 				CollisionSystem::queryTree(QuadBox{ (float)(trans->pos.x - tb->width / 2), (float)(trans->pos.y - tb->height / 2), (float)tb->width, (float)tb->height }, inside);
 
 				// TODO: Add filters for certain entities

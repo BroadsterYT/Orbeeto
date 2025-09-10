@@ -11,7 +11,7 @@ void TrinketSystem::update() {
 
 		switch (trinket->type) {
 		case TrinketType::button: {
-			std::vector<Entity> onTop;
+			std::unordered_set<Entity> onTop;
 			CollisionSystem::queryTree(QuadBox{ (float)trans->pos.x - 32, (float)trans->pos.y - 32, 64, 64 }, onTop);
 
 			bool playerCheck = false;

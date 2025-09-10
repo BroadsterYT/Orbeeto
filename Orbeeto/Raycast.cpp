@@ -1,6 +1,7 @@
 #include "Raycast.hpp"
 #include "Room.hpp"
 #include <iostream>
+#include <unordered_set>
 
 
 Raycast::Raycast(Vector2 origin, int width, double angle) {
@@ -16,7 +17,7 @@ void Raycast::getAllIntersects() {
 	rotDir = Vector2(0, -(width - getWidthAdj()));
 	rotDir.rotate(angle);
 
-	std::vector<Entity> inter;  // Entities intersected
+	std::unordered_set<Entity> inter;  // Entities intersected
 	for (int i = 0; i < 100; i++) {
 		/*Entity e = Game::ecs.createEntity(Game::stack.peek());
 		Game::ecs.assignComponent<Sprite>(Game::stack.peek(), e);

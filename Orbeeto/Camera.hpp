@@ -20,7 +20,7 @@ public:
 	void printDetails();
 
 	void focus(int posX, int posY);
-	void cinematicFocus(Entity entity);
+	void cinematicFocus(Entity entity, const bool followX, const bool followY, const int roomWidth, const int roomHeight);
 
 private:
 	SDL_Rect camera;

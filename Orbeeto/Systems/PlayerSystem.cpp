@@ -35,6 +35,8 @@ void PlayerSystem::update() {
 
 		// TODO: Add special rotational movement when grappled to wall
 
+		std::cout << "DestRect.x: " << sprite->destRect.x << " DestRect.y: " << sprite->destRect.y << std::endl;
+
 		Vector2 roomPos(sprite->destRect.x + sprite->tileWidth / 2, sprite->destRect.y + sprite->tileHeight / 2);
 		sprite->angle = -roomPos.getAngleToPoint(InputManager::mousePosX, InputManager::mousePosY);
 

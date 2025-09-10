@@ -75,11 +75,11 @@ int main(int argc, char* argv[]) {
 		auto start = high_resolution_clock::now();
 
 		// Update game components here
+		collisionSystem.update();
 		spriteSystem.render(Game::renderer);
 		PE_System.update();
 		particleSystem.update();
 		bulletSystem.update();
-		collisionSystem.update();
 		playerSystem.update();
 		grappleSystem.update();
 		playerGunSystem.update();

@@ -146,6 +146,7 @@
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Math.cpp" />
+    <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="Raycast.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="States\ActionState.cpp" />
@@ -197,6 +198,7 @@
     <ClInclude Include="Components\Sprite.hpp" />
     <ClInclude Include="InterpToggle.hpp" />
     <ClInclude Include="Math.hpp" />
+    <ClInclude Include="QuadTree.hpp" />
     <ClInclude Include="Raycast.hpp" />
     <ClInclude Include="Room.hpp" />
     <ClInclude Include="RoomTile.hpp" />

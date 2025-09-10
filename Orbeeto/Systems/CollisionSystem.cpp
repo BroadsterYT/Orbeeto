@@ -1,10 +1,11 @@
 #include "CollisionSystem.hpp"
 #include <algorithm>
+#include <unordered_set>
 #include "../Room.hpp"
 #include "../WindowManager.hpp"
 
 
-Quadtree CollisionSystem::tree = Quadtree(QuadBox{ 0, 0, 1280, 720 });
+QuadTree CollisionSystem::tree = QuadTree(QuadBox{ 0, 0, 1280, 720 });
 
 CollisionSystem::CollisionSystem() {
 	handlers.emplace_back(std::make_unique<RoomChangeHandler>());
@@ -15,7 +16,7 @@ CollisionSystem::CollisionSystem() {
 	handlers.emplace_back(std::make_unique<ProjHitHandler>());
 }
 
-void CollisionSystem::queryTree(QuadBox box, std::vector<Entity>& found) {
+void CollisionSystem::queryTree(QuadBox box, std::unordered_set<Entity>& found) {
 	tree.query(box, found);
 }
 
@@ -24,16 +25,14 @@ void CollisionSystem::update() {
 	float roomH = Room::getRoomHeight();
 
 	rebuildQuadtree(QuadBox{ 0.0f, 0.0f, roomW, roomH });
-	std::vector<Entity> found;
+	std::unordered_set<Entity> found;
 
 	int clipSize = 80;
-	for (int y = 0; y <= roomH; y = y + clipSize) {
-		for (int x = 0; x <= roomW; x = x + clipSize) {
-			//std::cout << "Bound x: " << x << ", Bound y: " << y << std::endl;
+	for (int y = 0; y <= roomH + clipSize; y += clipSize) {
+		for (int x = 0; x <= roomW + clipSize; x += clipSize) {
 			tree.query(QuadBox{ (float)x, (float)y, (float)clipSize, (float)clipSize }, found);
-			//std::cout << "Bound posX: " << j << " Bound posY: " << i << " Found: " << found.size() << std::endl;
 
-			for (Entity& entity : found) {
+			for (auto& entity : found) {
 				Collision* collision = Game::ecs.getComponent<Collision>(Game::stack.peek(), entity);
 				if (collision == nullptr) continue;
 				Transform* transform = Game::ecs.getComponent<Transform>(Game::stack.peek(), entity);
@@ -44,7 +43,7 @@ void CollisionSystem::update() {
 					if (other == entity) continue;
 
 					Collision* oCollide = Game::ecs.getComponent<Collision>(Game::stack.peek(), other);
-					if (oCollide == nullptr) continue;
+					if (!oCollide) continue;
 
 					if (checkForCollision(collision, oCollide)) {
 						evaluateCollision(entity, collision, transform, other, oCollide);
@@ -57,7 +56,7 @@ void CollisionSystem::update() {
 }
 
 void CollisionSystem::rebuildQuadtree(QuadBox boundary) {
-	tree = Quadtree(boundary);
+	tree = QuadTree(boundary);
 	for (Entity& entity : Game::ecs.getSystemGroup<Collision, Transform>(Game::stack.peek())) {
 		//std::cout << tree.insert(entity) << std::endl;
 		tree.insert(entity);
@@ -79,7 +78,7 @@ bool CollisionSystem::checkForCollision(const Collision* eColl, const Collision*
 	return false;
 }
 
-void CollisionSystem::evaluateCollision(Entity& entity, Collision* eColl, Transform* eTrans, Entity& other, Collision* oColl) {
+void CollisionSystem::evaluateCollision(const Entity entity, Collision* eColl, Transform* eTrans, const Entity other, Collision* oColl) {
 	Transform* oTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), other);
 	
 	for (auto& handler : handlers) {

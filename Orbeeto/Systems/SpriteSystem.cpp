@@ -32,7 +32,7 @@ void SpriteSystem::render(SDL_Renderer* renderer) {
 			return a.first < b.first;
 		});
 
-	float scale = -(1.0 / 2560.0) * Room::camera.getWidth() + 1;
+	float scale = -(1.0 / (2 * Window::WIDTH)) * Room::camera.getWidth() + 1;
 
 	for (const auto& pair : sortedEntities) {
 		Entity entity = pair.second;
@@ -67,7 +67,7 @@ void SpriteSystem::render(SDL_Renderer* renderer) {
 		//SDL_RenderCopyEx(renderer, sprite->spriteSheet, &sprite->srcRect, &trueDestRect, sprite->angle, NULL, SDL_FLIP_NONE);
 
 		if (sprite->destRect.x >= spriteClip(true, true, scale) - sprite->tileWidth &&
-			sprite->destRect.x <= spriteClip(true, false, scale) + sprite->tileWidth  &&
+			sprite->destRect.x <= spriteClip(true, false, scale) + sprite->tileWidth &&
 			sprite->destRect.y >= spriteClip(false, true, scale) - sprite->tileHeight &&
 			sprite->destRect.y <= spriteClip(false, false, scale) + sprite->tileHeight) {
 			SDL_RenderCopyEx(renderer, sprite->spriteSheet.get(), &sprite->srcRect, &trueDestRect, sprite->angle, NULL, SDL_FLIP_NONE);

@@ -25,7 +25,7 @@ void BulletSystem::update() {
 
 			// Getting the distances between this bullet and all possible targets
 			if (TimeManip::getTimeDiff(bullet->lastHomingCheck) > 1) {
-				std::vector<Entity> found;
+				std::unordered_set<Entity> found;
 				CollisionSystem::queryTree(QuadBox{ (float)(transform->pos.x - 32), (float)(transform->pos.y - 32), 64, 64 }, found);
 
 				for (auto& target : found) {
