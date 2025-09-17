@@ -76,5 +76,11 @@ void Camera::cinematicFocus(Entity entity, const bool followX, const bool follow
 	else {
 		camera.x = (Window::WIDTH - roomWidth) / 2;
 	}
-	camera.y = (int)tpToggle.getValue().y;
+	
+	if (followY) {
+		camera.y = (int)tpToggle.getValue().y;
+	}
+	else {
+		camera.y = (Window::WIDTH - roomWidth) / 2;
+	}
 }

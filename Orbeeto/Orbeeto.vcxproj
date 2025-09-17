@@ -146,9 +146,11 @@
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Math.cpp" />
+    <ClCompile Include="ParsingHelper.cpp" />
     <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="Raycast.cpp" />
     <ClCompile Include="Room.cpp" />
+    <ClCompile Include="RoomBuilder.cpp" />
     <ClCompile Include="States\ActionState.cpp" />
     <ClCompile Include="States\GameStack.cpp" />
     <ClCompile Include="States\InventoryState.cpp" />
@@ -198,9 +200,11 @@
     <ClInclude Include="Components\Sprite.hpp" />
     <ClInclude Include="InterpToggle.hpp" />
     <ClInclude Include="Math.hpp" />
+    <ClInclude Include="ParsingHelper.hpp" />
     <ClInclude Include="QuadTree.hpp" />
     <ClInclude Include="Raycast.hpp" />
     <ClInclude Include="Room.hpp" />
+    <ClInclude Include="RoomBuilder.hpp" />
     <ClInclude Include="RoomTile.hpp" />
     <ClInclude Include="SerialHelper.hpp" />
     <ClInclude Include="States\ActionState.hpp" />

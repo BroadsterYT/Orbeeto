@@ -94,20 +94,16 @@ void PlayerSystem::fireGrapple(const Entity& pEntity, Player* player, Transform*
 void PlayerSystem::firePortal(Entity pEntity, Player* player, Transform* pTrans, Sprite* pSprite) {
 	Entity portalBullet = Game::ecs.createEntity(Game::stack.peek());
 
-	Game::ecs.assignComponent<Sprite>(Game::stack.peek(), portalBullet);
-	Game::ecs.assignComponent<Collision>(Game::stack.peek(), portalBullet);
-	Game::ecs.assignComponent<Transform>(Game::stack.peek(), portalBullet);
-	Game::ecs.assignComponent<Bullet>(Game::stack.peek(), portalBullet);
-
-	Sprite* pbSprite = Game::ecs.getComponent<Sprite>(Game::stack.peek(), portalBullet);
+	Sprite* pbSprite = Game::ecs.assignComponent<Sprite>(Game::stack.peek(), portalBullet);
 	*pbSprite = Sprite();
 	pbSprite->tileWidth = 32;
 	pbSprite->tileHeight = 32;
 	pbSprite->angle = pSprite->angle;
 	pbSprite->srcRect = SDL_Rect(0, 32, 32, 32);
 	pbSprite->spriteSheet = TextureManager::loadTexture(Game::renderer, "Assets/bullets.png");
+	pbSprite->index = 8;
 
-	Collision* pbColl = Game::ecs.getComponent<Collision>(Game::stack.peek(), portalBullet);
+	Collision* pbColl = Game::ecs.assignComponent<Collision>(Game::stack.peek(), portalBullet);
 	*pbColl = Collision();
 	pbColl->hitWidth = 8;
 	pbColl->hitHeight = 8;
@@ -115,13 +111,13 @@ void PlayerSystem::firePortal(Entity pEntity, Player* player, Transform* pTrans,
 	Game::ecs.assignComponent<PortalBullet_PTag>(Game::stack.peek(), portalBullet);
 	Game::ecs.assignComponent<Projectile_PTag>(Game::stack.peek(), portalBullet);
 
-	Transform* pbTrans = Game::ecs.getComponent<Transform>(Game::stack.peek(), portalBullet);
+	Transform* pbTrans = Game::ecs.assignComponent<Transform>(Game::stack.peek(), portalBullet);
 	*pbTrans = Transform();
 	pbTrans->pos = Vector2(pTrans->pos.x, pTrans->pos.y);
 	pbTrans->vel = Vector2(0, -2.0f);
 	pbTrans->vel.rotate(pSprite->angle);
 
-	Bullet* pbBullet = Game::ecs.getComponent<Bullet>(Game::stack.peek(), portalBullet);
+	Bullet* pbBullet = Game::ecs.assignComponent<Bullet>(Game::stack.peek(), portalBullet);
 	*pbBullet = Bullet();
 	pbBullet->shotBy = pEntity;
 }
