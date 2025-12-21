@@ -1,0 +1,8 @@
+This should be skipped completely.
+This should also be skipped <fake_tag>This is fake</fake_tag> completely.
+
+<test_header>
+This line should be read.
+This line should be read, too.
+This line should also be included.
+</test_header>

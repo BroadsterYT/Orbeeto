@@ -4,6 +4,7 @@
 
 
 class ParsingHelper {
+public:
 	/// <summary>
 	/// Given a tag to search for within a given file stream, returns the text within it
 	/// </summary>
