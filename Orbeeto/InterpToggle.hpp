@@ -3,7 +3,6 @@
 #include <functional>
 #include <iostream>
 #include "Math.hpp"
-#include "SerialHelper.hpp"
 
 
 template<typename T>

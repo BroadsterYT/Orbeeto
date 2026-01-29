@@ -28,7 +28,6 @@ using namespace std::chrono;
 #include "Systems/TextRenderSystem.hpp"
 #include "Systems/TrinketSystem.hpp"
 
-
 Game* game = nullptr;
 
 int main(int argc, char* argv[]) {
@@ -65,8 +64,6 @@ int main(int argc, char* argv[]) {
 	Room room(0, 0);
 
 	TimeManip::previousTime = SDL_GetPerformanceCounter();
-
-	game->ecs.serializeState(Game::stack.peek(), "RoomLayouts/test.dat");
 
 	while (game->isRunning) {
 		// ---------- Handling events ---------- //

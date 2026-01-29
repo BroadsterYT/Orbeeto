@@ -13,6 +13,8 @@
 #include "WindowManager.hpp"
 #include "InputManager.hpp"
 
+#include "glaze/glaze.hpp"
+
 
 Camera Room::camera = Camera(300, 300, 0, 0);
 
@@ -110,6 +112,18 @@ Room::Room(int roomX, int roomY) {
 	StatBar* phbStatBar = Game::ecs.assignComponent<StatBar>(Game::stack.peek(), playerHpBar);
 	phbStatBar->maxVal = &playerHp->maxHp;
 	phbStatBar->val = &playerHp->hp;
+
+	// Serialization testing
+	BulletData b;
+	b.damage = 10;
+	b.persistent = true;
+
+	auto result = glz::write_json(b);
+	auto jsonStr = result.value()
+
+	std::ofstream file("JSON/bullet.json");
+	file << jsonStr;
+	file.close();
 
 	loadRoom(0, 0);
 }

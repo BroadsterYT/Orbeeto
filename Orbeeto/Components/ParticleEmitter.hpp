@@ -17,20 +17,4 @@ struct ParticleEmitter : Component {
 
 	float minEmitIntensity = 3.0f;
 	float maxEmitIntensity = 5.0f;
-
-
-	void serialize(std::ofstream& out) override {
-		uint32_t rawType = static_cast<uint32_t>(type);
-		SerialHelper::serialize(out, &rawType);
-
-		SerialHelper::serialize(out, &buildupTime, &minFreq, &maxFreq, &nextFreq, &minEmitIntensity, &maxEmitIntensity);
-	}
-
-	void deserialize(std::ifstream& in) override {
-		uint32_t rawType;
-		SerialHelper::deserialize(in, &rawType);
-		type = static_cast<PE_Type>(rawType);
-
-		SerialHelper::deserialize(in, &buildupTime, &minFreq, &maxFreq, &nextFreq, &minEmitIntensity, &maxEmitIntensity);
-	}
 };

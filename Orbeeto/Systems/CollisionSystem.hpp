@@ -84,10 +84,3 @@ public:
 	bool handle(Entity a, Collision* aColl, Transform* aTrans,
 				Entity b, Collision* bColl, Transform* bTrans) override;
 };
-
-
-class RoomChangeHandler : public ICollisionHandler {
-public:
-	bool handle(Entity a, Collision* aColl, Transform* aTrans,
-				Entity b, Collision* bColl, Transform* bTrans) override;
-};

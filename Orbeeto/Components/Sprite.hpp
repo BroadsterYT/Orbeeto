@@ -34,23 +34,4 @@ struct Sprite : Component {
 	int index = 0;  // The index of the image in the image vector to display
 	std::string spritePath = "Assets/orbeeto.png";
 	std::shared_ptr<SDL_Texture> spriteSheet = nullptr;
-
-
-	void serialize(std::ofstream& out) override {
-		SerialHelper::serialize(out, &layer, &tileWidth, &tileHeight, 
-			&posX, &posY, &angle, &moveWithRoom,
-			&srcRect, &destRect,
-			&ignoreScaling, &index, &spritePath
-		);
-	}
-
-	void deserialize(std::ifstream& in) override {
-		SerialHelper::deserialize(in, &layer, &tileWidth, &tileHeight,
-			&posX, &posY, &angle, &moveWithRoom,
-			&srcRect, &destRect,
-			&ignoreScaling, &index, &spritePath
-		);
-
-		//spriteSheet = TextureManager::loadTexture(Game::renderer, spritePath);
-	}
 };

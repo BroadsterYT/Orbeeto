@@ -12,20 +12,4 @@ struct PlayerGun : Component {
 	BulletType bulletId = BulletType::STANDARD;  // The ID of the bullet the gun will fire
 
 	float heatDissipation = 100.0f;
-
-
-	void serialize(std::ofstream& out) override {
-		uint32_t rawId = static_cast<uint32_t>(bulletId);
-		SerialHelper::serialize(out, &rawId);
-
-		SerialHelper::serialize(out, &owner, &isLeft, &shotBuildup, &cooldown, &heatDissipation);
-	}
-
-	void deserialize(std::ifstream& in) override {
-		uint32_t rawId;
-		SerialHelper::deserialize(in, &rawId);
-		bulletId = static_cast<BulletType>(rawId);
-
-		SerialHelper::deserialize(in, &owner, &isLeft, &shotBuildup, &cooldown, &heatDissipation);
-	}
 };

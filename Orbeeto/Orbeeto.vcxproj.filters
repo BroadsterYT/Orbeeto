@@ -263,9 +263,6 @@
     <ClInclude Include="Systems\TrinketSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SerialHelper.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Components\RoomChange.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -276,6 +273,7 @@
   <ItemGroup>
     <None Include="RoomLayouts\test.dat" />
     <None Include="RoomLayouts\newSerializeTest.dat" />
+    <None Include="JSON\jsonTest.json" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Languages\English.txt" />
